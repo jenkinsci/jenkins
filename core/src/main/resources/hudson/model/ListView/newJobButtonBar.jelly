@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <button type="submit" id="ok-button">OK</button>
+  <span class="yui-button primary large-button">
+    <button type="submit" id="ok-button">OK</button>
+  </span>
   <f:checkbox title="${%Add to current view}" field="addToCurrentView" checked="${it.addToCurrentView}"/>
 </j:jelly>

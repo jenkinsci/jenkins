@@ -8,10 +8,11 @@ work
 .idea
 out
 
-# eclipse project file
+# Eclipse and VSCode project files
 .settings
 .classpath
 .project
+.factorypath
 build
 
 # VSCode workspace file
@@ -54,3 +55,4 @@ push-build.sh
 war/node_modules/
 war/yarn-error.log
 .java-version
+.checkstyle

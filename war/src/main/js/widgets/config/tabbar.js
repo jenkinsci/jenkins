@@ -2,26 +2,20 @@ import $ from 'jquery';
 import { getWindow } from 'window-handle';
 import page from '../../util/page';
 import tableMetadata from './model/ConfigTableMetaData';
-import behaviorShim from '../../util/behavior-shim';
 import jenkinsLocalStorage from '../../util/jenkinsLocalStorage';
 
 export var tabBarShowPreferenceKey = 'config:usetabs';
 
 export var addPageTabs = function(configSelector, onEachConfigTable, options) {
     $(function() {
-        behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function(el) {
-            page.fixDragEvent(el);
-        });
 
         // We need to wait until after radioBlock.js Behaviour.js rules
         // have been applied, otherwise row-set rows become visible across sections.
         page.onload('.block-control', function() {
             // Only do job configs for now.
             var configTables = $(configSelector);
-            if (configTables.size() > 0) {
+            if (configTables.length > 0) {
                 var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
-
-                page.fixDragEvent(configTables);
 
                 if (tabBarShowPreference === "yes") {
                     configTables.each(function() {
@@ -66,7 +60,7 @@ export var addTabs = function(configTable, options) {
     } else if (typeof configTable === 'string') {
         // It's a config <table> selector
         var configTableEl = $(configTable);
-        if (configTableEl.size() === 0) {
+        if (configTableEl.length === 0) {
             throw "No config table found using selector '" + configTable + "'";
         } else {
             configTableMetadata = tableMetadata.fromConfigTable(configTableEl);

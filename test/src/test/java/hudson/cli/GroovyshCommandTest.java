@@ -24,11 +24,12 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -41,7 +42,7 @@ public class GroovyshCommandTest {
     @Issue("JENKINS-17929")
     @Test public void authentication() throws Exception {
         CLICommandInvoker.Result result = new CLICommandInvoker(r, new GroovyshCommand())
-            .authorizedTo(Jenkins.READ, Jenkins.RUN_SCRIPTS)
+            .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
             .withStdin(new StringInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\n:quit\n"))
             .invoke();
         assertThat(result, succeeded());

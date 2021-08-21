@@ -1,21 +1,22 @@
 <div>
   Il numero massimo di compilazioni concorrenti che Jenkins può eseguire su
-  questo agente.
+  questo nodo.
   <p>
-  Un buon valore di partenza potrebbe essere il numero di core CPU sulla
-  macchina. L'impostazione di un valore più altro farebbe sì che ogni
-  compilazione duri più a lungo, ma potrebbe aumentare il throughput totale.
-  Ad esempio, una compilazione potrebbe essere CPU-bound, mentre un'altra
-  compilazione in esecuzione nello stesso momento potrebbe essere I/O bound
-  &mdash; in questo modo la seconda compilazione potrebbe trarre vantaggio
-  dalla capacità di I/O disponibile in quel momento.
+  Un buon valore iniziare potrebbe essere il numero di core CPU sulla macchina.
+  Se si imposta un valore più elevato, ogni compilazione durerebbe più a lungo,
+  ma si potrebbe aumentare il numero complessivo di compilazioni elaborate.
+  Ad esempio, una compilazione potrebbe essere limitata dalla CPU, mentre una
+  seconda in esecuzione contemporaneamente potrebbe essere limitata dall'I/O;
+  in questo modo la seconda compilazione potrebbe sfruttare la capacità di
+  I/O residua in quel momento.
   <p>
-  Gli agenti devono avere almeno un esecutore. Per impedire temporaneamente
-  l'esecuzione delle compilazioni su un agente, utilizzare il pulsante
-  <i>Contrassegna questo nodo come temporaneamente non in linea</i> nella
-  pagina dell'agente.
+  Gli agenti (nodi diversi dal master) devono avere almeno un esecutore. Per
+  impedire temporaneamente che delle compilazioni vengano eseguite su un
+  agente, utilizzare il pulsante <b>Contrassegna questo nodo come
+  temporaneamente non in linea</b> sulla pagina dell'agente.
   <p>
-  Quest'impostazione non si applica al master Jenkins &mdash; l'impostazione
-  del numero di esecutori a zero impedirà l'esecuzione delle compilazioni sul
-  master.
+  Per il master, impostare il numero di esecutori a zero per impedire che
+  delle compilazioni vengano eseguite localmente.
+  <i>Nota:</i> il master sarà sempre in grado di eseguire processi ottimizzati,
+  inclusa l'attività della pipeline al livello più alto.
 </div>

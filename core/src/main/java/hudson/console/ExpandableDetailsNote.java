@@ -67,6 +67,7 @@ public class ExpandableDetailsNote extends ConsoleNote {
 
     @Extension
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Expandable details";
         }

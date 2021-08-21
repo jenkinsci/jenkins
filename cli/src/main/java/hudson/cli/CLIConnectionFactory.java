@@ -36,4 +36,11 @@ public class CLIConnectionFactory {
         return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes()));
     }
 
+    /**
+     * Convenience method to call {@link #authorization} with the HTTP bearer authentication.
+     * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     */
+    public CLIConnectionFactory bearerAuth(String bearerToken) {
+        return authorization("Bearer " + bearerToken);
+    }
 }

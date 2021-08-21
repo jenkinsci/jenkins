@@ -23,8 +23,8 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout>
     <l:hasPermission permission="${app.READ}" it="${app}">
       <st:include page="sidepanel.jelly" it="${app}" />
     </l:hasPermission>

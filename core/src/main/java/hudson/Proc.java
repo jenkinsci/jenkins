@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -50,7 +51,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -156,6 +157,7 @@ public abstract class Proc {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             executor.submit(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!latch.await(timeout, unit)) {
@@ -215,6 +217,7 @@ public abstract class Proc {
          * @param err
          *      null to redirect stderr to stdout.
          */
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "Command injection is the point of this old, barely used class.")
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
             this( calcName(cmd),
                   stderr(environment(new ProcessBuilder(cmd),env).directory(workDir), err==null || err== SELFPUMP_OUTPUT),
@@ -295,14 +298,17 @@ public abstract class Proc {
             }
         }
 
+        @Override
         public InputStream getStdout() {
             return stdout;
         }
 
+        @Override
         public InputStream getStderr() {
             return stderr;
         }
 
+        @Override
         public OutputStream getStdin() {
             return stdin;
         }
@@ -323,7 +329,7 @@ public abstract class Proc {
 
             try {
                 int r = proc.waitFor();
-                // see https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
+                // see https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 if (copier!=null)   copier.join(TimeUnit.SECONDS.toMillis(10));
@@ -331,7 +337,7 @@ public abstract class Proc {
                 if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
+                    String msg = "Process leaked file descriptors. See https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 
@@ -393,7 +399,7 @@ public abstract class Proc {
             private final InputStream in;
             private final OutputStream out;
 
-            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
+            StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;
@@ -503,6 +509,7 @@ public abstract class Proc {
     /**
      * Debug switch to have the thread display the process it's waiting for.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean SHOW_PID = false;
     
     /**

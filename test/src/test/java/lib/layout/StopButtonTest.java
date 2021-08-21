@@ -38,7 +38,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

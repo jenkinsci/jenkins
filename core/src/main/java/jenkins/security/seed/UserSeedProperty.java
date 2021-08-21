@@ -23,6 +23,7 @@
  */
 package jenkins.security.seed;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.User;
@@ -41,7 +42,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Objects;
@@ -64,12 +65,14 @@ public class UserSeedProperty extends UserProperty {
      * If we disable the seed, we can still use it to write / store information but not verifying the data using it.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean DISABLE_USER_SEED = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".disableUserSeed");
 
     /**
      * Hide the user seed section from the UI to prevent accidental use
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean HIDE_USER_SEED_SECTION = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".hideUserSeedSection");
 
     public static final String USER_SESSION_SEED = "_JENKINS_SESSION_SEED";
@@ -83,7 +86,7 @@ public class UserSeedProperty extends UserProperty {
         this.renewSeedInternal();
     }
 
-    public @Nonnull String getSeed() {
+    public @NonNull String getSeed() {
         return seed;
     }
 
@@ -107,22 +110,24 @@ public class UserSeedProperty extends UserProperty {
     @Extension
     @Symbol("userSeed")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
-        public @Nonnull String getDisplayName() {
+        @Override
+        public @NonNull String getDisplayName() {
             return Messages.UserSeedProperty_DisplayName();
         }
 
+        @Override
         public UserSeedProperty newInstance(User user) {
             return new UserSeedProperty();
         }
 
         // only for jelly
         @Restricted(DoNotUse.class)
-        public boolean isCurrentUser(@Nonnull User target) {
+        public boolean isCurrentUser(@NonNull User target) {
             return Objects.equals(User.current(), target);
         }
 
         @RequirePOST
-        public synchronized HttpResponse doRenewSessionSeed(@AncestorInPath @Nonnull User u) throws IOException {
+        public synchronized HttpResponse doRenewSessionSeed(@AncestorInPath @NonNull User u) throws IOException {
             u.checkPermission(Jenkins.ADMINISTER);
 
             if (DISABLE_USER_SEED) {

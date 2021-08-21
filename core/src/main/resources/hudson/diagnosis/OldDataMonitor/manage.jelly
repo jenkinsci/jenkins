@@ -30,8 +30,13 @@ THE SOFTWARE.
     <h1>${%Manage Old Data}</h1>
     <p>${%blurb.1}</p>
     <p>${%blurb.2}</p>
-    <table class="pane bigtable" style="width:auto">
-      <tr><th>${%Type}</th><th>${%Name}</th><th>${%Version}</th><th></th></tr>
+    <table class="sortable pane bigtable width-auto">
+      <tr>
+         <th initialSortDir="down">${%Type}</th>
+         <th>${%Name}</th>
+         <th>${%Version}</th>
+         <th>${%Error}</th>
+      </tr>
       <j:forEach var="item" items="${it.data.entrySet()}">
         <j:set var="obj" value="${item.key}"/>
         <j:choose>
@@ -85,8 +90,12 @@ THE SOFTWARE.
       <br/>
       <h2>${%Unreadable Data}</h2>
       <p>${%blurb.6}</p>
-      <table class="pane bigtable" style="width:auto">
-        <tr><th>${%Type}</th><th>${%Name}</th><th>${%Error}</th></tr>
+      <table class="sortable pane bigtable width-auto">
+        <tr>
+            <th initialSortDir="down">${%Type}</th>
+            <th>${%Name}</th>
+            <th>${%Error}</th>
+        </tr>
         <j:forEach var="item" items="${it.data.entrySet()}">
           <j:if test="${item.value.extra!=null and item.value==''}">
             <j:set var="obj" value="${item.key}"/>

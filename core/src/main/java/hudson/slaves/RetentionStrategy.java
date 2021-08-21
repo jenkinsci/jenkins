@@ -27,7 +27,11 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Computer;
+import hudson.model.Descriptor;
+import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,11 +39,11 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -58,7 +62,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *         rechecked earlier or later than this!
      */
     @GuardedBy("hudson.model.Queue.lock")
-    public abstract long check(@Nonnull T c);
+    public abstract long check(@NonNull T c);
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed right now.
@@ -96,7 +100,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @param c Computer instance
      * @since 1.275
      */
-    public void start(final @Nonnull T c) {
+    public void start(final @NonNull T c) {
         Queue.withLock((Runnable) () -> check(c));
     }
 
@@ -156,6 +160,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @Override
         @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
@@ -165,6 +170,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension(ordinal=100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
             }

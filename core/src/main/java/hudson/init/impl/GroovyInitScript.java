@@ -28,15 +28,16 @@ import jenkins.model.Jenkins;
 import jenkins.util.groovy.GroovyHookScript;
 
 
-import static hudson.init.InitMilestone.*;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
 /**
  * Run the initialization script, if it exists.
+ * It runs strictly after the initialization of other tasks during the last initialization milestone.
  * 
  * @author Kohsuke Kawaguchi
  */
 public class GroovyInitScript {
-    @Initializer(after=JOB_LOADED)
+    @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins j) {
         new GroovyHookScript("init", j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader).run();
     }

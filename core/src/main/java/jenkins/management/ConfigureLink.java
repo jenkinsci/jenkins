@@ -26,7 +26,11 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -39,6 +43,7 @@ public class ConfigureLink extends ManagementLink {
         return "gear2.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ConfigureLink_DisplayName();
     }
@@ -48,8 +53,20 @@ public class ConfigureLink extends ManagementLink {
         return Messages.ConfigureLink_Description();
     }
 
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.READ;
+    }
+
     @Override
     public String getUrlName() {
         return "configure";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }

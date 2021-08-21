@@ -55,10 +55,11 @@ public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupp
         return Jenkins.get().getDescriptorList(CaptchaSupport.class);
     }
     
-    abstract public  boolean validateCaptcha(String id, String text); 
+    public abstract boolean validateCaptcha(String id, String text);
     
-    abstract public void generateImage(String id, OutputStream ios) throws IOException;
+    public abstract void generateImage(String id, OutputStream ios) throws IOException;
 
+    @Override
     public CaptchaSupportDescriptor getDescriptor() {
         return (CaptchaSupportDescriptor)super.getDescriptor();
     }

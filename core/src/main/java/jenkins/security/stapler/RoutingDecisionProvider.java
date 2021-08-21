@@ -25,7 +25,7 @@ package jenkins.security.stapler;
 
 import hudson.ExtensionPoint;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 public abstract class RoutingDecisionProvider implements ExtensionPoint {
     enum Decision {
@@ -34,5 +34,5 @@ public abstract class RoutingDecisionProvider implements ExtensionPoint {
         UNKNOWN
     }
 
-    @Nonnull public abstract Decision decide(@Nonnull String signature);
+    @NonNull public abstract Decision decide(@NonNull String signature);
 }

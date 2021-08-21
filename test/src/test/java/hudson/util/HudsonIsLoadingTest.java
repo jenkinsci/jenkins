@@ -9,7 +9,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class HudsonIsLoadingTest {

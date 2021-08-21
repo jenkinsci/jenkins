@@ -25,7 +25,8 @@ package hudson.model;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class DisplayNameListenerTest {
 
@@ -45,7 +46,7 @@ public class DisplayNameListenerTest {
         // make sure the displayname is equals to the name as it should be null
         assertEquals(dest.getName(), dest.getDisplayName());
     }
-    
+
     @Test
     public void testOnRenamedOldNameEqualsDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();

@@ -46,6 +46,7 @@ public class FormApply {
      */
     public static HttpResponseException success(final String destination) {
         return new HttpResponseException() {
+            @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
@@ -73,6 +74,7 @@ public class FormApply {
      */
     public static HttpResponseException applyResponse(final String script) {
         return new HttpResponseException() {
+            @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 rsp.setContentType("text/html;charset=UTF-8");
                 rsp.getWriter().println("<html><body><script>" +

@@ -20,6 +20,7 @@ public class InitializationErrorInvocationHandler implements InvocationHandler {
         this.cause = cause;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method.getDeclaringClass()==Object.class)
             return method.invoke(this,args);

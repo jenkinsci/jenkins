@@ -28,11 +28,10 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.User;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,70 +44,58 @@ import static org.junit.Assert.assertNotNull;
 public class UserSeedPropertyRestartTest {
 
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
 
     @Test
     @Issue("SECURITY-901")
-    public void initialSeedIsSaved() throws Exception {
+    public void initialSeedIsSaved() throws Throwable {
         AtomicReference<String> initialSeedRef = new AtomicReference<>();
 
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                rr.j.jenkins.setCrumbIssuer(null);
-                rr.j.jenkins.save();
+        sessions.then(j -> {
+                j.jenkins.setCrumbIssuer(null);
+                j.jenkins.save();
 
                 User alice = User.getById("alice", true);
                 alice.save();
                 initialSeedRef.set(alice.getProperty(UserSeedProperty.class).getSeed());
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 User alice = User.getById("alice", false);
                 String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
                 assertEquals(initialSeed, initialSeedRef.get());
-            }
         });
     }
 
     @Test
     @Issue("SECURITY-901")
-    public void renewSeedSavesTheChange() throws Exception {
+    public void renewSeedSavesTheChange() throws Throwable {
         AtomicReference<String> initialSeedRef = new AtomicReference<>();
         AtomicReference<String> seedRef = new AtomicReference<>();
 
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                rr.j.jenkins.setCrumbIssuer(null);
-                rr.j.jenkins.save();
+        sessions.then(j -> {
+                j.jenkins.setCrumbIssuer(null);
+                j.jenkins.save();
 
                 User alice = User.getById("alice", true);
                 alice.save();
                 initialSeedRef.set(alice.getProperty(UserSeedProperty.class).getSeed());
 
-                requestRenewSeedForUser(alice);
+                requestRenewSeedForUser(alice, j);
 
                 seedRef.set(alice.getProperty(UserSeedProperty.class).getSeed());
                 assertNotEquals(initialSeedRef.get(), seedRef.get());
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 User alice = User.getById("alice", false);
                 assertNotNull(alice);
                 String currentSeed = alice.getProperty(UserSeedProperty.class).getSeed();
                 assertEquals(currentSeed, seedRef.get());
-            }
         });
     }
 
-    private void requestRenewSeedForUser(User user) throws Exception {
-        JenkinsRule.WebClient wc = rr.j.createWebClient();
-        WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
+    private static void requestRenewSeedForUser(User user, JenkinsRule j) throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
         wc.getPage(request);
     }
 }

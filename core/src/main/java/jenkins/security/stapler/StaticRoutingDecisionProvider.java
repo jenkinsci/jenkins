@@ -24,6 +24,7 @@
 package jenkins.security.stapler;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -38,7 +39,7 @@ import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.lang.FieldRef;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,8 +81,9 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
      * @see Function#getSignature()
      * @see FieldRef#getSignature()
      */
-    @Nonnull
-    public synchronized Decision decide(@Nonnull String signature) {
+    @Override
+    @NonNull
+    public synchronized Decision decide(@NonNull String signature) {
         if (whitelistSignaturesFromFixedList == null || whitelistSignaturesFromUserControlledList == null ||
                 blacklistSignaturesFromFixedList == null || blacklistSignaturesFromUserControlledList == null) {
             reload();
@@ -140,7 +142,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         LOGGER.log(Level.FINE, "Found {0} getter in the standard whitelist", whitelistSignaturesFromFixedList.size());
     }
     
-    public synchronized StaticRoutingDecisionProvider add(@Nonnull String signature) {
+    public synchronized StaticRoutingDecisionProvider add(@NonNull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.add(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] added to the whitelist", signature);
             save();
@@ -151,7 +153,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         return this;
     }
     
-    public synchronized StaticRoutingDecisionProvider addBlacklistSignature(@Nonnull String signature) {
+    public synchronized StaticRoutingDecisionProvider addBlacklistSignature(@NonNull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.add(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] added to the blacklist", signature);
             save();
@@ -162,7 +164,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         return this;
     }
     
-    public synchronized StaticRoutingDecisionProvider remove(@Nonnull String signature) {
+    public synchronized StaticRoutingDecisionProvider remove(@NonNull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.remove(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] removed from the whitelist", signature);
             save();
@@ -173,7 +175,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         return this;
     }
     
-    public synchronized StaticRoutingDecisionProvider removeBlacklistSignature(@Nonnull String signature) {
+    public synchronized StaticRoutingDecisionProvider removeBlacklistSignature(@NonNull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.remove(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] removed from the blacklist", signature);
             save();
@@ -187,6 +189,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
     /**
      * Saves the configuration info to the disk.
      */
+    @Override
     public synchronized void save() {
         if (BulkChange.contains(this)) {
             return;
@@ -261,6 +264,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
     }
     
     /** Allow script console access */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static String WHITELIST_PATH = SystemProperties.getString(StaticRoutingDecisionProvider.class.getName() + ".whitelist");
 
 }

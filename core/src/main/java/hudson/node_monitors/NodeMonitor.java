@@ -36,7 +36,7 @@ import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -80,6 +80,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return getDescriptor().getDisplayName();
     }
 
+    @Override
     public AbstractNodeMonitorDescriptor<?> getDescriptor() {
         return (AbstractNodeMonitorDescriptor<?>) Jenkins.get().getDescriptorOrDie(getClass());
     }

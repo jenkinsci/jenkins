@@ -30,6 +30,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      * <p>
      * The default implementation does FIFO.
      */
+    @Override
     public int compare(BuildableItem lhs, BuildableItem rhs) {
         return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
     }
@@ -40,7 +41,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.211")
     protected static int compare(long a, long b) {
         return Long.compare(a, b);
     }
@@ -51,7 +52,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.211")
     protected static int compare(int a, int b) {
         return Integer.compare(a, b);
     }

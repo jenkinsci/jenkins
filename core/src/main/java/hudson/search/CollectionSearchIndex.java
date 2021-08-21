@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link SearchIndex} built on a {@link Map}.
@@ -46,18 +46,20 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
      */
     protected abstract Collection<SMT> all();
 
-    @Nonnull
+    @NonNull
     protected Iterable<SMT> allAsIterable() {
         Collection<SMT> all = all();
         return all == null ? Collections.emptySet() : all;
     }
 
+    @Override
     public void find(String token, List<SearchItem> result) {
         SearchItem p = get(token);
         if(p!=null)
             result.add(p);
     }
 
+    @Override
     public void suggest(String token, List<SearchItem> result) {
         boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
         if(isCaseSensitive){

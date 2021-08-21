@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -51,7 +53,7 @@ public class NodeCanTakeTaskTest {
     @Issue({"JENKINS-6598", "JENKINS-38514"})
     @Test
     public void takeBlockedByProperty() throws Exception {
-        // Set master executor count to zero to force all jobs to slaves
+        // Set built-in node executor count to zero to force all jobs to agents
         r.jenkins.setNumExecutors(0);
         Slave slave = r.createSlave();
         FreeStyleProject project = r.createFreeStyleProject();

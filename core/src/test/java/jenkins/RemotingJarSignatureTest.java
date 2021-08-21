@@ -1,6 +1,6 @@
 package jenkins;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -23,8 +23,6 @@ public class RemotingJarSignatureTest {
     @Test
     public void testSignature() throws Exception {
         File jar = Which.jarFile(Channel.class);
-//        File jar = new File("/home/kohsuke/.m2/repository/org/jenkins-ci/main/remoting/1.421/remoting-1.421.jar");
-//        File jar = new File("/home/kohsuke/.m2/repository/org/jenkins-ci/main/remoting/2.0/remoting-2.0.jar");
         System.out.println("Verifying "+jar);
 
         JarFile myJar = new JarFile(jar,true);
@@ -42,10 +40,8 @@ public class RemotingJarSignatureTest {
             if (name.startsWith("META-INF/") && name.endsWith(".DSA")) continue;
 
             // make sure bits are signed
-            IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
-            if (entry.getCodeSigners()==null) {
-                fail("No signature for " + name);
-            }
+            IOUtils.copy(myJar.getInputStream(entry), NullOutputStream.NULL_OUTPUT_STREAM);
+            assertNotNull("No signature for " + name, entry.getCodeSigners());
         }
     }
 }

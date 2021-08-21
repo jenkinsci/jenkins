@@ -69,7 +69,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -150,10 +150,10 @@ public class Maven extends Builder {
      *
      * @since 2.12
      */
-    private @Nonnull Boolean injectBuildVariables;
+    private @NonNull Boolean injectBuildVariables;
 
-    private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
-    private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
+    private static final String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
+    private static final String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
     
     private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
     private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
@@ -254,10 +254,11 @@ public class Maven extends Builder {
         // command line arguments.
         private final String arguments;
 
-        public DecideDefaultMavenCommand(String arguments) {
+        DecideDefaultMavenCommand(String arguments) {
             this.arguments = arguments;
         }
 
+        @Override
         public String invoke(File ws, VirtualChannel channel) throws IOException {
             String seed=null;
 
@@ -433,6 +434,7 @@ public class Maven extends Builder {
             DESCRIPTOR = this;
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -443,6 +445,7 @@ public class Maven extends Builder {
             return super.getHelpFile(fieldName);
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
@@ -553,7 +556,7 @@ public class Maven extends Builder {
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
             // FIXME using similar stuff as in the maven plugin could be better 
             // olamy : but will add a dependency on maven in core -> so not so good 
-            String mavenVersion = launcher.getChannel().call(new GetMavenVersion());
+            String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
 
             if (!mavenVersion.equals("")) {
                 if (mavenReqVersion == MAVEN_20) {
@@ -572,11 +575,14 @@ public class Maven extends Builder {
             return false;
             
         }
-        private class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
-            private static final long serialVersionUID = -4143159957567745621L;
+        private static class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
+            private final String home;
+            GetMavenVersion(String home) {
+                this.home = home;
+            }
             @Override
             public String call() throws IOException {
-                File[] jars = new File(getHomeDir(), "lib").listFiles();
+                File[] jars = new File(home, "lib").listFiles();
                 if (jars != null) { // be defensive
                     for (File jar : jars) {
                         if (jar.getName().startsWith("maven-")) {
@@ -608,24 +614,29 @@ public class Maven extends Builder {
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new GetExecutable());
+            return launcher.getChannel().call(new GetExecutable(getHome()));
         }
-        private class GetExecutable extends MasterToSlaveCallable<String, IOException> {
-                private static final long serialVersionUID = 2373163112639943768L;
-                @Override
-                public String call() throws IOException {
-                    File exe = getExeFile("mvn");
-                    if(exe.exists())
-                        return exe.getPath();
-                    exe = getExeFile("maven");
-                    if(exe.exists())
-                        return exe.getPath();
-                    return null;
+        private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
+            private final String rawHome;
+            GetExecutable(String rawHome) {
+                this.rawHome = rawHome;
+            }
+            @Override
+            public String call() throws IOException {
+                File exe = getExeFile("mvn", rawHome);
+                if (exe.exists()) {
+                    return exe.getPath();
                 }
+                exe = getExeFile("maven", rawHome);
+                if (exe.exists()) {
+                    return exe.getPath();
+                }
+                return null;
+            }
         }
 
-        private File getExeFile(String execName) {
-            String m2Home = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
+        private static File getExeFile(String execName, String home) {
+            String m2Home = Util.replaceMacro(home, EnvVars.masterEnvVars);
 
             if(Functions.isWindows()) {
                 File exeFile = new File(m2Home, "bin/" + execName + ".bat");
@@ -654,10 +665,12 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
+        @Override
         public MavenInstallation forEnvironment(EnvVars environment) {
             return new MavenInstallation(getName(), environment.expand(getHome()), getProperties().toList());
         }
 
+        @Override
         public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }
@@ -743,6 +756,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
+            @Override
             public String getDisplayName() {
                 return Messages.InstallFromApache();
             }

@@ -4,7 +4,7 @@ import hudson.security.ACL;
 import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 
@@ -38,13 +38,13 @@ public class Timer {
      *
      * @return the single {@link ScheduledExecutorService}.
      */
-    @Nonnull
+    @NonNull
     public static synchronized ScheduledExecutorService get() {
         if (executorService == null) {
             // corePoolSize is set to 10, but will only be created if needed.
             // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
             // TODO consider also wrapping in ContextResettingExecutorService
-             executorService = new ImpersonatingScheduledExecutorService(new ErrorLoggingScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "jenkins.util.Timer")), ACL.SYSTEM);
+             executorService = new ImpersonatingScheduledExecutorService(new ErrorLoggingScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "jenkins.util.Timer")), ACL.SYSTEM2);
         }
         return executorService;
     }

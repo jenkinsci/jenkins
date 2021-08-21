@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.ADMINISTER}">
+<l:layout title="Log" permission="${app.SYSTEM_READ}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><l:icon class="icon-clipboard icon-xlg"/>${it.displayName}</h1>
@@ -37,9 +37,11 @@ THE SOFTWARE.
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
 
-    <form method="post" id='clear-logrecorder' action="clear">
-      <f:submit value="${%Clear This Log}" />
-    </form>
+    <l:isAdmin>
+      <form method="post" id='clear-logrecorder' action="clear">
+        <f:submit value="${%Clear This Log}" />
+      </form>
+    </l:isAdmin>
 
     <st:include it="${it.parent}" page="feeds.jelly" />
   </l:main-panel>

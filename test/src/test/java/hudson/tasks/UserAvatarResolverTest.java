@@ -53,7 +53,7 @@ public class UserAvatarResolverTest {
     public void resolverIsUsed() {
         expUser = User.get("unique-user-not-used-in-anyother-test", true);
         String avatar = UserAvatarResolver.resolve(expUser, "20x20");
-        assertEquals(avatar, "http://myown.image");
+        assertEquals("http://myown.image", avatar);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class UserAvatarResolverTest {
 
         @Override
         public String findAvatarFor(User u, int width, int height) {
-            if ((u != null) && (u == expUser)) {
+            if (u != null && u == expUser) {
                 return "http://myown.image";
             }
             return null;

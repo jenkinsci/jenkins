@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Util;
 import hudson.util.FormValidation;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -13,12 +14,15 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author huybrechts
@@ -38,24 +42,25 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, String description) {
         super(name, description);
         setChoicesText(choices);
         defaultValue = null;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String[] choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, String description) {
         super(name, description);
-        this.choices = new ArrayList<>(Arrays.asList(choices));
+        this.choices = Stream.of(choices).map(Util::fixNull).collect(Collectors.toCollection(ArrayList::new));
         defaultValue = null;
     }
 
-    private ChoiceParameterDefinition(@Nonnull String name, @Nonnull List<String> choices, String defaultValue, String description) {
+    private ChoiceParameterDefinition(@NonNull String name, @NonNull List<String> choices, String defaultValue, String description) {
         super(name, description);
         this.choices = choices;
         this.defaultValue = defaultValue;
     }
 
+    // TODO consider switching @DataBoundConstructor to a ChoiceParameterDefinition(String) overload
     /**
      * Databound constructor for reflective instantiation.
      *
@@ -141,21 +146,58 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return new StringParameterValue(getName(), defaultValue, getDescription());
     }
 
-    private StringParameterValue checkValue(StringParameterValue value) {
-        if (!choices.contains(value.value))
-            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value.value);
-        return value;
+    @Override
+    public boolean isValid(ParameterValue value) {
+        return choices.contains(((StringParameterValue) value).getValue());
     }
 
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
-        return checkValue(value);
+        checkValue(value, value.getValue());
+        return value;
     }
 
+    private void checkValue(StringParameterValue value, String value2) {
+        if (!isValid(value)) {
+            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value2);
+        }
+    }
+
+    @Override
     public StringParameterValue createValue(String value) {
-        return checkValue(new StringParameterValue(getName(), value, getDescription()));
+        StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
+        checkValue(parameterValue, value);
+        return parameterValue;
+    }
+
+    @Override
+    public int hashCode() {
+        if (ChoiceParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription(), choices, defaultValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (ChoiceParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ChoiceParameterDefinition other = (ChoiceParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        if (!Objects.equals(choices, other.choices))
+                return false;
+        return Objects.equals(defaultValue, other.defaultValue);
     }
 
     @Extension @Symbol({"choice","choiceParam"})
@@ -174,7 +216,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         /*
          * We need this for JENKINS-26143 -- reflective creation cannot handle setChoices(Object). See that method for context.
          */
-        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
             String name = formData.getString("name");
             String desc = formData.getString("description");
             String choiceText = formData.getString("choices");

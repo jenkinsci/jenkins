@@ -60,9 +60,9 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient /*almost final*/ RunMap<RunT> runs = new RunMap<>();
+    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>(null, null);
 
-    private transient boolean notLoaded = true;
+    private transient volatile boolean notLoaded = true;
 
     /**
      * If the reloading of runs are in progress (in another thread,
@@ -90,6 +90,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         super(parent,name);
     }
 
+    @Override
     public boolean isBuildable() {
         return false;
     }
@@ -100,6 +101,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         notLoaded = true;
     }
 
+    @Override
     protected SortedMap<Integer,RunT> _getRuns() {
         if(notLoaded || runs==null) {
             // if none is loaded yet, do so immediately.
@@ -135,6 +137,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         return runs;
     }
 
+    @Override
     public void removeRun(RunT run) {
         if (runs != null && !runs.remove(run)) {
             LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});

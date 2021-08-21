@@ -29,13 +29,11 @@ import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -47,7 +45,6 @@ public class FormFieldValidatorTest {
 
     @Test
     @Issue("JENKINS-2771")
-    @WithPlugin("tasks.jpi")
     public void configure() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.createWebClient().getPage(p, "configure");
@@ -55,6 +52,7 @@ public class FormFieldValidatorTest {
 
     public static class BrokenFormValidatorBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -64,6 +62,7 @@ public class FormFieldValidatorTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }
@@ -75,7 +74,7 @@ public class FormFieldValidatorTest {
     @Test
     @Issue("JENKINS-3382")
     public void negative() throws Exception {
-        DescriptorImpl d = new DescriptorImpl();
+        BrokenFormValidatorBuilder.DescriptorImpl d = new BrokenFormValidatorBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
             FreeStyleProject p = j.createFreeStyleProject();

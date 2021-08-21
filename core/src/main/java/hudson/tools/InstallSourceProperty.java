@@ -58,12 +58,14 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
             installer.setTool(t);
     }
 
+    @Override
     public Class<ToolInstallation> type() {
         return ToolInstallation.class;
     }
 
     @Extension @Symbol("installSource")
     public static class DescriptorImpl extends ToolPropertyDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }

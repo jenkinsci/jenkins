@@ -100,7 +100,7 @@ THE SOFTWARE.
       <l:progressiveRendering handler="${it}" callback="display"/>
       <table class="sortable pane bigtable" id="people">
         <tr>
-          <th />
+          <th class="minimum-width" data-sort-disable="true" />
           <th>${%User ID}</th>
           <th>${%Name}</th>
           <th initialSortDir="up">${%Last Commit Activity}</th>

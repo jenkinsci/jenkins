@@ -111,7 +111,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to 'java'.
      */
     private File getExecutable() {
-        String execName = (File.separatorChar == '\\') ? "java.exe" : "java";
+        String execName = File.separatorChar == '\\' ? "java.exe" : "java";
         return new File(getHome(),"bin/"+execName);
     }
 
@@ -144,10 +144,12 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         buildEnvVars((Map)env);
     }
 
+    @Override
     public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
         return new JDK(getName(), translateFor(node, log));
     }
 
+    @Override
     public JDK forEnvironment(EnvVars environment) {
         return new JDK(getName(), environment.expand(getHome()));
     }
@@ -172,15 +174,18 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
+        @Override
         public String getDisplayName() {
             return "JDK"; // TODO I18N
         }
 
-        public @Override JDK[] getInstallations() {
+        @Override
+        public JDK[] getInstallations() {
             return Jenkins.get().getJDKs().toArray(new JDK[0]);
         }
 
-        public @Override void setInstallations(JDK... jdks) {
+        @Override
+        public void setInstallations(JDK... jdks) {
             Jenkins.get().setJDKs(Arrays.asList(jdks));
         }
 

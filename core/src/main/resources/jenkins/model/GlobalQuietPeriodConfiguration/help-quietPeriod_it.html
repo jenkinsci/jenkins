@@ -1,26 +1,24 @@
 <div>
-  Quando quest'opzione è selezionata, le nuove compilazioni per questo progetto
-  attivate tramite un trigger saranno aggiunte alla coda, ma Jenkins attenderà
-  il periodo di tempo specificato prima di avviare veramente la compilazione.
+  Quando quest'opzione è impostata a un valore diverso da zero, le nuove
+  compilazioni di questo progetto saranno aggiunte alla coda, ma Jenkins
+  attenderà per il periodo di tempo specificato (in secondi) prima di avviare
+  la compilazione.
   <p>
-  Ad esempio, se le compilazioni richiedono un periodo di tempo lungo per
-  essere eseguite, si potrebbe desiderare di impedire che commit multipli nel
-  sistema di controllo del codice sorgente eseguiti più o meno nello stesso
-  momento attivino più compilazioni. L'abilitazione del periodo di quiete
-  impedirebbe a una compilazione di partire non appena Jenkins individua il
-  primo commit; ciò darebbe allo sviluppatore il tempo di eseguire il push di
-  ulteriori commit che saranno inclusi nella compilazione al suo avvio. Ciò
-  riduce le dimensioni della coda, il che significa che gli sviluppatori
-  otterranno un feedback relativo ai loro commit più velocemente e che il
-  carico di lavoro per il sistema Jenkins sarà ridotto.
+  Ad esempio, se le compilazioni richiedono molto tempo per essere eseguite,
+  si potrebbe voler far sì che più commit nel sistema di gestione del codice
+  sorgente, eseguiti più o meno nello stesso momento, scatenino più
+  compilazioni. L'abilitazione del periodo di quiete farebbe sì che una
+  compilazione non parta nel momento in cui Jenkins rileva il primo commit;
+  ciò darebbe allo sviluppatore la possibilità di eseguire il push di più
+  commit, che sarebbero inclusi nella compilazione al suo avvio. Ciò diminuisce
+  le dimensioni della coda, il che significa che gli sviluppatori otterrebbero
+  un feedback più velocemente per le loro serie di commit, e il carico di
+  lavoro su Jenkins sarebbe ridotto.
   <p>
-  Se una nuova compilazione di questo progetto viene attivata tramite un trigger
-  finché c'è già una compilazione in coda, in attesa del termine del periodo di
-  quiete, il periodo di quiete non sarà reimpostato. La compilazione attivata
-  più di recente non sarà aggiunta alla coda, a meno che il progetto non sia
-  parametrizzato e la compilazione abbia parametri differenti da quelli della
-  compilazione già in coda.
-  <p>
-  Se quest'opzione non è selezionata, sarà utilizzato il valore predefinito di
-  sistema impostato nella pagina <i>Configura sistema</i>.
+  Se viene scatenata una nuova compilazione di questo progetto finché una
+  compilazione è già in coda e in attesa che il suo periodo di quiete finisca,
+  il periodo di quiete non sarà reimpostato. La nuova compilazione scatenata
+  non sarà aggiunta alla coda, a meno che questo progetto non sia
+  parametrizzato e che la compilazione abbia dei parametri differenti da
+  quelli della compilazione già in coda.
 </div>

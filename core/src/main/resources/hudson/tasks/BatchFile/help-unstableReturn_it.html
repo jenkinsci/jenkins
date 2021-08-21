@@ -1,10 +1,15 @@
 <div>
-    Se impostato, è l'ERRORLEVEL risultato del file batch che sarà interpretato come risultato di una compilazione instabile.
-    Se l'ERRORLEVEL finale corrisponde al valore specificato, i risultati della compilazione saranno contrassegnati come
-    instabili e si procederà con i passi successivi. I valori supportati corrispondono all'intervallo ERRORLEVEL più ampio
-    per i sistemi Windows. Su Windows NT4 e versioni successive l'ERRORLEVEL è salvato come un intero di quattro byte
-    con segno, con valori massimo e minimo, rispettivamente, pari a 2147483647 and -2147483648. Le versioni meno recenti
-    di Windows utilizzano due byte. I sistemi tipo DOS utilizzano un byte singolo, corrispondente a ERRORLEVEL compresi
-    fra 0 e 255. Il valore 0 è ignorato e non rende la compilazione instabile per mantenere il comportamento predefinito
-    consistente.
+    Se l'opzione è impostata, specifica il valore ERRORLEVEL del file batch
+    che sarà interpretato come risultato di una compilazione instabile.
+    Se l'ERRORLEVEL finale corrisponde al valore, il risultato della
+    compilazione sarà impostato a "instabile" e i passaggi successivi
+    saranno eseguiti. I valori supportati corrispondono all'intervallo più
+    ampio di ERRORLEVEL per i sistemi di tipo Windows. Su Windows NT4 e oltre
+    l'ERRORLEVEL è salvato come intero con segno di quattro byte, il che fa
+    sì che i valori massimo e minimo siano rispettivamente 2147483647 e
+    -2147483648. Versioni meno recenti di Windows utilizzano due byte. I
+    sistemi di tipo DOS utilizzando un byte singolo, il che fa sì che gli
+    ERRORLEVEL siano compresi fra 0 e 255. Il valore 0 è ignorato e non
+    rende la compilazione instabile, in modo da mantenere il comportamento
+    predefinito consistente.
 </div>

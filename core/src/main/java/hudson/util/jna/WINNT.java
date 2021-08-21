@@ -47,8 +47,8 @@ public interface WINNT {
   int KEY_NOTIFY             = 0x0010;
   int KEY_CREATE_LINK        = 0x0020;
 
-  int KEY_READ  = ((STANDARD_RIGHTS_READ | KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_NOTIFY) & (~SYNCHRONIZE));
-  int KEY_WRITE = ((STANDARD_RIGHTS_WRITE | KEY_SET_VALUE | KEY_CREATE_SUB_KEY) & (~SYNCHRONIZE));
+  int KEY_READ  = ((STANDARD_RIGHTS_READ | KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_NOTIFY) & ~SYNCHRONIZE);
+  int KEY_WRITE = ((STANDARD_RIGHTS_WRITE | KEY_SET_VALUE | KEY_CREATE_SUB_KEY) & ~SYNCHRONIZE);
 
   int REG_NONE                       = 0;   // No value type
   int REG_SZ                         = 1;   // Unicode nul terminated string

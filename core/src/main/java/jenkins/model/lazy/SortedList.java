@@ -37,7 +37,7 @@ import java.util.List;
 class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     private List<T> data;
 
-    public SortedList(List<T> data) {
+    SortedList(List<T> data) {
         this.data = new ArrayList<>(data);
         assert isSorted();
     }
@@ -58,6 +58,7 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
         return find((T)o)>=0;
     }
 
+    @Override
     public T get(int idx) {
         return data.get(idx);
     }

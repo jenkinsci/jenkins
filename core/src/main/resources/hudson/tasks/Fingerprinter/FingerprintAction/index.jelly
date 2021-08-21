@@ -28,7 +28,7 @@ THE SOFTWARE.
   This belongs to a build view.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout>
     <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
@@ -41,13 +41,14 @@ THE SOFTWARE.
           <th initialSortDir="down">${%File}</th>
           <th>${%Original owner}</th>
           <th>${%Age}</th>
-          <th/>
         </tr>
         <j:forEach var="e" items="${it.fingerprints}">
           <j:set var="f" value="${e.value}" />
           <tr>
             <td>
-              ${e.key}
+              <a href="${rootURL}/fingerprint/${f.hashString}/">
+                <l:icon class="icon-fingerprint icon-sm"/> ${e.key}
+              </a>
             </td>
             <td>
               <j:choose>
@@ -64,11 +65,6 @@ THE SOFTWARE.
             </td>
             <td data="${-f.timestamp.time}">
               ${f.timestampString} old
-            </td>
-            <td>
-              <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <l:icon class="icon-fingerprint icon-sm"/> ${%more details}
-              </a>
             </td>
           </tr>
         </j:forEach>

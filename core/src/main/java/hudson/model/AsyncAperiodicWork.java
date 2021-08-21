@@ -114,7 +114,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                 long stopTime;
 
                 StreamTaskListener l = createListener();
-                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+                try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     l.getLogger().printf("Started at %tc%n", new Date(startTime));
                         execute(l);
                 } catch (IOException e) {
@@ -147,7 +147,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
             }
         }
         if (f.isFile()) {
-            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
+            if (lastRotateMillis + logRotateMillis < System.currentTimeMillis()
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
                 lastRotateMillis = System.currentTimeMillis();
                 File prev = null;

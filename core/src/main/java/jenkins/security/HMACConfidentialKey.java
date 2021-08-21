@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * {@link ConfidentialKey} that's used for creating a token by hashing some information with secret

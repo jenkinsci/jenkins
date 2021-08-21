@@ -27,12 +27,10 @@ package hudson.cli;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ListView;
-import hudson.model.labels.LabelExpression;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +40,8 @@ import org.jvnet.hudson.test.MockFolder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 public class ListJobsCommandTest {
@@ -104,7 +103,7 @@ public class ListJobsCommandTest {
                 new Axis("axis", "a", "b")
         ));
 
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         matrixProject.setAssignedLabel(label);
 
         CLICommandInvoker.Result result = command.invokeWithArgs("Folder");
@@ -115,27 +114,12 @@ public class ListJobsCommandTest {
     }
 
     @Issue("JENKINS-18393")
-    @Test public void getAllJobsFromFolderWithMavenModuleSet() throws Exception {
-        MockFolder folder = j.createFolder("Folder");
-
-        FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
-        FreeStyleProject job2 = folder.createProject(FreeStyleProject.class, "job2");
-        MavenModuleSet mavenProject = folder.createProject(MavenModuleSet.class, "mvn");
-
-        CLICommandInvoker.Result result = command.invokeWithArgs("Folder");
-        assertThat(result, CLICommandInvoker.Matcher.succeeded());
-        assertThat(result.stdout(), containsString("job1"));
-        assertThat(result.stdout(), containsString("job2"));
-        assertThat(result.stdout(), containsString("mvn"));
-    }
-
-    @Issue("JENKINS-18393")
     @Test public void failForMatrixProject() throws Exception {
         MatrixProject matrixProject = j.createProject(MatrixProject.class, "mp");
 
         CLICommandInvoker.Result result = command.invokeWithArgs("MatrixJob");
         assertThat(result, CLICommandInvoker.Matcher.failedWith(3));
-        assertThat(result.stdout(), isEmptyString());
+        assertThat(result.stdout(), is(emptyString()));
         assertThat(result.stderr(), containsString("No view or item group with the given name 'MatrixJob' found."));
     }
 }

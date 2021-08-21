@@ -52,7 +52,7 @@ public abstract class SafeTimerTask extends TimerTask {
 
     /**
      * Lambda-friendly means of creating a task.
-     * @since TODO
+     * @since 2.216
      */
     public static SafeTimerTask of(ExceptionRunnable r) {
         return new SafeTimerTask() {
@@ -64,7 +64,7 @@ public abstract class SafeTimerTask extends TimerTask {
     }
     /**
      * @see #of
-     * @since TODO
+     * @since 2.216
      */
     @FunctionalInterface
     public interface ExceptionRunnable {
@@ -84,10 +84,11 @@ public abstract class SafeTimerTask extends TimerTask {
      */
     private static boolean ALREADY_LOGGED = false;
 
+    @Override
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);

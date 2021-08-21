@@ -23,12 +23,13 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 import hudson.model.Descriptor.FormException;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
@@ -48,12 +49,6 @@ public class JobPropertyTest {
 
     @Rule
     public LoggerRule logs = new LoggerRule();
-
-    @Test
-    @Issue("JENKINS-2398")
-    public void jobPropertySummaryIsShownInMavenModuleSetIndexPage() throws Exception {
-        assertJobPropertySummaryIsShownInIndexPage(MavenModuleSet.class);
-    }
 
     @Test
     @Issue("JENKINS-2398")

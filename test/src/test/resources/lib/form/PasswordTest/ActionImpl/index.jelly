@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <l:layout title="Making sure the password field gets an encrypted value">
+        <l:main-panel>
+            <f:form>
+                <f:password value="${it.stringPassword}" />
+                <f:password value="${it.secretPassword}" />
+            </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

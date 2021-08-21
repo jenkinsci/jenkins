@@ -57,20 +57,20 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.security.core.Authentication;
 
 /**
  * Triggers builds of other projects.
@@ -160,11 +160,12 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     @SuppressWarnings("unchecked")
-    @Nonnull
-    public List<Job<?, ?>> getChildJobs(@Nonnull AbstractProject<?, ?> owner) {
+    @NonNull
+    public List<Job<?, ?>> getChildJobs(@NonNull AbstractProject<?, ?> owner) {
         return Items.fromNameList(owner.getParent(), childProjects, (Class<Job<?, ?>>) (Class) Job.class);
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -200,7 +201,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             PrintStream logger = listener.getLogger();
             for (Job<?, ?> downstream : jobs) {
                 if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, build.getParent()});
                     continue;
                 }
                 if (!downstream.hasPermission(Item.BUILD)) {
@@ -259,6 +260,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
         downstreamProjects.sort(new Comparator<Dependency>() {
+            @Override
             public int compare(Dependency lhs, Dependency rhs) {
                 // Swapping lhs/rhs to get reverse sort:
                 return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
@@ -289,6 +291,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return true;
     }
 
+    @Override
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (AbstractProject p : getChildProjects(owner)) // only care about AbstractProject here
             graph.addDependency(new Dependency(owner, p) {
@@ -297,7 +300,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                                   List<Action> actions) {
                     AbstractProject downstream = getDownstreamProject();
                     if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
-                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, getUpstreamProject()});
                         return false; // do not even issue a warning to build log
                     }
                     if (!downstream.hasPermission(Item.BUILD)) {
@@ -345,7 +348,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     /**
-     * Correct broken data gracefully (#1537)
+     * Correct broken data gracefully (JENKINS-1537)
      */
     private Object readResolve() {
         if(childProjects==null)
@@ -355,6 +358,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @Override
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
         }
@@ -408,8 +412,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     if(!(item instanceof ParameterizedJobMixIn.ParameterizedJob))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
-                    Authentication auth = Tasks.getAuthenticationOf(project);
-                    if (!item.hasPermission(auth, Item.BUILD)) {
+                    Authentication auth = Tasks.getAuthenticationOf2(project);
+                    if (!item.hasPermission2(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }
                     hasProjects = true;
@@ -430,7 +434,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         public static class ItemListenerImpl extends ItemListener {
             @Override
             public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-                try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+                try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                     locationChanged(item, oldFullName, newFullName);
                 }
             }

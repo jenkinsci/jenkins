@@ -24,7 +24,7 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <j:if test="${!empty app.updateCenter.updates}">
+  <j:if test="${it.hasUpdates()}">
     <i class="fa fa-bell" aria-hidden="true" style="color: red"></i> ${%updates available}
   </j:if>
 </j:jelly>

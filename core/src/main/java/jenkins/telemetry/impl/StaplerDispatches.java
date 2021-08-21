@@ -35,7 +35,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.EvaluationTrace;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
@@ -49,19 +49,19 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @Extension
 @Restricted(NoExternalUse.class)
 public class StaplerDispatches extends Telemetry {
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getStart() {
         return LocalDate.of(2018, 10, 10);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getEnd() {
         return LocalDate.of(2019, 8, 1);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
         return "Stapler request handling";

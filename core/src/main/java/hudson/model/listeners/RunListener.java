@@ -48,7 +48,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Receives notifications about builds.
@@ -91,7 +91,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
      *      from breaking all the builds.
      */
-    public void onCompleted(R r, @Nonnull TaskListener listener) {}
+    public void onCompleted(R r, @NonNull TaskListener listener) {}
 
     /**
      * Called after a build is moved to the {@code Run.State.COMPLETED} state.
@@ -202,7 +202,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     /**
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
-    public static void fireCompleted(Run r, @Nonnull TaskListener listener) {
+    public static void fireCompleted(Run r, @NonNull TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 try {

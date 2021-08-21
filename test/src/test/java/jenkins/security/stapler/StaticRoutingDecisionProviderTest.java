@@ -34,7 +34,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

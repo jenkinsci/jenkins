@@ -30,7 +30,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Plugin-specific additions to fingerprint information.
@@ -67,7 +67,7 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      * @param timestamp
      *      Timestamp when the use happened (when the facet has been created).
      */
-    protected FingerprintFacet(@Nonnull Fingerprint fingerprint, long timestamp) {
+    protected FingerprintFacet(@NonNull Fingerprint fingerprint, long timestamp) {
         assert fingerprint!=null;
         this.fingerprint = fingerprint;
         this.timestamp = timestamp;
@@ -79,7 +79,7 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      * @return
      *      always non-null.
      */
-    public @Nonnull Fingerprint getFingerprint() {
+    public @NonNull Fingerprint getFingerprint() {
         return fingerprint;
     }
 
@@ -101,6 +101,15 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      */
     public long getTimestamp() {
         return timestamp;
+    }
+
+    /**
+     * Returns whether Fingerprint deletion has been blocked by this Facet.
+     * Returns false by default. Override the default to block the deletion of the associated Fingerprint.
+     * @since 2.223
+     */
+    public boolean isFingerprintDeletionBlocked() {
+        return false;
     }
 
     /**

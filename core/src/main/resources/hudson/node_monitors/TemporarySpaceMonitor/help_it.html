@@ -1,13 +1,17 @@
 <div>
-    Questo componente controlla lo spazio su disco disponibile per la directory temporanea e, se questo scende
-    sotto una certa soglia, pone il nodo non in linea.
+    Questo modulo mantiene sotto controllo lo spazio su disco disponibile
+    per la directory temporanea e, se questo scende al di sotto di una certa
+    soglia, il nodo sarà contrassegnato come non in linea.
 
     <p>
-    Gli strumenti e i test/le compilazioni Java spesso creano dei file nella directory temporanea
-    e potrebbero non funzionare correttamente se non c'è spazio disponibile.
+    Gli strumenti Java e i test/le compilazioni creano spesso file nella
+    directory temporanea e potrebbero non funzionare correttamente se non
+    c'è spazio disponibile.
 
     <p>
-    Più in dettaglio, questo componente controlla lo spazio su disco disponibile di una partizione che
-    contiene la directory designata dalla proprietà di sistema <tt>java.io.tmpdir</tt>.
-    Per verificare la sua posizione su un dato agente, aprire <tt>${rootURL}/computer/SLAVENAME/systemInfo</tt>.
+    Più nello specifico, questo modulo controlla lo spazio su disco disponibile
+    della partizione che include la directory a cui punta la proprietà di
+    sistema <tt>java.io.tmpdir</tt>. Per verificare il percorso di questa
+    directory su un determinato agente, aprire
+    <tt>${rootURL}/computer/NOMEAGENTE/systemInfo</tt>.
 </div>

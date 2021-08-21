@@ -41,7 +41,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void simpleWithSecret() throws Exception {
+    public void simpleWithSecret() {
         assertRedaction(
                 "{'a': 'secret', 'b': 'other', '$redact': 'a'}",
                 "{'a': '[value redacted]', 'b': 'other', '$redact': 'a'}"
@@ -49,7 +49,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void singleWithRedactedInArray() throws Exception {
+    public void singleWithRedactedInArray() {
         assertRedaction(
                 "{'a': 'secret', 'b': 'other', '$redact': ['a']}",
                 "{'a': '[value redacted]', 'b': 'other', '$redact': ['a']}"
@@ -57,7 +57,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void objectRedactedAcceptedButNotProcessed() throws Exception {
+    public void objectRedactedAcceptedButNotProcessed() {
         assertRedaction(
                 "{'a': 'secret', 'b': 'other', '$redact': {'a': 'a'}}",
                 "{'a': 'secret', 'b': 'other', '$redact': {'a': 'a'}}"
@@ -65,7 +65,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void weirdValuesInRedactedAcceptedButNotProcessed() throws Exception {
+    public void weirdValuesInRedactedAcceptedButNotProcessed() {
         assertRedaction(
                 "{'a': 'secret', 'b': 'other', '$redact': [null, true, false, 1, 2, 'a']}",
                 "{'a': '[value redacted]', 'b': 'other', '$redact': [null, true, false, 1, 2, 'a']}"
@@ -73,7 +73,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void ensureTrueAndOneAsStringAreSupportedAsRedactedKey() throws Exception {
+    public void ensureTrueAndOneAsStringAreSupportedAsRedactedKey() {
         //only null is not supported, as passing 'null' is considered as null
         assertRedaction(
                 "{'true': 'secret1', '1': 'secret3', 'b': 'other', '$redact': ['true', '1']}",
@@ -82,7 +82,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void redactFullBranch() throws Exception {
+    public void redactFullBranch() {
         assertRedaction(
                 "{'a': {'s1': 'secret1', 's2': 'secret2', 's3': [1,2,3]}, 'b': [4,5,6], 'c': 'other', '$redact': ['a', 'b']}",
                 "{'a': '[value redacted]', 'b': '[value redacted]', 'c': 'other', '$redact': ['a', 'b']}"
@@ -98,7 +98,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void redactedKeyWithoutCorrespondences() throws Exception {
+    public void redactedKeyWithoutCorrespondences() {
         assertRedaction(
                 "{'a1': 'secret1', 'a2': 'secret2', 'b': 'other', '$redact': ['a0', 'a1', 'a2', 'a3']}",
                 "{'a1': '[value redacted]', 'a2': '[value redacted]', 'b': 'other', '$redact': ['a0', 'a1', 'a2', 'a3']}"
@@ -114,7 +114,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
     }
     
     @Test
-    public void noInteractionBetweenLevels() throws Exception {
+    public void noInteractionBetweenLevels() {
         assertRedaction(
                 "{'a': 'secret', 'b': 'other', 'c': 'other', '$redact': 'a', 'sub': {'a': 'other', 'b': 'secret', 'c': 'other', '$redact': 'b'}}",
                 "{'a': '[value redacted]', 'b': 'other', 'c': 'other', '$redact': 'a', 'sub': {'a': 'other', 'b': '[value redacted]', 'c': 'other', '$redact': 'b'}}"

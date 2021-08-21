@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import jenkins.util.AntWithFindResourceClassLoader;
+import jenkins.util.AntClassLoader;
 
 /**
  * classLoader which use first /WEB-INF/lib/*.jar and /WEB-INF/classes before core classLoader
@@ -42,8 +41,7 @@ import jenkins.util.AntWithFindResourceClassLoader;
  * @since 1.371
  */
 public class PluginFirstClassLoader
-    extends AntWithFindResourceClassLoader
-    implements Closeable
+    extends AntClassLoader
 {
 
     public PluginFirstClassLoader() {
@@ -52,6 +50,7 @@ public class PluginFirstClassLoader
 
     private List<URL> urls = new ArrayList<>();
 
+    @Override
     public void addPathFiles( Collection<File> paths )
         throws IOException
     {
@@ -69,12 +68,6 @@ public class PluginFirstClassLoader
     {
         return urls;
     }
-    
-    public void close()
-        throws IOException
-    {
-        cleanup();
-    }
 
     @Override
     protected Enumeration findResources( String arg0, boolean arg1 )
@@ -84,7 +77,7 @@ public class PluginFirstClassLoader
     }
 
     @Override
-    protected Enumeration findResources( String name )
+    public Enumeration findResources( String name )
         throws IOException
     {
         return super.findResources( name );

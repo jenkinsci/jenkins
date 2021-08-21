@@ -37,7 +37,7 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Utility code for reflection.

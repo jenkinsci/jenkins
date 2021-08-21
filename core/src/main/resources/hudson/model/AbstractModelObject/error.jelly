@@ -23,31 +23,29 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:statusCode value="400" /><!-- clearly indicate that this page is an error page --> 
   <st:setHeader name="X-Error" value="${message}"/>
-  <l:layout title="Jenkins" norefresh="true">
+  <l:layout title="Jenkins">
     <l:header />
     <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
       <j:choose>
         <j:when test="${pre}">
-          <pre><st:out value="${message}"/></pre>
+          <pre>${message}</pre>
         </j:when>
         <j:otherwise>
-          <p><st:out value="${message}"/></p>
+          <p>${message}</p>
         </j:otherwise>
       </j:choose>
+      
       <j:if test="${exception!=null}">
-        <input type="button" value="${%Detail...}" onclick="showDetails()" id="button"/>
-        <pre id="details" style="display:none">${h.printThrowable(exception)}</pre>
-        <script>
-          function showDetails() {
-            $('button').style.display="none";
-            $('details').style.display="block";
-          }
-        </script>
+        <div>
+          <!-- use Behavior rule: A.showDetails -->
+          <a href="#" class="showDetails">${%Detail...}</a>
+          <pre class="default-hidden">${h.printThrowable(exception)}</pre>
+        </div>
       </j:if>
     </l:main-panel>
   </l:layout>

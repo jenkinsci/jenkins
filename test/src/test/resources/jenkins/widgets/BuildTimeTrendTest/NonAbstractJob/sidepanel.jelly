@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:side-panel>
+  </l:side-panel>
+</j:jelly>

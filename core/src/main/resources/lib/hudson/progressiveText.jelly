@@ -70,7 +70,7 @@ THE SOFTWARE.
                 // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
                 if (p.outerHTML) {
                   p.outerHTML = '<pre>'+text+'</pre>';
-                  p = e.lastChild;
+                  p = e.lastElementChild;
                 }
                 else p.innerHTML = text;
                 Behaviour.applySubtree(p);

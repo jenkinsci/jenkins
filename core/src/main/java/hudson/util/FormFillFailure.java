@@ -27,7 +27,7 @@ import hudson.Functions;
 import hudson.Util;
 import java.io.IOException;
 import java.util.Locale;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -52,11 +52,11 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      *
      * @param message Human readable message to be sent.
      */
-    public static FormFillFailure error(@Nonnull String message) {
+    public static FormFillFailure error(@NonNull String message) {
         return errorWithMarkup(Util.escape(message));
     }
 
-    public static FormFillFailure warning(@Nonnull String message) {
+    public static FormFillFailure warning(@NonNull String message) {
         return warningWithMarkup(Util.escape(message));
     }
 
@@ -128,8 +128,9 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         return _errorWithMarkup(message, FormValidation.Kind.WARNING);
     }
 
-    private static FormFillFailure _errorWithMarkup(@Nonnull final String message, final FormValidation.Kind kind) {
+    private static FormFillFailure _errorWithMarkup(@NonNull final String message, final FormValidation.Kind kind) {
         return new FormFillFailure(kind, message) {
+            @Override
             public String renderHtml() {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 if (req == null) { // being called from some other context
@@ -153,6 +154,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      */
     public static FormFillFailure respond(FormValidation.Kind kind, final String html) {
         return new FormFillFailure(kind) {
+            @Override
             public String renderHtml() {
                 return html;
             }
@@ -181,6 +183,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         this.kind = kind;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
             throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");

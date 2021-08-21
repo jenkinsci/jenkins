@@ -41,7 +41,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Indexed
 @Retention(RUNTIME)
-@Target({TYPE})
+@Target(TYPE)
 @Documented
 public @interface OptionHandlerExtension {
 }

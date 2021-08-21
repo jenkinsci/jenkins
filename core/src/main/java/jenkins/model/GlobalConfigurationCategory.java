@@ -6,7 +6,7 @@ import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Grouping of related {@link GlobalConfiguration}s.
@@ -41,7 +41,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
         return ExtensionList.lookup(GlobalConfigurationCategory.class);
     }
 
-    public static @Nonnull <T extends GlobalConfigurationCategory> T get(Class<T> type) {
+    public static @NonNull <T extends GlobalConfigurationCategory> T get(Class<T> type) {
         T category = all().get(type);
         if(category == null){
             throw new AssertionError("Category not found. It seems the " + type + " is not annotated with @Extension and so not registered");
@@ -66,6 +66,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
             return jenkins.management.Messages.ConfigureLink_Description();
         }
 
+        @Override
         public String getDisplayName() {
             return jenkins.management.Messages.ConfigureLink_DisplayName();
         }
@@ -81,6 +82,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
             return hudson.security.Messages.GlobalSecurityConfiguration_Description();
         }
 
+        @Override
         public String getDisplayName() {
             return hudson.security.Messages.GlobalSecurityConfiguration_DisplayName();
         }

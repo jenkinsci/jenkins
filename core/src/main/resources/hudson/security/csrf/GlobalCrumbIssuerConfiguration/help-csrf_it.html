@@ -1,21 +1,27 @@
 <div>
-  Una cross site request forgery (o CSRF/XSRF) è un exploit che consente a una
-  terza parte non autorizzata di eseguire delle azioni su un sito Web a proprio
-  nome. In Jenkins, ciò potrebbe consentire a qualcuno di eliminare processi,
-  compilazioni o di modificare la configurazione di Jenkins.
+  Una cross site request forgery (o CSRF/XSRF) è un exploit che consente a
+  una terza parte non autorizzata di eseguire azioni su un sito Web con le
+  proprie credenziali. In Jenkins, ciò potrebbe consentire a qualcuno di
+  eliminare processi, compilazioni o di modificare la configurazione di Jenkins.
   <p>
-  Quando quest'opzione è abilitata, Jenkins controllerà che un valore nonce
-  generato, o "crumb", sia presente in ogni richiesta che possa causare una
-  modifica sul server Jenkins. Ciò include qualunque invio di moduli e le
-  chiamate all'API remota.
+  Quando quest'opzione è abilitata, Jenkins verificherà la presenza di un
+  valore nonce generato, o "crumb", all'interno di qualunque richiesta che
+  potrebbe causare una modifica sul server Jenkins. Ciò include qualunque
+  invio di moduli e le chiamate all'API remota.
   <p>
-  L'attivazione di quest'opzione potrebbe comportare alcuni problemi, come i
+  L'abilitazione di quest'opzione potrebbe comportare alcuni problemi, come i
   seguenti:
   <ul>
-    <li>Alcune funzionalità di Jenkins (come l'API remota) sono più difficili da utilizzare quando quest'opzione è abilitata.</li>
-    <li>Alcune caratteristiche, in particolar modo quelle dei plugin non sottoposti a test con quest'opzione è abilitata, potrebbero non funzionare correttamente.</li>
-    <li>Se si sta accedendo a Jenkins da un reverse proxy, questo può rimuovere l'header HTTP CSRF, il che risulterebbe nel fallimento di alcune azioni protette.</li>
+    <li>Alcune funzionalità di Jenkins (come l'API remota) sono più difficili
+    da utilizzare quando quest'opzione è abilitata.</li>
+    <li>Alcune funzionalità, in particolar modo quelle presenti nei componenti
+    aggiuntivi non testati con quest'opzione abilitata, potrebbero non
+    funzionare.</li>
+    <li>Se si accede a Jenkins tramite un reverse proxy, questo potrebbe
+    rimuovere l'intestazione HTTP CSRF, il che fa sì che alcune azioni
+    protette non riescano.</li>
   </ul>
   <p>
-  È possibile ottenere ulteriori informazioni sugli exploit CSRF <a href="http://www.owasp.org/index.php/Cross-Site_Request_Forgery">qui</a>.
+  È possibile reperire ulteriori informazioni sugli exploit CSRF
+  <a href="http://www.owasp.org/index.php/Cross-Site_Request_Forgery">qui</a>.
 </div>

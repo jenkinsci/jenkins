@@ -25,7 +25,6 @@
 package jenkins.security;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
@@ -51,8 +50,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -88,9 +87,9 @@ public class ClassFilterImpl extends ClassFilter {
         }
         ClassFilter.setDefault(new ClassFilterImpl());
         if (SUPPRESS_ALL) {
-            LOGGER.warning("All class filtering suppressed. Your Jenkins installation is at risk from known attacks. See https://jenkins.io/redirect/class-filter/");
+            LOGGER.warning("All class filtering suppressed. Your Jenkins installation is at risk from known attacks. See https://www.jenkins.io/redirect/class-filter/");
         } else if (SUPPRESS_WHITELIST) {
-            LOGGER.warning("JEP-200 class filtering by whitelist suppressed. Your Jenkins installation may be at risk. See https://jenkins.io/redirect/class-filter/");
+            LOGGER.warning("JEP-200 class filtering by whitelist suppressed. Your Jenkins installation may be at risk. See https://www.jenkins.io/redirect/class-filter/");
         }
     }
 
@@ -117,13 +116,12 @@ public class ClassFilterImpl extends ClassFilter {
     static final Set<String> WHITELISTED_CLASSES;
     static {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
-            WHITELISTED_CLASSES = ImmutableSet.copyOf(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
+            WHITELISTED_CLASSES = Collections.unmodifiableSet(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isBlacklisted(Class _c) {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
@@ -178,12 +176,12 @@ public class ClassFilterImpl extends ClassFilter {
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
                 notifyRejected(_c, null,
-                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
 
                 return false;
             }
             notifyRejected(_c, null,
-                    String.format("%s in %s might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                    String.format("%s in %s might be dangerous, so rejecting; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
             return true;
         });
     }
@@ -264,7 +262,7 @@ public class ClassFilterImpl extends ClassFilter {
      * @return something typically like {@code file:/…/plugins/structs/WEB-INF/lib/structs-1.10.jar};
      *         or null for classes in the Java Platform, some generated classes, etc.
      */
-    private static @CheckForNull String codeSource(@Nonnull Class<?> c) {
+    private static @CheckForNull String codeSource(@NonNull Class<?> c) {
         CodeSource cs = c.getProtectionDomain().getCodeSource();
         if (cs == null) {
             return null;
@@ -317,11 +315,11 @@ public class ClassFilterImpl extends ClassFilter {
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
             if (SUPPRESS_ALL) {
                 notifyRejected(null, name,
-                        String.format("would normally reject %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
+                        String.format("would normally reject %s according to standard blacklist; see https://www.jenkins.io/redirect/class-filter/", name));
                 return false;
             }
             notifyRejected(null, name,
-                    String.format("rejecting %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
+                    String.format("rejecting %s according to standard blacklist; see https://www.jenkins.io/redirect/class-filter/", name));
             return true;
         } else {
             return false;

@@ -48,22 +48,26 @@ public class LineEndNormalizingWriter extends FilterWriter {
         super(out);
     }
 
+    @Override
     public void write(char[] cbuf) throws IOException {
         write(cbuf, 0, cbuf.length);
     }
 
+    @Override
     public void write(String str) throws IOException {
         write(str,0,str.length());
     }
 
+    @Override
     public void write(int c) throws IOException {
         if(!seenCR && c==LF)
             super.write("\r\n");
         else
             super.write(c);
-        seenCR = (c==CR);
+        seenCR = c == CR;
     }
 
+    @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
         int end = off+len;
         int writeBegin = off;
@@ -76,12 +80,13 @@ public class LineEndNormalizingWriter extends FilterWriter {
                 super.write("\r\n");
                 writeBegin=i+1;
             }
-            seenCR = (ch==CR);
+            seenCR = ch == CR;
         }
 
         super.write(cbuf,writeBegin,end-writeBegin);
     }
 
+    @Override
     public void write(String str, int off, int len) throws IOException {
         int end = off+len;
         int writeBegin = off;
@@ -94,7 +99,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
                 super.write("\r\n");
                 writeBegin=i+1;
             }
-            seenCR = (ch==CR);
+            seenCR = ch == CR;
         }
 
         super.write(str,writeBegin,end-writeBegin);

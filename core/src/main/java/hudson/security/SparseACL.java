@@ -23,13 +23,12 @@
  */
 package hudson.security;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.acls.sid.Sid;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
+import java.util.logging.Logger;
+import org.acegisecurity.acls.sid.Sid;
+import org.springframework.security.core.Authentication;
 
 /**
  * Access control list.
@@ -69,15 +68,15 @@ public class SparseACL extends SidACL {
     }
 
     @Override
-    public boolean hasPermission(Authentication a, Permission permission) {
-        if(a==SYSTEM)   return true;
+    public boolean hasPermission2(Authentication a, Permission permission) {
+        if(a.equals(SYSTEM2))   return true;
         Boolean b = _hasPermission(a,permission);
         if(b!=null) return b;
 
         if(parent!=null) {
             if(LOGGER.isLoggable(FINE))
                 LOGGER.fine("hasPermission("+a+","+permission+") is delegating to parent ACL: "+parent);
-            return parent.hasPermission(a,permission);
+            return parent.hasPermission2(a,permission);
         }
 
         // the ultimate default is to reject everything

@@ -9,8 +9,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.ExtensionFilter;
 import jenkins.util.SystemProperties;
 
@@ -37,7 +37,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
      * the descriptor is not shown.
      * @since 2.12
      */
-    public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
+    public boolean filterType(@NonNull Class<?> contextClass, @NonNull Descriptor descriptor) {
         return true;
     }
 
@@ -57,7 +57,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
      *      If any of the installed {@link DescriptorVisibilityFilter} returns false,
      *      the descriptor is not shown.
      */
-    public abstract boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor);
+    public abstract boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor);
 
     public static ExtensionList<DescriptorVisibilityFilter> all() {
         return ExtensionList.lookup(DescriptorVisibilityFilter.class);

@@ -41,7 +41,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -74,6 +74,7 @@ public final class RemotingDiagnostics {
     }
 
     private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object,Object>,RuntimeException> {
+        @Override
         public Map<Object,Object> call() {
             return new TreeMap<>(System.getProperties());
         }
@@ -93,6 +94,7 @@ public final class RemotingDiagnostics {
     }
 
     private static final class GetThreadDump extends MasterToSlaveCallable<Map<String,String>,RuntimeException> {
+        @Override
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<>();
                 ThreadInfo[] data = Functions.getThreadInfos();
@@ -107,7 +109,7 @@ public final class RemotingDiagnostics {
     /**
      * Executes Groovy script remotely.
      */
-    public static String executeGroovy(String script, @Nonnull VirtualChannel channel) throws IOException, InterruptedException {
+    public static String executeGroovy(String script, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new Script(script));
     }
 
@@ -120,10 +122,12 @@ public final class RemotingDiagnostics {
             cl = getClassLoader();
         }
 
+        @Override
         public ClassLoader getClassLoader() {
             return Jenkins.get().getPluginManager().uberClassLoader;
         }
 
+        @Override
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
@@ -196,7 +200,7 @@ public final class RemotingDiagnostics {
 
         @WebMethod(name="heapdump.hprof")
         public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
-            owner.checkPermission(Jenkins.RUN_SCRIPTS);
+            owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();

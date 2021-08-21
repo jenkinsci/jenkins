@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018, CloudBees, Inc.
+ * Copyright (c) 2018-2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,11 @@
  * IE11 prevents of the usage of variable,
  * but to show the color theme we left it here
  */
-:root {
-  --main-bg-color-focus: #2171ce;
-  --main-bg-color: #4A90E2;
-  --danger-color: #C4000A;
-}
+@import "./simple-page-variables.css";
 
 html {
-  color: #4A4A4A;
+  color: #4a4a4a;
+  color: var(--text-color);
 }
 
 .simple-page .logo {
@@ -42,25 +39,39 @@ html {
   height: 130px;
 }
 
-.simple-page form .submit input:focus {
-  background-color: #2171ce; /*var(--main-bg-color-focus);*/
-  border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
+.simple-page form .submit input:hover {
+  background-color: #3fb3f7;
+  background-color: var(--focus);
+  border: solid 1px;
+  border-color: #3fb3f7;
+  border-color: var(--focus);
 }
 
 .simple-page form .submit input {
-  background-color: #4A90E2; /*var(--main-bg-color);*/
-  border: solid 1px #4A90E2; /*var(--main-bg-color-focus);*/
+  background-color: #0b6aa2;
+  background-color: var(--btn-primary-bg);
+  border: solid 1px;
+  border-color: #0b6aa2;
+  border-color: var(--btn-primary-bg);
 }
 
+.simple-page form .submit input:focus,
 .simple-page input.normal:focus {
-  border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
+    border: solid 1px;
+    border-color: #3fb3f7;
+    border-color: var(--focus);
+    outline: 0;
 }
 
  .simple-page .danger {
-  border: 1px solid #C4000A; /*var(--danger-color);*/
-  box-shadow: 0 0 1px #C4000A; /*var(--danger-color);*/
+  border: 1px solid;
+  border-color: #c4000a;
+  border-color: var(--danger-color);
+  box-shadow: 0 0 1px #c4000a;
+  box-shadow: 0 0 1px var(--danger-color);
 }
 
 .simple-page .alert {
-  color: #C4000A; /*var(--danger-color);*/
+  color: #c4000a;
+  color: var(--danger-color);
 }

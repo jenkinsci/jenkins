@@ -33,7 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import jenkins.model.Jenkins;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Container of {@link View}s.
@@ -69,7 +69,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * @since 2.174
      */
-    @Nonnull
+    @NonNull
     default Collection<View> getAllViews() {
         final Collection<View> views = new LinkedHashSet<>(getViews());
 
@@ -137,7 +137,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * @return
      *      Never null. Sometimes this is {@link ModifiableItemGroup} (if the container allows arbitrary addition).
-     *      By default, {@link Jenkins#getInstance}.
+     *      By default, {@link Jenkins#get}.
      * @since 1.417
      */
     default ItemGroup<? extends TopLevelItem> getItemGroup() {

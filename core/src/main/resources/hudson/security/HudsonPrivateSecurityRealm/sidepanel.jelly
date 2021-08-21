@@ -23,13 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      <l:task href="${rootURL}/manage" icon="icon-gear2 icon-md" permission="${app.ADMINISTER}" title="${%Manage Jenkins}"/>
-      <l:task href="addUser" icon="icon-new-user icon-md" permission="${app.ADMINISTER}" title="${%Create User}"/>
+      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}" />
+      <l:task href="${rootURL}/manage" icon="icon-gear2 icon-md" permission="${app.MANAGE}" title="${%Manage Jenkins}" />
+      <l:task href="addUser" icon="icon-new-user icon-md" permission="${app.ADMINISTER}" title="${%Create User}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>

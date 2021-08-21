@@ -5,7 +5,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import jenkins.security.ChannelConfigurator;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 
 /**

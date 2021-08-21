@@ -28,7 +28,7 @@ import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -59,7 +59,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @see SecurityRealm
  */
-public class PluginServletFilter implements Filter, ExtensionPoint {
+public final class PluginServletFilter implements Filter, ExtensionPoint {
     private final List<Filter> list = new CopyOnWriteArrayList<>();
 
     private /*almost final*/ FilterConfig config;
@@ -83,6 +83,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
         return (PluginServletFilter)c.getAttribute(KEY);
     }
 
+    @Override
     public void init(FilterConfig config) throws ServletException {
         this.config = config;
         synchronized (LEGACY) {
@@ -141,10 +142,12 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         new FilterChain() {
             private final Iterator<Filter> itr = list.iterator();
 
+            @Override
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
                 if(itr.hasNext()) {
                     // call next
@@ -157,6 +160,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
         }.doFilter(request,response);
     }
 
+    @Override
     public void destroy() {
         for (Filter f : list) {
             f.destroy();

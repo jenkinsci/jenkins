@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -48,7 +49,7 @@ public class StringParameterValue extends ParameterValue {
 
     public StringParameterValue(String name, String value, String description) {
         super(name, description);
-        this.value = value;
+        this.value = Util.fixNull(value);
     }
 
     /**
@@ -63,6 +64,7 @@ public class StringParameterValue extends ParameterValue {
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return new VariableResolver<String>() {
+            @Override
             public String resolve(String name) {
                 return StringParameterValue.this.name.equals(name) ? value : null;
             }
@@ -88,7 +90,7 @@ public class StringParameterValue extends ParameterValue {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		result = prime * result + (value == null ? 0 : value.hashCode());
 		return result;
 	}
 

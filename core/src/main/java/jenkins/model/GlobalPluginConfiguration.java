@@ -2,6 +2,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.Plugin;
+import hudson.PluginWrapper;
 import hudson.StructuredForm;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -23,11 +24,18 @@ public class GlobalPluginConfiguration  extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
-            for( JSONObject o : StructuredForm.toList(json, "plugin"))
-                Jenkins.get().pluginManager.getPlugin(o.getString("name")).getPlugin().configure(req, o);
+            for( JSONObject o : StructuredForm.toList(json, "plugin")) {
+                String pluginName = o.getString("name");
+                PluginWrapper pw = Jenkins.get().pluginManager.getPlugin(pluginName);
+                Plugin p = pw != null ? pw.getPlugin() : null;
+                if (p == null) {
+                    throw new FormException("Cannot find the plugin instance: " + pluginName, "plugin");
+                }
+                p.configure(req, o);
+            }
             return true;
         } catch (IOException | ServletException e) {
-            throw new FormException(e,"plugin");
+            throw new FormException(e, "plugin");
         }
     }
 }

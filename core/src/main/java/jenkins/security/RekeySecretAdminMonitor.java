@@ -86,6 +86,11 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
         return scanOnBoot.isOn();
     }
 
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     @RequirePOST
     public HttpResponse doScan(StaplerRequest req) throws IOException, GeneralSecurityException {
         if(req.hasParameter("background")) {

@@ -51,6 +51,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      */
     protected abstract void eol(byte[] b, int len) throws IOException;
 
+    @Override
     public void write(int b) throws IOException {
         buf.write(b);
         if (b==LF) eol();
@@ -115,9 +116,9 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      * Convenience subclass for cases where you wish to process lines being sent to an underlying stream.
      * {@link #eol} will typically {@link OutputStream#write(byte[], int, int)} to {@link #out}.
      * Flushing or closing the decorated stream will behave properly.
-     * @since FIXME
+     * @since 2.173
      */
-    public static abstract class Delegating extends LineTransformationOutputStream {
+    public abstract static class Delegating extends LineTransformationOutputStream {
 
         protected final OutputStream out;
 

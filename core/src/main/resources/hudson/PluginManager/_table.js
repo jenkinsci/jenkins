@@ -7,53 +7,51 @@ function checkPluginsWithoutWarnings() {
         }
     }
 }
-function showhideCategories(hdr,on) {
-  var table = hdr.parentNode.parentNode.parentNode,
-      newDisplay = on ? '' : 'none',
-      nameList = new Array(), id;
-  for (var i = 1; i < table.rows.length; i++) {
-    if (on || table.rows[i].cells.length == 1)
-      table.rows[i].style.display = newDisplay;
-     else {
-      // Hide duplicate rows for a plugin:version when not viewing by-category
-      id = table.rows[i].cells[1].getAttribute('data-id');
-      if (nameList[id] == 1) table.rows[i].style.display = 'none';
-      nameList[id] = 1;
-    }
-  }
-}
-function showhideCategory(col) {
-  var row = col.parentNode.nextSibling;
-  var newDisplay = row && row.style.display == 'none' ? '' : 'none';
-  for (; row && row.cells.length > 1; row = row.nextSibling)
-    row.style.display = newDisplay;
-}
 
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
-      function applyFilter() {
-          var filter = e.value.toLowerCase();
-          ["TR.plugin","TR.plugin-category"].each(function(clz) {
-            var encountered = {};
-            var items = document.getElementsBySelector(clz);
-            for (var i=0; i<items.length; i++) {
-                var visible = (filter=="" || items[i].innerHTML.toLowerCase().indexOf(filter)>=0);
-                var name = items[i].cells && items[i].cells.length > 1
-                        ? items[i].cells[1].getAttribute('data-id')
-                        : items[i].getAttribute("name");
-                if (visible && name != null) {
-                    if (encountered[name]) {
-                        visible = false;
-                    }
-                    encountered[name] = true;
-                }
-                items[i].style.display = (visible ? "" : "none");
+    function applyFilter() {
+        var filter = e.value.toLowerCase().trim();
+        var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
+        var items = document.getElementsBySelector("TR.plugin");
+        var anyVisible = false;
+        for (var i=0; i<items.length; i++) {
+            if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
+                items[i].addClassName("hidden");
+                continue;
             }
-          });
+            var makeVisible = true;
 
-          layoutUpdateCallback.call();
-      }
+            var content = items[i].innerHTML.toLowerCase();
+            for (var j = 0; j < filterParts.length; j++) {
+                var part = filterParts[j];
+                if (content.indexOf(part) < 0) {
+                    makeVisible = false;
+                    break;
+                }
+            }
+            if (makeVisible) {
+                items[i].removeClassName("hidden");
+                anyVisible = true;
+            } else {
+                items[i].addClassName("hidden");
+            }
+        }
+        var instructions = document.getElementById("hidden-by-default-instructions")
+        if (instructions) {
+            instructions.style.display = anyVisible ? 'none' : '';
+        }
 
-      e.onkeyup = applyFilter;
+        layoutUpdateCallback.call();
+    }
+    e.onkeyup = applyFilter;
+
+    (function() {
+        var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
+        if (instructionsTd) { // only on Available tab
+            instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        }
+        applyFilter();
+    }());
 });
 
 /**
@@ -260,43 +258,16 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         pluginTR.addClassName('all-dependents-disabled');
                         return false;
                     }
-                    
-                    var dependentsDiv = pluginMetadata.dependentsDiv;
-                    var dependentSpans = pluginMetadata.dependents;
 
                     infoContainer.update('<div class="title">' + i18n('cannot-disable') + '</div><div class="subtitle">' + i18n('enabled-dependents') + '.</div>');
-                    
-                    // Go through each dependent <span> element. Show the spans where the dependent is
-                    // enabled. Hide the others. 
-                    for (var i = 0; i < dependentSpans.length; i++) {
-                        var dependentSpan = dependentSpans[i];
-                        var dependentId = dependentSpan.getAttribute('data-plugin-id');
-                        
-                        if (dependentId === 'jenkins-core') {
-                            // show the span
-                            dependentSpan.setStyle({display: 'inline-block'});
-                        } else {
-                            var depPluginTR = getPluginTR(dependentId);
-                            var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
-                            if (depPluginMetadata.enableInput.checked) {
-                                // It's enabled ... show the span
-                                dependentSpan.setStyle({display: 'inline-block'});
-                            } else {
-                                // It's disabled ... hide the span
-                                dependentSpan.setStyle({display: 'none'});
-                            }
-                        }
-                    }
-                    
-                    dependentsDiv.setStyle({display: 'inherit'});
-                    infoContainer.appendChild(dependentsDiv);
-
+                    infoContainer.appendChild(getDependentsDiv(pluginTR, true));
                     return true;
                 }
             }
 
-            if (pluginTR.hasClassName('detached')) {
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-disable') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
+                infoContainer.appendChild(getDependentsDiv(pluginTR, true));
                 return true;
             }
             
@@ -309,30 +280,48 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             infoContainer.addClassName('uninstall-state-info');
 
             if (pluginTR.hasClassName('has-dependents')) {
-                var pluginMetadata = pluginTR.jenkinsPluginMetadata;
-                var dependentsDiv = pluginMetadata.dependentsDiv;
-                var dependentSpans = pluginMetadata.dependents;
-
                 infoContainer.update('<div class="title">' + i18n('cannot-uninstall') + '</div><div class="subtitle">' + i18n('installed-dependents') + '.</div>');
-                
-                // Go through each dependent <span> element. Show them all. 
-                for (var i = 0; i < dependentSpans.length; i++) {
-                    var dependentSpan = dependentSpans[i];
-                    dependentSpan.setStyle({display: 'inline-block'});
-                }
-                
-                dependentsDiv.setStyle({display: 'inherit'});
-                infoContainer.appendChild(dependentsDiv);
-                
+                infoContainer.appendChild(getDependentsDiv(pluginTR, false));
                 return true;
             }
-            
-            if (pluginTR.hasClassName('detached')) {
+
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-uninstall') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
+                infoContainer.appendChild(getDependentsDiv(pluginTR, false));
                 return true;
             }
 
             return false;
+        }
+
+        function getDependentsDiv(pluginTR, hideDisabled) {
+            var pluginMetadata = pluginTR.jenkinsPluginMetadata;
+            var dependentsDiv = pluginMetadata.dependentsDiv;
+            var dependentSpans = pluginMetadata.dependents;
+
+            // Go through each dependent <span> element. If disabled should be hidden, show the spans where
+            // the dependent is enabled and hide the others. Otherwise show them all.
+            for (var i = 0; i < dependentSpans.length; i++) {
+                var dependentSpan = dependentSpans[i];
+                var dependentId = dependentSpan.getAttribute('data-plugin-id');
+
+                if (!hideDisabled || dependentId === 'jenkins-core') {
+                    dependentSpan.setStyle({display: 'inline-block'});
+                } else {
+                    var depPluginTR = getPluginTR(dependentId);
+                    var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                    if (depPluginMetadata.enableInput.checked) {
+                        // It's enabled ... show the span
+                        dependentSpan.setStyle({display: 'inline-block'});
+                    } else {
+                        // It's disabled ... hide the span
+                        dependentSpan.setStyle({display: 'none'});
+                    }
+                }
+            }
+
+            dependentsDiv.setStyle({display: 'inherit'});
+            return dependentsDiv;
         }
 
         function initPluginRowHandling(pluginTR) {
@@ -428,3 +417,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         setEnableWidgetStates();
     });
 }());
+
+Element.observe(window, "load", function() {
+    document.getElementById('filter-box').focus();
+});

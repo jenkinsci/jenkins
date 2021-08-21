@@ -61,6 +61,6 @@ public class AutoCompletionCandidatesTest {
     }
 
     private void assertContains(AutoCompletionCandidates c, String... values) {
-        assertEquals(new TreeSet<String>(Arrays.asList(values)), new TreeSet<String>(c.getValues()));
+        assertEquals(new TreeSet<>(Arrays.asList(values)), new TreeSet<>(c.getValues()));
     }
 }

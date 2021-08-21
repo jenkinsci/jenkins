@@ -157,6 +157,7 @@ ComboBox.onKeyDown = function(e) {
 		case 27: // escape
 			this.comboBox.hideDropdown();
 			capture();
+			break;
 		case 38: // up arrow
 			this.comboBox.selectPrevious();
 			capture();
@@ -290,7 +291,7 @@ ComboBox.prototype.chooseSelection = function() {
 		if (this.getConfigParam("allowMultipleValues", false)) {
 			var currentValue = "";
 			var delim = this.getConfigParam("valueDelimiter", ",");
-			values = this.field.value.split(delim);
+			var values = this.field.value.split(delim);
 			for (var j = 0; j < values.length - 1; j++) {
 				currentValue = Utilities.listAppend(currentValue, values[j], delim);
 			}

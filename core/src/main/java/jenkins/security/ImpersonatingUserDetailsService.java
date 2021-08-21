@@ -16,7 +16,9 @@ import org.springframework.dao.DataAccessException;
  * information stored in {@link LastGrantedAuthoritiesProperty}.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link ImpersonatingUserDetailsService2}
  */
+@Deprecated
 public class ImpersonatingUserDetailsService implements UserDetailsService {
     private final UserDetailsService base;
 

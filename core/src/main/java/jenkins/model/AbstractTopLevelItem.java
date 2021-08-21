@@ -24,6 +24,7 @@ public abstract class AbstractTopLevelItem extends AbstractItem implements TopLe
         return Collections.emptySet();
     }
 
+    @Override
     public TopLevelItemDescriptor getDescriptor() {
         return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

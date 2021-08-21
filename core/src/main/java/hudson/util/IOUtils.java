@@ -2,13 +2,23 @@ package hudson.util;
 
 import hudson.Functions;
 import hudson.Util;
-import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -124,15 +134,9 @@ public class IOUtils {
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
         try {
-            if (Util.NATIVE_CHMOD_MODE) {
-                return PosixAPI.jnr().stat(f.getPath()).mode();
-            } else {
-                return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
-            }
+            return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
         } catch (IOException cause) {
-            PosixException e = new PosixException("Unable to get file permissions", null);
-            e.initCause(cause);
-            throw e;
+            throw new PosixException("Unable to get file permissions", cause);
         }
     }
 

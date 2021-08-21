@@ -41,7 +41,7 @@ import java.beans.Introspector;
 final class ParsedQuickSilver {
     private static final Map<Class,ParsedQuickSilver> TABLE = new HashMap<>();
 
-    synchronized static ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
+    static synchronized ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
         ParsedQuickSilver pqs = TABLE.get(clazz);
         if(pqs==null)
             TABLE.put(clazz,pqs = new ParsedQuickSilver(clazz));
@@ -98,7 +98,7 @@ final class ParsedQuickSilver {
     }
 
 
-    static abstract class Getter {
+    abstract static class Getter {
         final String url;
         final String searchName;
 
@@ -113,11 +113,12 @@ final class ParsedQuickSilver {
     static final class MethodGetter extends Getter {
         private final Method method;
 
-        public MethodGetter(String url, String searchName, Method method) {
+        MethodGetter(String url, String searchName, Method method) {
             super(url, searchName);
             this.method = method;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return method.invoke(obj);
@@ -137,11 +138,12 @@ final class ParsedQuickSilver {
     static final class FieldGetter extends Getter {
         private final Field field;
 
-        public FieldGetter(String url, String searchName, Field field) {
+        FieldGetter(String url, String searchName, Field field) {
             super(url, searchName);
             this.field = field;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return field.get(obj);
@@ -160,14 +162,17 @@ final class ParsedQuickSilver {
     public void addTo(SearchIndexBuilder builder, final Object instance) {
         for (final Getter getter : getters)
             builder.add(new SearchItem() {
+                @Override
                 public String getSearchName() {
                     return getter.searchName;
                 }
 
+                @Override
                 public String getSearchUrl() {
                     return getter.url;
                 }
 
+                @Override
                 public SearchIndex getSearchIndex() {
                     Object child = getter.get(instance);
                     if(child==null) return SearchIndex.EMPTY;

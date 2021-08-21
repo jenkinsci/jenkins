@@ -48,7 +48,14 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
         showPreview.onclick = function() {
             // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
             var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
-            var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            var text = "";
+            //Textarea object will be null if the text area is disabled.
+            if (textarea == null) {
+                textarea = e.parentNode.getElementsByClassName("jenkins-readonly")[0];
+                text = textarea != null ? textarea.innerText : "";
+            } else {
+                text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            }
             var render = function(txt) {
                 $(hidePreview).show();
                 $(previewDiv).show();

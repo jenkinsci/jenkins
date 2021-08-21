@@ -33,7 +33,7 @@ import hudson.model.TaskListener;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.VirtualFile;
 
 /**
@@ -48,7 +48,7 @@ public abstract class ArtifactManager {
      * The selected manager will be persisted inside a build, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
      * @param build a historical build with which this manager was associated
      */
-    public abstract void onLoad(@Nonnull Run<?,?> build);
+    public abstract void onLoad(@NonNull Run<?,?> build);
 
     /**
      * Archive all configured artifacts from a build.

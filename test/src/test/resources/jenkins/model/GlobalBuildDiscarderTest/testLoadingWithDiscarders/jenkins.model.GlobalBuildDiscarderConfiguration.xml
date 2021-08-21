@@ -1,0 +1,14 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.model.GlobalBuildDiscarderConfiguration>
+  <configuredBuildDiscarders>
+    <jenkins.model.JobGlobalBuildDiscarderStrategy/>
+    <jenkins.model.SimpleGlobalBuildDiscarderStrategy>
+      <discarder class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </discarder>
+    </jenkins.model.SimpleGlobalBuildDiscarderStrategy>
+  </configuredBuildDiscarders>
+</jenkins.model.GlobalBuildDiscarderConfiguration>

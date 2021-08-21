@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="Testing enum without default attribute">
+    <l:main-panel>
+      <f:form method="post" name="config" action="submitForm">
+        <j:set var="instance" value="${it}"/>
+        <j:set var="descriptor" value="${it.descriptor}"/>
+        <f:entry field="enum1">
+          <f:enum/>
+        </f:entry>
+        <f:entry field="enum2">
+          <f:enum/>
+        </f:entry>
+        <f:entry>
+          <f:submit value="submit"/>
+        </f:entry>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

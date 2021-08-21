@@ -29,13 +29,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
-  <l:header>
-    <style><!-- create some spaces between cells -->
-      #computers td {
-        padding-right: 1em;
-      }
-    </style>
-  </l:header>
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
@@ -66,9 +59,9 @@ THE SOFTWARE.
           </j:forEach>
 
           <td><!-- config link -->
-            <j:if test="${c.hasPermission(c.CONFIGURE)}">
+            <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
               <a href="${rootURL}/${c.url}configure">
-                <l:icon class="icon-gear2 icon-lg" tooltip="${%Configure}"/>
+                <l:icon class="icon-gear2 icon-lg" tooltip="${c.hasPermission(c.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
               </a>
             </j:if>
           </td>
@@ -94,13 +87,13 @@ THE SOFTWARE.
       </tr>
 
     </table>
-    <j:if test="${app.hasPermission(app.ADMINISTER)}">
+    <l:hasAdministerOrManage>
       <div align="right" style="margin-top:0.5em">
         <form method="post" action="updateNow">
           <s:submit value="${%Refresh status}"/>
         </form>
       </div>
-    </j:if>
+    </l:hasAdministerOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>

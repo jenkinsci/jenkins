@@ -31,7 +31,7 @@ THE SOFTWARE.
       <j:arg value="hudson.model.Job"/>
     </j:invoke>
     <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-      <div style="float:right"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
+      <div style="float:right;margin-left:1rem;"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
       <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
     </j:if>
   </j:parse>
@@ -41,13 +41,14 @@ THE SOFTWARE.
       RSS link
     -->
     <span class="build-rss-links">
-        <a class="build-rss-all-icon" href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Atom feed" height="16" width="16"/></a>
-        <st:nbsp/>
-        <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">Atom feed ${%for all}</a>
-        <st:nbsp/>
-        <a class="build-rss-failed-icon" href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Atom feed" height="16" width="16"/></a>
-        <st:nbsp/>
-        <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">Atom feed ${%for failures}</a>
+        <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">
+          <span class="build-rss-all-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></span>
+            Atom feed ${%for all}
+        </a>
+        <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">
+          <span class="build-rss-failed-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></span>
+          Atom feed ${%for failures}
+        </a>
     </span>
   </j:parse>
 

@@ -5,14 +5,34 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.LogRotator;
+import hudson.util.DescribableList;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class GlobalBuildDiscarderTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @LocalData
+    @Issue("JENKINS-61688")
+    public void testLoading() throws Exception {
+        Assert.assertEquals(0, GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().size());
+    }
+
+    @Test
+    @LocalData
+    @Issue("JENKINS-61688")
+    public void testLoadingWithDiscarders() throws Exception {
+        final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders = GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders();
+        Assert.assertEquals(2, configuredBuildDiscarders.size());
+        Assert.assertNotNull(configuredBuildDiscarders.get(JobGlobalBuildDiscarderStrategy.class));
+        Assert.assertEquals(5, ((LogRotator)configuredBuildDiscarders.get(SimpleGlobalBuildDiscarderStrategy.class).getDiscarder()).getNumToKeep());
+    }
 
     @Test
     public void testJobBuildDiscarder() throws Exception {

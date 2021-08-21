@@ -25,6 +25,8 @@ package jenkins.diagnostics;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
@@ -32,7 +34,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Jenkins root URL is required for a lot of operations in both core and plugins.
+ * Jenkins URL is required for a lot of operations in both core and plugins.
  * There is a default behavior (infer the URL from the request object), but inaccurate in some scenarios.
  * Normally this root URL is set during SetupWizard phase, this monitor is there to ensure that behavior.
  * Potential exceptions are the dev environment, if someone disable the wizard or
@@ -60,5 +62,10 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
     public boolean isUrlNull(){
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc.getUrl() == null;
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 }

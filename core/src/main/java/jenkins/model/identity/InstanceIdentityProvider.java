@@ -37,8 +37,8 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A source of instance identity.
@@ -151,7 +151,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
         @CheckForNull
         @SuppressWarnings("unchecked")
         private static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
-                @Nonnull KeyTypes<PUB, PRIV> type) {
+                @NonNull KeyTypes<PUB, PRIV> type) {
             for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
                 try {
                     KeyPair keyPair = provider.getKeyPair();

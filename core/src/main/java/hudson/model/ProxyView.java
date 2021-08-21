@@ -142,6 +142,7 @@ public class ProxyView extends View implements StaplerFallback {
 
     }
 
+    @Override
     public Object getStaplerFallback() {
         return getProxiedView();
     }

@@ -83,6 +83,10 @@ options { generateAmbigWarnings=false; }
   ;
 
 class LabelExpressionLexer extends Lexer;
+options {
+  // There must be an options section to satisfy
+  // org.codehaus.mojo.antlr.metadata.MetadataExtracter#intrepret, even if it is empty.
+}
 
 AND:    "&&";
 OR:     "||";

@@ -37,7 +37,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import jenkins.MasterToSlaveFileCallable;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Assume;
 import org.junit.Rule;
@@ -202,7 +205,7 @@ public class WorkspaceCleanupThreadTest {
 
     private static final class VetoSCM extends NullSCM {
         private final boolean answer;
-        public VetoSCM(boolean answer) {
+        VetoSCM(boolean answer) {
             this.answer = answer;
         }
 
@@ -218,7 +221,7 @@ public class WorkspaceCleanupThreadTest {
         private static final long serialVersionUID = 1L;
         private final long time;
 
-        public Touch(long time) {
+        Touch(long time) {
             this.time = time;
         }
 

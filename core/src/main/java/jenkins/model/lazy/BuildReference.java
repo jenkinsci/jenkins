@@ -10,8 +10,8 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.lazy.LazyBuildMixIn.RunMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -108,7 +108,7 @@ public final class BuildReference<R> {
          * @param referent the thing to load
          * @return a reference, or null to consult the next factory
          */
-        @CheckForNull <R> Holder<R> make(@Nonnull R referent);
+        @CheckForNull <R> Holder<R> make(@NonNull R referent);
 
     }
 

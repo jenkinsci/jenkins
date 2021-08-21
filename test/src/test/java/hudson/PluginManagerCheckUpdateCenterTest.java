@@ -1,8 +1,7 @@
 package hudson;
 
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -26,12 +25,14 @@ import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PluginManagerCheckUpdateCenterTest {
     @Rule
@@ -108,10 +109,14 @@ public class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    private HtmlButton getCheckNow(HtmlPage page){
-        DomNodeList<HtmlElement> elements = page.getElementById("bottom-sticker").getElementsByTagName("button");
+    private HtmlAnchor getCheckNow(HtmlPage page){
+        List<HtmlElement> elements = page.getElementById("bottom-sticker")
+                .getElementsByTagName("a")
+                .stream()
+                .filter(link -> link.getAttribute("href").equals("checkUpdatesServer"))
+                .collect(Collectors.toList());
         assertEquals(1, elements.size());
-        return (HtmlButton) elements.get(0);
+        return (HtmlAnchor) elements.get(0);
     }
 
     /**

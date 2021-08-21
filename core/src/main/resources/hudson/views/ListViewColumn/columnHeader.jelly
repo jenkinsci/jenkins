@@ -22,6 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+Warning, if you do want to inject HTML code in a column header, you have to do so using Jelly.
+Example:
+    <th><strong>${it.columnCaption}</strong></th>
+
+If you do it using variable, the content will be escaped by Jelly and not displayed as you expected.
+In such case, if you force the un-escaping with j:out, this could lead to XSS if the content is not fully trusted.
+-->
+
  <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
     <th>${it.columnCaption}</th>

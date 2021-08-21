@@ -53,6 +53,7 @@ public interface Saveable {
      * @since 1.301.
      */
     Saveable NOOP = new Saveable() {
+        @Override
         public void save() throws IOException {
         }
     };

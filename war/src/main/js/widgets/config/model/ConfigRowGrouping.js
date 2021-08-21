@@ -65,7 +65,7 @@ ConfigRowGrouping.prototype.updateVisibility = function() {
 ConfigRowGrouping.prototype.findToggleWidget = function(row) {
     var $ = getJQuery();
     var input = $(':input.block-control', row);
-    if (input.size() === 1) {
+    if (input.length === 1) {
         this.toggleWidget = input;
         this.label = input.parent().find('label').text();
         input.addClass('disable-behavior');

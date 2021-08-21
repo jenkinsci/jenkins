@@ -7,12 +7,13 @@ def all = CrumbIssuer.all()
 
 if (!all.isEmpty()) {
     f.section(title: _("CSRF Protection")) {
-        f.optionalBlock(field:"csrf", title:_("Prevent Cross Site Request Forgery exploits"), checked: app.useCrumbs ) {
-            f.entry(title:_("Crumbs")) {
-                table(style:"width:100%") {
-                    f.descriptorRadioList(title:_("Crumb Algorithm"), varName:"issuer", instance:app.crumbIssuer, descriptors:all)
-                }
+        if (hudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION) {
+            f.entry {
+                p(raw(_('disabled')))
+                p(_('unsupported'))
             }
+        } else {
+            f.dropdownDescriptorSelector(title: _("Crumb Issuer"), descriptors: all, field: 'crumbIssuer')
         }
     }
 }

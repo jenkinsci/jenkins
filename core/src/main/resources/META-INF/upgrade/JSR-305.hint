@@ -1,0 +1,3 @@
+javax.annotation.CheckForNull => edu.umd.cs.findbugs.annotations.CheckForNull;;
+javax.annotation.Nonnull => edu.umd.cs.findbugs.annotations.NonNull;;
+javax.annotation.Nullable => edu.umd.cs.findbugs.annotations.Nullable;;

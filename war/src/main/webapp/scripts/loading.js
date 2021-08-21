@@ -58,3 +58,6 @@ function safeRedirector(url) {
         })
     }, timeout);
 }
+
+const rootUrl = document.head.getAttribute("data-rooturl");
+safeRedirector(rootUrl + '/');

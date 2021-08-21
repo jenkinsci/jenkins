@@ -23,6 +23,7 @@
  */
 package jenkins.install;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,6 +53,8 @@ import hudson.model.UpdateSite;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.springframework.security.core.Authentication;
+import javax.servlet.ServletException;
 
 /**
  * Test
@@ -82,7 +85,7 @@ public class InstallUtilTest {
      * Test jenkins startup sequences and the changes to the startup type..
      */
     @Test
-    public void test_typeTransitions() {
+    public void test_typeTransitions() throws IOException, ServletException {
         InstallUtil.getLastExecVersionFile().delete();
         InstallUtil.getConfigFile().delete();
         
@@ -96,7 +99,7 @@ public class InstallUtilTest {
         //   1. A successful run of the install wizard.
         //   2. A success upgrade.
         //   3. A successful restart.
-        InstallUtil.saveLastExecVersion();
+        Jenkins.get().getSetupWizard().completeSetup();
 
         // Fudge things a little now, pretending there's a restart...
 
@@ -180,7 +183,7 @@ public class InstallUtilTest {
 					json.put("dependencies", new JSONArray());
 					Plugin p = new Plugin(getId(), json);
 
-					InstallationJob job = new InstallationJob(p, null, null, false);
+					InstallationJob job = new InstallationJob(p, null, (Authentication) null, false);
 						job.status = status;
 						job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
 		                updates.add(job);

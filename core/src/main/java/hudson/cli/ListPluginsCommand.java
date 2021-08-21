@@ -46,6 +46,7 @@ public class ListPluginsCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Name of a specific plugin", required = false)
     public String name;
 
+    @Override
     protected int run() {
         Jenkins h = Jenkins.get();
         h.checkPermission(Jenkins.ADMINISTER);
@@ -94,6 +95,6 @@ public class ListPluginsCommand extends CLICommand {
         }
 
         String formatString = String.format("%%-%ds %%-%ds %%s", colWidthShortName, colWidthDisplayName);
-        stdout.println(String.format(formatString, plugin.getShortName(), plugin.getDisplayName(), version));
+        stdout.printf(formatString + "%n", plugin.getShortName(), plugin.getDisplayName(), version);
     }
 }

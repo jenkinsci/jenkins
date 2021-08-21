@@ -7,8 +7,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -81,7 +80,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     /**
      * Perform monitoring with detailed reporting.
      */
-    protected final @Nonnull Result<T> monitorDetailed() throws InterruptedException {
+    protected final @NonNull Result<T> monitorDetailed() throws InterruptedException {
         Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
@@ -104,7 +103,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
 
         final Map<Computer,T> data = new HashMap<>();
 
-        for (Entry<Computer, Future<T>> e : futures.entrySet()) {
+        for (Map.Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();
             Future<T> f = futures.get(c);
             data.put(c, null);  // sentinel value
@@ -157,15 +156,15 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     protected static final class Result<T> {
         private static final long serialVersionUID = -7671448355804481216L;
 
-        private final @Nonnull Map<Computer, T> data;
-        private final @Nonnull ArrayList<Computer> skipped;
+        private final @NonNull Map<Computer, T> data;
+        private final @NonNull ArrayList<Computer> skipped;
 
-        private Result(@Nonnull Map<Computer, T> data, @Nonnull Collection<Computer> skipped) {
+        private Result(@NonNull Map<Computer, T> data, @NonNull Collection<Computer> skipped) {
             this.data = new HashMap<>(data);
             this.skipped = new ArrayList<>(skipped);
         }
 
-        protected @Nonnull Map<Computer, T> getMonitoringData() {
+        protected @NonNull Map<Computer, T> getMonitoringData() {
             return data;
         }
 
@@ -173,7 +172,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
          * Computers that ware skipped during monitoring as they either do not have a a channel (offline) or the monitor
          * have not produced the Callable. Computers that caused monitor to throw exception are not returned here.
          */
-        protected @Nonnull List<Computer> getSkipped() {
+        protected @NonNull List<Computer> getSkipped() {
             return skipped;
         }
     }

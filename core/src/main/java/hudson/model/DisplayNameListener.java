@@ -39,7 +39,7 @@ import hudson.model.listeners.ItemListener;
 @Extension
 public class DisplayNameListener extends ItemListener {
 
-    private final static Logger LOGGER = Logger.getLogger(DisplayNameListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DisplayNameListener.class.getName());
 
     /**
      * Called after the user has clicked OK in the New Job page when 

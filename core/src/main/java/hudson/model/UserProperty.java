@@ -63,6 +63,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
     }
 
     // descriptor must be of the UserPropertyDescriptor type
+    @Override
     public UserPropertyDescriptor getDescriptor() {
         return (UserPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -74,6 +75,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
         return Jenkins.get().getDescriptorList(UserProperty.class);
     }
 
+    @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
         return form==null ? null : getDescriptor().newInstance(req, form);
     }

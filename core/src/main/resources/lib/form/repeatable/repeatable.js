@@ -1,5 +1,3 @@
-// @include lib.form.dragdrop.dragdrop
-
 var repeatableSupport = {
     // set by the inherited instance to the insertion point DIV
     insertionPoint: null,
@@ -33,7 +31,8 @@ var repeatableSupport = {
             this.enableTopButton = false;
         }
         this.update();
-        this.withDragDrop = initContainerDD(container);
+        // Initialize drag & drop for this component
+        this.withDragDrop = registerSortableDragDrop(container);
     },
 
     // insert one more block at the insertion position
@@ -57,7 +56,8 @@ var repeatableSupport = {
             });
             this.container.insertBefore(nc, children[0]);
         }
-        if (this.withDragDrop) prepareDD(nc);
+        // Initialize drag & drop for this element
+        if (this.withDragDrop) registerSortableDragDrop(nc);
 
         new YAHOO.util.Anim(nc, {
             opacity: { to:1 }
@@ -155,7 +155,7 @@ Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
-        var ip = $(e.lastChild);
+        var ip = $(e.lastElementChild);
         while (!ip.hasClassName("repeatable-insertion-point"))
             ip = ip.previous();
         // set up the logic

@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
@@ -44,11 +45,21 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterDefinition extends ParameterDefinition {
+
+    /**
+     * @since 2.281
+     */
     @DataBoundConstructor
-    public FileParameterDefinition(String name, String description) {
-        super(name, description);
+    public FileParameterDefinition(String name) {
+        super(name);
     }
 
+    public FileParameterDefinition(String name, String description) {
+        this(name);
+        setDescription(description);
+    }
+
+    @Override
     public FileParameterValue createValue(StaplerRequest req, JSONObject jo) {
         FileParameterValue p = req.bindJSON(FileParameterValue.class, jo);
         p.setLocation(getName());
@@ -116,5 +127,29 @@ public class FileParameterDefinition extends ParameterDefinition {
         p.setDescription(getDescription());
         p.setLocation(getName());
         return p;
+    }
+
+    @Override
+    public int hashCode() {
+        if (FileParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (FileParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FileParameterDefinition other = (FileParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        return Objects.equals(getDescription(), other.getDescription());
     }
 }

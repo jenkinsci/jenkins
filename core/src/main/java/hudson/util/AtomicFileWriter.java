@@ -25,13 +25,14 @@ package hudson.util;
 
 import jenkins.util.SystemProperties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -71,7 +72,7 @@ public class AtomicFileWriter extends Writer {
      * Writes with UTF-8 encoding.
      */
     public AtomicFileWriter(File f) throws IOException {
-        this(f,"UTF-8");
+        this(toPath(f), StandardCharsets.UTF_8);
     }
 
     /**
@@ -80,7 +81,7 @@ public class AtomicFileWriter extends Writer {
      * @deprecated Use {@link #AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(@Nonnull File f, @Nullable String encoding) throws IOException {
+    public AtomicFileWriter(@NonNull File f, @Nullable String encoding) throws IOException {
         this(toPath(f), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
     }
 
@@ -88,11 +89,11 @@ public class AtomicFileWriter extends Writer {
      * Wraps potential {@link java.nio.file.InvalidPathException} thrown by {@link File#toPath()} in an
      * {@link IOException} for backward compatibility.
      *
-     * @param file
+     * @param file file to obtain the path of
      * @return the path for that file
      * @see File#toPath()
      */
-    private static Path toPath(@Nonnull File file) throws IOException {
+    private static Path toPath(@NonNull File file) throws IOException {
         try {
             return file.toPath();
         } catch (InvalidPathException e) {
@@ -104,7 +105,7 @@ public class AtomicFileWriter extends Writer {
      * @param destinationPath the destination path where to write the content when committed.
      * @param charset File charset to write.
      */
-    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset) throws IOException {
+    public AtomicFileWriter(@NonNull Path destinationPath, @NonNull Charset charset) throws IOException {
         // See FileChannelWriter docs to understand why we do not cause a force() call on flush() from AtomicFileWriter.
         this(destinationPath, charset, false, true);
     }
@@ -119,7 +120,7 @@ public class AtomicFileWriter extends Writer {
      * @deprecated use {@link AtomicFileWriter#AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
+    public AtomicFileWriter(@NonNull Path destinationPath, @NonNull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
         if (charset == null) { // be extra-defensive if people don't care
             throw new IllegalArgumentException("charset is null");
         }
@@ -162,14 +163,17 @@ public class AtomicFileWriter extends Writer {
         core.write(str,off,len);
     }
 
+    @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
         core.write(cbuf,off,len);
     }
 
+    @Override
     public void flush() throws IOException {
         core.flush();
     }
 
+    @Override
     public void close() throws IOException {
         core.close();
     }

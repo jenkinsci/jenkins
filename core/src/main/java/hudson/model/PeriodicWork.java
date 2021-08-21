@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionListListener;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
@@ -58,6 +59,7 @@ import hudson.triggers.Trigger;
  * @author Kohsuke Kawaguchi
  * @see AsyncPeriodicWork
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
 
     /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */

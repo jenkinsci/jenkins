@@ -27,7 +27,7 @@ package hudson.cli;
 import hudson.Functions;
 import hudson.model.ExecutorTest;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
@@ -74,7 +74,7 @@ public class DeleteBuildsCommandTest {
         j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
@@ -83,7 +83,7 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsShouldFailIfJobDoesNotExist() throws Exception {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("never_created", "1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -95,7 +95,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("", "1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -107,7 +107,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
@@ -119,7 +119,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "2");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 0 builds"));
@@ -130,7 +130,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "0");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 0 builds"));
@@ -143,7 +143,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
@@ -161,7 +161,7 @@ public class DeleteBuildsCommandTest {
         assertThat("Job wasn't scheduled properly - it is running on non-exist node", project.isBuilding(), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 0 builds"));
@@ -185,14 +185,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(5));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,2");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 2 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(3));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "3-5");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 3 builds"));
@@ -206,14 +206,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1-1,1-2,2-2");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
@@ -227,14 +227,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,3");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "2-3");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
@@ -254,14 +254,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(4));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,2,3");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 2 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "4-6");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 2 builds"));
@@ -277,14 +277,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,2");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "2-3");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
@@ -304,14 +304,14 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1,2,3");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         result = command
-                .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
+                .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "3-5");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Deleted 1 builds"));

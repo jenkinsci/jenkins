@@ -2,7 +2,8 @@
 @import (css) '../fonts/icomoon/css/icomoon.css';
 @import (css) '../fonts/google-fonts/roboto/css/roboto.css';
 
-.bootstrap-3 * {
+.bootstrap-3 *,
+.bootstrap-3 [class*='col-'] {
     // simple reset
     margin: initial;
     padding: initial;
@@ -15,23 +16,20 @@
     bottom: 0;
     left: 0;
     z-index: 1000;
-    background: rgba(0,0,0,.2);
+    background: rgba(0, 0, 0, 0.2);
     text-align: initial;
-    font-family: sans-serif;
+    font-size: 13px;
 
-
-    table, form, input, td, th, p, textarea, select,h1,h2,h3,h4,h5{
-      font-family:'roboto',sans-serif;
+    input,
+password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
+        &::-ms-clear { width: 0; height: 0; }
+        &::-ms-reveal { width: 0; height: 0; }
     }
 
-
-    input,password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
-        &::-ms-clear { width : 0; height: 0; }
-        &::-ms-reveal { width : 0; height: 0; }
-    }
-
-    a, button {
-        &:focus, &:active { outline: 0; }
+    a,
+ button {
+        &:focus,
+ &:active { outline: 0; }
     }
 
     .spin(@duration: 2s) {
@@ -43,23 +41,18 @@
         -moz-animation-duration: @duration;
         -moz-animation-iteration-count: infinite;
         -moz-animation-timing-function: linear;
-        -ms-animation-name: spin;
-        -ms-animation-duration: @duration;
-        -ms-animation-iteration-count: infinite;
-        -ms-animation-timing-function: linear;
         animation-name: spin;
         animation-duration: @duration;
         animation-iteration-count: infinite;
         animation-timing-function: linear;
     }
-    
+
     .no-spin() {
         -webkit-animation-name: none;
         -moz-animation-name: none;
-        -ms-animation-name: none;
         animation-name: none;
     }
-    
+
     .modal {
         padding: 20px 0;
     }
@@ -70,8 +63,7 @@
         padding: 0;
         position: relative;
         margin: 0 auto;
-        max-width:992px;
-        font-family:'roboto',sans-serif;
+        max-width: 992px;
     }
 
     .modal-content {
@@ -80,73 +72,78 @@
         box-sizing: border-box;
         padding: 4.2em 0 4.8em 0;
     }
-    
+
     .jenkins-version {
         float: left;
-        margin: .7em .5em;
+        margin: 0.7em 0.5em;
         opacity: 0.7; // matches the info text
     }
 
     .container.error-container {
         padding: 4em 3em;
         max-width: 100%;
-        
+
         h1 {
         color: #a94442;
     }
+    }
+
+    .error {
+        margin-bottom: 1em;
     }
 
     .modal-body {
         background: linear-gradient(175deg, #f8f8f8 0%, rgba(255, 255, 255, 1) 22%, rgba(255, 255, 255, 0) 100%);
         overflow-y: auto;
         height: 100%;
-        padding:0;
-        border-bottom:1px solid #ccc;
+        padding: 0;
+        border-bottom: 1px solid #ccc;
 
-        .water-mark{
+        .water-mark {
           font-size: 392px;
           position: absolute;
           display: block;
-          bottom: 0px;
+          bottom: 0;
           right: 50px;
-          color: rgba(0,0,0,.05);
+          color: rgba(0, 0, 0, 0.05);
         }
 
-        .installing-panel{
-          border-bottom:1px solid #ccc;
-          margin:0;
-          padding:7.5% 10%;
-          height:33.3%;
-          position:relative;
-          z-index:9;
-          box-shadow:rgba(0,0,0,.5) 0 1px 5px;
+        .installing-panel {
+          border-bottom: 1px solid #ccc;
+          margin: 0;
+          padding: 7.5% 10%;
+          height: 33.3%;
+          position: relative;
+          z-index: 9;
+          box-shadow: rgba(0, 0, 0, 0.5) 0 1px 5px;
 
           @media screen and (max-width: 992px) {
-            padding:5%;
+            padding: 5%;
             height: 20%;
             max-height: 20%;
-        h1{
-          font-size:24px;
+
+        h1 {
+          font-size: 24px;
         }
           }
 
           @media screen and (max-width: 768px) {
-            padding:5%;
-            height:auto;
-            h1{
-              display:none;
+            padding: 5%;
+            height: auto;
+
+            h1 {
+              display: none;
             }
           }
 
-          .progress{
-            margin:0;
+          .progress {
+            margin: 0;
           }
 
-          .selected-plugin-progress{
-            width:75%;
+          .selected-plugin-progress {
+            width: 75%;
           }
         }
-
     }
 
     .modal-header {
@@ -187,15 +184,19 @@
         .plugins {
             padding-top: 2.75em;
             position: relative;
-            border-left:1px solid rgba(0,0,0,.2);
+            border-left: 1px solid rgba(0, 0, 0, 0.2);
 
             @media screen and (min-width: 768px) {
                 height: 100%;
             }
 
-            h2 {padding-top:10px; margin-top:0}
+            h2 {
+              padding-top: 10px;
+              margin-top: 0;
+            }
 
-            .plugin-select-actions, .plugin-selected-info {
+            .plugin-select-actions,
+ .plugin-selected-info {
                 position: absolute;
                 top: 0;
                 left: 10px;
@@ -206,7 +207,7 @@
                     left: auto;
                 }
 
-                a + a:before {
+                a + a::before {
                     content: '|';
                     font-size: 11px;
                     text-decoration: none !important;
@@ -243,7 +244,8 @@
                     text-decoration: none;
                     font-weight: bold;
 
-                    &:hover, &:focus {
+                    &:hover,
+ &:focus {
                         color: #444;
                     }
                 }
@@ -261,21 +263,20 @@
                 padding: 0 10px;
                 height: 2.75em;
                 z-index: 100;
-                background:rgba(0,0,0,.03);
-                border-bottom:1px solid rgba(0,0,0,.2);
+                background: rgba(0, 0, 0, 0.03);
+                border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 
-
-                .form-control{
-                  font-size:13px;
-                  padding:2px 5px;
-                  height:30px;
-                  top:2px;
-                  position:relative;
+                .form-control {
+                  font-size: 13px;
+                  padding: 2px 5px;
+                  height: 30px;
+                  top: 2px;
+                  position: relative;
                 }
             }
 
             .plugin-list-description {
-                margin: -10px -10px 0px -10px;
+                margin: -10px -10px 0 -10px;
                 padding: 10px 20px;
                 opacity: 0.7;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.2);
@@ -285,14 +286,17 @@
                 position: relative;
                 padding: 10px;
                 clear: both;
+
                 @media screen and (min-width: 768px) {
                     max-height: 100%;
                 }
+
                 overflow-y: auto;
 
                 h2 {
-                  font-size:28px;
-                    transition: all .15s;
+                  font-size: 28px;
+                    transition: all 0.15s;
+
                     &:first-child {
                         margin-top: 0;
                     }
@@ -301,8 +305,7 @@
                 &.searching-with-transition {
 					.plugin {
                         display: none;
-                        transition: all .25s;
-
+                        transition: all 0.25s;
 
                         &.match {
                             display: block;
@@ -320,9 +323,10 @@
                             }
                         }
                     }
+
                     h2 {
                         color: #ddd;
-                        transition: all .5s;
+                        transition: all 0.5s;
                         font-size: 22px;
                         margin: 6px 0 6px -5px;
                     }
@@ -331,17 +335,19 @@
                 &.searching {
 					.plugin {
                         display: none;
-                        transition: all .25s;
+                        transition: all 0.25s;
 
                         &.match {
                             display: block;
                         }
                     }
+
                     h2 {
                         display: none;
+
                         &.match {
                             color: #ddd;
-                            transition: all .5s;
+                            transition: all 0.5s;
                             font-size: 22px;
                             margin: 6px 0 6px -5px;
                             display: block;
@@ -351,20 +357,20 @@
 
 				.plugin {
 					position: relative;
-				
+
 					&.selected label {
 						background: #dff0d8;
 						margin: 4px -7px;
 						padding: 6px 1px 6px 26px;
 						border-radius: 2px;
-						border: 1px solid #C2E0A9;
+						border: 1px solid #c2e0a9;
 						color: #3c763d;
 
 						.dependencies {
 							color: #777;
 						}
 					}
-	
+
                 label {
                     font-weight: normal;
                     padding: 7px 2px 7px 27px;
@@ -373,9 +379,9 @@
                     cursor: pointer;
                     margin: 4px -7px;
 
-                    &:hover{
+                    &:hover {
                       background: rgba(100, 200, 255, 0.1);
-						  box-shadow:inset 0 400px 400px -100px rgba(100, 200, 255, 0.33), inset 0 0 0 1px rgba(100, 200, 255, 0.33);
+						  box-shadow: inset 0 400px 400px -100px rgba(100, 200, 255, 0.33), inset 0 0 0 1px rgba(100, 200, 255, 0.33);
                     }
 
                     .title {
@@ -387,12 +393,12 @@
 
                     .description {
                         display: block;
-                        margin-top: .5em;
+                        margin-top: 0.5em;
                     }
 
                     input[type=checkbox] {
                         float: left;
-                        margin: 2px -18px;
+                        margin: 3px -18px;
                         vertical-align: middle;
                     }
 
@@ -406,57 +412,65 @@
 
                         .tooltip-inner {
                         max-width: none;
-                        padding: .5em 1em;
+                        padding: 0.5em 1em;
                         text-align: left;
                         }
                     }
                 }
-	
+
 				@badge-color: #555;
 				@badge-background: #f8f8f8;
 				@link-color: #337ab7;
-	
+
 					.website-link {
 						position: relative;
 						height: 15px;
 						width: 15px;
 						margin-left: 2px;
 					}
-					.website-link:before {
+
+					.website-link::before {
 						display: inline-block;
 						position: absolute;
 						width: 11px;
 						height: 11px;
 						content: '';
 						left: 2px;
-						top: 2px;
+						top: 3px;
 						background: @badge-color;
 						border-radius: 4px;
 					}
-					.website-link:after {
+
+					.website-link::after {
 						content: '\f14c';
 						display: inline-block;
 						font: 15px FontAwesome;
 						text-indent: 0;
 						position: absolute;
-						top: 0;
+						top: 1px;
 						left: 1px;
 						width: 14px;
 						height: 14px;
 						border-radius: 2px;
 						color: @badge-background;
 					}
-					.website-link:hover:before,.website-link:focus:before {
+
+					.website-link:hover::before,
+ .website-link:focus::before {
 						background: #fff;
 					}
-					.website-link:hover:after,.website-link:focus:after {
+
+					.website-link:hover::after,
+ .website-link:focus::after {
 						color: @link-color;
 						width: 16px;
 						height: 16px;
 						font-size: 17px;
-						left: 0px;
+                        line-height: 17px;
+						left: 0;
 						top: -1px;
 					}
+
 					.toggle-dependency-list {
 						position: absolute;
 						top: 0;
@@ -467,79 +481,83 @@
 						padding: 5px 13px;
 						margin: 0 0;
 						z-index: 100;
-						
+
 						.badge {
 							margin-left: 7px;
 							padding-left: 9px;
 							background: @badge-background;
 							color: @badge-color;
-							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
-						
-							&:after {
+							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
+
+							&::after {
 								content: '\f0d9';
 								font: 15px FontAwesome;
 								display: inline-block;
-								width: 13px; 
-								height: 13px; 
-								margin: -4px -2px 0px 1px;
+								width: 13px;
+								height: 13px;
+								margin: -4px -2px 0 1px;
 								vertical-align: middle;
 							}
 						}
-						&:hover, &.active, &:focus {
+
+						&:hover,
+ &.active,
+ &:focus {
 							text-decoration: none;
 							outline: none;
-							
+
 							.badge {
 								background: @badge-color;
 								color: #fff;
 							}
-							outline: none;
 						}
 					}
-					
+
 					&.selected .toggle-dependency-list {
 						top: -1px;
 						right: -1px;
 					}
-					
+
 					.dep-list {
 						padding: 10px 0 6px 0;
 						display: none;
-						
+
 						> h3 {
 							margin: 0 25px 4px 0;
-							color: #555555;
+							color: #555;
 							font-size: 14px;
 							border-bottom: 1px solid #fff;
 							border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 							padding-bottom: 5px;
 						}
-						
+
 						.badge {
 							padding: 4px 8px;
 							margin: 5px 3px 0 0;
 							background: @badge-background;
 							color: @badge-color;
-							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
-							
-							&:after {
+							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
+
+							&::after {
 								content: '\f14c';
 								font: 11px FontAwesome;
 							}
-							
-							&:hover, &:active, &:focus {
+
+							&:hover,
+ &:active,
+ &:focus {
 								color: #fff;
 								background: @link-color;
 								text-decoration: none;
 							}
 						}
 					}
-					
+
 					&.show-dependencies {
-						.toggle-dependency-list .badge:after {
+						.toggle-dependency-list .badge::after {
 							content: '\f0d7';
 						}
-						
+
 						.dep-list {
 							display: block;
 						}
@@ -558,23 +576,23 @@
                 max-height: 100%;
             }
 
-            .nav{
-              margin:5px 0px;
+            .nav {
+              margin: 5px 0;
             }
 
             li {
                 a {
                     position: relative;
-                    padding: .5em;
+                    padding: 0.5em;
                     display: block;
                     color: #444;
                     text-decoration: none;
                     background: transparent;
                     border: none;
-                    font-weight:500;
-                    border-radius:none;
+                    font-weight: 500;
+                    border-radius: none;
 
-                    &:after {
+                    &::after {
                         content: '';
                         display: none;
                         position: absolute;
@@ -585,12 +603,13 @@
                         background: #337ab7;
                     }
 
-                    &:hover, &:focus {
-                      background:rgba(100,200,255,.1);
-                      box-shadow:inset -200px 0 200px -200px rgba(100,200,255,.33);
+                    &:hover,
+ &:focus {
+                      background: rgba(100, 200, 255, 0.1);
+                      box-shadow: inset -200px 0 200px -200px rgba(100, 200, 255, 0.33);
                         color: #337ab7;
 
-                        &:after {
+                        &::after {
                             display: block;
                         }
                     }
@@ -599,7 +618,7 @@
                 &.active a {
                     color: #337ab7;
 
-                    &:after {
+                    &::after {
                         display: block;
                         width: 4px;
                     }
@@ -618,17 +637,17 @@
     z-index: 5;
     top: 33.3%;
     width: 25%;
-    
+
     .install-console-scroll {
         position: absolute;
         top: 6px;
         right: 0;
         bottom: 2em;
         left: 0;
-        overflow:auto;
+        overflow: auto;
         font: 12px monospace;
     }
-    
+
      @media screen and (max-width: 992px) {
        width: 100%;
        position: relative;
@@ -641,11 +660,11 @@
             font: 12px monospace;
             overflow: auto;
             height: 100%;
-            display:block;
-            padding:1px 10px;
+            display: block;
+            padding: 1px 10px;
 
-          &:nth-child(odd){
-            background:rgba(0,0,0,.05);
+          &:nth-child(odd) {
+            background: rgba(0, 0, 0, 0.05);
           }
         }
 
@@ -653,11 +672,11 @@
             color: #777;
             padding-left: 10px;
 
-            &:before {
+            &::before {
                 content: ' ** ';
             }
         }
-        
+
         .dependency-legend {
             color: #777;
             position: absolute;
@@ -681,9 +700,9 @@
     padding: 0;
     width: 75%;
     font-size: 0;
-    background:rgba(0,0,0,.1);
-    border-bottom:1px solid #ccc;
-    border-top:1px solid rgba(0,0,0,.1);
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 
         @media screen and (max-width: 992px) {
            width: 100%;
@@ -692,9 +711,10 @@
            max-height: 40%;
            top: 0;
         }
+
         &.success-panel {
             bottom: 0;
-            width:100%;
+            width: 100%;
         }
 
         .selected-plugin {
@@ -703,45 +723,51 @@
       padding: 5px 5px 5px 30px;
       position: relative;
       width: 25%;
-      overflow:hidden;
+      overflow: hidden;
       font-size: 13px;
       height: 45px;
-      border-right: 1px solid rgba(0,0,0,.1);
-      border-bottom: 1px solid rgba(0,0,0,.1);
-      box-shadow:0 1px 3px rgba(0,0,0,.2);
-      background:rgba(255,255,255,.75);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.75);
 
-            &:nth-child(odd){
-              box-shadow:0 1px 3px rgba(0,0,0,.2),inset 0 0 0 999px rgba(0,0,0,.05);
+            &:nth-child(odd) {
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 0 0 999px rgba(0, 0, 0, 0.05);
             }
-            &:before { // pending
+
+            &::before { // pending
                 font-family: FontAwesome;
                 font-size: 17px;
+                line-height: 17px;
                 content: '\f10c';
-                color: rgba(0,0,0,.1);
+                color: rgba(0, 0, 0, 0.1);
                 position: absolute;
-                left:5px;
+                left: 5px;
             }
 
             &.installing {
-                &:before {
+                &::before {
                     content: '\f021';
-                    color: rgba(0,60,100,.33);
+                    color: rgba(0, 60, 100, 0.33);
                     .spin();
                 }
             }
+
             &.success {
-              background:#e5f9e5;
-                &:before {
+              background: #e5f9e5;
+
+                &::before {
                     content: '\f00c';
                     color: #3c763d;
 
                     .no-spin();
                 }
             }
+
             &.fail {
-              background:#fdd;
-                &:before {
+              background: #fdd;
+
+                &::before {
                     content: '\f00d';
                     color: #a94442;
                     .no-spin();
@@ -755,7 +781,7 @@
         background: transparent;
         padding: 0 10%;
 
-        h1{font-size:48px; margin-top:5px;}
+        h1 { font-size: 48px; margin-top: 5px; }
 
         @media screen and (min-width: 768px) {
             padding-top: 5%;
@@ -770,7 +796,7 @@
         }
 
         .btn-huge {
-          font-weight:200;
+          font-weight: 200;
             display: inline-block;
             text-align: initial;
             width: 22em;
@@ -779,12 +805,12 @@
             min-height: 12.5em;
             margin-right: 1.3%;
             margin-top: 1em;
-            padding:20px 25px;
-            box-shadow:inset 0 -200px 200px -100px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.2);
-            border:1px solid rgba(0,60,100,.5);
-            text-shadow:#fff 0 1px 3px;
-            position:relative;
-            background:rgba(255,255,255,.75);
+            padding: 20px 25px;
+            box-shadow: inset 0 -200px 200px -100px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 60, 100, 0.5);
+            text-shadow: #fff 0 1px 3px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.75);
 
             @media screen and (min-width: 768px) {
                 max-width: 41%;
@@ -792,57 +818,66 @@
                 margin-top: 0;
             }
 
-            &:hover{
-              box-shadow:inset 0 1px 3px -1px rgba(0,0,0,.2);
-        background:rgba(100,200,255,.1);
+            &:hover {
+              box-shadow: inset 0 1px 3px -1px rgba(0, 0, 0, 0.2);
+        background: rgba(100, 200, 255, 0.1);
             }
-            &:focus{
-              background:#fff;
-        box-shadow:inset 0 -200px 200px -100px rgba(0,0,0,.1),0 0 5px 3px rgba(00,180,250,.2);
-      }
-      &:hover:focus{
-        background:rgba(100,200,255,.1);
-      }
-            &.btn-primary{
-              background:rgba(200,240,255,.2);
 
-              box-shadow:inset 0 -200px 200px -100px rgba(0,120,160,.2), 0 1px 3px rgba(0,0,0,.2);
-              color:rgba(0,80,120,1);
+            &:focus {
+              background: #fff;
+        box-shadow: inset 0 -200px 200px -100px rgba(0, 0, 0, 0.1), 0 0 5px 3px rgba(00, 180, 250, 0.2);
+      }
 
-              &:hover{
-                box-shadow:inset 0 1px 3px -1px rgba(0,0,0,.2);
-          background:rgba(70,200,255,.2);
+      &:hover:focus {
+        background: rgba(100, 200, 255, 0.1);
+      }
+
+            &.btn-primary {
+              background: rgba(200, 240, 255, 0.2);
+              box-shadow: inset 0 -200px 200px -100px rgba(0, 120, 160, 0.2), 0 1px 3px rgba(0, 0, 0, 0.2);
+              color: rgba(0, 80, 120, 1);
+
+              &:hover {
+                box-shadow: inset 0 1px 3px -1px rgba(0, 0, 0, 0.2);
+          background: rgba(70, 200, 255, 0.2);
               }
-              &:focus{
-          box-shadow:inset 0 -200px 200px -100px rgba(0,120,160,.2),0 0 5px 3px rgba(00,180,250,.2);        }
+
+              &:focus {
+          box-shadow: inset 0 -200px 200px -100px rgba(0, 120, 160, 0.2), 0 0 5px 3px rgba(00, 180, 250, 0.2);
+        }
             }
+
             .icon {
               position: absolute;
         bottom: 20px;
         right: 10px;
         font-size: 144px;
-        opacity: .0;
+        opacity: 0;
             }
+
             b {
                 display: block;
                 font-size: 24px;
-                line-height:100%;
-                margin-bottom:5px;
-                min-height:81px;
-                font-weight:600;
-                width:80%;
+                line-height: 100%;
+                margin-bottom: 5px;
+                min-height: 81px;
+                font-weight: 600;
+                width: 80%;
             }
-            sub{
-              font-size:21px;
+
+            sub {
+              font-size: 21px;
             }
+
             span {
                 display: block;
             }
         }
     }
-    
+
     .security-panel {
-        &.security-panel, > iframe {
+        &.security-panel,
+ > iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -855,7 +890,7 @@
             margin: 0;
         }
     }
-    
+
     .alert {
         font-size: initial;
     }
@@ -865,17 +900,20 @@
     from { -ms-transform: rotate(0deg); }
     to { -ms-transform: rotate(360deg); }
 }
+
 @-moz-keyframes spin {
     from { -moz-transform: rotate(0deg); }
     to { -moz-transform: rotate(360deg); }
 }
+
 @-webkit-keyframes spin {
     from { -webkit-transform: rotate(0deg); }
     to { -webkit-transform: rotate(360deg); }
 }
+
 @keyframes spin {
-    from { transform:rotate(0deg); }
-    to { transform:rotate(360deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
@@ -885,25 +923,28 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 @fb-loader-color: #E6E6E6;
 
 .loader,
-.loader:before,
-.loader:after {
+.loader::before,
+.loader::after {
     background: @fb-loader-color;
     -webkit-animation: fb-loader 1s infinite ease-in-out;
     animation: fb-loader 1s infinite ease-in-out;
     width: 7px;
     height: 8px;
 }
-.loader:before,
-.loader:after {
+
+.loader::before,
+.loader::after {
     position: absolute;
     top: 0;
     content: '';
 }
-.loader:before {
+
+.loader::before {
     left: -10px;
     -webkit-animation-delay: -0.32s;
     animation-delay: -0.32s;
 }
+
 .loader {
     text-indent: -9999em;
     top: 50%;
@@ -916,9 +957,11 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     -webkit-animation-delay: -0.16s;
     animation-delay: -0.16s;
 }
-.loader:after {
+
+.loader::after {
     left: 10px;
 }
+
 @-webkit-keyframes fb-loader {
     0%,
     80%,
@@ -926,11 +969,13 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
+
     40% {
         box-shadow: 0 -2em @fb-loader-color;
         height: 5em;
     }
 }
+
 @keyframes fb-loader {
     0%,
     80%,
@@ -938,6 +983,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
+
     40% {
         box-shadow: 0 -2em @fb-loader-color;
         height: 5em;
@@ -946,4 +992,16 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 
 .bootstrap-3 {
     @import (less) '../../../node_modules/bootstrap/less/bootstrap.less';
+}
+
+.bootstrap-3 [class*='col-'] {
+    // simple reset
+    margin: initial;
+    padding: initial;
+}
+
+.bootstrap-3 .categories,
+.bootstrap-3 .plugins {
+    padding-left: 0;
+    padding-right: 0;
 }

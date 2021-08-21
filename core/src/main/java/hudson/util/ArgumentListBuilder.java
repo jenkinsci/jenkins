@@ -34,12 +34,11 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.BitSet;
 import java.util.Properties;
-import java.util.Map.Entry;
 import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -138,7 +137,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * @since 2.72
      */
-    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
+    public ArgumentListBuilder add(@NonNull Iterable<String> args) {
         for (String arg : args) {
             add(arg);
         }
@@ -159,7 +158,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public ArgumentListBuilder addKeyValuePair(String prefix, String key, String value, boolean mask) {
         if(key==null) return this;
-        add(((prefix==null)?"-D":prefix)+key+'='+value, mask);
+        add((prefix == null ? "-D" : prefix) + key + '=' + value, mask);
         return this;
     }
 
@@ -170,7 +169,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.114
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
-        for (Entry<String,String> e : props.entrySet())
+        for (Map.Entry<String,String> e : props.entrySet())
             addKeyValuePair(prefix, e.getKey(), e.getValue(), false);
         return this;
     }
@@ -188,8 +187,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.378
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
-        for (Entry<String,String> e : props.entrySet()) {
-            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask != null) && propsToMask.contains(e.getKey()));
+        for (Map.Entry<String,String> e : props.entrySet()) {
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), propsToMask != null && propsToMask.contains(e.getKey()));
         }
         return this;
     }
@@ -230,8 +229,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
         properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));
 
-        for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask != null) && propsToMask.contains(entry.getKey()));
+        for (Map.Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
+            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), propsToMask != null && propsToMask.contains(entry.getKey()));
         }
         return this;
     }
@@ -251,6 +250,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
         return new VariableResolver<String>() {
 
+            @Override
             public String resolve(String name) {
                 final String value = original.resolve(name);
                 if (value == null) return null;
@@ -351,7 +351,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                     quotedArgs.append('"').append(c);
                     c = '"';
                 }
-                percent = (c == '%');
+                percent = c == '%';
                 if (quoted) quotedArgs.append(c);
             }
             if (i == 0) {
@@ -361,7 +361,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                     quotedArgs.append('"');
                 }
             }
-            if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+            if (quoted) {
+                quotedArgs.append('"');
+            } else {
+                quotedArgs.append(arg);
+            }
             
             windowsCommand.add(quotedArgs, mask.get(i));
         }
@@ -421,6 +425,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Debug/error message friendly output.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (int i=0; i<args.size(); i++) {

@@ -1,5 +1,5 @@
 <div>
-    Wird ein Slave über JNLP gestartet, versucht der Slave-Agent über einen bestimmten TCP-Port
+    Wird ein Agent über JNLP gestartet, versucht dieser über einen bestimmten TCP-Port
     den Jenkins-Master zu erreichen. In abgesicherten Netzwerken kann dieser Verbindungsaufbau
     jedoch scheitern. Probleme können auch dadurch entstehen, wenn Jenkins hinter einem Lastverteiler (load balancer),
     <a href="http://www.serverwatch.com/tutorials/article.php/3290851">einem Apache Reverse-Proxy</a>
@@ -11,9 +11,9 @@
     einen anderen Rechner/Port leiten. Das Feld nimmt Eingaben in den Formaten
     "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>" oder "<tt>HOST:</tt>" entgegen.
 
-    <p>Beim ersten Format versucht der JNLP Slave-Agent über den angegebenen Port
+    <p>Beim ersten Format versucht der JNLP-Agent über den angegebenen Port
     der angegebenen Rechner zu erreichen und setzt voraus, dass Sie Ihr Netzwerk
-    so konfiguriert haben, dass diese Anfrage auf den JNLP Slave-TCP-Port des 
+    so konfiguriert haben, dass diese Anfrage auf den JNLP-Agenten-TCP-Port des
     Jenkins Masters weitergeleitet wird.
     
     <p>

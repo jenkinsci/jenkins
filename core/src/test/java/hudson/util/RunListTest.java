@@ -65,7 +65,7 @@ public class RunListTest {
 		rlist = RunList.fromRuns(list);
 	}
 
-	@PrepareForTest({Run.class})
+	@PrepareForTest(Run.class)
 	@Test
 	public void byTimestampAllRuns() {
 		setUpByTimestampRuns();
@@ -75,8 +75,9 @@ public class RunListTest {
 	}
 
     @Issue("JENKINS-21159")
-	@PrepareForTest({Run.class})
+	@PrepareForTest(Run.class)
 	@Test
+	@SuppressWarnings("deprecation")
 	public void byTimestampFirstRun() {
 		setUpByTimestampRuns();
 		// Only r1
@@ -85,8 +86,9 @@ public class RunListTest {
 		assertEquals(1, tested.getFirstBuild().getNumber());
 	}
 
-	@PrepareForTest({Run.class})
+	@PrepareForTest(Run.class)
 	@Test
+	@SuppressWarnings("deprecation")
 	public void byTimestampLastRun() {
 		setUpByTimestampRuns();
 		// Only r2

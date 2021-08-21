@@ -24,10 +24,12 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.security.Permission;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 /**
@@ -56,5 +58,11 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");
         }
+    }
+
+    @NonNull
+    @Override
+    public Permission getRequiredGlobalConfigPagePermission() {
+        return Jenkins.MANAGE;
     }
 }

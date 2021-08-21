@@ -23,11 +23,11 @@
  */
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.Proxy;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProxyConfigurationTest {
 

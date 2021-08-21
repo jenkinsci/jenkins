@@ -14,7 +14,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ import java.io.IOException;
 @Extension
 @Symbol("cloud")
 @Restricted(NoExternalUse.class)
-@RestrictedSince("TODO")
+@RestrictedSince("2.205")
 public class GlobalCloudConfiguration implements RootAction {
 
     @CheckForNull

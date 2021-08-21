@@ -8,16 +8,16 @@ import jenkins.tools.ToolConfigurationCategory;
 
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 //as close as it gets to the global Maven Project configuration
-@Extension(ordinal = 50) @Symbol("maven")
+@Extension(ordinal = 50) @Symbol("mavenGlobalConfig")
 public class GlobalMavenConfig extends GlobalConfiguration  implements PersistentDescriptor {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;
 
     @Override
-    public @Nonnull ToolConfigurationCategory getCategory() {
+    public @NonNull ToolConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
@@ -39,7 +39,7 @@ public class GlobalMavenConfig extends GlobalConfiguration  implements Persisten
         return settingsProvider != null ? settingsProvider : new DefaultSettingsProvider();
     }
 
-    public static @Nonnull GlobalMavenConfig get() {
+    public static @NonNull GlobalMavenConfig get() {
         return GlobalConfiguration.all().getInstance(GlobalMavenConfig.class);
     }
 

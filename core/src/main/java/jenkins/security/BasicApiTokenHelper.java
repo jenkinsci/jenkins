@@ -30,7 +30,7 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 

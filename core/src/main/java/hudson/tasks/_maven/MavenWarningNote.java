@@ -49,10 +49,11 @@ public class MavenWarningNote extends ConsoleNote {
 
     @Extension @Symbol("mavenWarnings")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Maven Warnings";
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("^\\[WARNING\\]");
+    public static final Pattern PATTERN = Pattern.compile("^\\[WARNING\\]");
 }

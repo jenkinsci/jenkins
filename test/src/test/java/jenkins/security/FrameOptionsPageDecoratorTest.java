@@ -21,7 +21,7 @@ public class FrameOptionsPageDecoratorTest {
     public void defaultHeaderPresent() throws IOException, SAXException {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("");
-        assertEquals("Expected different X-Frame-Options value", getFrameOptionsFromResponse(page.getWebResponse()), "sameorigin");
+        assertEquals("Expected different X-Frame-Options value", "sameorigin", getFrameOptionsFromResponse(page.getWebResponse()));
     }
 
     @Test

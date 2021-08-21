@@ -27,7 +27,7 @@ package jenkins.model;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Run;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**

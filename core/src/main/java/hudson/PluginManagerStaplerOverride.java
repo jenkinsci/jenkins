@@ -1,7 +1,7 @@
 package hudson;
 
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point for selectively overriding parts of the {@link PluginManager} views
@@ -20,7 +20,7 @@ public abstract class PluginManagerStaplerOverride implements ExtensionPoint {
      * Return all implementations of this extension point
      * @return All implementations of this extension point
      */
-    public static @Nonnull ExtensionList<PluginManagerStaplerOverride> all() {
+    public static @NonNull ExtensionList<PluginManagerStaplerOverride> all() {
         return ExtensionList.lookup(PluginManagerStaplerOverride.class);
     }
 }

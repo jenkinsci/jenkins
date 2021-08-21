@@ -23,23 +23,41 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div id="rss-bar">
-    <a href="${rootURL}/legend" class="rss-bar-legend-link">${%Legend}</a>
-    <span class="rss-bar-item">
-      <a href="rssAll" class="rss-bar-item-icon-link"><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Atom feed"/></a>
-      <st:nbsp/>
-      <a href="rssAll" class="rss-bar-item-link">Atom feed ${%for all}</a>
-    </span>
-    <span class="rss-bar-item">
-      <a href="rssFailed" class="rss-bar-item-icon-link"><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Atom feed"/></a>
-      <st:nbsp/>
-      <a href="rssFailed" class="rss-bar-item-link">Atom feed ${%for failures}</a>
-    </span>
-    <span class="rss-bar-item">
-      <a href="rssLatest" class="rss-bar-item-icon-link" ><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Atom feed"/></a>
-      <st:nbsp/>
-      <a href="rssLatest" class="rss-bar-item-link">Atom feed ${%for just latest builds}</a>
-    </span>
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <div id="rss-bar">
+        <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Legend}</a>
+
+
+        <span class="rss-bar-item">
+            <a href="rssAll" class="yui-button link-button rss-bar-item-link">
+                <span class="leading-icon">
+                    <l:svgIcon class="icon-small" tooltip="Atom feed"
+                               ariaHidden="true"
+                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+                </span>
+                <span>Atom feed ${%for all}</span>
+            </a>
+        </span>
+        <span class="rss-bar-item">
+            <a href="rssFailed" class="yui-button link-button rss-bar-item-link">
+                <span class="leading-icon">
+                    <l:svgIcon class="icon-small" tooltip="Atom feed"
+                               ariaHidden="true"
+                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+                </span>
+                <span>Atom feed ${%for failures}</span>
+            </a>
+        </span>
+        <span class="rss-bar-item">
+            <a href="rssLatest" class="yui-button link-button rss-bar-item-link">
+                <span class="leading-icon">
+                    <l:svgIcon class="icon-small" tooltip="Atom feed"
+                               ariaHidden="true"
+                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+                </span>
+                <span>Atom feed ${%for just latest builds}</span>
+            </a>
+        </span>
+    </div>
 </j:jelly>

@@ -1,9 +1,11 @@
 <div>
-    Questo componente controlla il tempo di risposta di rete round trip dal master all'agente
-    e, se questo sale ripetutamente al di sopra di una certa soglia, pone l'agente non in linea.
+    Questo modulo mantiene sotto controllo il tempo di risposta di rete di
+    andata e ritorno dal master all'agente e, se aumenta ripetutamente al di
+    sopra di una certa soglia, contrassegna l'agente come non in linea.
 
     <p>
-    Ciò è utile per rilevare agenti che non rispondono o altri problemi di rete che bloccano
-    il canale di comunicazione. Più in dettaglio, il master invia all'agente un comando no-op
-    e controlla il tempo richiesto per ricevere il risultato di questo comando no-op.
+    Ciò è utile per rilevare agenti che non rispondono o altri problemi di
+    rete che bloccano il canale di comunicazione. Più nello specifico, il
+    master invia un comando no-op all'agente e controlla il tempo richiesto
+    per ricevere i risultati di tale comando no-op.
 </div>

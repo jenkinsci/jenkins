@@ -19,6 +19,7 @@ public abstract class RunRangeCommand extends CLICommand {
     @Argument(metaVar="RANGE",usage="Range of the build records to delete. 'N-M', 'N,M', or 'N'",required=true,index=1)
     public String range;
 
+    @Override
     protected int run() throws Exception {
         RangeSet rs = RangeSet.fromString(range,false);
 

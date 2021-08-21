@@ -36,9 +36,14 @@ THE SOFTWARE.
       The name of the enum to set as default value for the first configuration.
     </st:attribute>
   </st:documentation>
-  <select class="setting-input" name="${field}">
-    <j:forEach var="it" items="${descriptor.getPropertyType(instance,field).enumConstants}">
-      <f:option value="${it.name()}" selected="${instance != null ? it==instance[field] : it.name()==default}">
+
+  <j:if test="${attrs.field==null}">
+    <j:set target="${attrs}" property="field" value="${entry.field}" />
+  </j:if>
+
+  <select class="setting-input" name="${attrs.field}">
+    <j:forEach var="it" items="${descriptor.getPropertyType(instance,attrs.field).getEnumConstants()}">
+      <f:option value="${it.name()}" selected="${instance[attrs.field]!=null ? it==instance[attrs.field] : it.name()==attrs.default}">
         <d:invokeBody />
       </f:option>
     </j:forEach>

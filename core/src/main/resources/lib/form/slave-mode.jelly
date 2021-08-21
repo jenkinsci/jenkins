@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    listbox for choosing the agent's usage.
+    A listbox for choosing the agent's usage.
 
     <st:attribute name="name">
       Name of the &lt;select> element.
@@ -36,10 +36,19 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
-    <select class="setting-input" name="${name}">
-      <j:forEach var="m" items="${h.getNodeModes()}">
-        <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
-      </j:forEach>
-    </select>
+    <j:choose>
+      <j:when test="${readOnlyMode}">
+        <span>${node.mode}</span>
+      </j:when>
+      <j:otherwise>
+
+        <select class="setting-input" name="${name}">
+          <j:forEach var="m" items="${h.getNodeModes()}">
+            <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
+          </j:forEach>
+        </select>
+
+      </j:otherwise>
+    </j:choose>
   </f:entry>
 </j:jelly>

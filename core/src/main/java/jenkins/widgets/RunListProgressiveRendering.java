@@ -66,7 +66,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
             synchronized (this) {
                 results.add(element);
             }
-            decay *= (1 - 1 / MAX_LIKELY_RUNS);
+            decay *= 1 - 1 / MAX_LIKELY_RUNS;
             progress(1 - decay);
         }
     }

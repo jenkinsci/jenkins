@@ -23,7 +23,11 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -151,35 +155,35 @@ public class HudsonTest {
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void computerConfigureLink() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("computer/(master)/configure");
+        HtmlPage page = j.createWebClient().goTo("computer/(built-in)/configure");
         j.submit(page.getFormByName("config"));
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
-        HtmlPage page = wc.goTo("computer/(master)/");
+        HtmlPage page = wc.goTo("computer/(built-in)/");
         for (HtmlAnchor a : page.getAnchors()) {
             assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
         }
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(built-in)/doDelete"), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 
-        // the master computer object should be still here
-        page = wc.goTo("computer/(master)/");
+        // the built-in computer object should be still here
+        page = wc.goTo("computer/(built-in)/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
     }
 

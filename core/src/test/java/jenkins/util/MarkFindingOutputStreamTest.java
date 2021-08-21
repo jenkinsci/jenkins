@@ -84,7 +84,7 @@ public class MarkFindingOutputStreamTest {
             m.write(s.charAt(i));
     }
 
-    class MarkCountingOutputStream extends MarkFindingOutputStream {
+    static class MarkCountingOutputStream extends MarkFindingOutputStream {
         int count = 0;
 
         MarkCountingOutputStream(OutputStream base) {

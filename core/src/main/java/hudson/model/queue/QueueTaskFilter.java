@@ -33,7 +33,7 @@ import hudson.model.ResourceList;
 
 import java.io.IOException;
 import java.util.Collection;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.
@@ -48,72 +48,89 @@ public abstract class QueueTaskFilter implements Queue.Task {
         this.base = base;
     }
 
+    @Override
     public Label getAssignedLabel() {
         return base.getAssignedLabel();
     }
 
+    @Override
     public Node getLastBuiltOn() {
         return base.getLastBuiltOn();
     }
 
     @Deprecated
+    @Override
     public boolean isBuildBlocked() {
         return base.isBuildBlocked();
     }
 
     @Deprecated
+    @Override
     public String getWhyBlocked() {
         return base.getWhyBlocked();
     }
 
+    @Override
     public CauseOfBlockage getCauseOfBlockage() {
         return base.getCauseOfBlockage();
     }
 
+    @Override
     public String getName() {
         return base.getName();
     }
 
+    @Override
     public String getFullDisplayName() {
         return base.getFullDisplayName();
     }
 
+    @Override
     public long getEstimatedDuration() {
         return base.getEstimatedDuration();
     }
 
+    @Override
     public @CheckForNull Executable createExecutable() throws IOException {
         return base.createExecutable();
     }
 
+    @Override
     public void checkAbortPermission() {
         base.checkAbortPermission();
     }
 
+    @Override
     public boolean hasAbortPermission() {
         return base.hasAbortPermission();
     }
 
+    @Override
     public String getUrl() {
         return base.getUrl();
     }
 
+    @Override
     public boolean isConcurrentBuild() {
         return base.isConcurrentBuild();
     }
 
+    @Override
     public String getDisplayName() {
         return base.getDisplayName();
     }
 
+    @Override
     public ResourceList getResourceList() {
         return base.getResourceList();
     }
 
+    @Override
     public Collection<? extends SubTask> getSubTasks() {
         return base.getSubTasks();
     }
 
+    @Override
     public Object getSameNodeConstraint() {
         return base.getSameNodeConstraint();
     }

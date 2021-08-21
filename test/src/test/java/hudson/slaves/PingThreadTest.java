@@ -38,6 +38,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeoutException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -69,7 +70,7 @@ public class PingThreadTest {
         assertNotNull(pingThread);
 
         // Simulate lost connection
-        assert new ProcessBuilder("kill", "-TSTP", pid).start().waitFor() == 0;
+        assertEquals(0, new ProcessBuilder("kill", "-TSTP", pid).start().waitFor());
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
@@ -86,7 +87,7 @@ public class PingThreadTest {
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            assert new ProcessBuilder("kill", "-CONT", pid).start().waitFor() == 0;
+            assertEquals(0, new ProcessBuilder("kill", "-CONT", pid).start().waitFor());
         }
     }
 

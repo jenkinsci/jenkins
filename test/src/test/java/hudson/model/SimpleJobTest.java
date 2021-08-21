@@ -23,7 +23,7 @@ public class SimpleJobTest {
     @Test
     public void testGetEstimatedDuration() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
@@ -45,7 +45,7 @@ public class SimpleJobTest {
     @Test
     public void testGetEstimatedDurationWithOneRun() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
@@ -55,22 +55,23 @@ public class SimpleJobTest {
         assertEquals(42, project.getEstimatedDuration());
     }
     
+    @Test
     public void testGetEstimatedDurationWithFailedRun() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 42, null);
         runs.put(1, lastBuild);
 
-        assertEquals(-1, project.getEstimatedDuration());
+        assertEquals(42, project.getEstimatedDuration());
     }
     
     @Test
     public void testGetEstimatedDurationWithNoRuns() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
@@ -80,7 +81,7 @@ public class SimpleJobTest {
     @Test
     public void testGetEstimatedDurationIfPrevious3BuildsFailed() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
@@ -109,7 +110,7 @@ public class SimpleJobTest {
     @Test
     public void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws IOException {
         
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
         Job project = createMockProject(runs);
         
@@ -126,7 +127,7 @@ public class SimpleJobTest {
     @SuppressWarnings("unchecked")
     private static class TestBuild extends Run {
         
-        public TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
+        TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
             super(project);
             this.result = result;
             this.duration = duration;
@@ -150,13 +151,12 @@ public class SimpleJobTest {
         
     }
 
-    @SuppressWarnings("unchecked")
     private class TestJob extends Job implements TopLevelItem {
 
         int i;
         private final SortedMap<Integer, TestBuild> runs;
 
-        public TestJob(SortedMap<Integer, TestBuild> runs) {
+        TestJob(SortedMap<Integer, TestBuild> runs) {
             super(rule.jenkins, "name");
             this.runs = runs;
             i = 1;
@@ -181,6 +181,7 @@ public class SimpleJobTest {
         protected void removeRun(Run run) {
         }
 
+        @Override
         public TopLevelItemDescriptor getDescriptor() {
             throw new AssertionError();
         }

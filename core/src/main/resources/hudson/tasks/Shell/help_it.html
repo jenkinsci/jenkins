@@ -1,20 +1,25 @@
 <div>
-  Esegue uno script shell (<tt>sh</tt> per impostazione predefinita, ma tale opzione è configurabile) per
-  compilare il progetto. Lo script sarà eseguito avendo come directory corrente lo spazio di lavoro.
-  Immettere i contenuti dello script shell. Se il proprio script shell non ha una riga di intestazione
-  come <tt>#!/bin/sh</tt> &mdash;, allora sarà utilizzata la shell configurata a livello di sistema, ma
-  è anche possibile utilizzare la riga di intestazione per scrivere lo script in un altro linguaggio
-  (come <tt>#!/bin/perl</tt>) o controllare le opzioni utilizzate dalla shell.
+  Esegue uno script shell (per impostazione predefinita <tt>sh</tt>, ma il
+  parametro è configurabile) per compilare il progetto. Lo script sarà
+  eseguito impostando la directory dello spazio di lavoro come directory
+  corrente. Immettere i contenuti dello script shell. Se lo script shell non
+  ha una riga di intestazione come <tt>#!/bin/sh</tt>, sarà utilizzata la
+  shell configurata a livello di sistema, ma è anche possibile utilizzare la
+  riga di intestazione per scrivere lo script in un altro linguaggio (ad
+  esempio <tt>#!/bin/perl</tt>) o per controllare le opzioni utilizzate dalla
+  shell.
 
   <p>
-  Per impostazione predefinita, la schell sarà invocata con l'opzione "-ex". In questo modo tutti i comandi
-  saranno stampati prima di essere eseguiti, e la compilazione sarà considerata non riuscita se uno qualunque
-  dei comandi esce con un codice d'uscita diverso da zero. Aggiungere la riga <tt>#!/bin/...</tt> per modificare
-  questo comportamento.
+  Per impostazione predefinita, la shell sarà invocata con l'opzione "-ex". In
+  questo modo tutti i comandi saranno stampati prima di essere eseguiti e la
+  compilazione sarà considerata non riuscita se uno qualunque dei comandi esce
+  con un codice di uscita diverso da zero. Ancora una volta, si aggiunga la
+  riga <tt>#!/bin/...</tt> per modificare questo comportamento.
 
   <p>
-  Come buona pratica, si tenti di non immettere uno script shell di notevoli dimensioni. Si consideri invece
-  la possibilità di aggiungere lo script shell al sistema di controllo del codice sorgente e di chiamare semplicemente
-  quello script shell da Jenkins (tramite <tt>bash -ex myscript.sh</tt> o un comando simile), in modo da
-  tenere traccia delle modifiche allo script shell.
+  Come procedura consigliata, non si tenti di immettere uno script shell
+  corposo qui. Si consideri piuttosto l'aggiunta dello script shell al sistema
+  di gestione del codice sorgente, quindi semplicemente lo si richiami da
+  Jenkins (tramite <tt>bash -ex mioscript.sh</tt> o un'invocazione simile),
+  in modo da poter tracciare le modifiche al proprio script shell.
 </div>

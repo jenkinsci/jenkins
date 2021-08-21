@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Outputs a help icon
+
+    The help link is rendered as an SVG with an (?) icon.
+    
+    @since 2.234
+    <st:attribute name="iconSize">
+      Icon size, available are: small, medium, large, xlarge
+    </st:attribute>
+    <st:attribute name="tooltip">
+      The tooltip to display
+    </st:attribute>
+    <st:attribute name="class">
+      Class name to apply
+    </st:attribute>
+  </st:documentation>
+  <j:if test="${attrs.iconSize != null}">
+    <j:set var="iconSize" value="icon-${iconSize}"/>
+  </j:if>
+  <l:svgIcon tooltip="${tooltip}"
+             class="${class} ${iconSize}"
+             href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
+</j:jelly>

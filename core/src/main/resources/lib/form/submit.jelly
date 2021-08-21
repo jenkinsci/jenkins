@@ -36,6 +36,14 @@ THE SOFTWARE.
     <s:attribute name="value" use="required">
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
+
+    <s:attribute name="large">
+      Set to "true" to enable the large variant of the button
+    </s:attribute>
   </s:documentation>
-  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value ?: '%Submit'}" class="submit-button primary" />
+
+  <input type="submit"
+         name="${attrs.name ?: 'Submit'}"
+         value="${attrs.value ?: '%Submit'}"
+         class="submit-button primary ${attrs.large ? 'large-button' : ''}" />
 </j:jelly>

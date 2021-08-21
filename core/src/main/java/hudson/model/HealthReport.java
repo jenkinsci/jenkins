@@ -32,7 +32,7 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

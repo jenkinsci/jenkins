@@ -45,8 +45,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
+import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
 
@@ -132,10 +134,14 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
-     * Creates a new instance of a {@link Describable}
-     * from the structured form submission data posted
-     * by a radio button group.
+     * Creates a new instance of a {@link Describable} from the structured form submission data posted by a radio button group.
+     * @param config Submitted configuration for Radio List
+     * @return New instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
+     * @throws FormException Data submission error
+     * @since 1.312
      */
+    @CheckForNull
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
         if(config.isNullObject())
             return null;    // none was selected
@@ -143,8 +149,21 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         return get(idx).newInstance(Stapler.getCurrentRequest(),config);
     }
 
-    public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
-        return newInstanceFromRadioList(parent.getJSONObject(name));
+    /**
+     * Creates a new instance of a {@link Describable} from the structured form submission data posted by a radio list.
+     * @since 1.312
+     * @param name Name of the form field
+     * @return Created instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
+     * @throws FormException Data submission error
+     */
+    @CheckForNull
+    public T newInstanceFromRadioList(@NonNull JSONObject parent, @NonNull String name) throws FormException {
+        try {
+            return newInstanceFromRadioList(parent.getJSONObject(name));
+        } catch (JSONException ex) {
+            throw new FormException(ex, name);
+        }
     }
 
     /**
@@ -160,6 +179,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean add(D d) {
         boolean r = super.add(d);
         getDescriptorExtensionList().add(d);
@@ -224,7 +244,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
+    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor>> getLegacyDescriptors(Class<T> type) {
         return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
     }
 
@@ -233,14 +253,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static Iterable<Descriptor> listLegacyInstances() {
         return new Iterable<Descriptor>() {
+            @Override
             public Iterator<Descriptor> iterator() {
                 return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
                     new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                        @Override
                         protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
                             return v.iterator();
                         }
                     }) {
 
+                    @Override
                     protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
                         return item.getInstance();
                     }

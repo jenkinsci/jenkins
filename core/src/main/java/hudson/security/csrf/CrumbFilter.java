@@ -7,7 +7,7 @@ package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import jenkins.util.SystemProperties;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -15,7 +15,10 @@ import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +29,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
@@ -37,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 public class CrumbFilter implements Filter {
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
-     * (and different implementations indeed do this differently --- See HUDSON-3878),
+     * (and different implementations indeed do this differently --- See JENKINS-3878),
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
@@ -55,9 +60,59 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
+    private static class Security1774ServletRequest extends HttpServletRequestWrapper {
+        Security1774ServletRequest(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public String getPathInfo() {
+            // see Stapler#getServletPath
+            return canonicalPath(getRequestURI().substring(getContextPath().length()));
+        }
+
+
+        // Copied from Stapler#canonicalPath
+        private static String canonicalPath(String path) {
+            List<String> r = new ArrayList<>(Arrays.asList(path.split("/+")));
+            for (int i=0; i<r.size(); ) {
+                if (r.get(i).length()==0 || r.get(i).equals(".")) {
+                    // empty token occurs for example, "".split("/+") is [""]
+                    r.remove(i);
+                } else
+                if (r.get(i).equals("..")) {
+                    // i==0 means this is a broken URI.
+                    r.remove(i);
+                    if (i>0) {
+                        r.remove(i-1);
+                        i--;
+                    }
+                } else {
+                    i++;
+                }
+            }
+
+            StringBuilder buf = new StringBuilder();
+            if (path.startsWith("/"))
+                buf.append('/');
+            boolean first = true;
+            for (String token : r) {
+                if (!first)     buf.append('/');
+                else            first = false;
+                buf.append(token);
+            }
+            // translation: if (path.endsWith("/") && !buf.endsWith("/"))
+            if (path.endsWith("/") && (buf.length()==0 || buf.charAt(buf.length()-1)!='/'))
+                buf.append('/');
+            return buf.toString();
+        }
+    }
+
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         CrumbIssuer crumbIssuer = getCrumbIssuer();
         if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
@@ -69,8 +124,9 @@ public class CrumbFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if ("POST".equals(httpRequest.getMethod())) {
+            HttpServletRequest wrappedRequest = UNPROCESSED_PATHINFO ? httpRequest : new Security1774ServletRequest(httpRequest);
             for (CrumbExclusion e : CrumbExclusion.all()) {
-                if (e.process(httpRequest,httpResponse,chain))
+                if (e.process(wrappedRequest,httpResponse,chain))
                     return;
             }
 
@@ -85,20 +141,20 @@ public class CrumbFilter implements Filter {
             }
 
             // JENKINS-40344: Don't spam the log just because a session is expired
-            Level level = Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
+            Level level = Jenkins.getAuthentication2() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
 
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.log(level, "Found invalid crumb {0}. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script", crumb);
+                    LOGGER.log(level, "Found invalid crumb {0}. If you are calling this URL with a script, please use the API Token instead. More information: https://www.jenkins.io/redirect/crumb-cannot-be-used-for-script", crumb);
                 }
             }
 
             if (valid) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication().getName(), HttpServletResponse.SC_FORBIDDEN});
+                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication2().getName(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
@@ -132,6 +188,8 @@ public class CrumbFilter implements Filter {
     @Override
     public void destroy() {
     }
+
+    static /* non-final for Groovy */ boolean UNPROCESSED_PATHINFO = SystemProperties.getBoolean(CrumbFilter.class.getName() + ".UNPROCESSED_PATHINFO");
 
     private static final Logger LOGGER = Logger.getLogger(CrumbFilter.class.getName());
 }

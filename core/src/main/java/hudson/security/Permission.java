@@ -23,18 +23,19 @@
  */
 package hudson.security;
 
-import com.google.common.collect.ImmutableSet;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.jvnet.localizer.Localizable;
 
@@ -56,14 +57,15 @@ public final class Permission {
 
         // break eclipse compilation 
         //Override
-        public int compare(@Nonnull Permission one, @Nonnull Permission two) {
+        @Override
+        public int compare(@NonNull Permission one, @NonNull Permission two) {
             return one.getId().compareTo(two.getId());
         }
     };
 
-    public final @Nonnull Class owner;
+    public final @NonNull Class owner;
 
-    public final @Nonnull PermissionGroup group;
+    public final @NonNull PermissionGroup group;
 
     // if some plugin serialized old version of this class using XStream, `id` can be null
     private final @CheckForNull String id;
@@ -77,7 +79,7 @@ public final class Permission {
      * <p>
      * The expected naming convention is something like "BrowseWorkspace".
      */
-    public final @Nonnull String name;
+    public final @NonNull String name;
 
     /**
      * Human-readable description of this permission.
@@ -119,7 +121,7 @@ public final class Permission {
     /**
      * Scopes that this permission is directly contained by.
      */
-    private final @Nonnull Set<PermissionScope> scopes;
+    private final @NonNull Set<PermissionScope> scopes;
 
     /**
      * Defines a new permission.
@@ -146,9 +148,9 @@ public final class Permission {
      *      See {@link #impliedBy}.
      * @throws IllegalStateException if this permission was already defined
      */
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
+    public Permission(@NonNull PermissionGroup group, @NonNull String name, 
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
-            @Nonnull PermissionScope[] scopes) throws IllegalStateException {
+            @NonNull PermissionScope[] scopes) throws IllegalStateException {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -157,15 +159,15 @@ public final class Permission {
         this.description = description;
         this.impliedBy = impliedBy;
         this.enabled = enable;
-        this.scopes = ImmutableSet.copyOf(scopes);
+        this.scopes = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(scopes)));
         this.id = owner.getName() + '.' + name;
 
         group.add(this);
         ALL.add(this);
     }
 
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
-            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, @Nonnull PermissionScope scope) {
+    public Permission(@NonNull PermissionGroup group, @NonNull String name, 
+            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, @NonNull PermissionScope scope) {
         this(group,name,description,impliedBy,true,new PermissionScope[]{scope});
         assert scope!=null;
     }
@@ -175,7 +177,7 @@ public final class Permission {
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
      */
     @Deprecated
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
+    public Permission(@NonNull PermissionGroup group, @NonNull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
         this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
     }
 
@@ -184,7 +186,7 @@ public final class Permission {
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
      */
     @Deprecated
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy) {
+    public Permission(@NonNull PermissionGroup group, @NonNull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy) {
         this(group, name, description, impliedBy, PermissionScope.JENKINS);
     }
 
@@ -193,18 +195,18 @@ public final class Permission {
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
     @Deprecated
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Permission impliedBy) {
+    public Permission(@NonNull PermissionGroup group, @NonNull String name, @CheckForNull Permission impliedBy) {
         this(group,name,null,impliedBy);
     }
 
-    private Permission(@Nonnull PermissionGroup group, @Nonnull String name) {
+    private Permission(@NonNull PermissionGroup group, @NonNull String name) {
         this(group,name,null,null);
     }
 
     /**
      * Checks if this permission is contained in the specified scope, (either directly or indirectly.)
      */
-    public boolean isContainedBy(@Nonnull PermissionScope s) {
+    public boolean isContainedBy(@NonNull PermissionScope s) {
         for (PermissionScope c : scopes) {
             if (c.isContainedBy(s))
                 return true;
@@ -222,7 +224,7 @@ public final class Permission {
      * @return ID with the following format: <i>permissionClass.permissionName</i> 
      * @see #fromId(String)
      */
-    public @Nonnull String getId() {
+    public @NonNull String getId() {
         if (id == null) {
             return owner.getName() + '.' + name;
         }
@@ -244,7 +246,7 @@ public final class Permission {
      *      null if the conversion failed.
      * @see #getId()
      */
-    public static @CheckForNull Permission fromId(@Nonnull String id) {
+    public static @CheckForNull Permission fromId(@NonNull String id) {
         int idx = id.lastIndexOf('.');
         if(idx<0)   return null;
 
@@ -277,7 +279,7 @@ public final class Permission {
      * @return
      *      always non-null. Read-only.
      */
-    public static @Nonnull List<Permission> getAll() {
+    public static @NonNull List<Permission> getAll() {
         return ALL_VIEW;
     }
 

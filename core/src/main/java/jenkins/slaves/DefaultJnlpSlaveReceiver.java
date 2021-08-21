@@ -15,8 +15,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.util.SystemProperties;
@@ -83,7 +83,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterProperties(@Nonnull JnlpConnectionState event) {
+    public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
@@ -124,7 +124,8 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            if (cookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), ch.getProperty(COOKIE_NAME).toString().getBytes(StandardCharsets.UTF_8))) {
+            String channelCookie = (String)ch.getProperty(JnlpConnectionState.COOKIE_KEY);
+            if (cookie != null && channelCookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), channelCookie.getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
                 LOGGER.log(Level.INFO, "Disconnecting {0} as we are reconnected from the current peer", clientName);
@@ -136,7 +137,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 }
             } else {
                 event.reject(new ConnectionRefusalException(String.format(
-                        "%s is already connected to this master. Rejecting this connection.", clientName)));
+                        "%s is already connected to this controller. Rejecting this connection.", clientName)));
                 return;
             }
         }
@@ -145,7 +146,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void beforeChannel(@Nonnull JnlpConnectionState event) {
+    public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
@@ -158,12 +159,12 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         event.getChannelBuilder().withHeaderStream(log);
         String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
         if (cookie != null) {
-            event.getChannelBuilder().withProperty(COOKIE_NAME, cookie);
+            event.getChannelBuilder().withProperty(JnlpConnectionState.COOKIE_KEY, cookie);
         }
     }
 
     @Override
-    public void afterChannel(@Nonnull JnlpConnectionState event) {
+    public void afterChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         try {
@@ -180,7 +181,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void channelClosed(@Nonnull JnlpConnectionState event) {
+    public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
         if (cause instanceof ClosedChannelException) {
@@ -192,16 +193,16 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     private static class State implements JnlpConnectionState.ListenerState {
-        @Nonnull
+        @NonNull
         private final SlaveComputer node;
         @CheckForNull
         private OutputStream log;
 
-        public State(@Nonnull SlaveComputer node) {
+        State(@NonNull SlaveComputer node) {
             this.node = node;
         }
 
-        @Nonnull
+        @NonNull
         public SlaveComputer getNode() {
             return node;
         }
@@ -211,12 +212,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             return log;
         }
 
-        public void setLog(@Nonnull OutputStream log) {
+        public void setLog(@NonNull OutputStream log) {
             this.log = log;
         }
     }
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }

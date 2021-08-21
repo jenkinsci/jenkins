@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -253,7 +253,7 @@ public abstract class ParameterValue implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
         return result;
     }
 

@@ -26,7 +26,6 @@ package hudson.model;
 
 import hudson.security.ACLContext;
 import jenkins.model.DependencyDeclarer;
-import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import jenkins.util.DirectedGraph;
@@ -41,7 +40,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -86,7 +84,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)){
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)){
             this.computationalData = new HashMap<>();
             for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
@@ -213,13 +211,13 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) {
-            return ImmutableList.of();
+            return Collections.emptyList();
         } else {
-            ImmutableList.Builder<Dependency> builder = ImmutableList.builder();
+            List<Dependency> builder = new ArrayList<>();
             for (DependencyGroup dependencyGroup : v) {
                 builder.addAll(dependencyGroup.getGroup());
             }
-            return builder.build();
+            return Collections.unmodifiableList(builder);
         }
 
     }
@@ -342,7 +340,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
-        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
+        for (Map.Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             e.getValue().sort(NAME_COMPARATOR);
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
@@ -350,6 +348,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<DependencyGroup>() {
+        @Override
         public int compare(DependencyGroup lhs, DependencyGroup rhs) {
             int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
             return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
@@ -361,6 +360,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
+    @Override
     public int compare(AbstractProject o1, AbstractProject o2) {
         return topologicalOrder.compare(o1,o2);
     }
@@ -401,7 +401,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
          * Decide whether build should be triggered and provide any Actions for the build.
          * Default implementation always returns true (for backward compatibility), and
          * adds no Actions. Subclasses may override to control how/if the build is triggered.
-         * <p>The authentication in effect ({@link Jenkins#getAuthentication}) will be that of the upstream build.
+         * <p>The authentication in effect ({@link Jenkins#getAuthentication2}) will be that of the upstream build.
          * An implementation is expected to perform any relevant access control checks:
          * that an upstream project can both see and build a downstream project,
          * or that a downstream project can see an upstream project.

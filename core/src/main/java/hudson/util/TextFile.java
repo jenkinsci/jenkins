@@ -29,7 +29,7 @@ import hudson.Util;
 import jenkins.util.io.LinesStream;
 
 import java.nio.file.Files;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -40,6 +40,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 /**
  * Represents a text file.
@@ -50,9 +51,9 @@ import java.nio.charset.StandardCharsets;
  */
 public class TextFile {
 
-    public final @Nonnull File file;
+    public final @NonNull File file;
 
-    public TextFile(@Nonnull File file) {
+    public TextFile(@NonNull File file) {
         this.file = file;
     }
 
@@ -83,15 +84,30 @@ public class TextFile {
     /**
      * @throws RuntimeException in the case of {@link IOException} in {@link #linesStream()}
      * @deprecated This method does not properly propagate errors and may lead to file descriptor leaks
-     *             if the collection is not fully iterated. Use {@link #linesStream()} instead.
+     *             if the collection is not fully iterated. Use {@link #lines2()} instead.
      */
     @Deprecated
-    public @Nonnull Iterable<String> lines() {
+    public @NonNull Iterable<String> lines() {
         try {
             return linesStream();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Read all lines from the file as a {@link Stream}. Bytes from the file are decoded into
+     * characters using the {@link StandardCharsets#UTF_8 UTF-8} {@link Charset charset}. If timely
+     * disposal of file system resources is required, the try-with-resources construct should be
+     * used to ensure that {@link Stream#close()} is invoked after the stream operations are
+     * completed.
+     *
+     * @return the lines from the file as a {@link Stream}
+     * @throws IOException if an I/O error occurs opening the file
+     */
+    @NonNull
+    public Stream<String> lines2() throws IOException {
+        return Files.lines(Util.fileToPath(file));
     }
 
     /**
@@ -102,9 +118,11 @@ public class TextFile {
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
      * @since 2.111
+     * @deprecated use {@link #lines2}
      */
     @CreatesObligation
-    public @Nonnull LinesStream linesStream() throws IOException {
+    @Deprecated
+    public @NonNull LinesStream linesStream() throws IOException {
         return new LinesStream(Util.fileToPath(file));
     }
 
@@ -126,7 +144,7 @@ public class TextFile {
     /**
      * Reads the first N characters or until we hit EOF.
      */
-    public @Nonnull String head(int numChars) throws IOException {
+    public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
         try (Reader r = new FileReader(file)) {
@@ -171,7 +189,7 @@ public class TextFile {
      * <p>
      * So all in all, this algorithm should work decently, and it works quite efficiently on a large text.
      */
-    public @Nonnull String fastTail(int numChars, Charset cs) throws IOException {
+    public @NonNull String fastTail(int numChars, Charset cs) throws IOException {
 
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             long len = raf.length();
@@ -192,7 +210,7 @@ public class TextFile {
     /**
      * Uses the platform default encoding.
      */
-    public @Nonnull String fastTail(int numChars) throws IOException {
+    public @NonNull String fastTail(int numChars) throws IOException {
         return fastTail(numChars,Charset.defaultCharset());
     }
 

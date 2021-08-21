@@ -44,7 +44,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Trigger} that runs a job periodically.
@@ -54,7 +54,7 @@ import javax.annotation.Nonnull;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(@Nonnull String spec) throws ANTLRException {
+    public TimerTrigger(@NonNull String spec) throws ANTLRException {
         super(spec);
     }
 
@@ -69,10 +69,12 @@ public class TimerTrigger extends Trigger<BuildableItem> {
 
     @Extension @Symbol("cron")
     public static class DescriptorImpl extends TriggerDescriptor {
+        @Override
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.TimerTrigger_DisplayName();
         }

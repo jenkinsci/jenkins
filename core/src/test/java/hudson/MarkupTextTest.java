@@ -23,13 +23,13 @@
  */
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-
 import hudson.MarkupText.SubText;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -60,8 +60,8 @@ public class MarkupTextTest {
     public void findTokensOnSubText() {
         MarkupText t = new MarkupText("Fixed 2 issues in this commit, fixing issue 155, 145");
         List<SubText> tokens = t.findTokens(Pattern.compile("issue .*"));
-        assertEquals("Expected one token", 1, tokens.size());
-        assertEquals("Expected single token was incorrect", "issue 155, 145", tokens.get(0).group(0));
+        assertEquals(1, tokens.size(), "Expected one token");
+        assertEquals("issue 155, 145", tokens.get(0).group(0), "Expected single token was incorrect");
         for (SubText st : tokens.get(0).findTokens(Pattern.compile("([0-9]+)")))
             st.surroundWith("<$1>","<$1>");
 

@@ -6,12 +6,14 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.util.FormValidation;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import org.apache.commons.io.FileUtils;
@@ -25,7 +27,7 @@ import org.jvnet.hudson.test.SleepBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class AbstractItemTest {
@@ -47,7 +49,7 @@ public class AbstractItemTest {
 
         // update on disk representation
         File f = p.getConfigFile().getFile();
-        FileUtils.writeStringToFile(f, FileUtils.readFileToString(f).replaceAll("Hello World", "Good Evening"));
+        FileUtils.writeStringToFile(f, FileUtils.readFileToString(f, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
         // reload away
         p.doReload();
@@ -99,7 +101,7 @@ public class AbstractItemTest {
             try {
                 p.doCheckNewName("foo");
                 fail("Expecting AccessDeniedException");
-            } catch (AccessDeniedException2 e) {
+            } catch (AccessDeniedException3 e) {
                 assertThat(e.permission, equalTo(Item.CREATE));
             }
         }
@@ -116,14 +118,14 @@ public class AbstractItemTest {
 
         WebClient w = j.createWebClient();
         WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Arrays.asList(new NameValuePair("newName", "bar")));
+        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "bar")));
         w.login("alice", "alice");
         Page page = w.getPage(wr);
         assertThat(getPath(page.getUrl()), equalTo(p.getUrl()));
         assertThat(p.getName(), equalTo("bar"));
 
         wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Arrays.asList(new NameValuePair("newName", "baz")));
+        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "baz")));
         w.login("bob", "bob");
 
         w.setThrowExceptionOnFailingStatusCode(false);

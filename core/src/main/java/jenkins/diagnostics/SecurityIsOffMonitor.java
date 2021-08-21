@@ -32,6 +32,11 @@ public class SecurityIsOffMonitor extends AdministrativeMonitor {
         return !Jenkins.get().isUseSecurity();
     }
 
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */

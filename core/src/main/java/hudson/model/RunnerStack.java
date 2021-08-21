@@ -28,7 +28,7 @@ import hudson.model.Run.RunExecution;
 import java.util.Stack;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Keeps track of {@link RunExecution}s that are currently executing on the given thread

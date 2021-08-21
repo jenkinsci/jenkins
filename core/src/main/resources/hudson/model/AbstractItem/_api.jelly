@@ -33,6 +33,6 @@ THE SOFTWARE.
     </p>
     <h2>Delete a job</h2>
     <p>
-        To programmatically delete this job, do HTTP POST to <a href="../doDelete">this URL</a>.
+        To programmatically delete this job, do HTTP DELETE to <a href="../">this URL</a>.
     </p>
 </j:jelly>

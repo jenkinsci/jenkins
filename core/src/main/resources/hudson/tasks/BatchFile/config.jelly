@@ -32,5 +32,17 @@ THE SOFTWARE.
     <f:entry title="${%ERRORLEVEL to set build unstable}" field="unstableReturn" >
       <f:number value="${instance.unstableReturn}" min="-2147483648" max="2147483647" step="1" />
     </f:entry>
+
+    <j:if test="${!empty(instance.configuredLocalRules) or !empty(descriptor.applicableLocalRules)}">
+      <f:entry title="${%filterRules}">
+        <f:hetero-list name="configuredLocalRules"
+                       hasHeader="true"
+                       oneEach="true"
+                       disableDragAndDrop="true"
+                       descriptors="${descriptor.applicableLocalRules}"
+                       items="${instance.configuredLocalRules}"
+                       addCaption="${%addFilterRule}"/>
+      </f:entry>
+    </j:if>
   </f:advanced>
 </j:jelly>

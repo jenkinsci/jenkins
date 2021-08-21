@@ -92,9 +92,10 @@ public class ExtensionListTest {
 //
 //
 
-    public static abstract class FishDescriptor extends Descriptor<Fish> {}
+    public abstract static class FishDescriptor extends Descriptor<Fish> {}
 
-    public static abstract class Fish implements Describable<Fish> {
+    public abstract static class Fish implements Describable<Fish> {
+        @Override
         public Descriptor<Fish> getDescriptor() {
             return Jenkins.get().getDescriptor(getClass());
         }
@@ -121,7 +122,7 @@ public class ExtensionListTest {
     public void descriptorLookup() throws Exception {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
         assertSame(d,list.get(Sishamo.DescriptorImpl.class));
 
         assertSame(d, j.jenkins.getDescriptor(Sishamo.class));
@@ -130,9 +131,9 @@ public class ExtensionListTest {
     @Test
     public void fishDiscovery() throws Exception {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
-        DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
+        DescriptorList<Fish> LIST = new DescriptorList<>(Fish.class);
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Tai.DescriptorImpl.class));
         assertNotNull(list.get(Saba.DescriptorImpl.class));
@@ -149,7 +150,7 @@ public class ExtensionListTest {
         assertNotNull(LIST.findByName(Saba.class.getName()));
 
         // DescriptorList can be gone and new one created but it should still have the same list
-        LIST = new DescriptorList<Fish>(Fish.class);
+        LIST = new DescriptorList<>(Fish.class);
         assertEquals(3,LIST.size());
         assertNotNull(LIST.findByName(Tai.class.getName()));
         assertNotNull(LIST.findByName(Sishamo.class.getName()));
@@ -159,7 +160,7 @@ public class ExtensionListTest {
     @Test
     public void legacyDescriptorList() throws Exception {
         // created in a legacy fashion without any tie to ExtensionList
-        DescriptorList<Fish> LIST = new DescriptorList<Fish>();
+        DescriptorList<Fish> LIST = new DescriptorList<>();
 
         // we won't auto-discover anything
         assertEquals(0,LIST.size());
@@ -170,7 +171,7 @@ public class ExtensionListTest {
         assertNotNull(LIST.findByName(Sishamo.class.getName()));
 
         // create a new list and it forgets everything.
-        LIST = new DescriptorList<Fish>();
+        LIST = new DescriptorList<>();
         assertEquals(0,LIST.size());
     }
 
@@ -217,4 +218,9 @@ public class ExtensionListTest {
         assertEquals(0, list.size());
     }
 
+    @Issue("JENKINS-62056")
+    @Test
+    public void checkSort() {
+        ExtensionList.lookup(Object.class).get(0); // exceptions are a problem
+    }
 }

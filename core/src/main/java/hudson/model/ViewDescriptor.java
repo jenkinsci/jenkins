@@ -30,8 +30,8 @@ import hudson.views.ViewJobFilter;
 
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -138,7 +138,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * @since 2.37
      */
     @SuppressWarnings("unused") // expose utility check method to subclasses
-    protected FormValidation checkDisplayName(@Nonnull View view, @CheckForNull String value) {
+    protected FormValidation checkDisplayName(@NonNull View view, @CheckForNull String value) {
         if (StringUtils.isBlank(value)) {
             // no custom name, no need to check
             return FormValidation.ok();

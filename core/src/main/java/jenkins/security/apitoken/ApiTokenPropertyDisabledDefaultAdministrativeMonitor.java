@@ -51,7 +51,12 @@ public class ApiTokenPropertyDisabledDefaultAdministrativeMonitor extends Admini
     public boolean isActivated() {
         return ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationEnabled();
     }
-    
+
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if (no == null) {

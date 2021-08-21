@@ -97,6 +97,7 @@ public class StaplerSignaturesTest {
                 "method java.lang.Object wait long",
                 "method java.lang.Object wait"
         ));
+        @Override
         public void getFoo() {}
         public void subtypeExclusive(){}
         public void subtypeExclusive(String arg){}

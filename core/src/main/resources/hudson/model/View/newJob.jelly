@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout norefresh="true" type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
@@ -38,7 +38,7 @@ THE SOFTWARE.
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
               <div class="add-item-name">
-                <label for="name">${%ItemName.label}</label>
+                <label for="name" class="h3">${%ItemName.label}</label>
                 <input name="name" id="name" data-valid="false" type="text" tabindex="0" />
                 <div class="input-help">&#187; ${%ItemName.help}</div>
                 <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>

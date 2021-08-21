@@ -38,6 +38,7 @@ public class AdministrativeError extends AdministrativeMonitor {
         all().add(this);
     }
 
+    @Override
     public boolean isActivated() {
         return true;
     }

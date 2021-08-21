@@ -10,7 +10,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration imp
     }
 
     @Override
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
@@ -57,14 +57,14 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration imp
         }
     }
 
-    public static @Nonnull QueueItemAuthenticatorConfiguration get() {
+    public static @NonNull QueueItemAuthenticatorConfiguration get() {
         return GlobalConfiguration.all().getInstance(QueueItemAuthenticatorConfiguration.class);
     }
 
     @Extension(ordinal = 100)
     public static class ProviderImpl extends QueueItemAuthenticatorProvider {
 
-        @Nonnull
+        @NonNull
         @Override
         public List<QueueItemAuthenticator> getAuthenticators() {
             return get().getAuthenticators();

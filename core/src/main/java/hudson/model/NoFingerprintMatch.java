@@ -33,6 +33,7 @@ public class NoFingerprintMatch implements ModelObject {
         this.md5sum = md5sum;
     }
 
+    @Override
     public String getDisplayName() {
         return md5sum;
     }

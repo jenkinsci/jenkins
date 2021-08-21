@@ -42,8 +42,8 @@ import hudson.security.PermissionGroup;
 import hudson.security.AccessControlled;
 import hudson.util.Secret;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Basic configuration unit in Hudson.
@@ -125,6 +125,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * The returned string should not include the display names
      * of {@link #getParent() ancestor items}.
      */
+    @Override
     String getDisplayName();
 
     /**
@@ -158,7 +159,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * @since 1.419
      */
     @Nullable
-    default String getRelativeNameFrom(@Nonnull Item item)  {
+    default String getRelativeNameFrom(@NonNull Item item)  {
         return getRelativeNameFrom(item.getParent());
 
     }
@@ -242,6 +243,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * or {@link AbstractItem#getConfigFile()} to obtain the file
      * to save the data.
      */
+    @Override
     void save() throws IOException;
 
     /**

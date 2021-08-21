@@ -26,16 +26,23 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-        <j:set var="escapeEntryTitleAndDescription" value="false"/>
-        <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-        <j:if test="${it.originalFileName != null}">
-            <j:invokeStatic var="encodedName" className="hudson.Util" method="rawEncode">
-                <j:arg value="${it.name}" />
-            </j:invokeStatic>
-            <j:set var="path" value="parameter/${encodedName}/${it.originalFileName}"/>
-            <a href="${path}">${it.originalFileName}</a>
-            <st:nbsp/>
-            <a href="${path}?view">${%view}</a>
-        </j:if>
+    <j:set var="escapeEntryTitleAndDescription" value="false"/>
+    <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
+        <j:choose>
+            <j:when test="${it.originalFileName != null and it.originalFileName != ''}">
+                <j:invokeStatic var="encodedName" className="hudson.Util" method="rawEncode">
+                    <j:arg value="${it.name}" />
+                </j:invokeStatic>
+                <j:set var="path" value="parameter/${encodedName}/${encodedName}"/>
+                <a href="${path}">${%open}</a>
+                <st:nbsp/>
+                <a href="${path}/*view*">${%view}</a>
+            </j:when>
+            <j:otherwise>
+                <em>
+                    ${%nofile}
+                </em>
+            </j:otherwise>
+        </j:choose>
     </f:entry>
 </j:jelly>

@@ -31,7 +31,7 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
     public Channel getChannelOrFail() throws ChannelClosedException {
         final Channel ch = Channel.current();
         if (ch == null) {
-            throw new ChannelClosedException(new IllegalStateException("No channel associated with the thread"));
+            throw new ChannelClosedException(ch, new IllegalStateException("No channel associated with the thread"));
         }
         return ch;
     }
@@ -41,7 +41,7 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
     public Channel getOpenChannelOrFail() throws ChannelClosedException {
         final Channel ch = getChannelOrFail();
         if (ch.isClosingOrClosed()) { // TODO: Since Remoting 2.33, we still need to explicitly declare minimum Remoting version
-            throw new ChannelClosedException(new IllegalStateException("The associated channel " + ch + " is closing down or has closed down", ch.getCloseRequestCause()));
+            throw new ChannelClosedException(ch, new IllegalStateException("The associated channel " + ch + " is closing down or has closed down", ch.getCloseRequestCause()));
         }
         return ch;
     }

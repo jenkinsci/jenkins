@@ -4,7 +4,7 @@ import org.apache.commons.beanutils.Converter;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.util.concurrent.TimeUnit;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Represents a length of something, like {@code 3sec}.
@@ -81,6 +81,7 @@ public class TimeDuration {
     }
 
     public static class StaplerConverterImpl implements Converter {
+        @Override
         public Object convert(Class type, Object value) {
             if (value==null)
                 return null;

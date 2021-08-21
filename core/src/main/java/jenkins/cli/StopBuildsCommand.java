@@ -95,13 +95,13 @@ public class StopBuildsCommand extends CLICommand {
             try {
                 executor.doStop();
                 isAnyBuildStopped = true;
-                stdout.println(String.format("Build '%s' stopped for job '%s'", buildName, jobName));
+                stdout.printf("Build '%s' stopped for job '%s'%n", buildName, jobName);
             } catch (final Exception e) {
-                stdout.print(String.format("Exception occurred while trying to stop build '%s' for job '%s'. ", buildName, jobName));
-                stdout.println(String.format("Exception class: %s, message: %s", e.getClass().getSimpleName(), e.getMessage()));
+                stdout.printf("Exception occurred while trying to stop build '%s' for job '%s'. ", buildName, jobName);
+                stdout.printf("Exception class: %s, message: %s%n", e.getClass().getSimpleName(), e.getMessage());
             }
         } else {
-            stdout.println(String.format("Build '%s' in job '%s' not stopped", buildName, jobName));
+            stdout.printf("Build '%s' in job '%s' not stopped%n", buildName, jobName);
         }
     }
 

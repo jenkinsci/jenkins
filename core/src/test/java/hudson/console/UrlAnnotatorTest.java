@@ -23,12 +23,12 @@
  */
 package hudson.console;
 
-import static org.junit.Assert.assertEquals;
 import hudson.MarkupText;
 
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Alan Harder

@@ -23,7 +23,10 @@
  */
 package hudson.util;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
@@ -47,8 +50,8 @@ public class RobustReflectionConverterTest {
     @Test
     public void robustUnmarshalling() {
         Point p = read(new XStream2());
-        assertEquals(p.x,1);
-        assertEquals(p.y,2);
+        assertEquals(1, p.x);
+        assertEquals(2, p.y);
     }
 
     private Point read(XStream xs) {
@@ -58,22 +61,15 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        try {
-            read(new XStream());
-            fail();
-        } catch (ConversionException e) {
-            // expected
-            assertTrue(e.getMessage().contains("z"));
-        }
+        final ConversionException e = assertThrows(ConversionException.class, () -> read(new XStream()));
+        assertThat(e.getMessage(), containsString("z"));
     }
 
     @Test
-    public void classOwnership() throws Exception {
-        XStream xs = new XStream2(new XStream2.ClassOwnership() {
-            @Override public String ownerOf(Class<?> clazz) {
-                Owner o = clazz.getAnnotation(Owner.class);
-                return o != null ? o.value() : null;
-            }
+    public void classOwnership() {
+        XStream xs = new XStream2(clazz -> {
+            Owner o = clazz.getAnnotation(Owner.class);
+            return o != null ? o.value() : null;
         });
         String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
         String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
@@ -111,7 +107,7 @@ public class RobustReflectionConverterTest {
     public static class Bild {
         Steppe[] steppes;
     }
-    public static abstract class Steppe {
+    public abstract static class Steppe {
         int number;
     }
     @Owner("p1")
@@ -128,7 +124,7 @@ public class RobustReflectionConverterTest {
     public static class Boot {}
     public static class Jacket {}
     @Owner("p2")
-    public static abstract class Lover {}
+    public abstract static class Lover {}
     @Owner("p3")
     public static class Billy extends Lover {}
     @Owner("p4")

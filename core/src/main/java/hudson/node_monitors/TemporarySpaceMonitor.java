@@ -75,6 +75,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
@@ -100,6 +101,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     }
     
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
+        @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 // if the disk is really filled up we can't even create a single file,
                 // so calling File.createTempFile and figuring out the directory won't reliably work.

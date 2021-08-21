@@ -23,8 +23,8 @@
  */
 package hudson.model;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Represents things that {@link hudson.model.Queue.Executable} uses while running.
@@ -45,7 +45,7 @@ public final class Resource {
      * Human-readable name of this resource.
      * Used for rendering HTML.
      */
-    public final @Nonnull String displayName;
+    public final @NonNull String displayName;
 
     /**
      * Parent resource.
@@ -62,14 +62,14 @@ public final class Resource {
      */
     public final int numConcurrentWrite;
 
-    public Resource(@CheckForNull Resource parent, @Nonnull String displayName) {
+    public Resource(@CheckForNull Resource parent, @NonNull String displayName) {
         this(parent,displayName,1);
     }
 
     /**
      * @since 1.155
      */
-    public Resource(@CheckForNull Resource parent, @Nonnull String displayName, int numConcurrentWrite) {
+    public Resource(@CheckForNull Resource parent, @NonNull String displayName, int numConcurrentWrite) {
         if(numConcurrentWrite<1)
             throw new IllegalArgumentException();
 
@@ -78,7 +78,7 @@ public final class Resource {
         this.numConcurrentWrite = numConcurrentWrite;
     }
 
-    public Resource(@Nonnull String displayName) {
+    public Resource(@NonNull String displayName) {
         this(null,displayName);
     }
 

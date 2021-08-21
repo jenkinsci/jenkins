@@ -1,12 +1,18 @@
 package hudson.console;
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.User;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link HyperlinkNote} that links to a {@linkplain ModelObject model object},
@@ -25,7 +31,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         return " class='model-link'";
     }
 
-    public static String encodeTo(@Nonnull User u) {
+    public static String encodeTo(@NonNull User u) {
         return encodeTo(u,u.getDisplayName());
     }
 
@@ -50,8 +56,15 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         if (c != null) {
             return encodeTo("/" + c.getUrl(), node.getDisplayName());
         }
-        String nodePath = node == Jenkins.get() ? "(master)" : node.getNodeName();
+        String nodePath = node == Jenkins.get() ? "(built-in)" : node.getNodeName();
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
+    }
+
+    /**
+     * @since 2.230
+     */
+    public static String encodeTo(Label label) {
+        return encodeTo("/" + label.getUrl(), label.getName());
     }
 
     public static String encodeTo(String url, String text) {
@@ -60,6 +73,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Extension @Symbol("hyperlinkToModels")
     public static class DescriptorImpl extends HyperlinkNote.DescriptorImpl {
+        @Override
         public String getDisplayName() {
             return "Hyperlinks to models";
         }

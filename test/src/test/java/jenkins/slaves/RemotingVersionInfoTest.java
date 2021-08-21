@@ -38,7 +38,7 @@ import java.util.zip.ZipFile;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @For(RemotingVersionInfo.class)
 public class RemotingVersionInfoTest {

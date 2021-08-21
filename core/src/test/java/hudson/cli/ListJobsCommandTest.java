@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -16,9 +16,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
 
 import jenkins.model.Jenkins;
 
@@ -56,28 +56,24 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void failForNonexistingName() throws Exception {
+    public void failForNonexistentName() {
 
         when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
         when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
 
-        try {
-            runWith("NoSuchViewOrItemGroup");
-            fail("Exception should be thrown in the previous call.");
-        } catch (IllegalArgumentException e) { // Expected
-            assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
-        }
+        final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> runWith("NoSuchViewOrItemGroup"));
+        assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
         assertThat(stdout, is(empty()));
     }
 
     @Test
     public void getAllJobsForEmptyName() throws Exception {
 
-        final Collection<TopLevelItem> jenkinsJobs = Arrays.asList(
+        final List<TopLevelItem> jenkinsJobs = Arrays.asList(
                 job("some-job"), job("some-other-job")
         );
 
-        when(jenkins.getItems()).thenReturn((List<TopLevelItem>) jenkinsJobs);
+        when(jenkins.getItems()).thenReturn(jenkinsJobs);
 
         assertThat(runWith(null), equalTo(0));
         assertThat(stderr, is(empty()));
@@ -117,7 +113,7 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Arrays.asList(rightJob));
+        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
 
         when(jenkins.getView("Root")).thenReturn(rootView);
 

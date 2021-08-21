@@ -40,7 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import jenkins.model.lazy.BuildReference;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,18 +63,10 @@ public class OldDataMonitorTest {
     @Ignore("constantly failing on CI builders, makes problems for memory()")
     @Issue("JENKINS-19544")
     @LocalData
-    @Test public void robustness() throws Exception {
+    @Test public void robustness() {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
-        /*
-        System.err.println(p.getActions());
-        for (Map.Entry<Saveable,OldDataMonitor.VersionRange> entry : odm.getData().entrySet()) {
-            System.err.println(entry.getKey());
-            System.err.println(entry.getValue());
-            System.err.println(entry.getValue().extra);
-        }
-        */
         assertEquals(Collections.singleton(p), odm.getData().keySet());
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
@@ -92,7 +85,7 @@ public class OldDataMonitorTest {
         assertEquals(Collections.singleton(b), OldDataMonitor.get(r.jenkins).getData().keySet());
         WeakReference<?> ref = new WeakReference<Object>(b);
         b = null;
-        MemoryAssert.assertGC(ref);
+        MemoryAssert.assertGC(ref, true);
     }
 
     /**
@@ -110,7 +103,7 @@ public class OldDataMonitorTest {
         final CountDownLatch preventExit = new CountDownLatch(1);
         Saveable slowSavable = new Saveable() {
             @Override
-            public void save() throws IOException {
+            public void save() {
                 try {
                     ensureEntry.countDown();
                     preventExit.await();
@@ -124,7 +117,7 @@ public class OldDataMonitorTest {
 
         Future<Void> discardFuture = executors.submit(new Callable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
                 return null;
             }
@@ -135,7 +128,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() {public void save() throws IOException {}},
+                .onChange(new Saveable() {@Override public void save() {}},
                         new XmlFile(xml));
 
         preventExit.countDown();

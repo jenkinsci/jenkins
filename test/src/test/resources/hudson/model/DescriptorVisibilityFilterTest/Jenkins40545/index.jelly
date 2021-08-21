@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <l:layout norefresh="true">
+    <l:layout>
         descriptors found: ${h.filterDescriptors(it, no_descriptors_here).size()}.
     </l:layout>
 </j:jelly>

@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Annotates one line of console output.
@@ -82,7 +82,7 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
      *      To indicate that you are not interested in the following lines, return {@code null}.
      */
     @CheckForNull
-    public abstract ConsoleAnnotator<T> annotate(@Nonnull T context, @Nonnull MarkupText text );
+    public abstract ConsoleAnnotator<T> annotate(@NonNull T context, @NonNull MarkupText text );
 
     /**
      * Cast operation that restricts T.

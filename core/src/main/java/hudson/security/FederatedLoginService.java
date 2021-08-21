@@ -23,23 +23,22 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.model.UserProperty;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
+import java.io.IOException;
+import java.io.Serializable;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.Serializable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Abstraction for a login mechanism through external authenticator/identity provider
@@ -101,14 +100,14 @@ public abstract class FederatedLoginService implements ExtensionPoint {
      * The object is bound to /federatedLoginService/URLNAME/. The url name needs to be unique among all
      * {@link FederatedLoginService}s.
      */
-    @Nonnull
+    @NonNull
     public abstract String getUrlName();
 
     /**
      * Returns your implementation of {@link FederatedLoginServiceUserProperty} that stores
      * opaque identifiers.
      */
-    @Nonnull
+    @NonNull
     public abstract Class<? extends FederatedLoginServiceUserProperty> getUserPropertyClass();
 
     /**
@@ -121,7 +120,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return must not be null.
          */
-        @Nonnull
+        @NonNull
         public abstract String getIdentifier();
 
         /**
@@ -184,12 +183,12 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
         @SuppressWarnings("ACL.impersonate")
-        @Nonnull
+        @NonNull
         public User signin() throws UnclaimedIdentityException {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
-                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername(u.getId());
+                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername2(u.getId());
 
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
                 token.setDetails(d);
@@ -245,6 +244,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             this.identity = identity;
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             SecurityRealm sr = Jenkins.get().getSecurityRealm();
             if (sr.allowsSignup()) {

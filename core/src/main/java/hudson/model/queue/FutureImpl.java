@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Created when {@link hudson.model.Queue.Item} is created so that the caller can track the progress of the task.
@@ -60,27 +60,27 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         this.task = task;
     }
 
+    @Override
     public Future<Executable> getStartCondition() {
         return start;
     }
 
-    public final Executable waitForStart() throws InterruptedException, ExecutionException {
+    @Override
+    public Executable waitForStart() throws InterruptedException, ExecutionException {
         return getStartCondition().get();
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         Queue q = Jenkins.get().getQueue();
-        synchronized (q) {
-            synchronized (this) {
-                if(!executors.isEmpty()) {
-                    if(mayInterruptIfRunning)
-                        for (Executor e : executors)
-                            e.interrupt();
-                    return mayInterruptIfRunning;
-                }
-                return q.cancel(task);
+        synchronized (this) {
+            if(!executors.isEmpty()) {
+                if(mayInterruptIfRunning)
+                    for (Executor e : executors)
+                        e.interrupt();
+                return mayInterruptIfRunning;
             }
+            return q.cancel(task);
         }
     }
 
@@ -92,7 +92,7 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         }
     }
 
-    synchronized void addExecutor(@Nonnull Executor executor) {
+    synchronized void addExecutor(@NonNull Executor executor) {
         this.executors.add(executor);
     }
 }

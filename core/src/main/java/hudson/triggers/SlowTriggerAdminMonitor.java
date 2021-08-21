@@ -1,9 +1,11 @@
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -11,8 +13,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -25,15 +26,16 @@ import java.util.logging.Logger;
 @Extension
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
-    @Nonnull
+    @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
-    public static int MAX_ENTRIES = 10;
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ int MAX_ENTRIES = SystemProperties.getInteger(SlowTriggerAdminMonitor.class.getName() + ".maxEntries", 10);
 
-    @Nonnull
+    @NonNull
     private static final Logger LOGGER = Logger.getLogger(SlowTriggerAdminMonitor.class.getName());
 
-    @Nonnull
+    @NonNull
     public static SlowTriggerAdminMonitor getInstance() {
         return ExtensionList.lookup(SlowTriggerAdminMonitor.class).get(0);
     }
@@ -47,7 +49,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return Messages.SlowTriggerAdminMonitor_DisplayName();
     }
@@ -58,36 +60,37 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         }
     }
 
-    public void report(@Nonnull final String trigger, @Nonnull final String msg) {
+    public void report(@NonNull final Class<? extends TriggerDescriptor> trigger, @NonNull final String fullJobName, long duration) {
 
         synchronized (errors) {
-            if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
+            if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger.getName())) {
                 String oldest_trigger = null;
                 LocalDateTime oldest_time = null;
                 for (Map.Entry<String, Value> entry : errors.entrySet()) {
                     String local_trigger = entry.getKey();
                     if (oldest_trigger == null
-                            || entry.getValue().getTimeLDT().compareTo(oldest_time) < 0) {
+                            || entry.getValue().time.compareTo(oldest_time) < 0) {
                         oldest_trigger = local_trigger;
-                        oldest_time = entry.getValue().getTimeLDT();
+                        oldest_time = entry.getValue().time;
                     }
                 }
                 errors.remove(oldest_trigger);
             }
         }
-        errors.put(trigger, new Value(msg));
+        // TODO: We do not record multiple occurrences of the same trigger; on which instance would 10 different trigger types take forever? Figure out a better presentation.
+        errors.put(trigger.getName(), new Value(trigger, fullJobName, duration));
     }
 
-    @Nonnull
+    @NonNull
     public Map<String, Value> getErrors() {
         return new HashMap<>(errors);
     }
 
     @Restricted(DoNotUse.class)
     @RequirePOST
-    @Nonnull
-    public HttpResponse doClear() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+    @NonNull
+    public HttpResponse doClear() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         clear();
         return HttpResponses.redirectViaContextPath("/manage");
     }
@@ -95,26 +98,33 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     public class Value {
 
         private final LocalDateTime time;
-        private final String msg;
+        private Class<? extends TriggerDescriptor> trigger;
+        private final String fullJobName;
+        private final long duration;
 
-        Value(@Nonnull String msg) {
-            this.msg = msg;
+        Value(Class<? extends TriggerDescriptor> trigger, @NonNull String fullJobName, long duration) {
+            this.trigger = trigger;
+            this.fullJobName = fullJobName;
+            this.duration = duration;
             this.time = LocalDateTime.now();
         }
 
-        @Nonnull
-        public String getTime() {
+        @NonNull
+        public String getTimeString() {
             return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(time);
         }
 
-        @Nonnull
-        protected LocalDateTime getTimeLDT() {
-            return time;
+        @NonNull
+        public String getFullJobName() {
+            return fullJobName;
         }
 
-        @Nonnull
-        public String getMsg() {
-            return msg;
+        public Class<? extends TriggerDescriptor> getTrigger() {
+            return trigger;
+        }
+
+        public long getDuration() {
+            return duration;
         }
     }
 }

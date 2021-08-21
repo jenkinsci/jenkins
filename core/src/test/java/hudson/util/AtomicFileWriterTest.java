@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -22,11 +22,11 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 public class AtomicFileWriterTest {
@@ -86,7 +86,7 @@ public class AtomicFileWriterTest {
     }
 
     @Test
-    public void createFile() throws Exception {
+    public void createFile() {
         // Verify the file we created exists
         assertTrue(Files.exists(afw.getTemporaryPath()));
     }
@@ -136,12 +136,7 @@ public class AtomicFileWriterTest {
     @Test
     public void indexOutOfBoundsLeavesOriginalUntouched() throws Exception {
         // Given
-        try {
-            afw.write(expectedContent, 0, expectedContent.length() + 10);
-            fail("exception expected");
-        } catch (IndexOutOfBoundsException e) {
-        }
-
+        assertThrows(IndexOutOfBoundsException.class, () -> afw.write(expectedContent, 0, expectedContent.length() + 10));
         assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
     @Test
@@ -152,18 +147,15 @@ public class AtomicFileWriterTest {
         assertTrue(newFile.exists());
         assertFalse(parentExistsAndIsAFile.exists());
 
-        try {
-            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8);
-            fail("Expected a failure");
-        } catch (IOException e) {
-            assertThat(e.getMessage(),
-                       containsString("exists and is neither a directory nor a symlink to a directory"));
-        }
+        final IOException e = assertThrows(IOException.class,
+                () -> new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8));
+        assertThat(e.getMessage(),
+                   containsString("exists and is neither a directory nor a symlink to a directory"));
     }
 
     @Issue("JENKINS-48407")
     @Test
-    public void checkPermissionsRespectUmask() throws IOException, InterruptedException {
+    public void checkPermissionsRespectUmask() throws IOException {
 
         final File newFile = tmp.newFile();
         boolean posixSupported = isPosixSupported(newFile);

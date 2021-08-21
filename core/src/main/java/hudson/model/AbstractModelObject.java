@@ -97,10 +97,12 @@ public abstract class AbstractModelObject implements SearchableModelObject {
         return new SearchIndexBuilder().addAllAnnotations(this);
     }
 
+    @Override
     public final SearchIndex getSearchIndex() {
         return makeSearchIndex().make();
     }
 
+    @Override
     public Search getSearch() {
         for (SearchFactory sf : SearchFactory.all()) {
             Search s = sf.createFor(this);
@@ -113,6 +115,7 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     /**
      * Default implementation that returns the display name.
      */
+    @Override
     public String getSearchName() {
         return getDisplayName();
     }

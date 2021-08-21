@@ -5,7 +5,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Slave;
 import java.security.SecureRandom;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.agents.WebSocketAgents;
 import jenkins.security.HMACConfidentialKey;
@@ -70,7 +70,7 @@ public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener impl
         }
 
         @Override
-        public String getSecretOf(@Nonnull String clientName) {
+        public String getSecretOf(@NonNull String clientName) {
             return SLAVE_SECRET.mac(clientName);
         }
     }

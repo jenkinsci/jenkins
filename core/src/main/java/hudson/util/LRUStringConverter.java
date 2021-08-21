@@ -22,10 +22,12 @@ public class LRUStringConverter extends AbstractSingleValueConverter {
         cache = Collections.synchronizedMap(new LRUMap(size));
     }
 
+    @Override
     public boolean canConvert(final Class type) {
         return type.equals(String.class);
     }
 
+    @Override
     public Object fromString(final String str) {
         String s = cache.get(str);
 

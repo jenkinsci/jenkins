@@ -9,8 +9,10 @@
     background-repeat: no-repeat;
     width: 20px;
     height: 20px;
+    min-height: 0;
+    min-width: 0;
     padding: 0;
-    border: none;    
+    border: none;
 }
 #jenkins .copy-button button:hover,
 #jenkins .copy-button button:active {

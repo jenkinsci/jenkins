@@ -27,7 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
@@ -35,7 +36,6 @@ import hudson.model.Executor;
 import hudson.model.FileParameterDefinition;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -54,8 +54,14 @@ import java.io.IOException;
 import java.util.List;
 
 import net.sf.json.JSONObject;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -239,7 +245,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("foo", "-p", "string=value");
         assertThat(result, failedWith(2));
-        assertThat(result.stderr(), containsString("ERROR: No default value for the parameter \'FOO\'."));
+        assertThat(result.stderr(), containsString("ERROR: No default value for the parameter 'FOO'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted
         assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));

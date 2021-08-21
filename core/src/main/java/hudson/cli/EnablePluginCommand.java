@@ -78,10 +78,10 @@ public class EnablePluginCommand extends CLICommand {
         if (plugin.isEnabled()) {
             return false;
         }
-        stdout.println(String.format("Enabling plugin `%s' (%s)", plugin.getShortName(), plugin.getVersion()));
+        stdout.printf("Enabling plugin `%s' (%s)%n", plugin.getShortName(), plugin.getVersion());
         enableDependencies(manager, plugin);
         plugin.enable();
-        stdout.println(String.format("Plugin `%s' was enabled.", plugin.getShortName()));
+        stdout.printf("Plugin `%s' was enabled.%n", plugin.getShortName());
         return true;
     }
 
@@ -93,7 +93,7 @@ public class EnablePluginCommand extends CLICommand {
             }
             if (!dependency.isEnabled()) {
                 enableDependencies(manager, dependency);
-                stdout.println(String.format("Enabling plugin dependency `%s' (%s) for `%s'", dependency.getShortName(), dependency.getVersion(), plugin.getShortName()));
+                stdout.printf("Enabling plugin dependency `%s' (%s) for `%s'%n", dependency.getShortName(), dependency.getVersion(), plugin.getShortName());
                 dependency.enable();
             }
         }

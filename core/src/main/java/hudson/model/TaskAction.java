@@ -62,7 +62,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
 
     /**
      * Gets the permission object that represents the permission (against {@link #getACL}) to perform this task.
-     * Generally your implementation of {@link #getIconFileName} should return null if {@code !getACL().hasPermission(getPermission())}.
+     * Generally your implementation of {@link #getIconFileName} should return null if {@code !getACL().hasPermission2(getPermission())}.
      */
     protected abstract Permission getPermission();
 
@@ -102,6 +102,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         return l.get();
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrlName();
     }
@@ -146,4 +147,3 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         rsp.sendRedirect(".");
     }
 }
-

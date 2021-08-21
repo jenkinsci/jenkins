@@ -30,7 +30,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Partial implementation of {@link Computer} to be used in conjunction with

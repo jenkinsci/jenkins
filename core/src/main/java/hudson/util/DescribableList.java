@@ -31,6 +31,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.AbstractProject;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Describable;
@@ -230,6 +232,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     get(Ljava/lang/Class;)Ljava/lang/Object; from PersistedList where we need
     get(Ljava/lang/Class;)Lhudson/model/Describable;
  */
+    @Override
     public <U extends T> U get(Class<U> type) {
         return super.get(type);
     }
@@ -259,22 +262,29 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
         }
 
+        @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
             return DescribableList.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (DescribableList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             try {
-                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
+                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).getDeclaredConstructor().newInstance();
                 CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
                 r.data.replaceBy(core);
                 return r;
+            } catch (NoSuchMethodException e) {
+                NoSuchMethodError x = new NoSuchMethodError();
+                x.initCause(e);
+                throw x;
             } catch (InstantiationException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
@@ -283,9 +293,22 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
+            } catch (InvocationTargetException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else if (t instanceof IOException) {
+                    throw new UncheckedIOException((IOException) t);
+                } else if (t instanceof Exception) {
+                    throw new RuntimeException(t);
+                } else if (t instanceof Error) {
+                    throw (Error) t;
+                } else {
+                    throw new Error(e);
+                }
             }
         }
     }
 
-    private final static Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
 }

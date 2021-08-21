@@ -25,11 +25,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Uploading a plugin</h2>
+  <p>Permission required: <code>Overall/Administer</code></p>
   <p>
     You can upload a plugin from HTTP client by POST to <a href="../uploadPlugin">this URL</a> with <a href="http://tools.ietf.org/html/rfc2388">multipart/form-data</a> MIME type.
   </p>
 
   <h2>Making sure all the needed plugins are installed</h2>
+  <p>Permission required: <code>Overall/Administer</code></p>
   <p>
     Jenkins uses an XML format for representing most of complex objects internally (such as agents, views, jobs, and builds.)
     As such, it has various APIs that send/receive those XMLs. For example, you can create a new job by POSTing its XML representation.

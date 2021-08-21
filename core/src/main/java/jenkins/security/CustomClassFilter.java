@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;

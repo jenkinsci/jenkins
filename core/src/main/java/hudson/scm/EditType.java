@@ -51,6 +51,7 @@ public final class EditType implements CustomExportedBean {
         return description;
     }
 
+    @Override
     public String toExportedObject() {
         return name;
     }

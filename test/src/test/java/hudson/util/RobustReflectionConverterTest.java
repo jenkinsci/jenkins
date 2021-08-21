@@ -35,7 +35,6 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Saveable;
-import hudson.model.User;
 import hudson.security.ACL;
 
 import java.io.ByteArrayInputStream;
@@ -45,9 +44,12 @@ import java.util.Collections;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
@@ -77,7 +79,7 @@ public class RobustReflectionConverterTest {
         Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
         String text = data.values().iterator().next().extra;
-        assertTrue(text, text.contains("Could not call hudson.triggers.TimerTrigger.readResolve"));
+        assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
     }
     
     // Testing describable object to demonstrate what is expected with RobustReflectionConverter#addCriticalField
@@ -104,7 +106,7 @@ public class RobustReflectionConverterTest {
         }
         
         private Object readResolve() throws Exception {
-            if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
+            if (!ACL.SYSTEM2.equals(Jenkins.getAuthentication2())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
                     // Reject invalid configuration via REST / CLI.
@@ -189,11 +191,7 @@ public class RobustReflectionConverterTest {
     
     @Test
     public void testRestInterfaceFailure() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
-
-        User test = User.getById("test", true);
 
         // without addCriticalField. This is accepted.
         {
@@ -207,7 +205,7 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.withBasicApiToken(test);
+            wc.withBasicApiToken("test");
             WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
@@ -238,7 +236,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
-            wc.withBasicApiToken(test);
+            wc.withBasicApiToken("test");
             WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));

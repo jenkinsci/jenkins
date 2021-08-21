@@ -54,20 +54,29 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
 
-	<tr class="radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-	  <td colspan="3">
-      <label>
-	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control block-control" checked="${checked?'true':null}" />
-        ${title}
-      </label>
-    </td>
-    <f:helpLink url="${help}" featureName="${title}" />
-	</tr>
-  <j:if test="${attrs.help!=null}">
-    <f:helpArea />
-  </j:if>
-	<d:invokeBody />
-	<!-- end marker -->
-	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none" />
+  <div class="radioBlock-container">
+    <div class="tr help-sibling radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+      <div colspan="3">
+        <label>
+          <input type="radio"
+                 name="${name}"
+                 value="${value}"
+                 class="radio-block-control block-control"
+                 checked="${checked ? 'true' : null}"
+                 disabled="${readOnlyMode ? 'true' : null}"
+          />
+          ${title}
+        </label>
+        <f:helpLink url="${help}" featureName="${title}" />
+      </div>
+    </div>
+    <j:if test="${attrs.help!=null}">
+      <f:helpArea />
+    </j:if>
+    <div class="form-container tr">
+      <d:invokeBody />
+    </div>
+    <!-- end marker -->
+    <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none"></div>
+  </div>
 </j:jelly>

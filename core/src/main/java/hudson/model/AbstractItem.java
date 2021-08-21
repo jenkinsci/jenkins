@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.XmlFile;
 import hudson.Util;
@@ -53,6 +54,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
@@ -73,9 +75,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -102,6 +103,7 @@ import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -134,6 +136,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         doSetName(name);
     }
 
+    @Override
     @Exported(visibility=999)
     public String getName() {
         return name;
@@ -160,6 +163,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @return The display name of this object, or if it is not set, the name
      * of the object.
      */
+    @Override
     @Exported
     public String getDisplayName() {
         if(null!=displayName) {
@@ -184,8 +188,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * This method exists so that the Job configuration pages can use 
      * getDisplayNameOrNull so that nothing is shown in the display name text
      * box if the display name is not set.
-     * @param displayName
-     * @throws IOException
      */
     public void setDisplayNameOrNull(String displayName) throws IOException {
         setDisplayName(displayName);
@@ -196,6 +198,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         save();
     }
              
+    @Override
     public File getRootDir() {
         return getParent().getRootDirFor(this);
     }
@@ -204,7 +207,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    @Override public @Nonnull ItemGroup getParent() {
+    @Override public @NonNull ItemGroup getParent() {
         if (parent == null) {
             throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
         }
@@ -264,7 +267,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the
         // Ancestor.getUrl()
-        return HttpResponses.redirectTo("../" + newName);
+        return HttpResponses.redirectTo("../" + Functions.encode(newName));
     }
 
     /**
@@ -273,7 +276,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * {@link FormValidation#error} with a message explaining the problem.
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
+    public @NonNull FormValidation doCheckNewName(@QueryParameter String newName) {
 
         if (!isNameEditable()) {
             return FormValidation.error("Trying to rename an item that does not support this operation.");
@@ -307,19 +310,19 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Check new name for job
      * @param newName - New name for job.
      */
-    private void checkIfNameIsUsed(@Nonnull String newName) throws Failure {
+    private void checkIfNameIsUsed(@NonNull String newName) throws Failure {
         try {
             Item item = getParent().getItem(newName);
             if (item != null) {
                 throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
             }
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                 item = getParent().getItem(newName);
                 if (item != null) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                                 "User {2} has no {3} permission for existing job with the same name",
-                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext().getAuthentication().getName(), Item.DISCOVER.name} );
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name} );
                     }
                     // Don't explicitly mention that there is another item with the same name.
                     throw new Failure(Messages.Jenkins_NotAllowedName(newName));
@@ -345,7 +348,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @since 2.110
      * @see Job#checkRename
      */
-    protected void checkRename(@Nonnull String newName) throws Failure {
+    protected void checkRename(@NonNull String newName) throws Failure {
 
     }
 
@@ -470,8 +473,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Gets all the jobs that this {@link Item} contains as descendants.
      */
+    @Override
     public abstract Collection<? extends Job> getAllJobs();
 
+    @Override
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
@@ -479,6 +484,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         else                return n+'/'+getName();
     }
 
+    @Override
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
@@ -511,6 +517,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opportunity to do a post load processing.
      */
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
         doSetName(name);
@@ -528,9 +535,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @param src
      *      Item from which it's copied from. The same type as {@code this}. Never null.
      */
+    @Override
     public void onCopiedFrom(Item src) {
     }
 
+    @Override
     public final String getUrl() {
         // try to stick to the current view if possible
         StaplerRequest req = Stapler.getCurrentRequest();
@@ -571,12 +580,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return base + shortUrl;
     }
 
+    @Override
     public String getShortUrl() {
         String prefix = getParent().getUrlChildPrefix();
         String subdir = Util.rawEncode(getName());
         return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
+    @Override
     public String getSearchUrl() {
         return getShortUrl();
     }
@@ -597,6 +608,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Returns the {@link ACL} for this object.
      */
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -604,6 +616,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Save the settings to a file.
      */
+    @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
@@ -614,7 +627,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return Items.getConfigFile(this);
     }
 
-    private Object writeReplace() {
+    protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {
@@ -671,9 +684,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
+    @Override
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            doDoDelete(req,rsp);
+            delete();
+            rsp.setStatus(204);
         } catch (InterruptedException e) {
             // TODO: allow this in Stapler
             throw new ServletException(e);
@@ -687,6 +702,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
+    @Override
     public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
         boolean responsibleForAbortingBuilds = !ItemDeletion.contains(this);
@@ -944,10 +960,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!getACL().hasPermission(Item.DISCOVER)) {
+            if (!hasPermission(Item.DISCOVER)) {
                 return null;
             }
-            getACL().checkPermission(Item.READ);
+            checkPermission(Item.READ);
         }
         return this;
     }
@@ -956,7 +972,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.

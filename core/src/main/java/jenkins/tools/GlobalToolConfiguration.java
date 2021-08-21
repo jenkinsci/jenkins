@@ -23,14 +23,14 @@
  */
 package jenkins.tools;
 
-import com.google.common.base.Predicate;
 import hudson.Extension;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import hudson.util.FormApply;
-import jenkins.model.GlobalConfigurationCategory;
+import java.util.function.Predicate;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -40,6 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -71,7 +72,13 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.SYSTEM_READ;
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 
     @POST
@@ -81,12 +88,12 @@ public class GlobalToolConfiguration extends ManagementLink {
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
-    private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
+    private boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException, IOException {
         Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
 
         boolean result = true;
-        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
+        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER)) {
             result &= configureDescriptor(req, json, d);
         }
         j.save();
@@ -101,11 +108,9 @@ public class GlobalToolConfiguration extends ManagementLink {
         return d.configure(req, js);
     }
 
-    public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
-        public boolean apply(GlobalConfigurationCategory input) {
-            return input instanceof ToolConfigurationCategory;
-        }
-    };
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());
 }

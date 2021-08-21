@@ -24,12 +24,13 @@
 
 package jenkins.model.item_category;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.TopLevelItemDescriptor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -47,6 +48,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      * See <a href="https://jenkins-ci.org/issue/36593">JENKINS-36593</a> for more info.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int MIN_TOSHOW = 1;
 
     /**
@@ -95,7 +97,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      *
      * @return A {@link ItemCategory}, if not found, {@link ItemCategory.UncategorizedCategory} is returned
      */
-    @Nonnull
+    @NonNull
     public static ItemCategory getCategory(TopLevelItemDescriptor descriptor) {
         int order = 0;
         ExtensionList<ItemCategory> categories = ExtensionList.lookup(ItemCategory.class);

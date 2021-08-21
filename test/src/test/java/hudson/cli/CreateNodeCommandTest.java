@@ -31,7 +31,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Computer;
+import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
@@ -39,6 +42,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class CreateNodeCommandTest {
@@ -75,9 +79,9 @@ public class CreateNodeCommandTest {
 
         assertThat(result, succeededSilently());
 
-        final Slave updatedSlave = (Slave) j.jenkins.getNode("SlaveFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        final Slave updated = (Slave) j.jenkins.getNode("AgentFromXML");
+        assertThat(updated.getNodeName(), equalTo("AgentFromXML"));
+        assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
     @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
@@ -85,40 +89,40 @@ public class CreateNodeCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
                 .withStdin(Computer.class.getResourceAsStream("node.xml"))
-                .invokeWithArgs("CustomSlaveName")
+                .invokeWithArgs("CustomAgentName")
         ;
 
         assertThat(result, succeededSilently());
 
-        assertThat("A slave with original name should not exist", j.jenkins.getNode("SlaveFromXml"), nullValue());
+        assertThat("An agent with original name should not exist", j.jenkins.getNode("AgentFromXml"), nullValue());
 
-        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
-        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        final Slave updated = (Slave) j.jenkins.getNode("CustomAgentName");
+        assertThat(updated.getNodeName(), equalTo("CustomAgentName"));
+        assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
     @Test public void createNodeSpecifyingDifferentNameExplicitly() throws Exception {
 
-        final Node originalSlave = j.createSlave("SlaveFromXml", null, null);
+        final Node original = j.createSlave("AgentFromXml", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
                 .withStdin(Computer.class.getResourceAsStream("node.xml"))
-                .invokeWithArgs("CustomSlaveName")
+                .invokeWithArgs("CustomAgentName")
         ;
 
         assertThat(result, succeededSilently());
 
-        assertThat("A slave with original name should be left untouched", j.jenkins.getNode("SlaveFromXml"), equalTo(originalSlave));
+        assertThat("An agent with original name should be left untouched", j.jenkins.getNode("AgentFromXml"), equalTo(original));
 
-        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
-        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        final Slave updated = (Slave) j.jenkins.getNode("CustomAgentName");
+        assertThat(updated.getNodeName(), equalTo("CustomAgentName"));
+        assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExist() throws Exception {
 
-        j.createSlave("SlaveFromXML", null, null);
+        j.createSlave("AgentFromXML", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -126,23 +130,42 @@ public class CreateNodeCommandTest {
                 .invoke()
         ;
 
-        assertThat(result.stderr(), containsString("ERROR: Node 'SlaveFromXML' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: Node 'AgentFromXML' already exists"));
         assertThat(result, hasNoStandardOutput());
         assertThat(result, failedWith(4));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
 
-        j.createSlave("ExistingSlave", null, null);
+        j.createSlave("ExistingAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
                 .withStdin(Computer.class.getResourceAsStream("node.xml"))
-                .invokeWithArgs("ExistingSlave")
+                .invokeWithArgs("ExistingAgent")
         ;
 
-        assertThat(result.stderr(), containsString("ERROR: Node 'ExistingSlave' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: Node 'ExistingAgent' already exists"));
         assertThat(result, hasNoStandardOutput());
         assertThat(result, failedWith(4));
+    }
+
+    @Test
+    @Issue("SECURITY-2021")
+    public void createNodeShouldFailIfNodeIsNotGood() {
+        int nodeListSizeBefore = j.jenkins.getNodes().size();
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(CreateNodeCommandTest.class.getResourceAsStream("node_sec2021.xml"))
+                .invoke()
+                ;
+
+        assertThat(result.stderr(), containsString(Messages.Hudson_UnsafeChar('/')));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(1));
+
+        // ensure not side effects
+        assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
     }
 }

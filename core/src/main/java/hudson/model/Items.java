@@ -48,13 +48,13 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.function.Predicate;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.security.core.Authentication;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -76,11 +76,7 @@ public class Items {
      * @see Trigger#start
      * @since 1.482
      */
-    private static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private static final ThreadLocal<Boolean> updatingByXml = ThreadLocal.withInitial(() -> false);
     /**
      * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getName()}.
      * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
@@ -163,16 +159,16 @@ public class Items {
      * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(ItemGroup c) {
-        return all(Jenkins.getAuthentication(), c);
+        return all2(Jenkins.getAuthentication2(), c);
     }
 
     /**
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since 1.607
+     * @since 2.266
      */
-    public static List<TopLevelItemDescriptor> all(Authentication a, ItemGroup c) {
+    public static List<TopLevelItemDescriptor> all2(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<>();
         ACL acl;
         if (c instanceof AccessControlled) {
@@ -182,11 +178,20 @@ public class Items {
             acl = Jenkins.get().getACL();
         }
         for (TopLevelItemDescriptor d: all()) {
-            if (acl.hasCreatePermission(a, c, d) && d.isApplicableIn(c)) {
+            if (acl.hasCreatePermission2(a, c, d) && d.isApplicableIn(c)) {
                 result.add(d);
             }
         }
         return result;
+    }
+
+    /**
+     * @deprecated use {@link #all2(Authentication, ItemGroup)}
+     * @since 1.607
+     */
+    @Deprecated
+    public static List<TopLevelItemDescriptor> all(org.acegisecurity.Authentication a, ItemGroup c) {
+        return all2(a.toSpring(), c);
     }
 
     /**
@@ -222,7 +227,7 @@ public class Items {
     /**
      * Does the opposite of {@link #toNameList(Collection)}.
      */
-    public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, @NonNull String list, @NonNull Class<T> type) {
         final Jenkins jenkins = Jenkins.get();
         
         List<T> r = new ArrayList<>();
@@ -413,7 +418,7 @@ public class Items {
      * @param pred Predicate condition to filter items
      * @return List of items matching given criteria
      *
-     * @since TODO
+     * @since 2.221
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type, Predicate<T> pred) {
         List<T> r = new ArrayList<>();
@@ -421,7 +426,7 @@ public class Items {
         return r;
     }
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r, Predicate<T> pred) {
-        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
+        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems(t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)))));
         // because we add items depth first, we can use the quicker BY_NAME comparison
         items.sort(BY_NAME);
         for (Item i : items) {
@@ -438,7 +443,7 @@ public class Items {
 
     /**
      * Gets a read-only view of all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
-     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * {@link Jenkins#getAuthentication2()} without concern for the order in which items are returned. Each iteration
      * of the view will be "live" reflecting the items available between the time the iteration was started and the
      * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
      * may be possible for such items to escape the entire iteration.
@@ -450,26 +455,26 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
-        return allItems(Jenkins.getAuthentication(), root, type);
+        return allItems2(Jenkins.getAuthentication2(), root, type);
     }
 
     /**
      * Gets a read-only view of all the {@link Item}s recursively matching type and predicate
      * in the {@link ItemGroup} tree visible to
-     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * {@link Jenkins#getAuthentication2()} without concern for the order in which items are returned. Each iteration
      * of the view will be "live" reflecting the items available between the time the iteration was started and the
      * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
      * may be possible for such items to escape the entire iteration.
      *
      * @param root the root.
      * @param type the type.
+     * @param pred the predicate.
      * @param <T> the type.
-     * @param <T> the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.221
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
-        return allItems(Jenkins.getAuthentication(), root, type, pred);
+        return allItems2(Jenkins.getAuthentication2(), root, type, pred);
     }
 
     /**
@@ -483,10 +488,19 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
+     * @since 2.266
+     */
+    public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type) {
+        return allItems2(authentication, root, type, t -> true);
+    }
+
+    /**
+     * @deprecated use {@link #allItems2(Authentication, ItemGroup, Class)}
      * @since 2.37
      */
-    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
-        return allItems(authentication, root, type, t -> true);
+    @Deprecated
+    public static <T extends Item> Iterable<T> allItems(org.acegisecurity.Authentication authentication, ItemGroup root, Class<T> type) {
+        return allItems2(authentication.toSpring(), root, type);
     }
 
     /**
@@ -502,10 +516,19 @@ public class Items {
      * @param <T> the type.
      * @param pred the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.266
      */
-    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+    public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
         return new AllItemsIterable<>(root, authentication, type, pred);
+    }
+
+    /**
+     * @deprecated use {@link #allItems2(Authentication, ItemGroup, Class, Predicate)}
+     * @since 2.221
+     */
+    @Deprecated
+    public static <T extends Item> Iterable<T> allItems(org.acegisecurity.Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return allItems2(authentication.toSpring(), root, type, pred);
     }
 
     /**
@@ -630,13 +653,13 @@ public class Items {
                         }
                         ItemGroup group = stack.pop();
                         // group.getItems() is responsible for performing the permission check so we will not repeat it
-                        if (Jenkins.getAuthentication() == authentication) {
+                        if (Jenkins.getAuthentication2().equals(authentication)) {
                             delegate = group.getItems(search).iterator();
                         } else {
                             // slower path because the caller has switched authentication
                             // we need to keep the original authentication so that allItems() can be used
                             // like getAllItems() without the cost of building the entire list up front
-                            try (ACLContext ctx = ACL.as(authentication)) {
+                            try (ACLContext ctx = ACL.as2(authentication)) {
                                 delegate = group.getItems(search).iterator();
                             }
                         }
@@ -677,9 +700,9 @@ public class Items {
      * @throws IllegalArgumentException if there is already something there, which you were supposed to know about
      * @throws Failure if there is already something there but you should not be told details
      */
-    static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
+    static void verifyItemDoesNotAlreadyExist(@NonNull ItemGroup<?> parent, @NonNull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
         Item existing;
-        try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctxt = ACL.as2(ACL.SYSTEM2)) {
             existing = parent.getItem(newName);
         }
         if (existing != null && existing != variant) {

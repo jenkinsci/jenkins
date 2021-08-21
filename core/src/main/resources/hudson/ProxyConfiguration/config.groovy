@@ -1,6 +1,9 @@
 package hudson.ProxyConfiguration
 
 def f=namespace(lib.FormTagLib)
+def l=namespace(lib.LayoutTagLib)
+
+set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
 f.entry(title:_("Server"),field:"name") {
     f.textbox()
@@ -17,10 +20,13 @@ f.entry(title:_("Password"),field:"secretPassword") {
 f.entry(title:_("No Proxy Host"),field:"noProxyHost") {
     f.textarea()
 }
-f.advanced(){
-    f.entry(title:_("Test URL"),field:"testUrl") {
-        f.textbox()
+
+l.isAdmin() {
+    f.advanced() {
+        f.entry(title: _("Test URL"), field: "testUrl") {
+            f.textbox()
+        }
+        f.validateButton(title:_("Validate Proxy"),
+                         method:"validateProxy", with:"testUrl,name,port,userName,secretPassword,noProxyHost")
     }
-    f.validateButton(title:_("Validate Proxy"), 
-                     method:"validateProxy", with:"testUrl,name,port,userName,password,noProxyHost")
 }

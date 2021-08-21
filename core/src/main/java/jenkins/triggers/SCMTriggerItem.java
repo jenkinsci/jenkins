@@ -37,8 +37,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
 
@@ -70,7 +70,7 @@ public interface SCMTriggerItem {
      * The implementation is responsible for checking the {@link SCMDecisionHandler} before proceeding
      * with the actual polling.
      */
-    @Nonnull PollingResult poll(@Nonnull TaskListener listener);
+    @NonNull PollingResult poll(@NonNull TaskListener listener);
 
     @CheckForNull SCMTrigger getSCMTrigger();
 
@@ -79,7 +79,7 @@ public interface SCMTriggerItem {
      * May be used for informational purposes, or to determine whether to initiate polling.
      * @return a possibly empty collection
      */
-    @Nonnull Collection<? extends SCM> getSCMs();
+    @NonNull Collection<? extends SCM> getSCMs();
 
     /**
      * Schedules a polling of this project.
@@ -150,7 +150,7 @@ public interface SCMTriggerItem {
             }
         }
 
-        public static @Nonnull Collection<? extends SCM> resolveMultiScmIfConfigured(@CheckForNull SCM scm) {
+        public static @NonNull Collection<? extends SCM> resolveMultiScmIfConfigured(@CheckForNull SCM scm) {
             if (scm == null || scm instanceof NullSCM) {
                 return Collections.emptySet();
             } else if (scm.getClass().getName().equals("org.jenkinsci.plugins.multiplescms.MultiSCM")) {

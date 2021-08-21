@@ -21,28 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <script>
-    var checkAjax=new Ajax.Request('${rootURL}/${it.url}/test', {
-        onComplete : function(transport) {
-          if (transport.status != 200) {
-          
-            
-            // redirect failed. Unfortunately, according to the spec http://www.w3.org/TR/XMLHttpRequest/
-            // in case of error, we can either get 0 or a failure code
-            $$('redirect-error').style.display = "block";
-          }
-        }
-      }
-    );
-  </script>
-  <div id="redirect-error" class="alert alert-danger" style="display:none">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+  <div id="redirect-error" class="alert alert-danger reverse-proxy__hidden"
+       data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
+      <l:isAdmin>
+        <f:submit name="no" value="${%Dismiss}"/>
+      </l:isAdmin>
     </form>
-    ${%blurb}
+    <div>${%blurb}</div>
+    <div class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
   </div>
+  <st:adjunct includes="hudson.diagnosis.ReverseProxySetupMonitor.resources"/>
 </j:jelly>

@@ -23,13 +23,13 @@
  */
 package jenkins;
 
-import com.google.common.collect.Lists;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,7 +66,7 @@ public abstract class ExtensionComponentSet {
         return new ExtensionComponentSet() {
             @Override
             public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
-                List<ExtensionComponent<T>> a = Lists.newArrayList();
+                List<ExtensionComponent<T>> a = new ArrayList<>();
                 for (ExtensionComponent<T> c : base.find(type)) {
                     if (ExtensionFilter.isAllowed(type,c))
                         a.add(c);
@@ -93,7 +93,7 @@ public abstract class ExtensionComponentSet {
         return new ExtensionComponentSet() {
             @Override
             public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
-                List<ExtensionComponent<T>> r = Lists.newArrayList();
+                List<ExtensionComponent<T>> r = new ArrayList<>();
                 for (ExtensionComponentSet d : base)
                     r.addAll(d.find(type));
                 return r;

@@ -27,7 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout permission="${app.ADMINISTER}" title="${%Node Monitoring Configuration}" norefresh="true">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}" />
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- to make the form field binding work -->
@@ -39,10 +40,12 @@ THE SOFTWARE.
                           descriptors="${it.nodeMonitorDescriptors}"
                           instances="${it.nonIgnoredMonitors}" />
 
-        <f:bottomButtonBar>
-          <f:submit value="${%OK}" />
-          <f:apply />
-        </f:bottomButtonBar>
+        <l:hasAdministerOrManage>
+          <f:bottomButtonBar>
+            <f:submit value="${%OK}" />
+            <f:apply />
+          </f:bottomButtonBar>
+        </l:hasAdministerOrManage>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>

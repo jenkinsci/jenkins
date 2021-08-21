@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
@@ -45,7 +45,7 @@ public class MockStaplerRequestBuilder{
     final Map<String,Object> getters = new HashMap<>();
     private Stapler stapler;
     
-    public MockStaplerRequestBuilder(@Nonnull JenkinsRule r, String url) {
+    public MockStaplerRequestBuilder(@NonNull JenkinsRule r, String url) {
         this.r = r;
         this.tokens = new TokenList(url);
     }

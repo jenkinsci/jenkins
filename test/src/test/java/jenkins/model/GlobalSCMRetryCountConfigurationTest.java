@@ -24,7 +24,7 @@
 package jenkins.model;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
