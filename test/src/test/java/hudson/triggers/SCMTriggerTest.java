@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -118,7 +119,7 @@ public class SCMTriggerTest {
         }
 
         @Override
-        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) {
             return myRev < 2;
         }
 
@@ -143,7 +144,7 @@ public class SCMTriggerTest {
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 buildStarted.signal();
                 buildShouldComplete.block();
                 return true;
@@ -180,7 +181,7 @@ public class SCMTriggerTest {
         Set<Item> blacklist = new HashSet<>();
 
         @Override
-        public boolean shouldPoll(Item item) {
+        public boolean shouldPoll(@NonNull Item item) {
             return !blacklist.contains(item);
         }
     }
