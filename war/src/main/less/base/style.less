@@ -893,41 +893,68 @@ table.parameters > tbody:hover {
 
 #buildHistoryPageNav {
   position: absolute;
-  right: -26px;
+  right: -38px;
   top: 96px;
-  border: 1px solid;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  //visibility: hidden;
+  border-radius: 6px;
+  background: white;
+  border: 2px solid var(--input-border);
+  visibility: hidden;
+  z-index: 0;
+
+  // Invisible pseudo element on the left so #buildHistoryPageNav
+  // doesn't disappear when moving cursor over gap
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -8px;
+    bottom: 0;
+    width: 8px;
+    background: transparent;
+    z-index: -1;
+  }
 
   .buildHistoryPageNav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 8px;
+    height: 30px;
+    cursor: pointer;
+    transition: opacity .2s ease;
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &:active {
+      opacity: 0.25;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    &-page-one-top {
+      width: 12px;
+      height: 2px;
+      background: currentColor;
+      margin: 2px 0;
+      border-radius: 2px;
+    }
+
     svg {
-      fill: red;
+      fill: currentColor;
+      width: 12px;
+      height: 12px;
     }
   }
 }
 
-#buildHistoryPageNav .nav {
-  width: 16px;
-  height: 16px;
-  background: no-repeat;
-  background-position: center;
-  background-size: 16px 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-}
-
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  border-color: var(--light-grey) !important;
-}
-
-#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav:hover {
-  border-color: var(--medium-grey) !important;
 }
 
 .build-row.model-link-active {
