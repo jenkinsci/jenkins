@@ -63,14 +63,10 @@ THE SOFTWARE.
 
     <tr class="build-search-row">
         <td>
-            <table>
-                <tr>
-                    <td>
-                        <span class="clear" title="${%Clear}">x</span>
-                        <input placeholder="${%find}"></input>
-                    </td>
-                </tr>
-            </table>
+            <div class="jenkins-search">
+                <input type="search" placeholder="${%find}" class="jenkins-search__input" />
+                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+            </div>
         </td>
     </tr>
 

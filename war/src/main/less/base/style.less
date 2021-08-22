@@ -849,44 +849,14 @@ table.parameters > tbody:hover {
   position: relative;
 }
 
-#buildHistoryPage .build-search-row td {
-    position: relative;
-}
+#buildHistoryPage .build-search-row {
+  &:hover {
+    background: transparent !important;
+  }
 
-#buildHistoryPage .build-search-row .clear {
-    position: absolute;
-    padding: 0 4px;
-    cursor: pointer;
-    top: 4px;
-    right: 6px;
-    opacity: 0.5;
-}
-
-#buildHistoryPage .build-search-row .clear:hover {
-    background-color: var(--very-light-grey);
-    border: 1px solid var(--medium-grey);
-    padding-right: 3px;
-    border-top-right-radius: 2px;
-}
-
-#buildHistoryPage .build-search-row input {
-    width: 100%;
-    padding-left: 5px;
-    padding-right: 20px;
-}
-
-#buildHistoryPage .build-search-row table {
-    width: 100%;
-}
-
-#buildHistoryPage .build-search-row .build-search-help {
-    width: 20px;
-}
-
-#buildHistoryPage .build-search-row .icon-help {
-    position: absolute;
-    cursor: pointer;
-    top: 6px;
+  td {
+    padding: 8px;
+  }
 }
 
 #buildHistoryPageNav {

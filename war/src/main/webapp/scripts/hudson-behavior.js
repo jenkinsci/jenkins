@@ -2257,7 +2257,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         });
 
         var pageSearchInput = Element.getElementsBySelector(bh, '.build-search-row input')[0];
-        var pageSearchClear = Element.getElementsBySelector(bh, '.build-search-row .clear')[0];
         var pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
         var pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
         var pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
@@ -2349,10 +2348,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             if (key === 13) {
                 loadPage({}, true);
             }
-        });
-        pageSearchClear.observe('click', function() {
-            pageSearchInput.value = '';
-            loadPage({}, true);
         });
         pageOne.observe('click', function() {
             loadPage();

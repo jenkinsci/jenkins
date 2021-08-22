@@ -1,0 +1,42 @@
+.jenkins-search {
+  position: relative;
+
+  &__input {
+    appearance: none;
+    display: block;
+    background: var(--input-color);
+    border: 2px solid var(--input-border);
+    padding: 4px 4px 4px 20px;
+    border-radius: 6px;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: 0 0 0 5px var(--focus-input-glow);
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    width: 16px;
+    height: 16px;
+    fill: var(--input-border-hover);
+    transition: fill 0.2s ease;
+  }
+
+  &:focus-within {
+    .jenkins-search__icon {
+      fill: var(--focus-input-border);
+    }
+  }
+}
