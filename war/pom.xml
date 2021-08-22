@@ -106,7 +106,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.20</version>
+      <version>5.21</version>
       <scope>test</scope>
     </dependency>
     <dependency>
