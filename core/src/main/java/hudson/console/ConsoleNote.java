@@ -241,23 +241,25 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(preamble,PREAMBLE))
                 return null;    // not a valid preamble
 
-            DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
-            int macSz = - decoded.readInt();
             byte[] mac;
-            int sz;
-            if (macSz > 0) { // new format
-                mac = new byte[macSz];
-                decoded.readFully(mac);
-                sz = decoded.readInt();
-                if (sz < 0) {
-                    throw new IOException("Corrupt stream");
+            byte[] buf;
+            try (DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in))) {
+                int macSz = -decoded.readInt();
+                int sz;
+                if (macSz > 0) { // new format
+                    mac = new byte[macSz];
+                    decoded.readFully(mac);
+                    sz = decoded.readInt();
+                    if (sz < 0) {
+                        throw new IOException("Corrupt stream");
+                    }
+                } else {
+                    mac = null;
+                    sz = -macSz;
                 }
-            } else {
-                mac = null;
-                sz = - macSz;
+                buf = new byte[sz];
+                decoded.readFully(buf);
             }
-            byte[] buf = new byte[sz];
-            decoded.readFully(buf);
 
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);
