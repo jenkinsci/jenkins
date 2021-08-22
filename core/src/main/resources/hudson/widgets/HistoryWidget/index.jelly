@@ -77,15 +77,6 @@ THE SOFTWARE.
         </td>
     </tr>
 
-    <!--<tr class="build-search-no-results-row">
-        <td>
-            <div class="jenkins-build-history__no-results-notice">
-                <img src="${imagesURL}/rage.png" />
-                No results
-            </div>
-        </td>
-    </tr>-->
-
     <!-- build history -->
     <st:include page="entries.jelly" it="${page}" />
 
