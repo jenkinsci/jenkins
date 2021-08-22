@@ -893,13 +893,15 @@ table.parameters > tbody:hover {
 
 #buildHistoryPageNav {
   position: absolute;
-  right: -38px;
+  right: -28px;
   top: 96px;
   border-radius: 6px;
   background: white;
   border: 2px solid var(--input-border);
   visibility: hidden;
   z-index: 0;
+  opacity: 0;
+  transition: 0.2s ease;
 
   // Invisible pseudo element on the left so #buildHistoryPageNav
   // doesn't disappear when moving cursor over gap
@@ -955,6 +957,8 @@ table.parameters > tbody:hover {
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
+  right: -38px;
+  opacity: 1;
 }
 
 .build-row.model-link-active {
