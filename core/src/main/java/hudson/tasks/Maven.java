@@ -72,7 +72,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -238,10 +237,7 @@ public class Maven extends Builder {
         return null;
     }
 
-    private Object readResolve() throws ObjectStreamException {
-        if (injectBuildVariables == null) {
-            injectBuildVariables = true;
-        }
+    private Object readResolve() {
         return this;
     }
 

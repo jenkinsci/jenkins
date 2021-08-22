@@ -128,10 +128,6 @@ public class JNLPLauncher extends ComputerLauncher {
     }
     
     protected Object readResolve() {
-        if (workDirSettings == null) {
-            // For the migrated code agents are always disabled
-            workDirSettings = RemotingWorkDirSettings.getDisabledDefaults();
-        }
         return this;
     }
 
@@ -204,6 +200,7 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
