@@ -20,6 +20,19 @@ jobs:
         uses: release-drafter/release-drafter@v5.15.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
+      # used by Oleg N in open graph generator experiment for now
+      - name: Generate YAML changelog draft
+        id: jenkins-core-changelog-generator
+        uses: jenkinsci/jenkins-core-changelog-generator@master
+        env:
+          GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Changelog YAML
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: changelog.yaml
+          path: changelog.yaml
+
   jenkins_io_draft:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
