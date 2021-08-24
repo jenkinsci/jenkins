@@ -37,7 +37,7 @@ public class ManageJenkinsAction implements RootAction {
     @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return "gear2.png";
+            return "gear.png";
         else
             return null;
     }

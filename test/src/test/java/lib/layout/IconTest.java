@@ -63,7 +63,9 @@ public class IconTest  {
     public void testIcons() throws Exception {
         HtmlPage p = j.createWebClient().goTo("testIcons");
         DomElement iconsBlock = p.getElementById("iconsBlock");
-        List<DomElement> icons = StreamSupport.stream(iconsBlock.getChildElements().spliterator(), false).collect(Collectors.toList());
+        List<DomElement> icons = StreamSupport
+            .stream(iconsBlock.getChildElements().spliterator(), false)
+            .collect(Collectors.toList());
 
         assertIconToImageOkay(icons.get(0), "/images/16x16/empty.png", "icon-empty icon-sm");
         assertIconToImageOkay(icons.get(1), "/images/24x24/empty.png", "icon-empty icon-md");
@@ -96,7 +98,8 @@ public class IconTest  {
 
         DomElement statusIcons = p.getElementById("statusIcons");
         List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToImageOkay(statusIconsList.get(0), "/images/32x32/folder.png", "icon-folder icon-lg");
+
+        assertIconToImageOkay(statusIconsList.get(0), "/images/svgs/user.svg", "icon-user icon-xlg");
 
         assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
     }
@@ -112,9 +115,8 @@ public class IconTest  {
             return BallColor.ABORTED;
         }
 
-
         public StatusIcon getStatusIcon1() {
-            return new StockStatusIcon("folder.png", new NonLocalizable("A Folder"));
+            return new StockStatusIcon("user.svg", new NonLocalizable("A User"));
         }
 
         public StatusIcon getStatusIcon2() {
@@ -138,11 +140,13 @@ public class IconTest  {
         DomElement tasksDiv = p.getElementById("tasks");
         List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
+        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/svgs/up.svg", "icon-up icon-md");
+        // this is loading the png from cloudbees-folder plugin
+        // when this is swapped to an SVG and the dep updated this test will need to change
         assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
-        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
-        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
-        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
+        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");
+        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");
+        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");
 
         assertIconToImageOkay(taskDivs.get(5).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
         assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
@@ -164,7 +168,7 @@ public class IconTest  {
         assertThat("img", is(icon.getTagName()));
         assertThat(icon.getAttribute("src"), endsWith(imgPath));
         if (classSpec != null) {
-            assertThat(classSpec, is(icon.getAttribute("class")));
+            assertThat(icon.getAttribute("class"), is(classSpec));
         }
     }
 
