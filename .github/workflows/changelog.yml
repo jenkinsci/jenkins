@@ -3,6 +3,7 @@
 name: Changelog Drafter
 
 on:
+  workflow_dispatch:
   push:
     # branches to consider in the event; optional, defaults to all
     branches:
@@ -10,6 +11,7 @@ on:
 
 jobs:
   update_draft_release:
+    if: github.repository_owner == 'jenkinsci'
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
@@ -19,6 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
+      # used by Oleg N in open graph generator experiment for now
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
         uses: jenkinsci/jenkins-core-changelog-generator@master
@@ -29,15 +32,29 @@ jobs:
         with:
           name: changelog.yaml
           path: changelog.yaml
-#TODO(oleg-nenashev): It will not work well with Release Drafter which does not recreated releases. Asset does not get overwritten, and there is no ready-to-go API for overriding assets
-      # Upload YAML to the release draft assets
-#      - name: Upload changelog.yaml to the Release Draft
-#        id: upload-changelog-yaml
-#        uses: actions/upload-release-asset@v1.0.1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.release-drafter.outputs.upload_url }}
-#          asset_path: ./changelog.yaml
-#          asset_name: changelog.yaml
-#          asset_content_type: text/yaml
+
+  jenkins_io_draft:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'jenkinsci'
+    steps:
+      - uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
+          repository: jenkins-infra/jenkins.io
+      - name: Check out
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+      - name: Publish jenkins.io changelog draft
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GITHUB_AUTH: "nobody:${{ steps.generate-token.outputs.token }}"
+          GIT_AUTHOR_NAME: jenkins-infra-changelog-generator
+          GIT_AUTHOR_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
+          GIT_COMMITTER_NAME: jenkins-infra-changelog-generator
+          GIT_COMMITTER_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
+        run: |
+          wget --quiet https://raw.githubusercontent.com/jenkinsci/core-changelog-generator/master/generate-weekly-changelog.sh
+          bash generate-weekly-changelog.sh
