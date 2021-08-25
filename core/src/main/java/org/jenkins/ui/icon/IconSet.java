@@ -429,7 +429,6 @@ public class IconSet {
         images.add("folder");
         images.add("gear");
         images.add("go-down");
-        images.add("go-top");
         images.add("go-up");
         images.add("graph");
         images.add("headless");
