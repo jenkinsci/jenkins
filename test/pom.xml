@@ -57,6 +57,12 @@ THE SOFTWARE.
         <version>1.11</version>
       </dependency>
       <dependency>
+        <!-- RequireUpperBoundDeps via mailer and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.5</version>
+      </dependency>
+      <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
@@ -129,7 +135,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.51</version>
+      <version>1.52</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -211,8 +217,6 @@ THE SOFTWARE.
         <configuration>
           <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
           <systemPropertyVariables>
-            <!-- use AntClassLoader that supports predictable file handle release -->
-            <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>

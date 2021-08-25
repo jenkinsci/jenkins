@@ -286,6 +286,12 @@ public abstract class LabelExpression extends Label {
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
         if (l.isEmpty()) {
+            final LabelAtom masterLabel = LabelAtom.get("master");
+            if (!masterLabel.equals(Jenkins.get().getSelfLabel()) && l.listAtoms().contains(masterLabel) && masterLabel.isEmpty()) {
+                // Show a warning if this expression's lack of nodes and clouds is likely caused by the built-in node name migration.
+                // This can probably be done better (e.g. also when `!l.isEmpty()`), but it's a start.
+                return FormValidation.warningWithMarkup(Messages.LabelExpression_ObsoleteMasterLabel());
+            }
             for (LabelAtom a : l.listAtoms()) {
                 if (a.isEmpty()) {
                     LabelAtom nearest = LabelAtom.findNearest(a.getName());

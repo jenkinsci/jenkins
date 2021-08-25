@@ -40,17 +40,21 @@ THE SOFTWARE.
     </div>
 
     <l:hasPermission permission="${permission}">
-      <div align="right"><a id="description-link" href="editDescription" onclick="return replaceDescription();">
-        <l:icon class="icon-notepad icon-sm"/>
-        <j:choose>
-          <j:when test="${empty(it.description)}">
-            ${%add description}
-          </j:when>
-          <j:otherwise>
-            ${%edit description}
-          </j:otherwise>
-        </j:choose>
-      </a></div>
+      <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+        <a class="yui-button link-button" id="description-link" href="editDescription" onclick="return replaceDescription();">
+          <span class="leading-icon">
+            <l:svgIcon viewBox="viewbox (default 0 0 16 16)" class="icon-small" href="${imagesURL}/material-icons/edit.svg#edit"/>
+          </span>
+          <j:choose>
+            <j:when test="${empty(it.description)}">
+              ${%add description}
+            </j:when>
+            <j:otherwise>
+              ${%edit description}
+            </j:otherwise>
+          </j:choose>
+        </a>
+      </div>
     </l:hasPermission>
   </div>
 </j:jelly>

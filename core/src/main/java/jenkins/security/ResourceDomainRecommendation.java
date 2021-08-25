@@ -80,4 +80,9 @@ public class ResourceDomainRecommendation extends AdministrativeMonitor {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
+
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
 }

@@ -69,7 +69,7 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // First build won't trigger down1 (Unstable doesn't meet threshold)
         // but will trigger down2 (build #1 is odd).
-        Build b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
+        Build b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         String log = j.getLog(b);
         Queue.Item q = j.jenkins.getQueue().getItem(down1);
         assertNull("down1 should not be triggered: " + log, q);
@@ -85,7 +85,7 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // ..and next build will trigger down1 (Success meets threshold),
         // but not down2 (build #2 is even)
-        b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
+        b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         log = j.getLog(b);
         q = j.jenkins.getQueue().getItem(down2);
         assertNull("down2 should not be triggered: " + log, q);

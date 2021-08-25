@@ -17,7 +17,6 @@
  */
 package jenkins.util;
 
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.MagicNames;
@@ -1120,36 +1119,27 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         if (theClass != null) {
             return theClass;
         }
-
-        //Surround the former logic with a try-catch to report missing class exceptions via Java11 telemetry
-        try {
-            if (isParentFirst(classname)) {
-                try {
-                    theClass = findBaseClass(classname);
-                    log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-                } catch (final ClassNotFoundException cnfe) {
-                    theClass = findClass(classname);
-                    log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-                }
-            } else {
-                try {
-                    theClass = findClass(classname);
-                    log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
-                } catch (final ClassNotFoundException cnfe) {
-                    if (ignoreBase) {
-                        throw cnfe;
-                    }
-                    theClass = findBaseClass(classname);
-                    log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
-                }
+        if (isParentFirst(classname)) {
+            try {
+                theClass = findBaseClass(classname);
+                log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
+                    Project.MSG_DEBUG);
+            } catch (final ClassNotFoundException cnfe) {
+                theClass = findClass(classname);
+                log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
+                    Project.MSG_DEBUG);
             }
-        } catch (ClassNotFoundException cnfe) {
-            //To catch CNFE thrown from this.getClass().getClassLoader().loadClass(classToLoad); from a plugin step or
-            //a plugin page
-            MissingClassTelemetry.reportException(classname, cnfe);
-            throw cnfe;
+        } else {
+            try {
+                theClass = findClass(classname);
+                log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
+            } catch (final ClassNotFoundException cnfe) {
+                if (ignoreBase) {
+                    throw cnfe;
+                }
+                theClass = findBaseClass(classname);
+                log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
+            }
         }
         if (resolve) {
             resolveClass(theClass);

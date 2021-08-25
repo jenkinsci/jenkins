@@ -304,3 +304,21 @@ a.yui-button.icon-button.large-button {
     font-size: 1.25rem;
   }
 }
+
+.jenkins-buttons-row {
+  display: flex;
+  
+  .yui-button {
+    margin-left: 0!important;
+    margin-right: 0.5rem!important;
+  }
+  
+  &--invert {
+    justify-content: flex-end;
+    
+    .yui-button {
+      margin-left: 0.5rem!important;
+      margin-right: 0!important;
+    }
+  }  
+}

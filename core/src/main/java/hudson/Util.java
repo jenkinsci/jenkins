@@ -890,6 +890,20 @@ public class Util {
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
 
+    private static final boolean[] fullUriMap = new boolean[123];
+    static {
+        String raw = "               0123456789       ABCDEFGHIJKLMNOPQRSTUVWXYZ      abcdefghijklmnopqrstuvwxyz";
+        //            !"#$%&'()*+,-./0123456789:;<=>?@                          [\]^_`                          {|}~
+        //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) fullUriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            fullUriMap[i] = raw.charAt(j) == ' ';
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
     /**
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and {@code "#%<>[\]^`{|}~})
@@ -901,6 +915,23 @@ public class Util {
      */
     @NonNull
     public static String rawEncode(@NonNull String s) {
+        return encode(s, uriMap);
+    }
+
+    /**
+     * Encode a single path component for use in an HTTP URL.
+     * Escapes all special characters including those outside
+     * of the characters specified in RFC1738.
+     * All characters outside numbers and letters without diacritic are encoded.
+     * Note that slash ({@code /}) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
+     */
+    @NonNull
+    public static String fullEncode(@NonNull String s){
+        return encode(s, fullUriMap);
+    }
+
+    private static String encode(String s, boolean[] map){
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -910,7 +941,7 @@ public class Util {
             int codePoint = Character.codePointAt(s, i);
             if((codePoint&0xffffff80)==0) { // 1 byte
                 c = s.charAt(i);
-                if (c > 122 || uriMap[c]) {
+                if (c > 122 || map[c]) {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);

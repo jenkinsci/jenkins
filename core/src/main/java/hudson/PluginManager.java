@@ -63,7 +63,6 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -2172,9 +2171,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 loaded.put(name, null);
             }
             // not found in any of the classloader. delegate.
-            ClassNotFoundException cnfe = new ClassNotFoundException(name);
-            MissingClassTelemetry.reportException(name, cnfe);
-            throw cnfe;
+            throw new ClassNotFoundException(name);
         }
 
         @Override
