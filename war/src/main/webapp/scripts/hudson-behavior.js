@@ -2291,7 +2291,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
 
         function loadPage(params, focusOnSearch) {
-            var searchString = pageSearchInput.value;
+            const searchString = pageSearchInput.value;
 
             if (searchString !== '') {
                 if (params === undefined) {
@@ -2302,30 +2302,24 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
             new Ajax.Request(ajaxUrl + toQueryString(params), {
                 onSuccess: function(rsp) {
-                    var dataTable = getDataTable(bh);
-                    var rows = dataTable.rows;
+                    const dataTable = getDataTable(bh);
+                    const tbody = dataTable.getElementsByTagName("tbody")[0];
+                    const rows = tbody.getElementsByClassName("build-row");
 
-                    // delete all rows
-                    var searchRow;
-                    if (rows[0].classList.contains('build-search-row')) {
-                        searchRow = rows[0];
-                    }
+                    // Delete all build rows
                     while (rows.length > 0) {
                         Element.remove(rows[0]);
                     }
-                    if (searchRow) {
-                        dataTable.appendChild(searchRow);
-                    }
 
                     // insert new rows
-                    var div = document.createElement('div');
+                    const div = document.createElement('div');
                     div.innerHTML = rsp.responseText;
                     Behaviour.applySubtree(div);
 
-                    var newDataTable = getDataTable(div);
-                    var newRows = newDataTable.rows;
+                    const newDataTable = getDataTable(div);
+                    const newRows = newDataTable.rows;
                     while (newRows.length > 0) {
-                        dataTable.appendChild(newRows[0]);
+                        tbody.appendChild(newRows[0]);
                     }
 
                     checkAllRowCellOverflows();
@@ -2341,14 +2335,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 }
             });
         }
-
-        pageSearchInput.observe('keypress', function(e) {
-            var key = e.which || e.keyCode;
-            // On enter
-            if (key === 13) {
-                loadPage({}, true);
-            }
-        });
+        pageSearchInput.oninput = function() {
+            loadPage({}, true);
+        };
         pageOne.observe('click', function() {
             loadPage();
         });
