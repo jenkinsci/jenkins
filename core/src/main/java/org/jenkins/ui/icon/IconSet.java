@@ -428,6 +428,7 @@ public class IconSet {
         images.add("folder-delete");
         images.add("folder");
         images.add("gear");
+        images.add("gear2");
         images.add("go-down");
         images.add("go-top");
         images.add("go-up");
