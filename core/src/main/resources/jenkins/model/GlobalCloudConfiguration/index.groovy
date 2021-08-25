@@ -13,7 +13,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
+            l.task(icon:"icon-gear icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
         }
     }
     l.main_panel {
