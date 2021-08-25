@@ -60,7 +60,7 @@ THE SOFTWARE.
         <local:row name="${lr.name}" href="${lr.searchUrl}/">
           <l:isAdmin>
             <a href="${lr.searchUrl}/configure">
-              <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
+              <l:icon class="icon-gear icon-lg" tooltip="Configure"/>
             </a>
           </l:isAdmin>
         </local:row>

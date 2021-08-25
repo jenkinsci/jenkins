@@ -25,39 +25,31 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <div id="rss-bar">
-        <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Legend}</a>
-
-
-        <span class="rss-bar-item">
-            <a href="rssAll" class="yui-button link-button rss-bar-item-link">
-                <span class="leading-icon">
-                    <l:svgIcon class="icon-small" tooltip="Atom feed"
-                               ariaHidden="true"
-                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
-                </span>
-                <span>Atom feed ${%for all}</span>
-            </a>
+  <div id="rss-bar" class="jenkins-buttons-row jenkins-buttons-row--invert">
+    <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Legend}</a>
+      <a href="rssAll" class="yui-button link-button">
+        <span class="leading-icon">
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+                     ariaHidden="true"
+                     href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>
-        <span class="rss-bar-item">
-            <a href="rssFailed" class="yui-button link-button rss-bar-item-link">
-                <span class="leading-icon">
-                    <l:svgIcon class="icon-small" tooltip="Atom feed"
-                               ariaHidden="true"
-                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
-                </span>
-                <span>Atom feed ${%for failures}</span>
-            </a>
+        <span>Atom feed ${%for all}</span>
+      </a>
+      <a href="rssFailed" class="yui-button link-button">
+        <span class="leading-icon">
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+                     ariaHidden="true"
+                     href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>
-        <span class="rss-bar-item">
-            <a href="rssLatest" class="yui-button link-button rss-bar-item-link">
-                <span class="leading-icon">
-                    <l:svgIcon class="icon-small" tooltip="Atom feed"
-                               ariaHidden="true"
-                               href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
-                </span>
-                <span>Atom feed ${%for just latest builds}</span>
-            </a>
+        <span>Atom feed ${%for failures}</span>
+      </a>
+      <a href="rssLatest" class="yui-button link-button">
+        <span class="leading-icon">
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+                     ariaHidden="true"
+                     href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>
-    </div>
+        <span>Atom feed ${%for just latest builds}</span>
+      </a>
+  </div>
 </j:jelly>

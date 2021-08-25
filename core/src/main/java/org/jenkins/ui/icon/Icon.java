@@ -24,6 +24,7 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -47,6 +48,7 @@ public class Icon {
     public static final String ICON_LARGE_STYLE = "width: 32px; height: 32px;";
     public static final String ICON_XLARGE_STYLE = "width: 48px; height: 48px;";
 
+    private static final String[] SUPPORTED_FORMATS = new String[] {".svg", ".png", ".gif"};
     private static final Map<String, String> iconDims = new HashMap<>();
 
     static {
@@ -216,7 +218,7 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        if (string.endsWith(".png") || string.endsWith(".gif")) {
+        if (StringUtils.endsWithAny(string, SUPPORTED_FORMATS)) {
             string = string.substring(0, string.length() - 4);
         }
         return string.replace('_', '-');

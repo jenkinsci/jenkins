@@ -63,8 +63,6 @@ import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.stapler.TypedFilter;
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -915,12 +913,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             // doing this early allows InitStrategy to set environment upfront
-            //Telemetry: add interceptor classloader
-            //These lines allow the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes by this way.
-            if (MissingClassTelemetry.enabled() && !(Thread.currentThread().getContextClassLoader() instanceof CatcherClassLoader)) {
-                Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
-            }
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
@@ -961,20 +953,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
             WebApp webApp = WebApp.get(servletContext);
-
-            //Telemetry: add interceptor classloader
-            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes by this way.
             // JSON binding needs to be able to see all the classes from all the plugins
-
-            ClassLoader classLoaderToAssign;
-            if (MissingClassTelemetry.enabled() && !(pluginManager.uberClassLoader instanceof CatcherClassLoader)) {
-                classLoaderToAssign = new CatcherClassLoader(pluginManager.uberClassLoader);
-            } else {
-                classLoaderToAssign = pluginManager.uberClassLoader;
-            }
-            webApp.setClassLoader(classLoaderToAssign);
-
+            webApp.setClassLoader(pluginManager.uberClassLoader);
             webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
 
             TypedFilter typedFilter = new TypedFilter();
@@ -990,10 +970,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             webApp.setDispatchValidator(new StaplerDispatchValidator());
             webApp.setFilteredDispatchTriggerListener(actionListener);
 
-            //Telemetry: add interceptor classloader
-            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes at this way.
-            adjuncts = new AdjunctManager(servletContext, classLoaderToAssign, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 
