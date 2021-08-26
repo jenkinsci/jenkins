@@ -68,7 +68,7 @@ public abstract class Graph {
     private final long timestamp;
     private final int defaultWidth;
     private final int defaultHeight;
-    private final int defaultScale =  1;
+    private final int defaultScale = 1;
     private volatile JFreeChart graph;
 
     /**
