@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
+import java.lang.Math;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
@@ -68,6 +69,7 @@ public abstract class Graph {
     private final long timestamp;
     private final int defaultW;
     private final int defaultH;
+    private final int defaultScale =  1;
     private volatile JFreeChart graph;
 
     /**
@@ -92,9 +94,19 @@ public abstract class Graph {
 
     private BufferedImage render(StaplerRequest req, ChartRenderingInfo info) {
         String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
+        if (w == null) {
+            w = String.valueOf(defaultW);
+        }
+
         String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
+        if (h == null) {
+            h = String.valueOf(defaultH);
+        }
+
+        String s = req.getParameter("scale");
+        if (s == null) {
+            s = String.valueOf(Math.min(s, 3));
+        }
 
         Color graphBg = stringToColor(req.getParameter("graphBg"));
         Color plotBg = stringToColor(req.getParameter("plotBg"));
@@ -106,8 +118,10 @@ public abstract class Graph {
 
         int width = Integer.parseInt(w);
         int height = Integer.parseInt(h);
+        int scale = Integer.parseInt(s);
         Dimension safeDimension = safeDimension(width, height, defaultW, defaultH);
-        return graph.createBufferedImage(safeDimension.width, safeDimension.height, info);
+        return graph.createBufferedImage(safeDimension.width * scale, safeDimension.height * scale,
+                safeDimension.width, safeDimension.height, info);
     }
 
     @Restricted(NoExternalUse.class)
