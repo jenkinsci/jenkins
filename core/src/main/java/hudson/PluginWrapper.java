@@ -1071,7 +1071,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Get list of implied dependencies.
-     * @since TODO
+     * @since 2.296
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Set<String> getImpliedDependents() {
