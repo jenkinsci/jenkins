@@ -29,7 +29,15 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
+    @Deprecated
     public boolean getMasterToSlaveAccessControl() {
+        return getAgentToControllerAccessControl();
+    }
+
+    /**
+     * @since TODO
+     */
+    public boolean getAgentToControllerAccessControl() {
         return !rule.getMasterKillSwitch();
     }
 
