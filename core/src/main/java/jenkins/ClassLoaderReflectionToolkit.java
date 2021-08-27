@@ -8,7 +8,7 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.util.AntClassLoader;
+import jenkins.util.JenkinsClassLoader;
 
 /**
  * Reflective access to various {@link ClassLoader} methods which are otherwise {@code protected}.
@@ -46,8 +46,8 @@ public class ClassLoaderReflectionToolkit {
     }
 
     private static Object getClassLoadingLock(ClassLoader cl, String name) {
-        if (cl instanceof AntClassLoader) {
-            return ((AntClassLoader) cl).getClassLoadingLock(name);
+        if (cl instanceof JenkinsClassLoader) {
+            return ((JenkinsClassLoader) cl).getClassLoadingLock(name);
         }
         return invoke(GetClassLoadingLock.GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
     }
@@ -74,8 +74,8 @@ public class ClassLoaderReflectionToolkit {
     public static @CheckForNull Class<?> _findLoadedClass(ClassLoader cl, String name) {
         synchronized (getClassLoadingLock(cl, name)) {
             Class<?> c;
-            if (cl instanceof AntClassLoader) {
-                c = ((AntClassLoader) cl).findLoadedClass2(name);
+            if (cl instanceof JenkinsClassLoader) {
+                c = ((JenkinsClassLoader) cl).findLoadedClass2(name);
             } else {
                 c = (Class) invoke(FindLoadedClass.FIND_LOADED_CLASS, RuntimeException.class, cl, name);
             }
@@ -103,8 +103,8 @@ public class ClassLoaderReflectionToolkit {
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(cl, name)) {
-            if (cl instanceof AntClassLoader) {
-                return ((AntClassLoader) cl).findClass(name);
+            if (cl instanceof JenkinsClassLoader) {
+                return ((JenkinsClassLoader) cl).findClass(name);
             } else {
                 return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
             }
@@ -131,8 +131,8 @@ public class ClassLoaderReflectionToolkit {
      */
     public static @CheckForNull URL _findResource(ClassLoader cl, String name) {
         URL url;
-        if (cl instanceof AntClassLoader) {
-            url = ((AntClassLoader) cl).findResource(name);
+        if (cl instanceof JenkinsClassLoader) {
+            url = ((JenkinsClassLoader) cl).findResource(name);
         } else if (cl instanceof URLClassLoader) {
             url = ((URLClassLoader) cl).findResource(name);
         } else {
@@ -161,8 +161,8 @@ public class ClassLoaderReflectionToolkit {
      */
     public static @NonNull Enumeration<URL> _findResources(ClassLoader cl, String name) throws IOException {
         Enumeration<URL> urls;
-        if (cl instanceof AntClassLoader) {
-            urls = ((AntClassLoader) cl).findResources(name);
+        if (cl instanceof JenkinsClassLoader) {
+            urls = ((JenkinsClassLoader) cl).findResources(name);
         } else {
             urls = (Enumeration<URL>) invoke(FindResources.FIND_RESOURCES, IOException.class, cl, name);
         }

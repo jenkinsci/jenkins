@@ -37,6 +37,7 @@ import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
 import jenkins.util.SystemProperties;
+import jenkins.util.URLClassLoader2;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -301,9 +302,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        AntClassLoader classLoader = new AntClassLoader(parent, true);
-        classLoader.addPathFiles(paths);
-        return classLoader;
+        if (useAntClassLoader) {
+            AntClassLoader classLoader = new AntClassLoader(parent, true);
+            classLoader.addPathFiles(paths);
+            return classLoader;
+        } else {
+            List<URL> urls = new ArrayList<>();
+            for (File path : paths) {
+                urls.add(path.toURI().toURL());
+            }
+            return new URLClassLoader2(urls.toArray(new URL[0]), parent);
+        }
     }
 
     /**
@@ -696,7 +705,5 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
-    @Deprecated
-    public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
+    public static /* not final */ boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName() + ".useAntClassLoader", true);
 }
