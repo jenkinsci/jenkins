@@ -89,7 +89,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     };
 
-    private PluginManager pluginManager;
+    private final PluginManager pluginManager;
 
     /**
      * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
@@ -249,7 +249,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 coreClassLoader.add(pkg);
         }
 
-        ClassLoader dependencyLoader = new DependencyClassLoader(coreClassLoader, archive, Util.join(dependencies,optionalDependencies));
+        ClassLoader dependencyLoader = new DependencyClassLoader(coreClassLoader, archive, Util.join(dependencies,optionalDependencies), pluginManager);
         dependencyLoader = getBaseClassLoader(atts, dependencyLoader);
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
@@ -566,7 +566,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Used to load classes from dependency plugins.
      */
-    final class DependencyClassLoader extends ClassLoader {
+    static final class DependencyClassLoader extends ClassLoader {
         /**
          * This classloader is created for this plugin. Useful during debugging.
          */
@@ -574,15 +574,22 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         private List<Dependency> dependencies;
 
+        private final PluginManager pluginManager;
+
         /**
-         * Topologically sorted list of transient dependencies.
+         * Topologically sorted list of transient dependencies. Lazily initialized via double-checked locking.
          */
         private volatile List<PluginWrapper> transientDependencies;
 
-        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
+        static {
+            registerAsParallelCapable();
+        }
+
+        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
             super(parent);
             this._for = archive;
-            this.dependencies = dependencies;
+            this.dependencies = Collections.unmodifiableList(new ArrayList<>(dependencies));
+            this.pluginManager = pluginManager;
         }
 
         private void updateTransientDependencies() {
@@ -591,7 +598,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         private List<PluginWrapper> getTransitiveDependencies() {
-            if (transientDependencies==null) {
+          List<PluginWrapper> localTransientDependencies = transientDependencies;
+          if (localTransientDependencies == null) {
+            synchronized (this) {
+              localTransientDependencies = transientDependencies;
+              if (localTransientDependencies == null) {
                 CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
@@ -615,9 +626,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     throw new AssertionError(e);    // such error should have been reported earlier
                 }
 
-                transientDependencies = cgd.getSorted();
+                transientDependencies = localTransientDependencies = cgd.getSorted();
+              }
             }
-            return transientDependencies;
+          }
+          return localTransientDependencies;
         }
 
         @Override
