@@ -78,9 +78,20 @@
     
     .manage-page__row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(calc(33.3% - 20px), calc(33.3% - 20px)));
-      grid-auto-flow: row;
+      grid-template-columns: 1fr;
       grid-gap: 30px;
+
+      @media screen and (min-width: 800px) {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      @media screen and (min-width: 1400px) {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      @media screen and (min-width: 1920px) {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+      }
     }
     
     &:last-child {
