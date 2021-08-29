@@ -85,7 +85,7 @@ function generateSVGIcon(iconName) {
 	use2.setAttribute('href', imagesURL + '/build-status/build-status-sprite.svg#' + buildStatus)
 	svg2.appendChild(use2);
 
-	const span = new Element('span', {class: 'build-status-icon__wrapper icon-' + iconName + ' icon-sm', style: 'width: 16px; height: 16px;'}).
+	const span = new Element('span', {class: 'build-status-icon__wrapper icon-' + iconName}).
 	insert(new Element('span', {class: 'build-status-icon__outer'}).
 	insert(svg1)).
 	insert(svg2);
