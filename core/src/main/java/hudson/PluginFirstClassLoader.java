@@ -27,10 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import jenkins.util.AntClassLoader;
 
@@ -43,12 +43,15 @@ import jenkins.util.AntClassLoader;
 public class PluginFirstClassLoader
     extends AntClassLoader
 {
+    static {
+        registerAsParallelCapable();
+    }
 
     public PluginFirstClassLoader() {
         super(null, false);
     }
 
-    private List<URL> urls = new ArrayList<>();
+    private List<URL> urls = new CopyOnWriteArrayList<>();
 
     @Override
     public void addPathFiles( Collection<File> paths )
