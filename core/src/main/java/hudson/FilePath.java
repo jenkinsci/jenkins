@@ -3360,7 +3360,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final Comparator<String> SHORTER_STRING_FIRST = (o1, o2) -> o1.length() - o2.length();
+    private static final Comparator<String> SHORTER_STRING_FIRST = Comparator.comparingInt(String::length);
 
     /**
      * Gets the {@link FilePath} representation of the "~" directory
