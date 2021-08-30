@@ -49,6 +49,10 @@ public class MaskingClassLoader extends ClassLoader {
 
     private final List<String> masksResources = new CopyOnWriteArrayList<>();
 
+    static {
+        registerAsParallelCapable();
+    }
+
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
     }
