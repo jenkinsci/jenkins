@@ -1,0 +1,30 @@
+.jenkins-app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid var(--panel-border-color);
+
+  .jenkins-app-bar__content {
+    display: flex;
+    justify-content: center;
+  }
+
+  .jenkins-app-bar__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--no-border {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 15px;
+  }
+
+  h1, h2, h3 {
+    margin: 0;
+    font-size: 30px;
+  }
+}

@@ -75,7 +75,12 @@
     border-top: 2px solid var(--panel-border-color);
     padding: calc(2rem) 0;
     max-width: 1800px;
-    
+
+    &:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
     .manage-page__row {
       display: grid;
       grid-template-columns: 1fr;

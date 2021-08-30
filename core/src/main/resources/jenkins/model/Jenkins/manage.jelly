@@ -37,7 +37,9 @@ THE SOFTWARE.
     </j:if>
 
     <l:main-panel>
-      <h1 class="jenkins-settings__title">${%Manage Jenkins}</h1>
+      <div class="jenkins-app-bar">
+        <h1 class="jenkins-settings__title">${%Manage Jenkins}</h1>
+      </div>
 
       <div class="manage-messages">
       <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
