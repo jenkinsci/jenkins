@@ -63,6 +63,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.jcraft.jzlib.GZIPOutputStream;
 import jenkins.util.SystemProperties;
 
@@ -71,6 +74,8 @@ import jenkins.util.SystemProperties;
  */
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
+    private static final Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
+    
     private final String keyImage;
 
     /**
@@ -122,7 +127,8 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     /**
-     * Gets the encrypted usage stat data to be sent to the Hudson server.
+     * Gets the encrypted usage stat data to be sent to the Hudson server. 
+     * Used exclusively by jelly: resources/hudson/model/UsageStatistics/footer.jelly
      */
     public String getStatData() throws IOException {
         Jenkins j = Jenkins.get();
@@ -190,8 +196,10 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             }
 
             return new String(Base64.getEncoder().encode(baos.toByteArray()));
-        } catch (GeneralSecurityException e) {
-            throw new Error(e); // impossible
+        } catch (Throwable e) { // the exception could be GeneralSecurityException, InvalidParameterException or any other depending on the security provider you have installed
+            LOG.log(Level.INFO, "Usage statistics could not be sent ({0})", e.getMessage());
+            LOG.log(Level.FINE, "Error sending usage statistics", e);
+            return null;
         }
     }
 

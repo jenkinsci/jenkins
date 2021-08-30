@@ -813,7 +813,7 @@ public abstract class Launcher {
             } else
                 buf.append(c);
         }
-        listener.getLogger().println(buf.toString());
+        listener.getLogger().println(buf);
         listener.getLogger().flush();
     }
 

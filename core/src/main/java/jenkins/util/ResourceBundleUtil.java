@@ -70,7 +70,7 @@ public class ResourceBundleUtil {
      * @throws MissingResourceException Missing resource bundle.
      */
     public static @NonNull JSONObject getBundle(@NonNull String baseName, @NonNull Locale locale) throws MissingResourceException {
-        String bundleKey = baseName + ":" + locale.toString();
+        String bundleKey = baseName + ":" + locale;
         JSONObject bundleJSON = bundles.get(bundleKey);
 
         if (bundleJSON != null) {

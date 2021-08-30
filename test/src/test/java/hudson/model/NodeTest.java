@@ -379,8 +379,8 @@ public class NodeTest {
     @Test
     public void builtInComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
-        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        wc.assertFails("computer/(built-in)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(built-in)/config.xml"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("<hudson/>");
 
@@ -408,13 +408,11 @@ public class NodeTest {
             }
 
             // Gather information for failure message just in case.
-            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+            containsFailureMessage.append("{").append(entry.item).append(", ").append(entry.weight).append("}");
         }
 
         // If a label should be part of the cloud label then fail.
-        if (contains) {
-            fail(containsFailureMessage.toString() + "]");
-        }
+        assertFalse(containsFailureMessage + "]", contains);
     }
 
     /**

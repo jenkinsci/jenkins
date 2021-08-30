@@ -28,9 +28,7 @@ THE SOFTWARE.
     <l:layout title="${it.fullDisplayName} Artifacts">
       <st:include page="sidepanel.jelly" />
       <l:main-panel>
-        <t:buildCaption>
-          ${%Build Artifacts}
-        </t:buildCaption>
+        <t:buildCaption>${%Build Artifacts}</t:buildCaption>
         <table class="fileList">
           <j:forEach var="f" items="${it.artifacts}">
             <tr>

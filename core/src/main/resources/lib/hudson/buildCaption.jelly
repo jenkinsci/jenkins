@@ -43,7 +43,7 @@ THE SOFTWARE.
 	      </tr></table>
 	    </div>
 	  </j:if>
-	  
+
 	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
         <script>
           (function(){
@@ -71,6 +71,8 @@ THE SOFTWARE.
 
           })();
         </script>
-	  <d:invokeBody />
-	</h1>
+        <span style="margin-left:.2em;">
+          <d:invokeBody trim="true"/>
+        </span>
+    </h1>
 </j:jelly>

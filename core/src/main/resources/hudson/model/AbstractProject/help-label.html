@@ -5,8 +5,8 @@
   expression evaluates to <i>true</i>, then that agent will be allowed to
   execute builds of this project.
   <p>
-  If this project should always be built on a specific agent, or on the Jenkins
-  master, then you can just enter the agent's name, or <code>master</code>,
+  If this project should always be built on a specific agent, or on the built-in
+  node, then you can just enter the agent's name, or <code>built-in</code>,
   respectively.
   <p>
   However, you should generally avoid using the <i>Name</i> of an agent here,
@@ -98,8 +98,8 @@
 
   <h3>Examples</h3>
   <dl>
-    <dt><tt>master</tt></dt>
-    <dd>Builds of this project may be executed only on the Jenkins master<dd>
+    <dt><tt>built-in</tt></dt>
+    <dd>Builds of this project may be executed only on the built-in node<dd>
 
     <dt><tt>linux-machine-42</tt></dt>
     <dd>

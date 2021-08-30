@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.ListView;
-import hudson.model.TreeView;
+import hudson.model.MyView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
 
@@ -85,8 +85,8 @@ public class UpdateViewCommandTest {
     }
 
     @Test public void updateViewWithWrongViewTypeShouldFail() throws Exception {
-        TreeView tv = new TreeView("aView");
-        j.jenkins.addView(tv);
+        MyView myView = new MyView("aView");
+        j.jenkins.addView(myView);
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
@@ -94,7 +94,7 @@ public class UpdateViewCommandTest {
                 ;
 
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(), containsString("Expecting view type: "+ tv.getClass()
+        assertThat(result.stderr(), containsString("Expecting view type: "+ myView.getClass()
                 + " but got: class hudson.model.ListView instead."));
     }
 

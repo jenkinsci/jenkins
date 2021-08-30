@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.queue.ScheduleResult;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static javax.servlet.http.HttpServletResponse.SC_SEE_OTHER;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;
@@ -187,14 +189,19 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
-        Queue.Item item = Jenkins.get().getQueue().schedule2(
-                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
-
+        ScheduleResult scheduleResult = Jenkins.get().getQueue().schedule2(
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
+        Queue.Item item = scheduleResult.getItem();
+        
+        if (item != null && !scheduleResult.isCreated()) {
+            rsp.sendRedirect(SC_SEE_OTHER, req.getContextPath() + '/' + item.getUrl());
+            return;
+        }
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
-        } else {
-            rsp.sendRedirect(".");
+            return;
         }
+        rsp.sendRedirect(".");
     }
 
     /**

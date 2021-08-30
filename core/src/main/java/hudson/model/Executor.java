@@ -417,7 +417,7 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
-                setName(getName() + " : executing " + executable.toString());
+                setName(getName() + " : executing " + executable);
                 Authentication auth = workUnit.context.item.authenticate2();
                 LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
                 if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM2)) { // i.e., unspecified

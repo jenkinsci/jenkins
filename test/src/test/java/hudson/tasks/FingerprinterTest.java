@@ -383,7 +383,7 @@ public class FingerprinterTest {
     }
 
     
-    private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws IOException, Exception {
+    private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
         addFingerprinterToProject(project, contents, files);
@@ -391,7 +391,7 @@ public class FingerprinterTest {
         return project;
     }
     
-    private void addFingerprinterToProject(AbstractProject<?, ?> project, String[] contents, String[] files) throws Exception {
+    private void addFingerprinterToProject(AbstractProject<?, ?> project, String[] contents, String[] files) {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
             if (project instanceof MatrixProject) {

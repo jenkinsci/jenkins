@@ -113,8 +113,8 @@ public class JenkinsManagePermissionTest {
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
                 .grant(Jenkins.READ).everywhere().to(MANAGER)
         );
-        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
-        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(READER).assertFails("computer/(built-in)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(MANAGER).assertFails("computer/(built-in)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     // End of ComputerTest

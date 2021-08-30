@@ -27,8 +27,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -170,13 +170,11 @@ public class ConsistentHashTest {
             throw exception;
         };
 
-        try {
+        final RuntimeException e = assertThrows(RuntimeException.class, () -> {
             ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
             hash.add("foo");
-            fail("Didn't use custom hash function");
-        } catch (RuntimeException e) {
-            assertSame(exception, e);
-        }
+        });
+        assertSame(exception, e);
     }
 
     /**

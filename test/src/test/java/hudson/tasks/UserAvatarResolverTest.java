@@ -23,6 +23,8 @@
  */
 package hudson.tasks;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -45,21 +47,21 @@ public class UserAvatarResolverTest {
 
     @Test
     public void defaultImageIsReturnedIfRegexFails() {
-        String avatar = UserAvatarResolver.resolve(User.get("USER"), "meh");
-        assertTrue(avatar.endsWith("/images/meh/user.png"));
+        String avatar = UserAvatarResolver.resolve(User.getOrCreateByIdOrFullName("USER"), "meh");
+        assertThat(avatar, endsWith("/images/svgs/person.svg"));
     }
 
     @Test
     public void resolverIsUsed() {
-        expUser = User.get("unique-user-not-used-in-anyother-test", true);
+        expUser = User.getOrCreateByIdOrFullName("unique-user-not-used-in-anyother-test");
         String avatar = UserAvatarResolver.resolve(expUser, "20x20");
         assertEquals("http://myown.image", avatar);
     }
 
     @Test
     public void noResolverCanFindAvatar() {
-        String avatar = UserAvatarResolver.resolve(User.get("USER"), "20x20");
-        assertTrue(avatar.endsWith("/images/20x20/user.png"));
+        String avatar = UserAvatarResolver.resolve(User.getOrCreateByIdOrFullName("USER"), "20x20");
+        assertThat(avatar, endsWith("/images/svgs/person.svg"));
     }
 
     @Test
@@ -73,7 +75,6 @@ public class UserAvatarResolverTest {
 
     @Extension
     public static final class UserAvatarResolverImpl extends UserAvatarResolver {
-
         @Override
         public String findAvatarFor(User u, int width, int height) {
             if (u != null && u == expUser) {

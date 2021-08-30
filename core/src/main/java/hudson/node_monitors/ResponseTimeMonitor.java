@@ -200,12 +200,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
          */
         @Override
         public String toString() {
-//            StringBuilder buf = new StringBuilder();
-//            for (long l : past5) {
-//                if(buf.length()>0)  buf.append(',');
-//                buf.append(l);
-//            }
-//            return buf.toString();
             int fc = failureCount();
             if(fc>0)
                 return Messages.ResponseTimeMonitor_TimeOut(fc);

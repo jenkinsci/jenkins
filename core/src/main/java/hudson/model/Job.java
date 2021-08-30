@@ -1499,8 +1499,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 plot.setBackgroundPaint(Color.WHITE);
                 plot.setOutlinePaint(null);
                 plot.setForegroundAlpha(0.8f);
-                // plot.setDomainGridlinesVisible(true);
-                // plot.setDomainGridlinePaint(Color.white);
                 plot.setRangeGridlinesVisible(true);
                 plot.setRangeGridlinePaint(Color.black);
 

@@ -195,9 +195,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
-                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new ListAll());
+                VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                if (channelToController!=null) {
+                    killers = channelToController.call(new ListAll());
                 } else {
                     // used in an environment that doesn't support talk-back to the master.
                     // let's do with what we have.
@@ -294,10 +294,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             // Quick check, does anything exist to check against
             if (!skipVetoes) {
                 try {
-                    VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                    if (channelToMaster!=null) {
+                    VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                    if (channelToController!=null) {
                         CheckVetoes vetoCheck = new CheckVetoes(this);
-                        causeMessage = channelToMaster.call(vetoCheck);
+                        causeMessage = channelToController.call(vetoCheck);
                     }
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
@@ -438,9 +438,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         // Check for the existance of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
-                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                if (channelToMaster != null) {
-                    vetoersExist = channelToMaster.call(new DoVetoersExist());
+                VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                if (channelToController != null) {
+                    vetoersExist = channelToController.call(new DoVetoersExist());
                 }
             }
             catch (InterruptedException ie) {
@@ -1691,9 +1691,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 for( int base=0; base<size.getValue().intValue(); base+=sizeOf_kinfo_proc) {
                     int pid = m.getInt(base+ kinfo_proc_pid_offset);
                     int ppid = m.getInt(base+ kinfo_proc_ppid_offset);
-//                    int effective_uid = m.getInt(base+304);
-//                    byte[] comm = new byte[16];
-//                    m.read(base+163,comm,0,16);
 
                     super.processes.put(pid,new DarwinProcess(pid,ppid));
                 }
@@ -2217,22 +2214,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ Object writeReplace() throws ObjectStreamException {
         return new Remote(this, getChannelForSerialization());
     }
-
-//    public static void main(String[] args) {
-//        // dump everything
-//        LOGGER.setLevel(Level.ALL);
-//        ConsoleHandler h = new ConsoleHandler();
-//        h.setLevel(Level.ALL);
-//        LOGGER.addHandler(h);
-//
-//        Solaris killer = (Solaris)get();
-//        Solaris.SolarisSystem s = killer.createSystem();
-//        Solaris.SolarisProcess p = s.get(Integer.parseInt(args[0]));
-//        System.out.println(p.getEnvVars());
-//
-//        if(args.length==2)
-//            p.kill();
-//    }
 
     /*
         On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>

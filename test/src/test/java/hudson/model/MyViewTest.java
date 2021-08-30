@@ -61,7 +61,7 @@ public class MyViewTest {
     }
     
     @Test
-    public void testContains() throws IOException, Exception{
+    public void testContains() throws Exception{
         
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);
@@ -77,7 +77,7 @@ public class MyViewTest {
     }
     
     @Test
-    public void testDoCreateItem() throws IOException, Exception{
+    public void testDoCreateItem() throws Exception{
         logs.record(AbstractItem.class, Level.ALL);
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
