@@ -35,6 +35,7 @@ import org.junit.Test;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author pjanouse
@@ -55,8 +56,8 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, succeededSilently());
@@ -76,8 +77,8 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(true));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(true));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2");
 
         assertThat(result, succeededSilently());
@@ -95,8 +96,8 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject", "aProject");
 
         assertThat(result, succeededSilently());
