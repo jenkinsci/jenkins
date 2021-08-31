@@ -29,6 +29,9 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
+    /**
+     * @deprecated Use {@link #getAgentToControllerAccessControl()} instead
+     */
     @Deprecated
     public boolean getMasterToSlaveAccessControl() {
         return getAgentToControllerAccessControl();
