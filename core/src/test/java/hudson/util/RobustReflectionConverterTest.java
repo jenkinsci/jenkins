@@ -61,8 +61,10 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        final ConversionException e = assertThrows(ConversionException.class, () -> read(new XStream()));
-        assertThat(e.getMessage(), containsString("z"));
+        XStream xs = new XStream();
+        xs.allowTypes(new Class[] {Point.class});
+        final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
+        assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
     @Test
