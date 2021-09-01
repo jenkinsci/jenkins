@@ -111,6 +111,12 @@
   z-index: 0;
   text-decoration: none;
 
+  // IE11 doesn't support grid-gap, so apply margin, remove it for modern browsers
+  margin: 0 30px 30px 0;
+  @supports (grid-gap: 30px) {
+    margin: 0;
+  }
+
   &::before {
     position: absolute;
     content: "";
