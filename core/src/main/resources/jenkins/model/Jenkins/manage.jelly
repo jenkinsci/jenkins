@@ -37,19 +37,16 @@ THE SOFTWARE.
     </j:if>
 
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>${%Manage Jenkins}</h1>
-          <j:if test="${!app.activeAdministrativeMonitors.isEmpty()}">
-            <section class="manage-messages">
-              <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
-                <st:include page="message.jelly" it="${am}" />
-              </j:forEach>
-              <st:include page="downgrade.jelly" />
-            </section>
-          </j:if>
-        </div>
+      <div class="jenkins-app-bar jenkins-app-bar--no-border">
+        <h1>${%Manage Jenkins}</h1>
       </div>
+
+      <section class="manage-messages">
+        <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+          <st:include page="message.jelly" it="${am}" />
+        </j:forEach>
+        <st:include page="downgrade.jelly" />
+      </section>
 
       <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-settings__section">
