@@ -113,7 +113,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -137,7 +136,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -624,7 +622,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
     @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
-        Set<String> names = new HashSet();
+        Set<String> names = new HashSet<>();
 
         ServletContext context = Jenkins.get().servletContext;
         Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
@@ -2100,11 +2098,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * {@link ClassLoader} that can see all plugins.
      */
     public final class UberClassLoader extends ClassLoader {
-        /**
-         * Make generated types visible.
-         * Keyed by the generated class name.
-         */
-        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<>();
         /** Cache of loaded, or known to be unloadable, classes. */
         private final Map<String,Class<?>> loaded = new HashMap<>();
 
@@ -2112,19 +2105,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             super(PluginManager.class.getClassLoader());
         }
 
-        public void addNamedClass(String className, Class c) {
-            generatedClasses.put(className, new WeakReference<>(c));
-        }
-
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            WeakReference<Class> wc = generatedClasses.get(name);
-            if (wc!=null) {
-                Class c = wc.get();
-                if (c!=null)    return c;
-                else            generatedClasses.remove(name,wc);
-            }
-
             if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
                 throw new ClassNotFoundException("ignoring " + name);
             }
