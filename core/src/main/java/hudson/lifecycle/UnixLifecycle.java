@@ -27,7 +27,6 @@ import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,10 +56,7 @@ public class UnixLifecycle extends Lifecycle {
 
     public UnixLifecycle() throws IOException {
         try {
-            args = new ArrayList<>(JavaVMArguments.current());
-
-            // if we are running as daemon, don't fork into background one more time during restart
-            args.remove("--daemon");
+            args = JavaVMArguments.current();
         } catch (UnsupportedOperationException | LinkageError e) {
             // can't restart / see JENKINS-3875
             failedToObtainArgs = e;
