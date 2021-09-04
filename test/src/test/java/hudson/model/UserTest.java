@@ -416,7 +416,7 @@ public class UserTest {
             fail("User should not have permission to configure another user.");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         }

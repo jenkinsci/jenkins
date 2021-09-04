@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Like {@link SimpleUrlAuthenticationSuccessHandler} but does not allow open redirects.
  *
- * @since TODO
  */
 @Restricted(NoExternalUse.class)
 public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {

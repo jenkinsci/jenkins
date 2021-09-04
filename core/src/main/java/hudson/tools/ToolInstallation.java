@@ -66,7 +66,7 @@ import org.dom4j.io.SAXReader;
  *
  * <ul>
  * <li>Hudson allows admins to specify different locations for tools on some agents.
- *     For example, JDK on the master might be on /usr/local/java but on a Windows agent
+ *     For example, JDK on the controller might be on /usr/local/java but on a Windows agent
  *     it could be at c:\Program Files\Java
  * <li>Hudson can verify the existence of tools and provide warnings and diagnostics for
  *     admins. (TBD)
@@ -141,7 +141,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * 
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
-     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on controller)
      */
     public @CheckForNull String getHome() {
         return home;

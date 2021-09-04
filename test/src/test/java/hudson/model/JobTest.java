@@ -148,7 +148,7 @@ public class JobTest {
                                 return;
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
-                            if (buildNumber != (savedBuildNumber-1)) {
+                            if (buildNumber != savedBuildNumber - 1) {
                                 this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
                                 this.passed = false;
                                 return;

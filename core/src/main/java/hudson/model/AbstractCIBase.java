@@ -123,7 +123,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
      /**
      * Returns all {@link Node}s in the system, excluding {@link jenkins.model.Jenkins} instance itself which
-     * represents the master.
+     * represents the built-in node in this context.
      */
     public abstract List<Node> getNodes();
 
@@ -135,7 +135,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * Computer API uses package protection heavily
      * ============================================================================================================== */
 
-    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticSlaveLaunch) {
+    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticAgentLaunch) {
         Computer c = byNameMap.get(n.getNodeName());
         if (c!=null) {
             try {
@@ -145,7 +145,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
             }
         } else {
-            c = createNewComputerForNode(n, automaticSlaveLaunch);
+            c = createNewComputerForNode(n, automaticAgentLaunch);
             if (c != null) {
                 used.add(c);
             }
@@ -153,10 +153,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     @CheckForNull
-    private Computer createNewComputerForNode(Node n, boolean automaticSlaveLaunch) {
+    private Computer createNewComputerForNode(Node n, boolean automaticAgentLaunch) {
         Computer c = null;
         Map<Node,Computer> computers = getComputerMap();
-        // we always need Computer for the master as a fallback in case there's no other Computer.
+        // we always need Computer for the built-in node as a fallback in case there's no other Computer.
         if(n.getNumExecutors()>0 || n==Jenkins.get()) {
             try {
                 c = n.createComputer();
@@ -170,7 +170,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             }
 
             computers.put(n, c);
-            if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
+            if (!n.isHoldOffLaunchUntilSave() && automaticAgentLaunch) {
                 RetentionStrategy retentionStrategy = c.getRetentionStrategy();
                 if (retentionStrategy != null) {
                     // if there is a retention strategy, it is responsible for deciding to start the computer
@@ -209,14 +209,14 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         return computers.get(n);
     }
 
-    protected void updateNewComputer(final Node n, boolean automaticSlaveLaunch) {
+    protected void updateNewComputer(final Node n, boolean automaticAgentLaunch) {
         final String nodeName = n.getNodeName();
         final Map<Node, Computer> computers = getComputerMap();
         if (computers.containsKey(n)) {
             LOGGER.warning("Node " + nodeName + " is not a new node skipping");
             return;
         }
-        createNewComputerForNode(n, automaticSlaveLaunch);
+        createNewComputerForNode(n, automaticAgentLaunch);
         getQueue().scheduleMaintenance();
         for (ComputerListener cl : ComputerListener.all()) {
             try {
@@ -234,7 +234,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * This method tries to reuse existing {@link Computer} objects
      * so that we won't upset {@link Executor}s running in it.
      */
-    protected void updateComputerList(final boolean automaticSlaveLaunch) {
+    protected void updateComputerList(final boolean automaticAgentLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
         final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
@@ -251,10 +251,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
                 Set<Computer> used = new HashSet<>(old.size());
 
-                updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
+                updateComputer(AbstractCIBase.this, byName, used, automaticAgentLaunch);
                 for (Node s : getNodes()) {
                     long start = System.currentTimeMillis();
-                    updateComputer(s, byName, used, automaticSlaveLaunch);
+                    updateComputer(s, byName, used, automaticAgentLaunch);
                     if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Took %dms to update node %s",
                                 System.currentTimeMillis() - start, s.getNodeName()));

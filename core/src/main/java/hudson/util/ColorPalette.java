@@ -47,7 +47,7 @@ public class ColorPalette {
     /**
      * Color list usable for generating line charts.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in several plugins")
     public static List<Color> LINE_GRAPH = Collections.unmodifiableList(Arrays.asList(
         new Color(0xCC0000),
         new Color(0x3465a4),

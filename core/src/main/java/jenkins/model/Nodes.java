@@ -369,7 +369,6 @@ public class Nodes implements Saveable {
      * Returns the directory that the nodes are stored in.
      *
      * @return the directory that the nodes are stored in.
-     * @throws IOException
      */
     private File getNodesDir() throws IOException {
         final File nodesDir = new File(jenkins.getRootDir(), "nodes");

@@ -346,8 +346,6 @@ public class InstallState implements ExtensionPoint {
 
     /**
      * Find an install state by name
-     * @param name
-     * @return
      */
     @CheckForNull
     public static InstallState valueOf(@NonNull String name) {

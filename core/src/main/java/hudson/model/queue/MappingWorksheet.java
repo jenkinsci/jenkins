@@ -173,12 +173,6 @@ public class MappingWorksheet {
     public class WorkChunk extends ReadOnlyList<SubTask> {
         public final int index;
 
-        // the main should be always at position 0
-//        /**
-//         * This chunk includes {@linkplain WorkUnit#isMainWork() the main work unit}.
-//         */
-//        public final boolean isMain;
-
         /**
          * If this task needs to be run on a node with a particular label,
          * return that {@link Label}. Otherwise null, indicating

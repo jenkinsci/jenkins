@@ -81,13 +81,4 @@ complete {
     match("net.jcip:jcip-annotations") {
         rewriteLicense([],ccby)
     }
-
-    //
-    // Choose from multi-licensed modules
-    //==========================================================================
-
-    match("*:jna-posix") {
-        accept("GNU Lesser General Public License Version 2.1")
-    }
-
 }

@@ -61,7 +61,7 @@ public class UnlabeledLoadStatisticsTest {
         assertEquals("Queue must be empty when the test starts", 0, queue.getBuildableItems().size());
         assertEquals("Statistics must return 0 when the test starts", 0, unlabeledLoad.computeQueueLength());
         
-        // Disable builds by default, create an agent to prevent assigning of "master" labels
+        // Disable builds by default, create an agent to prevent assigning of "built-in" labels
         j.jenkins.setNumExecutors(0);
         DumbSlave slave = j.createOnlineSlave(new LabelAtom("testLabel"));
         slave.setMode(Node.Mode.EXCLUSIVE);
@@ -85,7 +85,7 @@ public class UnlabeledLoadStatisticsTest {
         queue.maintain();
         assertEquals("Labeled builds must be ignored", 2, unlabeledLoad.computeQueueLength());
         
-        // Allow executions of unlabeled builds on master, all unlabeled builds should pass
+        // Allow executions of unlabeled builds on built-in node, all unlabeled builds should pass
         j.jenkins.setNumExecutors(1);
         j.buildAndAssertSuccess(unlabeledProject);
         queue.maintain();

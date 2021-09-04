@@ -77,7 +77,7 @@ public class DescriptorVisibilityFilterTest {
         public static final class HideDescriptor extends DescriptorVisibilityFilter {
             @Override
             public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
-                return !(descriptor instanceof DescriptorImpl);
+                return !(descriptor instanceof TestSecurityRealm.DescriptorImpl);
             }
         }
     }
@@ -105,7 +105,7 @@ public class DescriptorVisibilityFilterTest {
         public static final class HideDescriptor extends DescriptorVisibilityFilter {
             @Override
             public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
-                return !(descriptor instanceof DescriptorImpl);
+                return !(descriptor instanceof TestAuthStrategy.DescriptorImpl);
             }
         }
     }

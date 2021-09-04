@@ -246,7 +246,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         return removed;
     }
 
-    private <T> boolean removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
+    private boolean removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
         for (ExtensionComponent<T> c : collection) {
             if (c.getInstance().equals(t)) {
                 return collection.remove(c);

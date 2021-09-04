@@ -178,20 +178,6 @@ public class BasicAuthenticationFilter implements Filter {
         rsp.setHeader("Location",path);
     }
 
-    //public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-    //    HttpServletRequest req = (HttpServletRequest) request;
-    //    String authorization = req.getHeader("Authorization");
-    //
-    //    String path = req.getServletPath();
-    //    if(authorization==null || req.getUserPrincipal()!=null || path.startsWith("/secured/")) {
-    //        chain.doFilter(request,response);
-    //    } else {
-    //        if(req.getQueryString()!=null)
-    //            path += req.getQueryString();
-    //        ((HttpServletResponse)response).sendRedirect(req.getContextPath()+"/secured"+path);
-    //    }
-    //}
-
     @Override
     public void destroy() {
     }

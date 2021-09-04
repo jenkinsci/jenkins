@@ -36,7 +36,7 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
 
         @Override
         public boolean hasNext() {
-            while ((delegate == null || !delegate.hasNext()) && (providers.hasNext())) {
+            while ((delegate == null || !delegate.hasNext()) && providers.hasNext()) {
                 final QueueItemAuthenticatorProvider provider = providers.next();
                 if (provider == null) {
                     continue;

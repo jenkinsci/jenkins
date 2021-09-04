@@ -35,7 +35,6 @@ import org.jvnet.hudson.test.TestExtension;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -172,9 +171,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         }
         
         public Map<String, Renderable> getMap() {
-            return new HashMap<String, Renderable>() {{
-                put("a", new Renderable());
-            }};
+            return Collections.singletonMap("a", new Renderable());
         }
     }
     

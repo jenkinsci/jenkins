@@ -81,7 +81,7 @@ public class ParameterizedJobMixInTest {
         Assert.assertTrue(item.task instanceof FreeStyleProject);
 
         Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
-        Assert.assertTrue((waitingItem.timestamp.getTimeInMillis() - triggerTime) > 45000);
+        Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);
 
         Jenkins.get().getQueue().doCancelItem(1);
     }

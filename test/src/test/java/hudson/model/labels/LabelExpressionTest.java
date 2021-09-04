@@ -138,7 +138,7 @@ public class LabelExpressionTest {
     }
 
     /**
-     * Make sure we can reset the label of an existing slave.
+     * Make sure we can reset the label of an existing agent.
      */
     @Test
     public void setLabelString() throws Exception {
@@ -262,7 +262,7 @@ public class LabelExpressionTest {
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("master && goo").renderHtml();
+                msg = LabelExpression.validate("built-in && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

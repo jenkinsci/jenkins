@@ -133,7 +133,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 // draw item labels, if visible
                 if (isItemLabelVisible(row, column)) {
                     drawItemLabel(g2, plot.getOrientation(), dataset, row, column,
-                            xx1, yy1, (y1 < 0.0));
+                            xx1, yy1, y1 < 0.0);
                 }
             }
         } else {
@@ -193,7 +193,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 } else {
                     if (isItemLabelVisible(row, column)) {
                         drawItemLabel(g2, plot.getOrientation(), dataset, row,
-                                column, xx1, yy1, (y1 < 0.0));
+                                column, xx1, yy1, y1 < 0.0);
                     }
                 }
             }

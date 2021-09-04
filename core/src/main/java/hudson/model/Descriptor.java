@@ -625,7 +625,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private static class NewInstanceBindInterceptor extends BindInterceptor {
 
         private final BindInterceptor oldInterceptor;
-        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
+        private final IdentityHashMap<JSONObject,Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
             LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);

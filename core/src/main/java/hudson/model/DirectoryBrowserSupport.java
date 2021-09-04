@@ -525,7 +525,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
         // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
         // TODO On Linux file names can contain backslashes which should not treated as file separators.
-        //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+        //      Unfortunately, only the file separator char of the controller is known (File.separatorChar)
         //      but not the file separator char of the (maybe remote) "dir".
         ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
 

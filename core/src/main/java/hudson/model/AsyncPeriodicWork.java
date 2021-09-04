@@ -133,7 +133,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             }
         }
         if (f.isFile()) {
-            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
+            if (lastRotateMillis + logRotateMillis < System.currentTimeMillis()
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
                 lastRotateMillis = System.currentTimeMillis();
                 File prev = null;

@@ -303,9 +303,10 @@ public class AbstractBuildTest {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 if (build.number == 1) {
                     e1.signal();  // signal that build #1 is in publisher
+                } else if (build.number == 2) {
+                    e2.signal();  // signal that build #2 is in publisher
                 } else {
-                    assert build.number == 2;
-                    e2.signal();
+                    throw new IllegalArgumentException("unexpected build number: " + build.number);
                 }
 
                 done.block();

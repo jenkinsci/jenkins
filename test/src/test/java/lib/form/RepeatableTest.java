@@ -99,8 +99,6 @@ public class RepeatableTest {
 
     /**
      * Test count of buttons in form
-     *
-     * @throws Exception
      */
     @Test
     public void testSimpleCheckNumberOfButtons() throws Exception {
@@ -118,8 +116,6 @@ public class RepeatableTest {
     
     /**
      * Test count of buttons in form
-     *
-     * @throws Exception
      */
     @Test
     public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {

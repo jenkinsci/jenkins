@@ -24,11 +24,14 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.RestrictedSince;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -133,9 +136,11 @@ public class ChartUtil {
      * Generates the graph in PNG format and sends that to the response.
      *
      * @param defaultW
+     *      The size of the picture to be generated. These values can be overridden
+     *      by the query parameter 'width' in the request.
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query parameter 'width' and 'height' in the request.
+     *      by the query parameter 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
@@ -256,8 +261,9 @@ public class ChartUtil {
         yAxis.setRange(min,max);
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static double CHEBYSHEV_N = 3;
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
+    public static final double CHEBYSHEV_N = 3;
 
     static {
         try {

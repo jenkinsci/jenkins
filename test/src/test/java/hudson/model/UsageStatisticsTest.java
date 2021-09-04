@@ -135,8 +135,6 @@ public class UsageStatisticsTest {
      * a background update of that cache.
      * <p/>
      * <p>This method triggers that update and waits until the cache is filled during roughly 1 second max.</p>
-     *
-     * @throws InterruptedException
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
         ArchitectureMonitor.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
@@ -144,8 +142,8 @@ public class UsageStatisticsTest {
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {
-            final Computer master = j.jenkins.getComputers()[0];
-            value = descriptor.get(master);
+            final Computer builtIn = j.jenkins.getComputers()[0];
+            value = descriptor.get(builtIn);
             Thread.sleep(200);
         }
     }

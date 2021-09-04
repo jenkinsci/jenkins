@@ -521,7 +521,7 @@ public class FunctionsTest {
         stack2.cause(stack1);
         //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
 
-        if ((getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9"))) ||
+        if (getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9")) ||
                 (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
             assertPrintThrowable(stack1,
                     "p.Exc1\n" +

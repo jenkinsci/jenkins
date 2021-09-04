@@ -141,11 +141,11 @@ public final class Secret implements Serializable {
             payload[pos++] = (byte)(iv.length >> 24);
             payload[pos++] = (byte)(iv.length >> 16);
             payload[pos++] = (byte)(iv.length >> 8);
-            payload[pos++] = (byte)(iv.length);
+            payload[pos++] = (byte)iv.length;
             payload[pos++] = (byte)(encrypted.length >> 24);
             payload[pos++] = (byte)(encrypted.length >> 16);
             payload[pos++] = (byte)(encrypted.length >> 8);
-            payload[pos++] = (byte)(encrypted.length);
+            payload[pos++] = (byte)encrypted.length;
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);

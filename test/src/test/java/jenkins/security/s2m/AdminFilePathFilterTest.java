@@ -180,7 +180,7 @@ public class AdminFilePathFilterTest {
     private void checkSlave_can_readFile(Slave s, FilePath target) throws Exception {
         // The agent can read file from userContent
         String content = s.getChannel().call(new ReadFileS2MCallable(target));
-        // and the master can directly reach it
+        // and the controller can directly reach it
         assertEquals(target.readToString(), content);
     }
     

@@ -41,14 +41,14 @@ public class Security218Test implements Serializable {
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     /**
-     * JNLP slave.
+     * JNLP agent.
      */
     private transient Process jnlp;
 
     /**
-     * Makes sure SECURITY-218 fix also applies to slaves.
+     * Makes sure SECURITY-218 fix also applies to agents.
      *
-     * This test is for regular dumb slave
+     * This test is for regular static agent
      */
     @Test
     public void dumbSlave() throws Exception {
@@ -56,20 +56,20 @@ public class Security218Test implements Serializable {
     }
 
     /**
-     * Makes sure SECURITY-218 fix also applies to slaves.
+     * Makes sure SECURITY-218 fix also applies to agents.
      *
-     * This test is for JNLP slave
+     * This test is for JNLP agent
      */
     @Test
     public void jnlpSlave() throws Exception {
-        DumbSlave s = createJnlpSlave("test");
-        launchJnlpSlave(s);
-        check(s);
+        DumbSlave a = createJnlpSlave("test");
+        launchJnlpSlave(a);
+        check(a);
     }
 
     /**
-     * The attack scenario here is that a master sends a normal command to an agent and
-     * inserts a malicious response.
+     * The attack scenario here is that the controller sends a normal command to an agent and it
+     * returns a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
     private void check(DumbSlave s) throws Exception {
@@ -104,14 +104,14 @@ public class Security218Test implements Serializable {
      * Launch a JNLP agent created by {@link #createJnlpSlave(String)}
      */
     public Channel launchJnlpSlave(Slave slave) throws Exception {
-        j.createWebClient().goTo("computer/"+slave.getNodeName()+"/slave-agent.jnlp?encrypt=true", "application/octet-stream");
+        j.createWebClient().goTo("computer/"+slave.getNodeName()+"/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         File slaveJar = tmp.newFile();
-        FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+        FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"),
                 "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", j.getURL() + "computer/"+slave.getNodeName()+"/slave-agent.jnlp", "-secret", secret);
+                "-jnlpUrl", j.getURL() + "computer/"+slave.getNodeName()+"/jenkins-agent.jnlp", "-secret", secret);
 
         pb.inheritIO();
         System.err.println("Running: " + pb.command());

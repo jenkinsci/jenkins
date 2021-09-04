@@ -44,7 +44,6 @@ public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableIm
 
     /**
      * Returns true if and only if this strategy applies to the given job.
-     * @param job
      * @return true if and only if this strategy applies to the given job.
      */
     public abstract boolean isApplicable(Job<?, ?> job);
@@ -53,10 +52,6 @@ public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableIm
      * Applies this build discarder strategy to the given job, i.e. delete builds based on this strategy's configuration.
      *
      * The default implementation calls {@link #apply(Run)} on each build.
-     *
-     * @param job
-     * @throws IOException
-     * @throws InterruptedException
      */
     public void apply(Job<? extends Job, ? extends Run> job) throws IOException, InterruptedException {
         for (Run<? extends Job, ? extends Run> run : job.getBuilds()) {
@@ -70,10 +65,6 @@ public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableIm
 
     /**
      * Applies this build discarder strategy to the given run, i.e. delete builds based on this strategy's configuration.
-     *
-     * @param run
-     * @throws IOException
-     * @throws InterruptedException
      */
     public void apply(Run<?, ?> run) throws IOException, InterruptedException {
         // no-op by default

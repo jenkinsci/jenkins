@@ -144,7 +144,7 @@ public class ExtensionListView {
             }
 
             @Override
-            public <T> T[] toArray(T[] array) {
+            public <X> X[] toArray(X[] array) {
                 return storage().toArray(array);
             }
 

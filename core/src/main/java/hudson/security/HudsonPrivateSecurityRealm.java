@@ -791,7 +791,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 String data = Protector.unprotect(pwd);
                 String data2 = Protector.unprotect(pwd2);
 
-                if ((data == null) != (data2 == null)) {
+                if (data == null != (data2 == null)) {
                     // Require that both values are protected or unprotected; do not allow user to change just one text field
                     throw new FormException("Please confirm the password by typing it twice", "user.password2");
                 }

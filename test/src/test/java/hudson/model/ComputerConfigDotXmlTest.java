@@ -163,8 +163,8 @@ public class ComputerConfigDotXmlTest {
 
         computer.doConfigDotXml(req, rsp);
 
-        final Node updatedSlave = rule.jenkins.getNode("SlaveFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
+        final Node updatedSlave = rule.jenkins.getNode("AgentFromXML");
+        assertThat(updatedSlave.getNodeName(), equalTo("AgentFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
 
@@ -204,7 +204,7 @@ public class ComputerConfigDotXmlTest {
         WebResponse response = wc.getPage(req).getWebResponse();
         assertThat(response.getStatusCode(), is(400));
 
-        // verify node hasn't been transformed into a DumbSlave
+        // verify node hasn't been transformed into a different type
         Node node = rule.jenkins.getNode(name);
         assertThat(node, instanceOf(PretendSlave.class));
     }
@@ -274,6 +274,16 @@ public class ComputerConfigDotXmlTest {
             @Override
             public int read() throws IOException {
                 return inner.read();
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                return inner.read(b);
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                return inner.read(b, off, len);
             }
 
             @Override

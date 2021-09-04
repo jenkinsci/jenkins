@@ -556,7 +556,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -575,7 +575,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -612,7 +612,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -650,7 +650,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -688,7 +688,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -711,7 +711,6 @@ public class ProjectTest {
     
     /**
      * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
-     * @throws Exception 
      */
     @Test
     public void testJobSubmittedShouldSpawnCloud() throws Exception {
@@ -741,7 +740,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
-     * @throws Exception
      */
     @Test
     public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
@@ -786,7 +784,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
-     * @throws Exception 
      */
     @Test
     public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        

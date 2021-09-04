@@ -659,9 +659,9 @@ public class NodeProvisioner {
          */
 
             final LoadStatistics.LoadStatisticsSnapshot snapshot = state.getSnapshot();
-            boolean needSomeWhenNoneAtAll = (snapshot.getAvailableExecutors() + snapshot.getConnectingExecutors() == 0)
-                    && (snapshot.getOnlineExecutors() + state.getPlannedCapacitySnapshot() + state.getAdditionalPlannedCapacity() == 0)
-                    && (snapshot.getQueueLength() > 0);
+            boolean needSomeWhenNoneAtAll = snapshot.getAvailableExecutors() + snapshot.getConnectingExecutors() == 0
+                    && snapshot.getOnlineExecutors() + state.getPlannedCapacitySnapshot() + state.getAdditionalPlannedCapacity() == 0
+                    && snapshot.getQueueLength() > 0;
             float available = Math.max(snapshot.getAvailableExecutors(), state.getAvailableExecutorsLatest());
             if (available < MARGIN || needSomeWhenNoneAtAll) {
                 // make sure the system is fully utilized before attempting any new launch.

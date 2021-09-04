@@ -179,7 +179,7 @@ public class SetupWizardTest {
         private final File tmpdir;
 
         CustomLocalUpdateSite(File tmpdir) throws MalformedURLException {
-            super("custom-uc", tmpdir.toURI().toURL().toString() + "update-center.json");
+            super("custom-uc", tmpdir.toURI().toURL() + "update-center.json");
             this.tmpdir = tmpdir;
         }
 
@@ -197,7 +197,7 @@ public class SetupWizardTest {
         private final File tmpdir;
 
         CustomLocalUpdateSiteWithWrapperJSON(File tmpdir) throws MalformedURLException {
-            super("custom-uc2", tmpdir.toURI().toURL().toString() + "update-center.json");
+            super("custom-uc2", tmpdir.toURI().toURL() + "update-center.json");
             this.tmpdir = tmpdir;
         }
 

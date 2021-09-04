@@ -76,10 +76,10 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         if ("true".equals(req.getParameter("encrypt"))) {
             final CapturingServletOutputStream csos = new CapturingServletOutputStream();
             StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
-                @Override public ServletOutputStream getOutputStream() throws IOException {
+                @Override public ServletOutputStream getOutputStream() {
                     return csos;
                 }
-                @Override public PrintWriter getWriter() throws IOException {
+                @Override public PrintWriter getWriter() {
                     throw new IllegalStateException();
                 }
             });

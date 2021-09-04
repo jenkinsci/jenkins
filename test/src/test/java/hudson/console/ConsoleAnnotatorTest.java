@@ -219,7 +219,7 @@ public class ConsoleAnnotatorTest {
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
-                text.addMarkup(0,5,"<b tag="+(n++)+">","</b>");
+                text.addMarkup(0, 5, "<b tag=" + n++ + ">", "</b>");
             return this;
         }
     }

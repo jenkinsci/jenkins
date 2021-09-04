@@ -52,17 +52,17 @@ public class CallableDirectionChecker extends RoleChecker {
         final String name = subject.getClass().getName();
 
         if (expected.contains(Roles.MASTER)) {
-            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role", name);
+            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the controller role", name);
             return;    // known to be safe
         }
 
         if (isWhitelisted(subject,expected)) {
             // this subject is dubious, but we are letting it through as per whitelisting
-            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to master", name);
+            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to controller", name);
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee https://www.jenkins.io/redirect/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to controller is prohibited.\nSee https://www.jenkins.io/redirect/security-144 for more details");
     }
 
     /**

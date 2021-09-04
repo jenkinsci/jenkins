@@ -67,14 +67,6 @@ public class OldDataMonitorTest {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
-        /*
-        System.err.println(p.getActions());
-        for (Map.Entry<Saveable,OldDataMonitor.VersionRange> entry : odm.getData().entrySet()) {
-            System.err.println(entry.getKey());
-            System.err.println(entry.getValue());
-            System.err.println(entry.getValue().extra);
-        }
-        */
         assertEquals(Collections.singleton(p), odm.getData().keySet());
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());

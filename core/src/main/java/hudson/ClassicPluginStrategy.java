@@ -36,7 +36,6 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
-import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
@@ -302,7 +301,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        AntWithFindResourceClassLoader classLoader = new AntWithFindResourceClassLoader(parent, true);
+        AntClassLoader classLoader = new AntClassLoader(parent, true);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -620,15 +619,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
             return transientDependencies;
         }
-
-//        public List<PluginWrapper> getDependencyPluginWrappers() {
-//            List<PluginWrapper> r = new ArrayList<PluginWrapper>();
-//            for (Dependency d : dependencies) {
-//                PluginWrapper w = pluginManager.getPlugin(d.shortName);
-//                if (w!=null)    r.add(w);
-//            }
-//            return r;
-//        }
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {

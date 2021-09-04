@@ -100,7 +100,7 @@ public class VirtualFileTest {
         VirtualFile hack = root.child("hack");
         assertFalse(hack.isFile());
         assertFalse(hack.exists());
-        assertThrows(FileNotFoundException.class, () -> hack.open());
+        assertThrows(FileNotFoundException.class, hack::open);
     }
 
     @Issue("JENKINS-26810")

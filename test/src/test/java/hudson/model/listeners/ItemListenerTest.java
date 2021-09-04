@@ -61,7 +61,7 @@ public class ItemListenerTest {
     @Test
     public void onCreatedViaCLI() throws Exception {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
-                withStdin(new ByteArrayInputStream(("<project><actions/><builders/><publishers/><buildWrappers/></project>").getBytes())).
+                withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes())).
                 invokeWithArgs("testJob");
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
         assertNotNull("job should be created: " + result, j.jenkins.getItem("testJob"));

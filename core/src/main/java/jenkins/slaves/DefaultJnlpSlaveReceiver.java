@@ -137,7 +137,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 }
             } else {
                 event.reject(new ConnectionRefusalException(String.format(
-                        "%s is already connected to this master. Rejecting this connection.", clientName)));
+                        "%s is already connected to this controller. Rejecting this connection.", clientName)));
                 return;
             }
         }
@@ -151,8 +151,9 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        PrintWriter logw = new PrintWriter(log, true);
-        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
+        try (PrintWriter logw = new PrintWriter(log, true)) {
+            logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
+        }
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }

@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -87,11 +86,7 @@ public class SecretRewriterTest {
         for (String p : dirs) {
             File d = new File(t, p);
             d.mkdir();
-            try {
-                FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
-            } catch (IOException x) {
-                assert false : x;
-            }
+            FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
         }
 
         // stuff outside

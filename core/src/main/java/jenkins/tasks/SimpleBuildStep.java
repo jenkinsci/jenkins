@@ -46,8 +46,8 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
@@ -194,7 +194,7 @@ public interface SimpleBuildStep extends BuildStep {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Job j) {
-            List<Action> actions = new LinkedList<>();
+            List<Action> actions = new ArrayList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {
                 for (LastBuildAction a : r.getActions(LastBuildAction.class)) {

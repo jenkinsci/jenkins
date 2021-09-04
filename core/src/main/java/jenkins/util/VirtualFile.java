@@ -45,11 +45,11 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -813,7 +813,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return "";
             }
             
-            Deque<String> relativePath = new LinkedList<>();
+            Deque<String> relativePath = new ArrayDeque<>();
             File current = this.f;
             while (current != null && !current.equals(this.root)) {
                 relativePath.addFirst(current.getName());
@@ -1093,7 +1093,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return "";
             }
 
-            LinkedList<String> relativePath = new LinkedList<>();
+            Deque<String> relativePath = new ArrayDeque<>();
             FilePath current = this.f;
             while (current != null && !current.equals(this.root)) {
                 relativePath.addFirst(current.getName());
