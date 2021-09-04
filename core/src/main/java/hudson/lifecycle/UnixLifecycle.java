@@ -38,8 +38,8 @@ import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.Platform;
-import jenkins.JavaVMArguments;
 import jenkins.model.Jenkins;
+import jenkins.util.JavaVMArguments;
 
 /**
  * {@link Lifecycle} implementation when Hudson runs on the embedded

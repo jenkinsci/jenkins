@@ -10,6 +10,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.JavaVMArguments;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.JavaVMArguments;
 
 import org.jenkinsci.Symbol;
 

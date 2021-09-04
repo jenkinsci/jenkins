@@ -5,7 +5,7 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.StringArray;
 import hudson.Extension;
-import jenkins.JavaVMArguments;
+import jenkins.util.JavaVMArguments;
 
 import java.io.File;
 import java.io.IOException;

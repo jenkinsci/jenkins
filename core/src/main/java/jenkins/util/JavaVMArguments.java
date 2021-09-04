@@ -1,4 +1,4 @@
-package jenkins;
+package jenkins.util;
 
 import hudson.Functions;
 import hudson.util.ProcessTree;
