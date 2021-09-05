@@ -40,8 +40,8 @@ public class TreeStringBuilderTest {
         TreeStringBuilder x = new TreeStringBuilder();
         Random r = new Random(0);
 
-        List<String> a = new ArrayList<String>();
-        List<TreeString> o = new ArrayList<TreeString>();
+        List<String> a = new ArrayList<>();
+        List<TreeString> o = new ArrayList<>();
 
         for (int i = 0; i < 1000; i++) {
             StringBuilder b = new StringBuilder();
