@@ -183,9 +183,10 @@ public class HeteroListTest {
         // While keeping away the installations... advanced button as it's covered in its own test
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('XSS') !== -1 && b.textContent.indexOf('...') === -1).map(b => b.innerHTML)").getJavaScriptResult();
         assertThat(result, instanceOf(List.class));
-        List resultArray = (List) result;
-        for (int i = 0; i < resultArray.size(); i++) {
-            assertThat((String) resultArray.get(i), not(containsString("<")));
+        @SuppressWarnings("unchecked")
+        List<String> resultList = (List<String>) result;
+        for (String str : resultList) {
+            assertThat(str, not(containsString("<")));
         }
         
         // "delete" then "add" makes us coming back in scenario covered by xssUsingToolInstallationRepeatableAdd
