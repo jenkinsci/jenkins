@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
 import jenkins.MasterToSlaveFileCallable;
@@ -237,7 +238,11 @@ public class Maven extends Builder {
         return null;
     }
 
-    private Object readResolve() {
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "injectBuildVariables in readResolve is needed for data migration.")
+    private Object readResolve(){
+        if (injectBuildVariables == null) {
+            injectBuildVariables = true;
+        }
         return this;
     }
 
