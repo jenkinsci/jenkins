@@ -77,8 +77,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <p>
  * Proxy authentication (including NTLM) is implemented by setting a default
  * {@link Authenticator} which provides a {@link PasswordAuthentication}
- * (as described in the Java 6 tech note 
- * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
+ * (as described in the Java 8 tech note
+ * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  *
  * @see jenkins.model.Jenkins#proxy

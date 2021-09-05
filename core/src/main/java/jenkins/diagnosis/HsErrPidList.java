@@ -73,7 +73,7 @@ public class HsErrPidList extends AdministrativeMonitor {
             // check our arguments in the very end since this might fail on some platforms
             JavaVMArguments args = JavaVMArguments.current();
             for (String a : args) {
-                // see http://www.oracle.com/technetwork/java/javase/felog-138657.html
+                // see https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/felog001.html
                 if (a.startsWith(ERROR_FILE_OPTION)) {
                     scan(a.substring(ERROR_FILE_OPTION.length()));
                 }
