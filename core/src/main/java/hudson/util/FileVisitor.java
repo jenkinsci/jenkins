@@ -67,12 +67,7 @@ public abstract class FileVisitor {
                 visitor.visit(f,relativePath);
         }
 
-        private static final FileFilter PASS_THROUGH = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return true;
-            }
-        };
+        private static final FileFilter PASS_THROUGH = pathname -> true;
 
         private static final long serialVersionUID = 1L;
     }

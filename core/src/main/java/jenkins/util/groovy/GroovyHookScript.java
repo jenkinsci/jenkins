@@ -4,7 +4,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -100,12 +99,7 @@ public class GroovyHookScript {
 
         File scriptD = new File(rootDir, hookGroovyD);
         if (scriptD.isDirectory()) {
-            File[] scripts = scriptD.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.getName().endsWith(".groovy");
-                }
-            });
+            File[] scripts = scriptD.listFiles(f -> f.getName().endsWith(".groovy"));
             if (scripts!=null) {
                 // sort to run them in a deterministic order
                 Arrays.sort(scripts);
