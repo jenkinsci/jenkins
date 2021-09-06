@@ -2,6 +2,7 @@ package hudson;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.jar.Manifest;
 
 import jenkins.model.Jenkins;
 import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -102,18 +104,31 @@ public class PluginWrapperTest {
     @Test
     public void insertJarsIntoClassPath() throws Exception {
         try (AntClassLoader cl = new AntClassLoader()) {
-            PluginWrapper pw = pluginWrapper("pw").version("1").classloader(cl).build();
-            Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
-            // insert the jar with the resource (lets pick on remoting as it should be very stable)
-            File jarFile = Which.jarFile(hudson.remoting.Callable.class);
-            pw.injectJarsToClassapth(jarFile);
-            Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
-
-            assertThat("expect one more element from the updated classloader",
-                       countEnumerationElements(e2) - countEnumerationElements(e1), is(1));
+            assertInjectingJarsWorks(cl);
         }
     }
 
+        @Issue("JENKINS-66563")
+        @Test
+        public void insertJarsIntoClassPathURLCL() throws Exception {
+            try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+                assertInjectingJarsWorks(cl);
+            }
+        }
+    
+    private void assertInjectingJarsWorks(ClassLoader cl) throws Exception {
+        PluginWrapper pw = pluginWrapper("pw").version("1").classloader(cl).build();
+        Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e1size = countEnumerationElements(e1);
+        // insert the jar with the resource (lets pick on remoting as it should be very stable)
+        File jarFile = Which.jarFile(hudson.remoting.Callable.class);
+        pw.injectJarsToClassapth(jarFile);
+        Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e2size = countEnumerationElements(e2);
+        assertThat("expect one more element from the updated classloader",
+                   e2size - e1size, is(1));
+    }
+    
     private void assertContains(Throwable ex, String... patterns) {
         String msg = ex.getMessage();
         for (String pattern : patterns) {

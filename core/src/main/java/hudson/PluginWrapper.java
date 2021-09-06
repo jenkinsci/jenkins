@@ -37,6 +37,7 @@ import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
 import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
@@ -384,13 +385,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * <strong>Warning:</strong> This is advanced usage that you should not need in
      * 99.9% of all cases, and any jar insertion should happen early into the plugins lifecycle to prevent classloading
      * issues in dependent plugins.
-     *
+     * 
+     * @throws Exception if the File could not be inserted into the classpath for some reason.
      */
-    public void injectJarsToClassapth(File ...jars) {
-        for (File f : jars) {
-            LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName  + " plugin's classpath");
-            ((AntClassLoader)classLoader).addPathComponent(f);
+    public void injectJarsToClassapth(File... jars) throws Exception {
+        if (classLoader instanceof AntClassLoader) {
+            for (File f : jars) {
+                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
+                ((AntClassLoader) classLoader).addPathComponent(f);
+            }
+        } else if (classLoader instanceof URLClassLoader2) {
+            for (File f : jars) {
+                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
+                ((URLClassLoader2) classLoader).addURL(f.toURI().toURL());
+            }
+        } else {
+            throw new AssertionError("PluginWrapper classloader has changed type, but this code has not been updated accordingly");
         }
+
     }
 
     @ExportedBean
