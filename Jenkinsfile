@@ -60,6 +60,9 @@ for(j = 0; j < jdks.size(); j++) {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+                        if (! fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
+                            error 'junit 4 tests are no longer being run' 
+                        }
                     }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
