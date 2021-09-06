@@ -36,6 +36,7 @@ import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsMonitor;
+import jenkins.util.AntClassLoader;
 import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
@@ -110,6 +111,7 @@ import static org.apache.commons.io.FilenameUtils.getBaseName;
  */
 @ExportedBean
 public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
+
     /**
      * A plugin won't be loaded unless his declared dependencies are present and match the required minimal version.
      * This can be set to false to disable the version check (legacy behaviour)
@@ -375,6 +377,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         We have no good model for plugin metadata from update sites for plugins not being published.
          */
         return !getDeprecations().isEmpty();
+    }
+
+    /**
+     * Inject the specified jar file(s) to the plugins classpath. 
+     * <strong>Warning:</strong> This is advanced usage that you should not need in
+     * 99.9% of all cases, and any jar insertion should happen early into the plugins lifecycle to prevent classloading
+     * issues in dependent plugins.
+     *
+     */
+    public void injectJarsToClassapth(File ...jars) {
+        for (File f : jars) {
+            LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName  + " plugin's classpath");
+            ((AntClassLoader)classLoader).addPathComponent(f);
+        }
     }
 
     @ExportedBean
