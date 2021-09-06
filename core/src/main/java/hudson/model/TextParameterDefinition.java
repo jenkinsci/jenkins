@@ -59,6 +59,11 @@ public class TextParameterDefinition extends StringParameterDefinition {
     }
 
     @Override
+    public StringParameterValue getDefaultParameterValue() {
+        return new TextParameterValue(getName(), getDefaultValue(), getDescription());
+    }
+
+    @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         TextParameterValue value = req.bindJSON(TextParameterValue.class, jo);
         value.setDescription(getDescription());
