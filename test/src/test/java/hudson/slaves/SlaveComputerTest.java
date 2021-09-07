@@ -156,7 +156,7 @@ public class SlaveComputerTest {
     @TestExtension(value = "startupShouldFailOnErrorOnlineListener")
     public static final class ErrorOnOnlineListener extends ComputerListener {
 
-        static int onOnlineCount = 0;
+        volatile static int onOnlineCount = 0;
 
         @Override
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
