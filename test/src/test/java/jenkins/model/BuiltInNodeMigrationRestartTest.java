@@ -92,6 +92,7 @@ public class BuiltInNodeMigrationRestartTest {
             public static final Logger LOGGER = Logger.getLogger(RuleRunnerImpl.class.getName());
             private Method method;
 
+            @Override
             public void setup(JenkinsRule jenkinsRule, LocalDataOnce recipe) throws Exception {
                 Description desc = jenkinsRule.getTestDescription();
                 method = desc.getTestClass().getMethod((desc.getMethodName()));

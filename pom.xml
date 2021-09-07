@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.310</revision>
+    <revision>2.311</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -103,7 +103,7 @@ THE SOFTWARE.
     <access-modifier.version>1.24</access-modifier.version>
     <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.12.3</spotless.version>
+    <spotless.version>2.13.0</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted

@@ -136,9 +136,9 @@ public class EnvVarsInConfigTasksTest {
 		// Check variable was expanded
 		j.assertLogContains("Ant home: ", build);
 		j.assertLogContains("Test property: correct", build);
-		assertFalse(j.getLog(build).matches("(?s)^.*Ant home: [^\\n\\r]*"
+		assertFalse(JenkinsRule.getLog(build).matches("(?s)^.*Ant home: [^\\n\\r]*"
 				+ DUMMY_LOCATION_VARNAME + ".*$"));
-		assertFalse(j.getLog(build).matches("(?s)^.*Test property: [^\\n\\r]*"
+		assertFalse(JenkinsRule.getLog(build).matches("(?s)^.*Test property: [^\\n\\r]*"
 				+ DUMMY_LOCATION_VARNAME + ".*$"));
 	}
 

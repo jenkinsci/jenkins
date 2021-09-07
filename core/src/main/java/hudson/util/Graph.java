@@ -66,8 +66,9 @@ public abstract class Graph {
     /* package for test */ static /* non-final for script console */ int MAX_AREA = SystemProperties.getInteger(Graph.class.getName() + ".maxArea", 10_000_000); // 4k*2.5k
 
     private final long timestamp;
-    private final int defaultW;
-    private final int defaultH;
+    private final int defaultWidth;
+    private final int defaultHeight;
+    private final int defaultScale = 1;
     private volatile JFreeChart graph;
 
     /**
@@ -75,14 +76,14 @@ public abstract class Graph {
      *      Timestamp of this graph. Used for HTTP cache related headers.
      *      If the graph doesn't have any timestamp to tie it to, pass -1.
      */
-    protected Graph(long timestamp, int defaultW, int defaultH) {
+    protected Graph(long timestamp, int defaultWidth, int defaultHeight) {
         this.timestamp = timestamp;
-        this.defaultW = defaultW;
-        this.defaultH = defaultH;
+        this.defaultWidth = defaultWidth;
+        this.defaultHeight = defaultHeight;
     }
 
-    protected Graph(Calendar timestamp, int defaultW, int defaultH) {
-        this(timestamp.getTimeInMillis(),defaultW,defaultH);
+    protected Graph(Calendar timestamp, int defaultWidth, int defaultHeight) {
+        this(timestamp.getTimeInMillis(), defaultWidth, defaultHeight);
     }
 
     /**
@@ -92,9 +93,19 @@ public abstract class Graph {
 
     private BufferedImage render(StaplerRequest req, ChartRenderingInfo info) {
         String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
+        if (w == null) {
+            w = String.valueOf(defaultWidth);
+        }
+
         String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
+        if (h == null) {
+            h = String.valueOf(defaultHeight);
+        }
+
+        String s = req.getParameter("scale");
+        if (s == null) {
+            s = String.valueOf(defaultScale);
+        }
 
         Color graphBg = stringToColor(req.getParameter("graphBg"));
         Color plotBg = stringToColor(req.getParameter("plotBg"));
@@ -104,10 +115,12 @@ public abstract class Graph {
         Plot p = graph.getPlot();
         p.setBackgroundPaint(plotBg);
 
-        int width = Integer.parseInt(w);
-        int height = Integer.parseInt(h);
-        Dimension safeDimension = safeDimension(width, height, defaultW, defaultH);
-        return graph.createBufferedImage(safeDimension.width, safeDimension.height, info);
+        int width = Math.min(Integer.parseInt(w), 2560);
+        int height = Math.min(Integer.parseInt(h), 1440);
+        int scale = Math.min(Integer.parseInt(s), 3);
+        Dimension safeDimension = safeDimension(width, height, defaultWidth, defaultHeight);
+        return graph.createBufferedImage(safeDimension.width * scale, safeDimension.height * scale,
+                safeDimension.width, safeDimension.height, info);
     }
 
     @Restricted(NoExternalUse.class)

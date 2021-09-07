@@ -336,12 +336,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         if(changed) {
-            StringBuilder b = new StringBuilder();
-            for (String p : projects) {
-                if(b.length()>0)    b.append(',');
-                b.append(p);
-            }
-            childProjects = b.toString();
+            childProjects = String.join(",", projects);
         }
 
         return changed;

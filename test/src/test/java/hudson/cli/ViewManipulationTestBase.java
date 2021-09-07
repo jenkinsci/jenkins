@@ -41,6 +41,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author pjanouse
@@ -54,7 +55,8 @@ public abstract class ViewManipulationTestBase {
     @Rule public final JenkinsRule j = new JenkinsRule();
 
     @Before public void setUp() {
-        command = getCommand();
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        command = getCommand().asUser("user");
     }
 
     @Test public void jobViewManipulationShouldFailWithJenkinsReadPermissionOnly() throws IOException {
@@ -62,8 +64,8 @@ public abstract class ViewManipulationTestBase {
         j.jenkins.addView(new ListView("aView"));
         j.createFreeStyleProject("aProject");
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, failedWith(6));
@@ -76,8 +78,8 @@ public abstract class ViewManipulationTestBase {
         j.jenkins.addView(new ListView("aView"));
         j.createFreeStyleProject("aProject");
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, failedWith(3));
@@ -90,8 +92,8 @@ public abstract class ViewManipulationTestBase {
         j.jenkins.addView(new ListView("aView"));
         j.createFreeStyleProject("aProject");
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, failedWith(6));
@@ -106,8 +108,8 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("All").getAllItems().size(), equalTo(1));
         assertThat(j.jenkins.getView("All").contains(project), equalTo(true));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("All", "aProject");
 
         assertThat(result, failedWith(4));
@@ -122,8 +124,8 @@ public abstract class ViewManipulationTestBase {
 
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created");
 
         assertThat(result, failedWith(3));
@@ -135,7 +137,6 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
         result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1");
 
         assertThat(result, failedWith(3));
@@ -150,8 +151,8 @@ public abstract class ViewManipulationTestBase {
 
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "");
 
         assertThat(result, failedWith(3));
@@ -169,8 +170,8 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created", "aProject1", "aProject2");
 
         assertThat(result, failedWith(3));
@@ -190,8 +191,8 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2");
 
         assertThat(result, failedWith(3));
@@ -211,8 +212,8 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2", "never_created");
 
         assertThat(result, failedWith(3));
@@ -232,8 +233,8 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2", "never_created");
 
         assertThat(result, failedWith(3));

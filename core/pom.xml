@@ -107,6 +107,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
+      <exclusions>
+        <exclusion> <!-- TODO https://github.com/jnr/jnr-ffi/pull/269 -->
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!--
       For compatibility only; not included into the BOM for the same reason. TODO once

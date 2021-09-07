@@ -12,10 +12,5 @@ import java.io.File;
 interface OpMatcher {
     boolean matches(String op);
 
-    OpMatcher ALL = new OpMatcher() {
-        @Override
-        public boolean matches(String op) {
-            return true;
-        }
-    };
+    OpMatcher ALL = op -> true;
 }

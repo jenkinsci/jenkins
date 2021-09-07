@@ -29,6 +29,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import hudson.util.VariableResolver;
 import org.kohsuke.accmod.Restricted;
@@ -63,12 +64,7 @@ public class StringParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            @Override
-            public String resolve(String name) {
-                return StringParameterValue.this.name.equals(name) ? value : null;
-            }
-        };
+        return name -> StringParameterValue.this.name.equals(name) ? value : null;
     }
 
     @Override
@@ -103,11 +99,9 @@ public class StringParameterValue extends ParameterValue {
 		if (getClass() != obj.getClass())
 			return false;
 		StringParameterValue other = (StringParameterValue) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
+		if (!Objects.equals(value, other.value)) {
 			return false;
+		}
 		return true;
 	}
 

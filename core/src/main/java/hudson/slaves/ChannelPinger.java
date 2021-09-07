@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -144,11 +145,7 @@ public class ChannelPinger extends ComputerListener {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + pingIntervalSeconds;
-            result = prime * result + pingTimeoutSeconds;
-            return result;
+            return Objects.hash(pingIntervalSeconds, pingTimeoutSeconds);
         }
 
         @Override

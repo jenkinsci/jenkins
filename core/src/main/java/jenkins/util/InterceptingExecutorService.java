@@ -31,6 +31,7 @@ public abstract class InterceptingExecutorService implements ExecutorService {
         return base;
     }
 
+    @Override
     public <T> Future<T> submit(Callable<T> task) {
         return delegate().submit(wrap(task));
     }
