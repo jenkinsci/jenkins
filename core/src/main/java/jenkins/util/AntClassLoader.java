@@ -83,7 +83,7 @@ import java.util.zip.ZipFile;
  *
  */
 @Restricted(NoExternalUse.class)
-public class AntClassLoader extends ClassLoader implements SubBuildListener, Closeable {
+public class AntClassLoader extends ClassLoader implements JenkinsClassLoader, SubBuildListener, Closeable {
 
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
 
@@ -1583,6 +1583,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
     /**
      * Public version of {@link ClassLoader#findLoadedClass(String)}
      */
+    @Override
     public Class<?> findLoadedClass2(String name) {
         return findLoadedClass(name);
     }
