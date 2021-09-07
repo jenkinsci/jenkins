@@ -387,6 +387,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * issues in dependent plugins.
      * 
      * @throws Exception if the File could not be inserted into the classpath for some reason.
+     * @since TODO
      */
     public void injectJarsToClassapth(File... jars) throws Exception {
         if (classLoader instanceof AntClassLoader) {
