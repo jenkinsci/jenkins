@@ -35,6 +35,7 @@ import java.io.IOException;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
@@ -251,10 +252,7 @@ public abstract class ParameterValue implements Serializable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (name == null ? 0 : name.hashCode());
-        return result;
+        return Objects.hash(name);
     }
 
     @Override
@@ -266,11 +264,9 @@ public abstract class ParameterValue implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         ParameterValue other = (ParameterValue) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
+        if (!Objects.equals(name, other.name)) {
             return false;
+        }
         return true;
     }
 

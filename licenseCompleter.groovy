@@ -45,7 +45,7 @@ complete {
     }
 
     match(["org.jenkins-ci.groovy:*"]) {
-        // see http://groovy.codehaus.org/License+Information
+        // see https://groovy-lang.org/faq.html
         // see http://jmdns.sourceforge.net/license.html
         rewriteLicense([],apacheLicense)
     }

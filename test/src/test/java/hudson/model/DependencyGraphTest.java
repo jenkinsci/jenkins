@@ -70,7 +70,7 @@ public class DependencyGraphTest {
         // First build won't trigger down1 (Unstable doesn't meet threshold)
         // but will trigger down2 (build #1 is odd).
         Build b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
-        String log = j.getLog(b);
+        String log = JenkinsRule.getLog(b);
         Queue.Item q = j.jenkins.getQueue().getItem(down1);
         assertNull("down1 should not be triggered: " + log, q);
         assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
@@ -86,7 +86,7 @@ public class DependencyGraphTest {
         // ..and next build will trigger down1 (Success meets threshold),
         // but not down2 (build #2 is even)
         b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
-        log = j.getLog(b);
+        log = JenkinsRule.getLog(b);
         q = j.jenkins.getQueue().getItem(down2);
         assertNull("down2 should not be triggered: " + log, q);
         assertEquals("down2 should not be triggered: " + log, 1,

@@ -143,7 +143,7 @@ public class TarOutputStream extends FilterOutputStream {
      */
     public void finish() throws IOException {
         // See Bugzilla 28776 for a discussion on this
-        // http://issues.apache.org/bugzilla/show_bug.cgi?id=28776
+        // https://bz.apache.org/bugzilla/show_bug.cgi?id=28776
         this.writeEOFRecord();
         this.writeEOFRecord();
     }

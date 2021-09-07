@@ -35,10 +35,10 @@ public class ParametersAction2Test {
     @Issue("SECURITY-170")
     public void undefinedParameters() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[]{
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
                 new StringParameterDefinition("foo", "foo"),
                 new StringParameterDefinition("bar", "bar")
-        })));
+        )));
         ParametersCheckBuilder b = new ParametersCheckBuilder(false);
         p.getBuildersList().add(b);
         p.save();
@@ -53,10 +53,10 @@ public class ParametersAction2Test {
     @Issue("SECURITY-170")
     public void undefinedParametersOverride() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[]{
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
                 new StringParameterDefinition("foo", "foo"),
                 new StringParameterDefinition("bar", "bar")
-        })));
+        )));
         ParametersCheckBuilder b = new ParametersCheckBuilder(true);
         p.getBuildersList().add(b);
         p.save();

@@ -119,7 +119,7 @@ We're aware that there are existing inconsistencies in the code,
 and we do not enforce a single code style across the codebase at the moment.
 
 * New code should follow the (majority) style guide.
-  In Jenkins core we use the link:https://www.oracle.com/technetwork/java/codeconvtoc-136057.html[these Code Conventions for the Java TM Programming Language] as a default code style
+  In Jenkins core we use the link:https://www.oracle.com/java/technologies/javase/codeconventions-contents.html[these Code Conventions for the Java TM Programming Language] as a default code style
 * Updates to existing code should only fix formatting on the lines affected anyway to keep the diff minimal.
   It helps reviewers focus their attention on the specifics of the change and reduces the risk of a change from one pull request creating a conflict in another pull request.
 
