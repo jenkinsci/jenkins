@@ -78,7 +78,7 @@ public class TreeStringBuilder {
          */
         private void makeWritable() {
             if (children == NO_CHILDREN) {
-                children = new HashMap<String, Child>();
+                children = new HashMap<>();
             }
         }
 

@@ -426,12 +426,7 @@ public abstract class Proc {
         }
 
         private static String calcName(String[] cmd) {
-            StringBuilder buf = new StringBuilder();
-            for (String token : cmd) {
-                if(buf.length()>0)  buf.append(' ');
-                buf.append(token);
-            }
-            return buf.toString();
+            return String.join(" ", cmd);
         }
 
         public static final InputStream SELFPUMP_INPUT = new NullInputStream(0);
