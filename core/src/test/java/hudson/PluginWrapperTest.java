@@ -108,14 +108,14 @@ public class PluginWrapperTest {
         }
     }
 
-        @Issue("JENKINS-66563")
-        @Test
-        public void insertJarsIntoClassPathURLCL() throws Exception {
-            try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
-                assertInjectingJarsWorks(cl);
-            }
+    @Issue("JENKINS-66563")
+    @Test
+    public void insertJarsIntoClassPathURLCL() throws Exception {
+        try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+            assertInjectingJarsWorks(cl);
         }
-    
+    }
+
     private void assertInjectingJarsWorks(ClassLoader cl) throws Exception {
         PluginWrapper pw = pluginWrapper("pw").version("1").classloader(cl).build();
         Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
