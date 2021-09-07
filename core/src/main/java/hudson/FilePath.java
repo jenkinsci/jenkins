@@ -2078,7 +2078,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @NonNull
     private static String[] glob(File dir, String includes, String excludes, boolean defaultExcludes) throws IOException {
         if(isAbsolute(includes))
-            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
+            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See https://ant.apache.org/manual/Types/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes,excludes);
         fs.setDefaultexcludes(defaultExcludes);
         DirectoryScanner ds;
