@@ -42,6 +42,7 @@ import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -59,6 +60,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
@@ -381,14 +383,38 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Inject the specified jar file(s) to the plugins classpath. 
-     * <strong>Warning:</strong> This is advanced usage that you should not need in
-     * 99.9% of all cases, and any jar insertion should happen early into the plugins lifecycle to prevent classloading
-     * issues in dependent plugins.
+     * Inject the specified jar file(s) to the plugins classpath.
+     * </p><p><strong>Warning:</strong> This is advanced usage that you should not be needed in 99.9% of all cases, any jar insertion
+     * should happen early into the plugins lifecycle to prevent classloading issues in dependent plugins. 
+     * </p><p>
+     * Rather than use this functionality it is to have co-operative behaviour between any consumer of the libraries and load the classes in a separate {@link ClassLoader}.
+     * you can expose third-party libraries from a dynamic location in various ways, such as:
+     *
+     * <ul>
+     * <li>You could split your plugin into two modules:
+     * <ul>
+     * <li>regular Jenkins plugin code, plus some interface encapsulating access to the lib via a minimal, simplified
+     * API
+     * <li>an implementation of that interface which compiles against a provided static reference copy of the library,
+     * and which is packaged in your plugin as a resource (not in WEB-INF/lib/*.jar)
+     * </ul>
+     * <li>with coordination:
+     * <ul>
+     * <li>dynamically find some JAR(s) on the controller (or perhaps even agent)
+     * <li>find the bridge JAR in your plugin’s resources area
+     * <li>create some {@link URLClassLoader} loading them both, parented to the plugin {@link ClassLoader}
+     * <li>use reflection to load & instantiate the class of the bridge implementation, casting to the interface from
+     * the plugin
+     * </ul>
+     * </ul>
+     * For a concrete example see the <a href=
+     * "https://github.com/jenkinsci/database-plugin/blob/117.va2009e38b882/src/main/java/org/jenkinsci/plugins/database/GenericDatabase.java#L129-L142">database
+     * plugin</a>. *
      * 
      * @throws Exception if the File could not be inserted into the classpath for some reason.
      * @since TODO
      */
+    @Restricted(Beta.class)
     public void injectJarsToClassapth(File... jars) throws Exception {
         if (classLoader instanceof AntClassLoader) {
             for (File f : jars) {
