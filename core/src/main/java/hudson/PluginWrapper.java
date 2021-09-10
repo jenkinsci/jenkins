@@ -384,12 +384,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Inject the specified jar file(s) to the plugins classpath.
-     * </p><p><strong>Warning:</strong> This is advanced usage that you should not be needed in 99.9% of all cases, any jar insertion
+     * <p><strong>Warning:</strong> This is advanced usage that you should not be needed in 99.9% of all cases, any jar insertion
      * should happen early into the plugins lifecycle to prevent classloading issues in dependent plugins. 
      * </p><p>
      * Rather than use this functionality it is to have co-operative behaviour between any consumer of the libraries and load the classes in a separate {@link ClassLoader}.
      * you can expose third-party libraries from a dynamic location in various ways, such as:
-     *
+     * 
      * <ul>
      * <li>You could split your plugin into two modules:
      * <ul>
@@ -403,7 +403,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * <li>dynamically find some JAR(s) on the controller (or perhaps even agent)
      * <li>find the bridge JAR in your plugin’s resources area
      * <li>create some {@link URLClassLoader} loading them both, parented to the plugin {@link ClassLoader}
-     * <li>use reflection to load & instantiate the class of the bridge implementation, casting to the interface from
+     * <li>use reflection to load &amp; instantiate the class of the bridge implementation, casting to the interface from
      * the plugin
      * </ul>
      * </ul>
@@ -695,7 +695,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Generally coming from the {@code java.level} extracted as MANIFEST's metadata with
      * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
      *
-     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.
+     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>
      *
      * @since 2.158
      */
