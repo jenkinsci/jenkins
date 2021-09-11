@@ -30,7 +30,9 @@ import hudson.model.PeriodicWork;
 import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 
 /**
@@ -48,9 +50,21 @@ public class ComputerRetentionWork extends PeriodicWork {
     private final Map<Computer, Long> checkAgainAfterTick = new WeakHashMap<>();
     private final Map<Computer, Boolean> lastOnlineState = new WeakHashMap<>();
 
+    /**
+     * Administrators can trade elevated CPU usage from frequent agent checks for responsiveness to capacity needs.
+     *
+     * Per the docs of {@link RetentionStrategy#check}, it is OK to rechecked earlier or later than requested.
+     * Make the startup/teardown more responsive and use the requested minutes as multiples of the configured interval.
+     * Setting the interval to 60 seconds (which is the default), retains the original behavior and
+     *  one has to wait up-to one minute for an in-demand agent (with inDemandDelay=0min) to start.
+     * Setting the interval to 10 seconds provides a more responsive behavior towards load changes and
+     *  one has to wait up-to ten seconds for an in-demand agent (with inDemandDelay=0min) to start.
+     */
+    private static final long checkIntervalSeconds = SystemProperties.getLong(ComputerRetentionWork.class.getName() + ".checkIntervalSeconds", TimeUnit.MINUTES.toSeconds(1));
+
     @Override
     public long getRecurrencePeriod() {
-        return MIN;
+        return TimeUnit.SECONDS.toMillis(checkIntervalSeconds);
     }
 
     @SuppressWarnings("unchecked")
