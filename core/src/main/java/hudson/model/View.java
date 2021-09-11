@@ -32,6 +32,8 @@ import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
@@ -1317,6 +1319,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE, PermissionScope.ITEM_GROUP);
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
     public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
+
+    @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    public static void registerPermissions() {
+        // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
+        // allowing plugins to adapt the system configuration, which may depend on these permissions
+        // having been registered. Since this method is static and since it follows the above
+        // construction of static permission objects (and therefore their calls to
+        // PermissionGroup#register), there is nothing further to do in this method.
+    }
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
