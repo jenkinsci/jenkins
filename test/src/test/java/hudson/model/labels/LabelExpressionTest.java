@@ -23,6 +23,8 @@
  */
 package hudson.model.labels;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -165,7 +167,10 @@ public class LabelExpressionTest {
         parseAndVerify("foo||(bar&&zot)", "foo||(bar&&zot)");
 
         parseAndVerify("(foo||bar)&&zot", "(foo||bar)&&zot");
+        parseAndVerify("(foo||bar)&&zot", "  ( foo || bar )  && zot");
         parseAndVerify("foo->bar", "foo ->\tbar");
+        parseAndVerify("foo->bar", "foo -> bar");
+        parseAndVerify("foo->bar", "   foo \t\t ->   bar \t ");
         parseAndVerify("!foo<->bar", "!foo <-> bar");
     }
 
@@ -183,6 +188,13 @@ public class LabelExpressionTest {
     public void parserError() throws Exception {
         parseShouldFail("foo bar");
         parseShouldFail("foo (bar)");
+        parseShouldFail("foo(bar)");
+        parseShouldFail("a <- b");
+        parseShouldFail("a -< b");
+        parseShouldFail("a - b");
+        parseShouldFail("->");
+        parseShouldFail("-<");
+        parseShouldFail("-!");
     }
 
     @Test
@@ -240,6 +252,92 @@ public class LabelExpressionTest {
     @Test
     public void dash() {
         j.jenkins.getLabelAtom("solaris-x86");
+    }
+
+    @Test
+    public void expression_atom_simple() throws Exception {
+        Label label = Label.parseExpression("a");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    public void expression_atom_simpleLonger() throws Exception {
+        Label label = Label.parseExpression("abc123def");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    public void expression_atom_withDash() throws Exception {
+        Label label = Label.parseExpression("a-b");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_withDashes() throws Exception {
+        Label label = Label.parseExpression("--a----b-c-");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_doubleDash() throws Exception {
+        assertEquals(new LabelAtom("--"), Label.parseExpression("--"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashBeforeImplies() throws Exception {
+        assertEquals(new LabelAtom("a-").implies(new LabelAtom("b")), Label.parseExpression("a-->b"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashAfterImplies() throws Exception {
+        assertEquals(new LabelAtom("a").implies(new LabelAtom("-b")), Label.parseExpression("a->-b"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_justDash() throws Exception {
+        assertEquals(new LabelAtom("-"), Label.parseExpression("-"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashBefore() throws Exception {
+        assertEquals(new LabelAtom("-1"), Label.parseExpression("-1"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashAround() throws Exception {
+        assertEquals(new LabelAtom("-abc-"), Label.parseExpression("-abc-"));
+    }
+
+    @Test
+    public void expression_implies() throws Exception {
+        Label label = Label.parseExpression("a -> b");
+        assertThat(label, instanceOf(LabelExpression.Implies.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_implies_withoutSpaces() throws Exception {
+        Label label = Label.parseExpression("a->b");
+        assertThat(label, instanceOf(LabelExpression.Implies.class));
+    }
+
+    @Test
+    public void expression_and() throws Exception {
+        Label label = Label.parseExpression("a && b");
+        assertThat(label, instanceOf(LabelExpression.And.class));
+    }
+
+    @Test
+    public void expression_and_withoutSpaces() throws Exception {
+        Label label = Label.parseExpression("a&&b");
+        assertThat(label, instanceOf(LabelExpression.And.class));
     }
 
     private void parseShouldFail(String expr) {

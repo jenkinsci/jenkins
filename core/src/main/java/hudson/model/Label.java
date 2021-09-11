@@ -463,14 +463,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns the label that represents {@code this&rhs}
+     * Returns the label that represents {@code this&&rhs}
      */
     public Label and(Label rhs) {
         return new LabelExpression.And(this,rhs);
     }
 
     /**
-     * Returns the label that represents {@code this|rhs}
+     * Returns the label that represents {@code this||rhs}
      */
     public Label or(Label rhs) {
         return new LabelExpression.Or(this,rhs);
