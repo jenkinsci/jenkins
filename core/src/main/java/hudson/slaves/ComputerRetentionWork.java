@@ -30,7 +30,6 @@ import hudson.model.PeriodicWork;
 import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -46,7 +45,8 @@ public class ComputerRetentionWork extends PeriodicWork {
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
      */
-    private final Map<Computer, Long> nextCheck = new WeakHashMap<>();
+    private final Map<Computer, Long> checkAgainAfterTick = new WeakHashMap<>();
+    private final Map<Computer, Boolean> lastOnlineState = new WeakHashMap<>();
 
     @Override
     public long getRecurrencePeriod() {
@@ -56,21 +56,30 @@ public class ComputerRetentionWork extends PeriodicWork {
     @SuppressWarnings("unchecked")
     @Override
     protected void doRun() {
-        final long startRun = System.currentTimeMillis();
         for (final Computer c : Jenkins.get().getComputers()) {
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    Node n = c.getNode();
-                    if (n!=null && n.isHoldOffLaunchUntilSave())
-                        return;
-                    if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
-                        // at the moment I don't trust strategies to wait more than 60 minutes
-                        // strategies need to wait at least one minute
-                        final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
-                        nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
-                    }
+            Queue.withLock(() -> {
+                Node n = c.getNode();
+                // Do not check newly created agents until saved.
+                if (n != null && n.isHoldOffLaunchUntilSave()) return;
+
+                long remainingTicksUntilNextCheck = checkAgainAfterTick.getOrDefault(c, 0L) - 1;
+                final boolean stateExpired = remainingTicksUntilNextCheck <= 0;
+
+                // When a node transitions into running state, some strategies return very high teardown delays.
+                // For example RetentionStrategy.Demand returns the remaining idleDelay in O(minutes).
+                // When a node disconnects (aka crashes), this loop should not wait until after the specified
+                //  teardown delay has passed. Instead, it should bring it back up immediately when in-demand.
+                final boolean isOnline = c.isOnline();
+                final boolean stateChanged = !lastOnlineState.containsKey(c) || isOnline != lastOnlineState.get(c);
+
+                if (stateExpired || stateChanged) {
+                    final long requestedDelayInMinutes = c.getRetentionStrategy().check(c);
+                    // Keep the delay within reasonable limits: one minute <= delay <= one hour.
+                    remainingTicksUntilNextCheck = Math.max(1, Math.min(60, requestedDelayInMinutes));
                 }
+
+                lastOnlineState.put(c, isOnline);
+                checkAgainAfterTick.put(c, remainingTicksUntilNextCheck);
             });
         }
     }
