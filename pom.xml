@@ -66,7 +66,7 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
@@ -770,7 +770,7 @@ THE SOFTWARE.
     <profile>
       <id>jdk11</id>
       <properties>
-        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported

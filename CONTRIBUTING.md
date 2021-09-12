@@ -152,10 +152,10 @@ just submit a pull request.
 * [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
 * [Jenkins IRC Channel](https://www.jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
-* [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
+* [List of newbie-friendly issues in the core](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
 [Preparing for Plugin Development]: https://www.jenkins.io/doc/developer/tutorial/prepare/
-[newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
+[newbie friendly issues]: https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
 [Participate]: https://www.jenkins.io/participate/
 [building and debugging process here]: https://www.jenkins.io/doc/developer/building/
 [guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins

@@ -1613,7 +1613,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void delete() throws IOException {
         synchronized (this) {
-            // Avoid concurrent delete. See https://issues.jenkins-ci.org/browse/JENKINS-61687
+            // Avoid concurrent delete. See https://issues.jenkins.io/browse/JENKINS-61687
             if (isPendingDelete) {
                 return;
             }
