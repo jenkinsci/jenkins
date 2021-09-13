@@ -1321,6 +1321,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
 
     @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    @Restricted(DoNotUse.class)
     public static void registerPermissions() {
         // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
         // allowing plugins to adapt the system configuration, which may depend on these permissions
