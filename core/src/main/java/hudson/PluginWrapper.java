@@ -714,7 +714,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
      * {@link #disable(PluginDisableStrategy)}
      */
-    @Deprecated //see https://issues.jenkins-ci.org/browse/JENKINS-27177
+    @Deprecated //see https://issues.jenkins.io/browse/JENKINS-27177
     public void disable() throws IOException {
         disableWithoutCheck();
     }

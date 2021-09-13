@@ -1257,7 +1257,7 @@ public class Fingerprint implements ModelObject, Saveable {
         FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
 
         // Implementations are expected to invoke SaveableListener on their own if relevant
-        // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
+        // TODO: Consider improving Saveable Listener API: https://issues.jenkins.io/browse/JENKINS-62543
         configuredFingerprintStorage.save(this);
 
         // In the case that external fingerprint storage is configured, there may be some fingerprints in memory that

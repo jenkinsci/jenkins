@@ -510,7 +510,7 @@ public abstract class Proc {
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
-    * See <a href="https://jenkins-ci.org/issue/23271">JENKINS-23271</a>
+    * See <a href="https://issues.jenkins.io/browse/JENKINS-23271">JENKINS-23271</a>
     * @author Oleg Nenashev
     */
     @Restricted(NoExternalUse.class)
