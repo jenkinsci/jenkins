@@ -415,7 +415,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @since TODO
      */
     @Restricted(Beta.class)
-    public void injectJarsToClassapth(File... jars) throws Exception {
+    public void injectJarsToClasspath(File... jars) throws Exception {
         if (classLoader instanceof AntClassLoader) {
             for (File f : jars) {
                 LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");

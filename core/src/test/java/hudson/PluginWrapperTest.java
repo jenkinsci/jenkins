@@ -122,7 +122,7 @@ public class PluginWrapperTest {
         int e1size = countEnumerationElements(e1);
         // insert the jar with the resource (lets pick on remoting as it should be very stable)
         File jarFile = Which.jarFile(hudson.remoting.Callable.class);
-        pw.injectJarsToClassapth(jarFile);
+        pw.injectJarsToClasspath(jarFile);
         Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
         int e2size = countEnumerationElements(e2);
         assertThat("expect one more element from the updated classloader",
