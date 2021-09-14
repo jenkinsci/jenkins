@@ -98,7 +98,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
-    /** @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-46652">JENKINS-46652</a> */
+    /** @see <a href="https://issues.jenkins.io/browse/JENKINS-46652">JENKINS-46652</a> */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* not final */ boolean SKIP_BUILD_CHECK_ON_FLYWEIGHTS = SystemProperties.getBoolean(Node.class.getName() + ".SKIP_BUILD_CHECK_ON_FLYWEIGHTS", true);
 

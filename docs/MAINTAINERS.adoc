@@ -169,7 +169,7 @@ Code reviews do NOT pursue the following goals:
 
 == Issue triage
 
-Jenkins core and most of its components use link:https://issues.jenkins-ci.org/[Jenkins Jira] as an issue tracker.
+Jenkins core and most of its components use link:https://issues.jenkins.io/[Jenkins Jira] as an issue tracker.
 This issue tracker is open to all Jenkins users.
 They report defects and requests for enhancements,
 and then component maintainers triage issues and provide feedback to users.
@@ -180,7 +180,7 @@ This section provides some tips and tricks about triaging issues submitted to th
 
 === Issue tracker structure
 
-Jenkins core uses the link:https://issues.jenkins-ci.org/projects/JENKINS[JENKINS] project for issue tracking.
+Jenkins core uses the link:https://issues.jenkins.io/projects/JENKINS[JENKINS] project for issue tracking.
 This project is shared between the Jenkins core components and plugins,
 and the Jenkins core is scattered across multiple components: `core`, `remoting`, `cli`, `winstone-jetty`, etc.
 In addition to it, there is a default `_unsorted` component which is recommended by default for users
@@ -194,9 +194,9 @@ Searching for all Jenkins core issues is not trivial, and we provide Jira filter
   and link:https://www.jenkins.io/changelog-stable/[LTS] releases.
   Such ratings allow users to reference issues they experienced with new Jenkins core releases,
   and it helps to discover regressions in the core causing instability or unexpected plugin failures.
-* link:https://issues.jenkins-ci.org/secure/Dashboard.jspa?selectPageId=20742[Jenkins core triage board] -
+* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20742[Jenkins core triage board] -
   Lists untriaged and recent issues in the Jenkins core and bundled components.
-* link:https://issues.jenkins-ci.org/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
+* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
   This dashboard can be used to discover issues that **might** be related to the recent changes in the Jenkins core.
 
@@ -339,7 +339,7 @@ Merge process can be initiated once a pull request matches the requirements:
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
   This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see link:https://issues.jenkins-ci.org/issues/?filter=12146[this Jira query]).
+* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see link:https://issues.jenkins.io/issues/?filter=12146[this Jira query]).
 
 ==== Step 2: Is it a good time to merge?
 
@@ -430,7 +430,7 @@ Any Jenkins contributors are welcome to participate in backporting and release c
 
 == Tools
 
-* link:https://issues.jenkins-ci.org/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
+* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]

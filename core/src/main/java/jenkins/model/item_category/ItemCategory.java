@@ -45,7 +45,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      * This field indicates how much non-default categories are required in
      * order to start showing them in Jenkins.
      * This field is restricted for the internal use only, because all other changes would cause binary compatibility issues.
-     * See <a href="https://jenkins-ci.org/issue/36593">JENKINS-36593</a> for more info.
+     * See <a href="https://issues.jenkins.io/browse/JENKINS-36593">JENKINS-36593</a> for more info.
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
