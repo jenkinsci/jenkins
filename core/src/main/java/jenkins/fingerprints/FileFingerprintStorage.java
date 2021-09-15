@@ -136,7 +136,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             save(fp, file);
         }
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
-        //  https://issues.jenkins-ci.org/browse/JENKINS-62543
+        //  https://issues.jenkins.io/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
@@ -164,7 +164,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.println("</number>");
                     w.println("  </original>");
                 }
-                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins-ci.org/browse/JENKINS-25808
+                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins.io/browse/JENKINS-25808
                 w.print("  <md5sum>");
                 w.print(fp.getHashString());
                 w.println("</md5sum>");

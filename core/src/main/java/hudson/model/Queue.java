@@ -1683,8 +1683,8 @@ public class Queue extends ResourceController implements Saveable {
                     // of getCauseOfBlockageForItem(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
-                    // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://jenkins-ci.org/issue/27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // See https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                     // for alternative fixes of this issue.
                     updateSnapshot();
                 }

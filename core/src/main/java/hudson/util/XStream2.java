@@ -145,7 +145,7 @@ public class XStream2 extends XStream {
      * @param nullOut whether to perform this special behavior;
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
      * @see XmlFile#unmarshalNullingOut
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-21017">JENKINS-21017</a>
      * @since 2.99
      */
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {

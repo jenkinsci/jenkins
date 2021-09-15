@@ -66,11 +66,11 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.312</revision>
+    <revision>2.313</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <access-modifier.version>1.24</access-modifier.version>
-    <junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <junit.jupiter.version>5.8.0</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
     <spotless.version>2.13.0</spotless.version>
   </properties>
@@ -770,7 +770,7 @@ THE SOFTWARE.
     <profile>
       <id>jdk11</id>
       <properties>
-        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported

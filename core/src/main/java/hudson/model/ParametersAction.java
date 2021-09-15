@@ -111,7 +111,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * The additional safe parameters should be only those considered safe to override the environment
      * and what is declared in the project config in addition to those specified by the user in
      * {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}.
-     * See <a href="https://issues.jenkins-ci.org/browse/SECURITY-170">SECURITY-170</a>
+     * See <a href="https://issues.jenkins.io/browse/SECURITY-170">SECURITY-170</a>
      *
      * @param parameters the parameters
      * @param additionalSafeParameters additional safe parameters
