@@ -102,7 +102,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.22</access-modifier-annotation.version>
     <access-modifier-checker.version>1.22</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <junit.jupiter.version>5.8.0</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
     <spotless.version>2.12.1</spotless.version>
   </properties>
