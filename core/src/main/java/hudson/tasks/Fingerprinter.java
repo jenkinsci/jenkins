@@ -124,6 +124,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         this.caseSensitive = caseSensitive;
     }
 
+    /**
+     * @deprecated use {@link #Fingerprinter(String)} and {@link ArtifactArchiver#setFingerprint}
+     */
     @Deprecated
     public Fingerprinter(String targets, boolean recordBuildArtifacts) {
         this(targets);
@@ -160,6 +163,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return this;
     }
 
+    /**
+     * @deprecated use {@link ArtifactArchiver#isFingerprint}
+     */
     @Deprecated
     public boolean getRecordBuildArtifacts() {
         return recordBuildArtifacts != null && recordBuildArtifacts;
