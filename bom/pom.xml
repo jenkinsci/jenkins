@@ -148,7 +148,7 @@ THE SOFTWARE.
         <groupId>javax.servlet</groupId>
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
-        <version>[0]</version>
+        <version>[2.5]</version>
         <!-- 
               "[0]" is a range that must be exactly 0
               this is different to "0" which is hint to use version 0.
