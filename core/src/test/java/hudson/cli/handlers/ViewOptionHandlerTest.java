@@ -31,12 +31,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import hudson.model.ViewGroup;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,8 +53,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 @PrepareForTest(Jenkins.class)
 @RunWith(PowerMockRunner.class)

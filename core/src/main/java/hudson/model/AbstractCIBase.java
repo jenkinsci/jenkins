@@ -27,15 +27,11 @@
 package hudson.model;
 
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.StaplerProxy;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +39,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.StaplerProxy;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 

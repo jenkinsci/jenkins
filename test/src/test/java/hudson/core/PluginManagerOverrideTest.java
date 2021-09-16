@@ -1,15 +1,14 @@
 package hudson.core;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManagerStaplerOverride;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Verify that the PluginManagerStaplerOverride extensions register and allow safely modifying PluginManager views

@@ -23,18 +23,16 @@
  */
 package hudson.scm;
 
-import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.net.MalformedURLException;
-
+import java.net.URL;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**

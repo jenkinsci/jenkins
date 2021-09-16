@@ -23,11 +23,11 @@
  */
 package org.kohsuke.stapler;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;

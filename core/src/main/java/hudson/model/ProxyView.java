@@ -30,7 +30,6 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.Collection;
 import javax.servlet.ServletException;
-
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;

@@ -16,6 +16,7 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.util.List;
 import java.util.Objects;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -25,8 +26,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.List;
 
 /**
  * Tests the 'rowvg-start' and 'rowvg-end' CSS attributes and their effects.

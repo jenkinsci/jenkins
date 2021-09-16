@@ -1,14 +1,13 @@
 package jenkins.slaves;
 
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.init.Terminator;
 import hudson.model.Computer;
-import org.jenkinsci.remoting.nio.NioChannelHub;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.nio.NioChannelHub;
 
 /**
  * Singleton holder of {@link NioChannelHub}

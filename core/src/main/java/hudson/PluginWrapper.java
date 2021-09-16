@@ -24,7 +24,17 @@
  */
 package hudson;
 
+import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
+import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
+import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
+import static java.util.logging.Level.WARNING;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
@@ -33,28 +43,6 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
-import jenkins.YesNoMaybe;
-import jenkins.model.Jenkins;
-import jenkins.security.UpdateSiteWarningsMonitor;
-import jenkins.util.AntClassLoader;
-import jenkins.util.URLClassLoader2;
-import jenkins.util.java.JavaUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -80,15 +68,26 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
-import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
-import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
-import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
-import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
-import static java.util.logging.Level.WARNING;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
+import jenkins.security.UpdateSiteWarningsMonitor;
+import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Represents a Jenkins plug-in and associated control information

@@ -1,7 +1,13 @@
 package hudson.triggers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
+import java.io.File;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,13 +16,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class SafeTimerTaskTest {
 

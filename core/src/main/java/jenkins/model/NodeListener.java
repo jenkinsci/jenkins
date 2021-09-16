@@ -23,11 +23,10 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Node;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

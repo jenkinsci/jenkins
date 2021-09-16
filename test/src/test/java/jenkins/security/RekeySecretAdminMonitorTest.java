@@ -17,12 +17,6 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
 import hudson.util.SecretHelper;
-import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.JenkinsRecipe;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
-
-import javax.crypto.Cipher;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -31,11 +25,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.crypto.Cipher;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi

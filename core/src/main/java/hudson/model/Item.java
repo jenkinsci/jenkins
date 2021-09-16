@@ -24,26 +24,23 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Util;
+import hudson.search.SearchableModelObject;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
+import hudson.util.Secret;
+import java.io.IOException;
+import java.util.Collection;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import hudson.security.PermissionScope;
 import jenkins.util.io.OnMaster;
 import jline.internal.Nullable;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.util.Collection;
-
-import hudson.search.SearchableModelObject;
-import hudson.security.Permission;
-import hudson.security.PermissionGroup;
-import hudson.security.AccessControlled;
-import hudson.util.Secret;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Basic configuration unit in Hudson.

@@ -23,12 +23,13 @@
  */
 package hudson.model.listeners;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

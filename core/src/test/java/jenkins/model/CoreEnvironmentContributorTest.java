@@ -3,14 +3,13 @@ package jenkins.model;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
+
 import hudson.EnvVars;
 import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.TaskListener;
-
 import java.io.File;
 import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

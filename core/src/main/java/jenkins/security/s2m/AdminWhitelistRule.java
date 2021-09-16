@@ -1,23 +1,14 @@
 package jenkins.security.s2m;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.util.HttpResponses;
-import jenkins.model.Jenkins;
-import jenkins.util.io.FileBoolean;
-import org.apache.commons.io.FileUtils;
-import org.jenkinsci.remoting.Role;
-import org.jenkinsci.remoting.RoleSensitive;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,8 +21,16 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
+import jenkins.util.io.FileBoolean;
+import org.apache.commons.io.FileUtils;
+import org.jenkinsci.remoting.Role;
+import org.jenkinsci.remoting.RoleSensitive;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Rules of whitelisting for {@link RoleSensitive} objects and {@link FilePath}s.

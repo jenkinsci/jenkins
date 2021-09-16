@@ -1,26 +1,5 @@
 package hudson;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
-import jenkins.model.Jenkins;
-import jenkins.util.AntClassLoader;
-import jenkins.util.URLClassLoader2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
-import hudson.remoting.Which;
-import org.jvnet.hudson.test.Issue;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -31,6 +10,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.remoting.Which;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import jenkins.model.Jenkins;
+import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
+import org.mockito.stubbing.Answer;
 
 public class PluginWrapperTest {
 

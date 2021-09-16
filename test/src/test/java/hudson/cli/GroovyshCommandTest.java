@@ -26,10 +26,11 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import jenkins.model.Jenkins;
-import org.apache.tools.ant.filters.StringInputStream;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import jenkins.model.Jenkins;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

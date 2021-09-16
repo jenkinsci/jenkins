@@ -4,11 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.Rule;
-import org.junit.Test;
+import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
-import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;

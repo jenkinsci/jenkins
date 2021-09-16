@@ -23,6 +23,7 @@
  */
 package jenkins.security.seed;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -30,6 +31,9 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.HttpResponses;
+import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.util.SystemProperties;
@@ -41,11 +45,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.Objects;
 
 /**
  * The seed stored in this property is used to have a revoke feature on the session 

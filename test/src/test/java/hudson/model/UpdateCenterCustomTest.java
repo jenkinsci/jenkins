@@ -24,13 +24,13 @@
 package hudson.model;
 
 
-import javax.servlet.ServletContext;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+
+import javax.servlet.ServletContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
 
 /**
  * Tests of the custom {@link UpdateCenter} implementation.

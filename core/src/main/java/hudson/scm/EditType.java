@@ -23,11 +23,10 @@
  */
 package hudson.scm;
 
-import org.kohsuke.stapler.export.CustomExportedBean;
-
-import java.util.List;
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.kohsuke.stapler.export.CustomExportedBean;
 
 /**
  * Designates the SCM operation.

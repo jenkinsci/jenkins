@@ -1,19 +1,20 @@
 package jenkins.model;
 
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import hudson.model.Action;
-import hudson.model.ModifiableViewGroup;
-import hudson.model.View;
-import hudson.model.ViewGroup;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.model.Action;
+import hudson.model.ModifiableViewGroup;
+import hudson.model.View;
+import hudson.model.ViewGroup;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NewViewLinkTest {
 	

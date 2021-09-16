@@ -23,16 +23,6 @@
  */
 package hudson.model.labels;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import hudson.XmlFile;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -40,6 +30,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import hudson.XmlFile;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class LabelAtomSecurity1986Test {
 

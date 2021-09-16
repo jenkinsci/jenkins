@@ -3,14 +3,13 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 
 import hudson.Launcher;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.TestBuildWrapper;
 import org.jvnet.hudson.test.TestBuilder;
-
-import java.io.IOException;
 
 public class AbortedFreeStyleBuildTest {
 

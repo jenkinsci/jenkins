@@ -23,13 +23,13 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Hudson;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.

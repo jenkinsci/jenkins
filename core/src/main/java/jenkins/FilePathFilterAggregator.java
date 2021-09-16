@@ -3,7 +3,6 @@ package jenkins;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.remoting.ChannelProperty;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;

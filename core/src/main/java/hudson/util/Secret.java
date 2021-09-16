@@ -24,32 +24,31 @@
  */
 package hudson.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.util.SystemProperties;
-import java.util.Arrays;
 import hudson.Util;
-import jenkins.security.CryptoConfidentialKey;
-import org.kohsuke.stapler.Stapler;
-
-import javax.crypto.Cipher;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.crypto.Cipher;
+import jenkins.security.CryptoConfidentialKey;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.

@@ -25,14 +25,13 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.security.csrf.CrumbExclusion;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-
+import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Makes CLI HTTP fallback work with CSRF protection enabled (JENKINS-18114).

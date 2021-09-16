@@ -31,14 +31,9 @@ import static org.junit.Assert.assertThrows;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -48,6 +43,9 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
