@@ -2291,7 +2291,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
 
         function loadPage(params, focusOnSearch) {
-            const searchString = pageSearchInput.value;
+            var searchString = pageSearchInput.value;
 
             if (searchString !== '') {
                 if (params === undefined) {
@@ -2302,9 +2302,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
             new Ajax.Request(ajaxUrl + toQueryString(params), {
                 onSuccess: function(rsp) {
-                    const dataTable = getDataTable(bh);
-                    const tbody = dataTable.getElementsByTagName("tbody")[0];
-                    const rows = tbody.getElementsByClassName("build-row");
+                    var dataTable = getDataTable(bh);
+                    var tbody = dataTable.getElementsByTagName("tbody")[0];
+                    var rows = tbody.getElementsByClassName("build-row");
 
                     // Delete all build rows
                     while (rows.length > 0) {
@@ -2312,12 +2312,12 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     }
 
                     // insert new rows
-                    const div = document.createElement('div');
+                    var div = document.createElement('div');
                     div.innerHTML = rsp.responseText;
                     Behaviour.applySubtree(div);
 
-                    const newDataTable = getDataTable(div);
-                    const newRows = newDataTable.rows;
+                    var newDataTable = getDataTable(div);
+                    var newRows = newDataTable.rows;
                     while (newRows.length > 0) {
                         tbody.appendChild(newRows[0]);
                     }
