@@ -2080,6 +2080,16 @@ public class Queue extends ResourceController implements Saveable {
         @NonNull SubTask getParent();
 
         /**
+         * An umbrella executable (such as a {@link Run}) of which this is one part.
+         * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
+         * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
+         * @return a <em>distinct</em> executable (unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
+         */
+        default @CheckForNull Executable getParentExecutable() {
+            return null;
+        }
+
+        /**
          * Called by {@link Executor} to perform the task.
          * @throws AsynchronousExecution if you would like to continue without consuming a thread
          */
