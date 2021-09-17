@@ -31,7 +31,60 @@
     width: 16px;
     height: 16px;
     fill: var(--input-border-hover);
-    transition: fill 0.2s ease;
+    transition: 0.2s ease;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 17px;
+    width: 0;
+    height: 0;
+    color: inherit;
+    border: 2px solid currentColor;
+    border-radius: 100%;
+    opacity: 0;
+    transition: 0.2s ease;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 17px;
+    width: 0;
+    height: 0;
+    color: inherit;
+    border: 2px solid currentColor;
+    border-radius: 100%;
+    animation: button-spinner 0.5s infinite linear;
+    clip-path: inset(0 0 8px 8px);
+    opacity: 0;
+    transition: 0.2s ease;
+  }
+
+  &--loading {
+    .jenkins-search__icon {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    &::before {
+      opacity: 0.2;
+      top: 9px;
+      left: 9px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &::after {
+      opacity: 1;
+      top: 9px;
+      left: 9px;
+      width: 16px;
+      height: 16px;
+    }
   }
 
   &:focus-within {
@@ -39,4 +92,15 @@
       fill: var(--focus-input-border);
     }
   }
+}
+
+@keyframes button-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.my-class {
+  background-color: red;
+  transform: rotate(35deg);
 }
