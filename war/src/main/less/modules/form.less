@@ -58,7 +58,7 @@
     color: inherit;
     border: 2px solid currentColor;
     border-radius: 100%;
-    animation: button-spinner 0.5s infinite linear;
+    animation: loading-spinner 0.5s infinite linear;
     clip-path: inset(0 0 8px 8px);
     opacity: 0;
     transition: 0.2s ease;
@@ -94,13 +94,8 @@
   }
 }
 
-@keyframes button-spinner {
+@keyframes loading-spinner {
   to {
     transform: rotate(360deg);
   }
-}
-
-.my-class {
-  background-color: red;
-  transform: rotate(35deg);
 }
