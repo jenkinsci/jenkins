@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import org.junit.Before;
@@ -179,12 +178,7 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void lastKey() {
         assertEquals(1, a.lastKey().intValue());
-        try {
-            b.lastKey();
-            fail();
-        } catch (NoSuchElementException e) {
-            // as expected
-        }
+        assertThrows(NoSuchElementException.class, () -> b.lastKey());
     }
 
     @Test

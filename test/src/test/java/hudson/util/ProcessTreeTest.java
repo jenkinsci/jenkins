@@ -1,8 +1,8 @@
 package hudson.util;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.IOException;
@@ -145,12 +145,7 @@ public class ProcessTreeTest {
 
         ProcessTree processTree = ProcessTree.get();
         processTree.killAll(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
     @Test
@@ -181,12 +176,7 @@ public class ProcessTreeTest {
         StringWriter out = new StringWriter();
         s.createLauncher(new StreamTaskListener(out)).kill(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
 
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
     @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})

@@ -37,8 +37,8 @@ import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -170,12 +170,8 @@ public class ACLTest {
                 .grant(Jenkins.READ).everywhere().toEveryone());
 
         JenkinsRule.WebClient wc = r.createWebClient();
-        try {
-            wc.goTo("either");
-            fail();
-        } catch (FailingHttpStatusCodeException ex) {
-            assertEquals(403, ex.getStatusCode());
-        }
+        FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("either"));
+        assertEquals(403, ex.getStatusCode());
 
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().toEveryone());

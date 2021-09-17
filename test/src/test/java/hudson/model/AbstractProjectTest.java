@@ -77,8 +77,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -159,14 +159,9 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
-        page = page.getAnchorByText("Workspace").click();
-        try {
-            String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
-            page.getAnchorByText(wipeOutLabel);
-            fail("shouldn't find a link");
-        } catch (ElementNotFoundException e) {
-            // OK
-        }
+        HtmlPage workspace = page.getAnchorByText("Workspace").click();
+        String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+        assertThrows("shouldn't find a link", ElementNotFoundException.class, () -> workspace.getAnchorByText(wipeOutLabel));
     }
 
     /**
@@ -488,21 +483,12 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
-        }
+        CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
+        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created1");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
-        }
-
+        e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
+        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {

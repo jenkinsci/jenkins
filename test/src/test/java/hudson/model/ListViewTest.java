@@ -59,8 +59,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -293,12 +293,8 @@ public class ListViewTest {
         assertEquals(0, itemsNow.size());
 
         // remove a not contained job
-        try {
-            view.doRemoveJobFromView("job2");
-            fail("Remove job2");
-        } catch(Failure e) {
-            assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
-        }
+        Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
+        assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
     }
 
     @Test public void getItemsNames() throws Exception {

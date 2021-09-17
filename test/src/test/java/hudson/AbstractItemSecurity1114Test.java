@@ -1,5 +1,7 @@
 package hudson;
 
+import static org.junit.Assert.assertThrows;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
@@ -36,34 +38,21 @@ public class AbstractItemSecurity1114Test {
         j.createFreeStyleProject("myproject");
 
         // alice can discover project
-        JenkinsRule.WebClient wc = j.createWebClient().login("alice");
-        try {
-            wc.goTo("bypass/myproject");
-            Assert.fail("expected exception");
-        } catch (FailingHttpStatusCodeException e) {
-            Assert.assertEquals("alice can discover", 403, e.getStatusCode());
-        }
+        JenkinsRule.WebClient alice = j.createWebClient().login("alice");
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> alice.goTo("bypass/myproject"));
+        Assert.assertEquals("alice can discover", 403, e.getStatusCode());
 
         // bob can read project
-        wc = j.createWebClient().login("bob");
-        wc.goTo("bypass/myproject"); // success
+        JenkinsRule.WebClient bob = j.createWebClient().login("bob");
+        bob.goTo("bypass/myproject"); // success
 
 
         // carol has no permissions
-        wc = j.createWebClient().login("carol");
-        try {
-            wc.goTo("bypass/nonexisting");
-            Assert.fail("expected exception");
-        } catch (FailingHttpStatusCodeException e) {
-            Assert.assertEquals("carol gets 404 for nonexisting project", 404, e.getStatusCode());
-        }
-        try {
-            wc.goTo("bypass/myproject");
-            Assert.fail("expected exception");
-        } catch (FailingHttpStatusCodeException e) {
-            Assert.assertEquals("carol gets 404 for invisible project", 404, e.getStatusCode());
-        }
-
+        JenkinsRule.WebClient carol = j.createWebClient().login("carol");
+        e = assertThrows(FailingHttpStatusCodeException.class, () -> carol.goTo("bypass/nonexisting"));
+        Assert.assertEquals("carol gets 404 for nonexisting project", 404, e.getStatusCode());
+        e = assertThrows(FailingHttpStatusCodeException.class, () -> carol.goTo("bypass/myproject"));
+        Assert.assertEquals("carol gets 404 for invisible project", 404, e.getStatusCode());
     }
 
     @TestExtension
