@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import hudson.model.Item;
+import hudson.model.SCMedItem;
 import hudson.model.TaskListener;
 import jenkins.scm.SCMDecisionHandler;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class SCMTriggerItemTest {
         // given
         PowerMockito.mockStatic(SCMDecisionHandler.class);
         PowerMockito.when(SCMDecisionHandler.firstShouldPollVeto(any(Item.class))).thenReturn(null);
-        hudson.model.SCMedItem scMedItem = Mockito.mock(hudson.model.SCMedItem.class);
+        SCMedItem scMedItem = Mockito.mock(SCMedItem.class);
         TaskListener listener = Mockito.mock(TaskListener.class);
 
         // when

@@ -76,6 +76,7 @@ import jenkins.agents.AgentComputerUtil;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
+import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -1050,7 +1051,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public byte[] readFileToByteArray(File file) throws IOException {
-            try (InputStream in = org.apache.commons.io.FileUtils.openInputStream(file)) {
+            try (InputStream in = FileUtils.openInputStream(file)) {
                 return org.apache.commons.io.IOUtils.toByteArray(in);
             }
         }

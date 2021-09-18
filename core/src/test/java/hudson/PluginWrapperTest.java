@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import java.io.File;
 import java.io.IOException;
@@ -120,7 +121,7 @@ public class PluginWrapperTest {
         Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
         int e1size = countEnumerationElements(e1);
         // insert the jar with the resource (lets pick on remoting as it should be very stable)
-        File jarFile = Which.jarFile(hudson.remoting.Callable.class);
+        File jarFile = Which.jarFile(Callable.class);
         pw.injectJarsToClasspath(jarFile);
         Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
         int e2size = countEnumerationElements(e2);

@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.selectors.FileSelector;
 import org.kohsuke.accmod.Restricted;
@@ -139,7 +140,7 @@ public abstract class DirScanner implements Serializable {
             fs.setDefaultexcludes(useDefaultExcludes);
 
             if(dir.exists()) {
-                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                DirectoryScanner ds = fs.getDirectoryScanner(new Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);

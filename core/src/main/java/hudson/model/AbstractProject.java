@@ -834,7 +834,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @SuppressWarnings("deprecation")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod) {
-        return scheduleBuild2(quietPeriod, new hudson.model.Cause.LegacyCodeCause());
+        return scheduleBuild2(quietPeriod, new Cause.LegacyCodeCause());
     }
 
     /**

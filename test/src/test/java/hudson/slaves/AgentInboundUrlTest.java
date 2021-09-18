@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,7 +79,7 @@ public class AgentInboundUrlTest {
         XmlPage jnlp = (XmlPage) agent.goTo("computer/test/jenkins-agent.jnlp", "application/x-java-jnlp-file");
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         Object arg = dom.selectSingleNode("//application-desc/argument[3]/following-sibling::argument[1]");
-        String val = ((org.dom4j.Element) arg).getText();
+        String val = ((Element) arg).getText();
         assertEquals(customInboundUrl, val);
     }
 

@@ -64,6 +64,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -1297,7 +1298,7 @@ public class Util {
             Path tempSymlinkPath = symlink.toPath();
             Files.createSymbolicLink(tempSymlinkPath, target);
             try {
-                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempSymlinkPath, pathForSymlink, StandardCopyOption.ATOMIC_MOVE);
                 return true;
             } catch (
                 UnsupportedOperationException |
