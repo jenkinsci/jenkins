@@ -1,24 +1,23 @@
 package hudson.model.queue;
 
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.InvisibleAction;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.ExecutorSlot;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.MappingWorksheet.WorkChunk;
-import java.util.concurrent.TimeUnit;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 
 /**
  * Experimental.

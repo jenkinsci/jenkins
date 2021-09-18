@@ -8,16 +8,13 @@ import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.views.ViewsTabBar;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import javax.servlet.ServletException;
-
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;

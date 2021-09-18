@@ -1,12 +1,10 @@
 package jenkins.util;
 
-import jenkins.ClassLoaderReflectionToolkit;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.net.URL;
 import java.net.URLClassLoader;
+import jenkins.ClassLoaderReflectionToolkit;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link URLClassLoader} with loosened visibility for use with {@link

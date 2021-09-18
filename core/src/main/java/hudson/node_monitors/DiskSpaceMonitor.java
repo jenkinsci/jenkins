@@ -27,13 +27,12 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Node;
-import hudson.remoting.Callable;
-import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import org.kohsuke.stapler.DataBoundConstructor;
-
+import hudson.remoting.Callable;
 import java.io.IOException;
 import java.text.ParseException;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Checks available disk space of the remote FS root.

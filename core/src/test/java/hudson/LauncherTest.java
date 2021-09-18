@@ -24,6 +24,12 @@
 
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
 import hudson.util.ProcessTree;
@@ -31,15 +37,8 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.Charset;
-
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;

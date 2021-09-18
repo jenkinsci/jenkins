@@ -1,8 +1,7 @@
 package hudson.tasks;
 
-import static org.junit.Assert.assertNull;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
@@ -12,21 +11,18 @@ import hudson.Proc;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-
-import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.FakeLauncher;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.PretendSlave;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
-
+import org.apache.commons.io.FileUtils;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.FakeLauncher;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PretendSlave;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**

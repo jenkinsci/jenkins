@@ -24,12 +24,11 @@
 package hudson.model;
 
 import hudson.Extension;
+import java.util.Objects;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.Objects;
 
 /**
  * {@link StringParameterDefinition} that uses textarea, instead of text box.

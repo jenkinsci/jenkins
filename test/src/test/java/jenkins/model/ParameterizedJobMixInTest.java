@@ -28,7 +28,6 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
 import javax.servlet.http.HttpServletResponse;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

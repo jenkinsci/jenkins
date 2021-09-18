@@ -23,9 +23,9 @@
  */
 package hudson.model.listeners;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.Failure;
 import hudson.model.Item;
 import hudson.model.ItemGroup;

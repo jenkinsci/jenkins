@@ -1,9 +1,9 @@
 package jenkins.security.s2m;
 
+import static hudson.Functions.isWindows;
+
 import hudson.Functions;
 import hudson.model.Failure;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static hudson.Functions.isWindows;
+import jenkins.model.Jenkins;
 
 /**
  * Config file that lists {@link FilePathRule} rules.

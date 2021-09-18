@@ -2,20 +2,18 @@ package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.FilePath;
 import hudson.Functions;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
-
-import static org.junit.Assume.assumeFalse;
 
 public class RewindableRotatingFileOutputStreamTest {
 

@@ -1,18 +1,18 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.nio.charset.StandardCharsets;
 
 public class ApplyButtonTest {
 

@@ -1,22 +1,14 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.Functions;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.TaskListener;
 import hudson.util.HttpResponses;
 import hudson.util.SecretRewriter;
 import hudson.util.VersionNumber;
-import jenkins.management.AsynchronousAdministrativeMonitor;
-import jenkins.model.Jenkins;
-import jenkins.util.io.FileBoolean;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,6 +16,13 @@ import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.management.AsynchronousAdministrativeMonitor;
+import jenkins.model.Jenkins;
+import jenkins.util.io.FileBoolean;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Warns the administrator to run {@link SecretRewriter}

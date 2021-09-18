@@ -1,9 +1,8 @@
 package jenkins.model.lazy;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Array;
 import java.util.AbstractMap;
 import java.util.ArrayList;

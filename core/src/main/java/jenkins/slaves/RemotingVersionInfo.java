@@ -23,9 +23,8 @@
  */
 package jenkins.slaves;
 
-import hudson.util.VersionNumber;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;

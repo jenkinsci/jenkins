@@ -23,6 +23,8 @@
  */
 package jenkins.management;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -34,8 +36,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-
-import static org.junit.Assert.assertEquals;
 
 public class AdministrativeMonitorsDecoratorTest {
 

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.util.Collection;
-
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 

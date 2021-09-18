@@ -24,10 +24,21 @@
 package hudson.model;
 
 import hudson.ExtensionList;
-import jenkins.util.xml.FilteredFunctionContext;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
-
+import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -36,6 +47,8 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -47,21 +60,6 @@ import org.kohsuke.stapler.export.NamedPathPruner;
 import org.kohsuke.stapler.export.SchemaGenerator;
 import org.kohsuke.stapler.export.TreePruner;
 import org.kohsuke.stapler.export.TreePruner.ByDepth;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Used to expose remote access API for ".../api/"

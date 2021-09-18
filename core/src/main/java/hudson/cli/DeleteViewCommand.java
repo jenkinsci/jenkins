@@ -26,13 +26,11 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.cli.handlers.ViewOptionHandler;
-import hudson.model.ViewGroup;
 import hudson.model.View;
-
-import org.kohsuke.args4j.Argument;
-
+import hudson.model.ViewGroup;
 import java.util.HashSet;
 import java.util.List;
+import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza, pjanouse

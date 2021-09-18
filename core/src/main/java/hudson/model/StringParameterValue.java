@@ -25,15 +25,13 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.export.Exported;
-
+import hudson.util.VariableResolver;
 import java.util.Locale;
 import java.util.Objects;
-
-import hudson.util.VariableResolver;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link ParameterValue} created from {@link StringParameterDefinition}.

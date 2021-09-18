@@ -23,6 +23,13 @@
  */
 package jenkins.security;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
@@ -31,6 +38,9 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
 import hudson.util.Secret;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -45,17 +55,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.logging.Level;
-
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @Restricted(NoExternalUse.class)
 public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {

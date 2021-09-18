@@ -23,12 +23,13 @@
  */
 package jenkins.install;
 
-import hudson.ExtensionList;
-import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertSame;
+
+import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

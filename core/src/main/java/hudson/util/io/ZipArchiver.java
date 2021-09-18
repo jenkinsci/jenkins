@@ -27,22 +27,20 @@ package hudson.util.io;
 import hudson.Util;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.Zip64Mode;
+import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.LinkOption;
-import java.nio.file.OpenOption;
 
 /**
  * {@link FileVisitor} that creates a zip archive.

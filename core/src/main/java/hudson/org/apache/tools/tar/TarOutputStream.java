@@ -24,17 +24,16 @@
 package hudson.org.apache.tools.tar;
 
 import hudson.RestrictedSince;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.apache.tools.tar.TarBuffer;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.

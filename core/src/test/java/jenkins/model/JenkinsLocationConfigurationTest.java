@@ -24,13 +24,14 @@
 package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.powermock.api.mockito.PowerMockito.mock;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Tests for {@link JenkinsLocationConfiguration}.

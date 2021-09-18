@@ -24,6 +24,8 @@
 
 package jenkins.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -31,10 +33,6 @@ import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
-import org.kohsuke.stapler.export.Exported;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Allows a {@link Run} to provide {@link SCM}-related methods, such as providing changesets and culprits.

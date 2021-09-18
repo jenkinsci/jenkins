@@ -1,19 +1,12 @@
 package jenkins;
 
-import jenkins.util.SystemProperties;
+import static java.util.logging.Level.SEVERE;
+
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import jenkins.model.Jenkins;
-import jenkins.security.ImpersonatingExecutorService;
-import org.jvnet.hudson.reactor.Milestone;
-import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.ReactorException;
-import org.jvnet.hudson.reactor.ReactorListener;
-import org.jvnet.hudson.reactor.Task;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -26,8 +19,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static java.util.logging.Level.SEVERE;
+import jenkins.model.Jenkins;
+import jenkins.security.ImpersonatingExecutorService;
+import jenkins.util.SystemProperties;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.reactor.ReactorListener;
+import org.jvnet.hudson.reactor.Task;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

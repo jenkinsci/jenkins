@@ -1,11 +1,10 @@
 package jenkins.util;
 
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.Issue;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 public class UrlHelperTest {
 

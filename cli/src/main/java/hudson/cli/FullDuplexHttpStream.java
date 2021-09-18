@@ -1,7 +1,6 @@
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

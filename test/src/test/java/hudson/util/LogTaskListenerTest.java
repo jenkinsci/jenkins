@@ -23,13 +23,14 @@
  */
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.console.HyperlinkNote;
 import hudson.model.TaskListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 

@@ -1,11 +1,7 @@
 package hudson.util;
 
-import hudson.WebAppMain;
-import jenkins.util.groovy.GroovyHookScript;
-import org.kohsuke.stapler.WebApp;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.ServletContext;
+import hudson.WebAppMain;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -16,6 +12,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import jenkins.util.groovy.GroovyHookScript;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * Indicates a fatal boot problem, among {@link ErrorObject}

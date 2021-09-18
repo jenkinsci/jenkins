@@ -1,7 +1,8 @@
 package hudson.model;
 
-import hudson.EnvVars;
 import static org.junit.Assert.assertEquals;
+
+import hudson.EnvVars;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;

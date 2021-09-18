@@ -23,10 +23,9 @@
  */
 package hudson.security;
 
+import java.io.IOException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
-
-import java.io.IOException;
 
 /**
  * @deprecated No longer used.

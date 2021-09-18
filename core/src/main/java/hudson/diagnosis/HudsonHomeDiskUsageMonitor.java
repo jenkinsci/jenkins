@@ -23,19 +23,18 @@
  */
 package hudson.diagnosis;
 
-import hudson.model.AdministrativeMonitor;
-import hudson.model.AbstractModelObject;
 import hudson.Extension;
-import hudson.ExtensionPoint;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.model.AbstractModelObject;
+import hudson.model.AdministrativeMonitor;
+import java.io.IOException;
+import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Monitors the disk usage of {@code JENKINS_HOME}, and if it's almost filled up, warn the user.
