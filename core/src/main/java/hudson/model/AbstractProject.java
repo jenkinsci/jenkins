@@ -1720,7 +1720,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
             return Integer.parseInt(delay);
         } catch (NumberFormatException e) {
-            throw new ServletException("Invalid delay parameter value: "+delay);
+            throw new ServletException("Invalid delay parameter value: "+delay, e);
         }
     }
 

@@ -49,6 +49,11 @@ public class Failure extends RuntimeException implements HttpResponse {
         this(message,false);
     }
 
+    public Failure(String message, Throwable cause) {
+        super(message, cause);
+        this.pre = false;
+    }
+
     public Failure(String message, boolean pre) {
         super(message);
         this.pre = pre;

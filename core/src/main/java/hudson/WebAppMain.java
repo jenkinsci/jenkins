@@ -236,14 +236,14 @@ public class WebAppMain implements ServletContextListener {
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleServletVersionDetected(ServletResponse.class);
+                throw (IncompatibleServletVersionDetected)new IncompatibleServletVersionDetected(ServletResponse.class).initCause(e);
             }
 
             // make sure that we see Ant 1.7
             try {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleAntVersionDetected(FileSet.class);
+                throw (IncompatibleAntVersionDetected)new IncompatibleAntVersionDetected(FileSet.class).initCause(e);
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.

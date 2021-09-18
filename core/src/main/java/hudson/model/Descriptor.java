@@ -305,7 +305,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 throw new AssertionError(getClass()+" must be assignable to "+getd.getReturnType());
             }
         } catch (NoSuchMethodException e) {
-            throw new AssertionError(getClass()+" is missing getDescriptor method.");
+            throw new AssertionError(getClass()+" is missing getDescriptor method.", e);
         }
 
     }

@@ -745,7 +745,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 } catch (NumberFormatException e) {
                     if (!skipError)
                         throw new IllegalArgumentException(
-                                String.format("Unable to parse '%s', expected number", list));
+                                String.format("Unable to parse '%s', expected number", list), e);
                     // ignore malformed text
                 }
             }
