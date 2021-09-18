@@ -23,8 +23,9 @@
  */
 package hudson.security;
 
-import java.io.IOException;
 import static java.util.logging.Level.SEVERE;
+
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

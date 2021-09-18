@@ -5,19 +5,9 @@
  */
 package hudson.security.csrf;
 
-import javax.servlet.ServletRequest;
-
-import hudson.init.Initializer;
-import jenkins.model.Jenkins;
-import jenkins.security.stapler.StaplerAccessibleType;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.init.Initializer;
 import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -26,10 +16,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * A CrumbIssuer represents an algorithm to generate a nonce value, known as a

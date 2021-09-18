@@ -24,23 +24,22 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleProject;
-import hudson.model.Item;
-import hudson.model.ListView;
-import hudson.model.View;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.ListView;
+import hudson.model.View;
+import java.io.IOException;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**

@@ -1,24 +1,23 @@
 package hudson.model;
 
-import hudson.Extension;
-import hudson.util.ListBoxModel;
-import hudson.util.ListBoxModel.Option;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import hudson.util.ListBoxModel.Option;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
 
 /**
  * A UserProperty that allows a user to specify a time zone for displaying time.

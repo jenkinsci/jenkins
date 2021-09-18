@@ -24,8 +24,8 @@
 package hudson.util;
 
 import java.io.FilterOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Works like {@link FilterOutputStream} except its performance problem.

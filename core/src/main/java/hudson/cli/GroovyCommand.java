@@ -23,18 +23,17 @@
  */
 package hudson.cli;
 
-import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
-import jenkins.model.Jenkins;
+import groovy.lang.GroovyShell;
 import hudson.Extension;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Executes the specified groovy script.

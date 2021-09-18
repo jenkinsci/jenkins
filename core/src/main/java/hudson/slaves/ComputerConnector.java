@@ -23,12 +23,11 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.TaskListener;
-
 import java.io.IOException;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Factory of {@link ComputerLauncher}.

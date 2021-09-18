@@ -30,9 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.Extension;
 import hudson.model.User;
-
 import java.util.regex.Matcher;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

@@ -1,6 +1,18 @@
 package hudson.util;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.when;
+
 import hudson.model.Items;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import jenkins.security.ClassFilterImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -10,24 +22,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import jenkins.security.ClassFilterImpl;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import org.jvnet.hudson.test.LoggerRule;
-import static org.mockito.Mockito.when;
 
 public class XStream2Security383Test {
 

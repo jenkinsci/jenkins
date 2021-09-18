@@ -8,11 +8,9 @@ import hudson.model.ListView;
 import hudson.model.Node;
 import hudson.model.User;
 import hudson.tasks.Mailer;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

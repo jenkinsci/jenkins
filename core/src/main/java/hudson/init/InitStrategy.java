@@ -1,24 +1,22 @@
 package hudson.init;
 
-import org.kohsuke.MetaInfServices;
-import org.jvnet.hudson.reactor.Task;
-
+import hudson.PluginManager;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.PluginManager;
 import jenkins.util.SystemProperties;
-import hudson.util.DirScanner;
-import hudson.util.FileVisitor;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import org.jvnet.hudson.reactor.Task;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Strategy pattern of the various key decision making during the Jenkins initialization.

@@ -40,18 +40,15 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-
+import hudson.ExtensionList;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import hudson.ExtensionList;
-import hudson.diagnosis.OldDataMonitor;
 import jenkins.model.Jenkins;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

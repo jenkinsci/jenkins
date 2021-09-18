@@ -3,6 +3,7 @@ package hudson;
 import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
 import hudson.model.RootAction;
@@ -17,8 +18,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 public class AbstractItemSecurity1114Test {
     @Rule

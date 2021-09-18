@@ -1,13 +1,12 @@
 package hudson;
 
+import static hudson.init.InitMilestone.COMPLETED;
+
 import hudson.init.Initializer;
+import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.logging.Logger;
-
-import static hudson.init.InitMilestone.COMPLETED;
 
 /**
  * Registers a DNS multi-cast service-discovery support.

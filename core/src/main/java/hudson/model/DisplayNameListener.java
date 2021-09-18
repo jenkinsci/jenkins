@@ -25,12 +25,11 @@ package hudson.model;
 
 
 
+import hudson.Extension;
+import hudson.model.listeners.ItemListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.Extension;
-import hudson.model.listeners.ItemListener;
 
 /**
  * @author kingfai

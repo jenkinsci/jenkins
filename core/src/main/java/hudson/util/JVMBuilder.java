@@ -27,7 +27,6 @@ package hudson.util;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Map;

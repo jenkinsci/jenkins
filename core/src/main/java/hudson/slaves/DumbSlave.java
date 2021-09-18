@@ -23,18 +23,15 @@
  */
 package hudson.slaves;
 
-import hudson.model.Slave;
-import hudson.model.Descriptor.FormException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-
+import hudson.model.Descriptor.FormException;
+import hudson.model.Slave;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Default {@link Slave} implementation for computers that do not belong to a higher level structure,

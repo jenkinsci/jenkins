@@ -1,14 +1,11 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Lookup;
 import hudson.init.InitMilestone;
 import hudson.util.Secret;
-import jenkins.model.Jenkins;
-import org.kohsuke.MetaInfServices;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,6 +16,8 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.MetaInfServices;
 
 /**
  * The actual storage for the data held by {@link ConfidentialKey}s, and the holder

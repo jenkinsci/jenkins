@@ -24,26 +24,25 @@
 
 package jenkins.security.s2m;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import java.io.File;
-
 import java.io.IOException;
-import org.jenkinsci.remoting.RoleChecker;
-import static org.hamcrest.Matchers.containsString;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import org.junit.Rule;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import javax.inject.Inject;
+import org.jenkinsci.remoting.RoleChecker;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class DefaultFilePathFilterTest {
 

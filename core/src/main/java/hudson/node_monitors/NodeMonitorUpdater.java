@@ -6,11 +6,9 @@ import hudson.model.ComputerSet;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.Futures;
-
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
 import jenkins.util.Timer;
 
 /**

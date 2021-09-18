@@ -23,14 +23,13 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Represents an error induced by user, encountered during HTTP request processing.

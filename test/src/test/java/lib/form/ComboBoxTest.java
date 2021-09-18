@@ -39,7 +39,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.ComboBoxModel;
-
 import jenkins.model.OptionalJobProperty;
 import org.junit.Rule;
 import org.junit.Test;

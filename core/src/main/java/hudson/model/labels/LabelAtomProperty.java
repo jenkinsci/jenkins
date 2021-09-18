@@ -27,11 +27,10 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Extensible property of {@link LabelAtom}.

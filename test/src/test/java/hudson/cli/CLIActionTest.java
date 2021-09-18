@@ -1,5 +1,7 @@
 package hudson.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -36,8 +38,6 @@ import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

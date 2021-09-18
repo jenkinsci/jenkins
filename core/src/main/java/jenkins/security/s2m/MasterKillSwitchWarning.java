@@ -2,13 +2,12 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import java.io.IOException;
+import javax.inject.Inject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.inject.Inject;
-import java.io.IOException;
 
 /**
  * If {@link AdminWhitelistRule#masterKillSwitch} is on, warn the user.

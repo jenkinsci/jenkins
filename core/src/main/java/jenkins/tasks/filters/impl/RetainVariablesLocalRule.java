@@ -29,9 +29,16 @@ import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.FormValidation;
-import jenkins.tasks.filters.EnvVarsFilterRuleContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
+import jenkins.tasks.filters.EnvVarsFilterRuleContext;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -41,14 +48,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Local rule that removes all the non-retained variables for that step.
