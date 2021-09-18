@@ -23,16 +23,16 @@
  */
 package hudson.util;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.io.IOException;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.CoderResult;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.nio.CharBuffer;
 
 /**
  * {@link OutputStream} that writes to {@link Writer}

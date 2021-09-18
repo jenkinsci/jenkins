@@ -30,15 +30,14 @@ import hudson.model.DownloadService;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implements a daily update check for update sites and {@link hudson.model.DownloadService.Downloadable}s that are due.

@@ -23,6 +23,10 @@
  */
 package hudson.util;
 
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Polygon;
+import java.awt.geom.Rectangle2D;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
@@ -34,11 +38,6 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.chart.urls.CategoryURLGenerator;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
-
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Modified {@link StackedAreaRenderer}.

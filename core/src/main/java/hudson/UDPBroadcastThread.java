@@ -24,14 +24,13 @@
  */
 package hudson;
 
+import static hudson.init.InitMilestone.COMPLETED;
+
 import hudson.init.Initializer;
+import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.logging.Logger;
-
-import static hudson.init.InitMilestone.COMPLETED;
 
 /**
  * Monitors a UDP multicast broadcast and respond with the location of the Hudson service.

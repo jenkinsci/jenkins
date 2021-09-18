@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
@@ -35,7 +36,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
-
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.tools.ToolConfigurationCategory;
@@ -43,8 +43,6 @@ import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.

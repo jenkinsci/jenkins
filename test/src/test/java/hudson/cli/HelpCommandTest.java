@@ -26,16 +26,14 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
-
-import java.io.PrintStream;
-import java.util.Arrays;
 
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.AbstractProject;
-
+import java.io.PrintStream;
+import java.util.Arrays;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;

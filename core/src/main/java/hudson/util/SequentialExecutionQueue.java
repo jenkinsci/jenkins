@@ -2,9 +2,9 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 

@@ -23,18 +23,17 @@
  */
 package hudson.console;
 
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
 import hudson.model.Run;
+import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tools.ant.BuildListener;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -49,12 +48,12 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
-import hudson.remoting.ClassFilter;
+import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tools.ant.BuildListener;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

@@ -1,14 +1,13 @@
 package jenkins.security.s2m;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
+import java.io.File;
+import javax.inject.Inject;
 import jenkins.FilePathFilter;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
-import javax.inject.Inject;
-import java.io.File;
 
 /**
  * {@link FilePathFilter} that allows admins to whitelist specific file access.

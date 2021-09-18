@@ -30,13 +30,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-import jenkins.model.Jenkins;
-import hudson.model.Node;
 import hudson.XmlFile;
-
+import hudson.model.Node;
 import java.io.File;
 import java.nio.charset.Charset;
-
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 

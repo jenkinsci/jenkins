@@ -25,16 +25,15 @@ package hudson.util;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.AbstractList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.ListIterator;
-import java.util.AbstractList;
+import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.HashSet;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

@@ -1,22 +1,21 @@
 package jenkins.slaves.restarter;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
-import com.sun.jna.StringArray;
-import hudson.Extension;
-import jenkins.util.JavaVMArguments;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
 import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
 import static hudson.util.jna.GNUCLibrary.F_GETFD;
 import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
+
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLong;
+import com.sun.jna.StringArray;
+import hudson.Extension;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+import jenkins.util.JavaVMArguments;
 
 /**
  * On Unix, restart via exec-ing to itself.

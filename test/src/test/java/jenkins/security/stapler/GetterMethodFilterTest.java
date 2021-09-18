@@ -23,22 +23,21 @@
  */
 package jenkins.security.stapler;
 
+import static org.junit.Assert.assertFalse;
+
 import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import jenkins.model.Jenkins;
-import org.junit.Test;
-import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.TestExtension;
-
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertFalse;
+import jenkins.model.Jenkins;
+import org.junit.Test;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * To check the previous behavior you can use:

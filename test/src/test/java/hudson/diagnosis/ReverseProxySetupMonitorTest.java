@@ -23,22 +23,21 @@
  */
 package hudson.diagnosis;
 
+import static org.junit.Assert.assertThrows;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.net.URL;
 import java.util.Collections;
-
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
-
-import static org.junit.Assert.assertThrows;
 
 public class ReverseProxySetupMonitorTest {
 

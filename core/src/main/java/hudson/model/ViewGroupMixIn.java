@@ -23,15 +23,14 @@
  */
 package hudson.model;
 
-import java.util.Locale;
-import org.kohsuke.stapler.export.Exported;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Locale;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Implements {@link ViewGroup} to be used as a "mix-in".

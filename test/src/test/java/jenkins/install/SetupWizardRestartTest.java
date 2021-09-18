@@ -3,15 +3,13 @@ package jenkins.install;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
+import hudson.Main;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsSessionRule;
-
-import hudson.Main;
 import org.jvnet.hudson.test.SmokeTest;
 
 @Category(SmokeTest.class)

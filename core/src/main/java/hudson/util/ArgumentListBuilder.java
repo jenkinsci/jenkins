@@ -24,21 +24,20 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.BitSet;
-import java.util.Properties;
-import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -244,7 +243,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *
      * @param original Resolution will be delegated to this resolver. Resolved
      *                 values will be escaped afterwards.
-     * @see <a href="https://jenkins-ci.org/issue/10539">JENKINS-10539</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-10539">JENKINS-10539</a>
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
 

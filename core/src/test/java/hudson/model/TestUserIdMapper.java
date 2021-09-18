@@ -1,8 +1,7 @@
 package hudson.model;
 
-import jenkins.model.IdStrategy;
-
 import java.io.File;
+import jenkins.model.IdStrategy;
 
 class TestUserIdMapper extends UserIdMapper {
 

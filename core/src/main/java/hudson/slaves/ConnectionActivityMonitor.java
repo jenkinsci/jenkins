@@ -23,20 +23,19 @@
  */
 package hudson.slaves;
 
-import hudson.model.AsyncPeriodicWork;
-import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
-import hudson.model.Computer;
-import java.util.concurrent.TimeUnit;
-import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
-import jenkins.security.SlaveToMasterCallable;
-import org.jenkinsci.Symbol;
-
+import hudson.model.AsyncPeriodicWork;
+import hudson.model.Computer;
+import hudson.model.TaskListener;
+import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.security.SlaveToMasterCallable;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.Symbol;
 
 /**
  * Makes sure that connections to agents are alive, and if they are not, cut them off.

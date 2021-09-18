@@ -27,7 +27,6 @@ package jenkins.util;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 

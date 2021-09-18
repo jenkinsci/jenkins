@@ -24,6 +24,10 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -31,10 +35,6 @@ import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
 import org.junit.Test;
-
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**

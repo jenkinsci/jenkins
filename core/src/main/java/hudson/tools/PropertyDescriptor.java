@@ -3,7 +3,6 @@ package hudson.tools;
 import hudson.Functions;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-
 import java.util.ArrayList;
 import java.util.List;
 

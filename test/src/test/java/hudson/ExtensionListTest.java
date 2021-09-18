@@ -6,15 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import jenkins.model.Jenkins;
-import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 import java.util.ArrayList;
-
-import java.util.List;
 import java.util.Collection;
-
+import java.util.List;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

@@ -23,9 +23,10 @@
  */
 package hudson.security;
 
+import static java.util.logging.Level.FINE;
+
 import java.util.ArrayList;
 import java.util.List;
-import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import org.acegisecurity.acls.sid.Sid;
 import org.springframework.security.core.Authentication;

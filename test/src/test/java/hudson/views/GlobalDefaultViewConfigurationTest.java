@@ -23,11 +23,12 @@
  */
 package hudson.views;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

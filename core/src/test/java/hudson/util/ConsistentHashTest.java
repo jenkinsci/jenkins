@@ -30,15 +30,14 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Random;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * @author Kohsuke Kawaguchi

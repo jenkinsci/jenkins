@@ -1,13 +1,12 @@
 package hudson.util;
 
+import static hudson.Util.fixEmpty;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
-import org.kohsuke.accmod.Restricted;
-
 import java.io.File;
-
-import static hudson.Util.fixEmpty;
+import org.kohsuke.accmod.Restricted;
 
 @Restricted(org.kohsuke.accmod.restrictions.NoExternalUse.class)
 class DOSToUnixPathHelper {

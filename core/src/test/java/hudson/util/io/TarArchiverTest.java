@@ -23,6 +23,9 @@
  */
 package hudson.util.io;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
+
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
@@ -35,9 +38,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import static org.junit.Assert.assertEquals;
 import org.junit.Assume;
-import static org.junit.Assume.assumeTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

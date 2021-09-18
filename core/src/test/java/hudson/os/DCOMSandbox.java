@@ -1,12 +1,11 @@
 package hudson.os;
 
+import java.util.Properties;
 import ndr.NdrObject;
 import ndr.NetworkDataRepresentation;
 import org.jinterop.dcom.transport.JIComTransportFactory;
 import rpc.Endpoint;
 import rpc.Stub;
-
-import java.util.Properties;
 
 /**
  * My attempt to see if ServerAlive calls can be used to detect an authentication failure

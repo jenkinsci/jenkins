@@ -23,12 +23,12 @@
  */
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.Collection;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import org.springframework.security.core.Authentication;

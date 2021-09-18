@@ -1,16 +1,5 @@
 package jenkins.widgets;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
-
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Result;
@@ -20,6 +9,15 @@ import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**

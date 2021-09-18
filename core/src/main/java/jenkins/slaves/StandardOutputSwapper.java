@@ -2,15 +2,12 @@ package jenkins.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.StandardOutputStream;
 import hudson.slaves.ComputerListener;
 import hudson.util.jna.GNUCLibrary;
-import jenkins.security.MasterToSlaveCallable;
-
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -19,6 +16,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi

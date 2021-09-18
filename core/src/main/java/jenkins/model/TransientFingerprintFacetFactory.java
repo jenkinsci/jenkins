@@ -26,7 +26,6 @@ package jenkins.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Fingerprint;
-
 import java.util.List;
 
 /**

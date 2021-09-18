@@ -23,15 +23,14 @@
  */
 package hudson.slaves;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

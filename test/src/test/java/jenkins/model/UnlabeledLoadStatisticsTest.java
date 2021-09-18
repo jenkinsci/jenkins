@@ -23,6 +23,8 @@
  */
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.LoadStatistics;
 import hudson.model.Node;
@@ -36,7 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for {@link UnlabeledLoadStatistics} class.

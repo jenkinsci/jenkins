@@ -24,26 +24,25 @@
 package hudson.slaves;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.PingFailureAnalyzer;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.PingFailureAnalyzer;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Establish a periodic ping to keep connections between {@link Slave agents}
