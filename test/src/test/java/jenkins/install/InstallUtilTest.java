@@ -160,16 +160,16 @@ public class InstallUtilTest {
 
 						InstallationStatus status;
 						if("Success".equals(statusType)) {
-							status = Mockito.mock(Success.class);
+							status = Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else if("Failure".equals(statusType)) {
-							status = Mockito.mock(Failure.class);
+							status = Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else if("Installing".equals(statusType)) {
-							status = Mockito.mock(Installing.class);
+							status = Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else {
-							status = Mockito.mock(Pending.class);
+							status = Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
 						}
 
 						nameMap.put(statusType, status.getClass().getSimpleName());
