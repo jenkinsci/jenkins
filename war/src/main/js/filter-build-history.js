@@ -8,16 +8,18 @@ const ajaxUrl = buildHistoryPage.getAttribute("page-ajax")
 const nextBuild = buildHistoryPage.getAttribute("page-next-build")
 const noBuildsBanner = document.getElementById("no-builds")
 
-var leftRightPadding = 4;
+const sidePanel = $('side-panel');
+const buildHistoryPageNav = $('buildHistoryPageNav');
 
-var updateBuildsRefreshInterval = 5000;
+const pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
+const pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
+const pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
+
+const leftRightPadding = 4;
+const updateBuildsRefreshInterval = 5000;
 
 function updateBuilds() {
-    if(isPageVisible()){
-        if (buildHistoryContainer.headers == null) {
-            // Yahoo.log("Missing headers in buildHistory element");
-        }
-
+    if (isPageVisible()) {
         new Ajax.Request(ajaxUrl, {
             requestHeaders: buildHistoryContainer.headers,
             onSuccess: function(rsp) {
@@ -63,7 +65,6 @@ function updateBuilds() {
             }
         });
     } else {
-        // Reschedule again
         createRefreshTimeout();
     }
 }
@@ -73,16 +74,13 @@ function createRefreshTimeout() {
     cancelRefreshTimeout();
     buildRefreshTimeout = window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 }
+
 function cancelRefreshTimeout() {
     if (buildRefreshTimeout) {
         window.clearTimeout(buildRefreshTimeout);
         buildRefreshTimeout = undefined;
     }
 }
-
-var pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
-var pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
-var pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
 
 function hasPageUp() {
     return buildHistoryPage.getAttribute('page-has-up') === 'true';
@@ -452,7 +450,6 @@ const handleFilter = function () {
 const debouncedFilter = debounce(handleFilter, 300);
 
 document.addEventListener("DOMContentLoaded", function () {
-
     // Apply correct styling upon filter bar text change, call API after wait
     pageSearchInput.addEventListener('input', function() {
         pageSearchInputContainer.classList.add("jenkins-search--loading");
@@ -478,9 +475,6 @@ document.addEventListener("DOMContentLoaded", function () {
     onBuildHistoryChange(function() {
         checkAllRowCellOverflows();
     });
-
-    var sidePanel = $('side-panel');
-    var buildHistoryPageNav = $('buildHistoryPageNav');
 
     // Show/hide the nav as the mouse moves into the sidepanel and build history.
     sidePanel.observe('mouseover', function() {
