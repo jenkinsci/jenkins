@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import jenkins.util.AntClassLoader;
 
 /**

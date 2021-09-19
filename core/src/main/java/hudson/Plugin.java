@@ -23,36 +23,33 @@
  */
 package hudson;
 
-import java.util.concurrent.TimeUnit;
-
+import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.model.Jenkins;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.Descriptor.FormException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.File;
-
-import net.sf.json.JSONObject;
-import com.thoughtworks.xstream.XStream;
-import hudson.init.Initializer;
-import hudson.init.Terminator;
-import java.net.URL;
-import java.util.Locale;
-import java.util.logging.Logger;
-import jenkins.model.GlobalConfiguration;
 
 /**
  * Base class of Hudson plugin.

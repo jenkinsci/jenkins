@@ -24,6 +24,7 @@
 
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -32,8 +33,6 @@ import hudson.model.Computer;
 import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;

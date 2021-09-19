@@ -26,9 +26,6 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
-import com.thoughtworks.xstream.mapper.Mapper;
-import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
@@ -45,28 +42,30 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.remoting.ClassFilter;
-import hudson.util.xstream.ImmutableSetConverter;
-import hudson.util.xstream.ImmutableSortedSetConverter;
-import jenkins.util.xstream.SafeURLConverter;
-import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableListConverter;
 import hudson.util.xstream.ImmutableMapConverter;
+import hudson.util.xstream.ImmutableSetConverter;
+import hudson.util.xstream.ImmutableSortedSetConverter;
 import hudson.util.xstream.MapperDelegate;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -78,8 +77,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.util.xstream.SafeURLConverter;
 
 /**
  * {@link XStream} customized in various ways for Jenkins’ needs.
@@ -145,7 +144,7 @@ public class XStream2 extends XStream {
      * @param nullOut whether to perform this special behavior;
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
      * @see XmlFile#unmarshalNullingOut
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-21017">JENKINS-21017</a>
      * @since 2.99
      */
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {

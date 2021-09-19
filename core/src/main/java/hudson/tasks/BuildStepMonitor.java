@@ -1,11 +1,10 @@
 package hudson.tasks;
 
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.CheckPoint;
-import hudson.Launcher;
 import hudson.model.Describable;
-
 import java.io.IOException;
 
 /**

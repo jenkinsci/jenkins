@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.util.DelegatingOutputStream;
-
 import java.io.OutputStream;
 
 /**

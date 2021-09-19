@@ -23,22 +23,20 @@
  */
 package hudson.diagnosis;
 
-import java.util.concurrent.TimeUnit;
-import hudson.util.ColorPalette;
 import hudson.Extension;
-import hudson.model.PeriodicWork;
 import hudson.model.MultiStageTimeSeries;
-import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.MultiStageTimeSeries.TimeScale;
-
+import hudson.model.MultiStageTimeSeries.TrendChart;
+import hudson.model.PeriodicWork;
+import hudson.util.ColorPalette;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
-import java.lang.management.ManagementFactory;
-import java.util.List;
 import java.util.ArrayList;
-import java.io.IOException;
-
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;

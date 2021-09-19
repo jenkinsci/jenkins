@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.queue.SubTask;
@@ -32,19 +33,15 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
 import java.io.IOException;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
-
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;

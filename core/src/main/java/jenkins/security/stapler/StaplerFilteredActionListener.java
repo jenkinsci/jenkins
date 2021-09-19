@@ -23,6 +23,8 @@
  */
 package jenkins.security.stapler;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
@@ -33,9 +35,6 @@ import org.kohsuke.stapler.event.FilteredDoActionTriggerListener;
 import org.kohsuke.stapler.event.FilteredFieldTriggerListener;
 import org.kohsuke.stapler.event.FilteredGetterTriggerListener;
 import org.kohsuke.stapler.lang.FieldRef;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Log a warning message when a "getter" or "doAction" function or fragment view that was filtered out by SECURITY-400 new rules

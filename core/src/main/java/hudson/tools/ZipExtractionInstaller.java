@@ -26,22 +26,20 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.MasterToSlaveFileCallable;
+import hudson.Functions;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.Functions;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;

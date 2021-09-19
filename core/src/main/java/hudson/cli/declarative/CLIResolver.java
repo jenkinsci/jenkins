@@ -23,15 +23,15 @@
  */
 package hudson.cli.declarative;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import hudson.cli.CLICommand;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.kohsuke.args4j.CmdLineException;
-
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.METHOD;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
 
 /**
  * Annotates a resolver method that binds a portion of the command line arguments and parameters

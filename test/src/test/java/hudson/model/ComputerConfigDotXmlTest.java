@@ -46,7 +46,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-
+import hudson.slaves.DumbSlave;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -54,13 +54,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
-
-import hudson.slaves.DumbSlave;
 import jenkins.model.Jenkins;
 import org.junit.After;
 import org.junit.Before;

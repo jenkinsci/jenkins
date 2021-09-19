@@ -25,7 +25,6 @@
 package hudson.util.io;
 
 import hudson.util.FileVisitor;
-
 import java.io.Closeable;
 
 /**

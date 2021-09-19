@@ -29,7 +29,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +37,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.regex.Pattern;
-
 import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
@@ -194,7 +192,7 @@ public class FileParameterValue extends ParameterValue {
 
 	/**
 	 * Compares file parameters (existing files will be considered as different).
-	 * @since 1.586 Function has been modified in order to avoid <a href="https://jenkins-ci.org/issue/19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
+	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins.io/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
 	 */
 	@Override
 	public boolean equals(Object obj) {

@@ -23,11 +23,11 @@
  */
 package hudson.model.queue;
 
+import static java.lang.Math.max;
+
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import static java.lang.Math.max;
 
 /**
 * Represents a mutable q(t), a discrete value that changes over the time.

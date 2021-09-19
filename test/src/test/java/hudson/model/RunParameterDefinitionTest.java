@@ -24,19 +24,17 @@
 
 package hudson.model;
 
-import hudson.EnvVars;
 import static org.junit.Assert.assertEquals;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.RunParameterDefinition.RunParameterFilter;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.LogTaskListener;
-
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

@@ -23,32 +23,31 @@
  */
 package hudson.model;
 
-import java.util.concurrent.TimeUnit;
-import hudson.util.NoOverlapCategoryAxis;
 import hudson.util.ChartUtil;
-
-import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-import java.io.IOException;
+import hudson.util.NoOverlapCategoryAxis;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
-
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.chart.JFreeChart;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.ServletException;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
@@ -56,8 +55,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import javax.servlet.ServletException;
 
 /**
  * Maintains several {@link TimeSeries} with different update frequencies to satisfy three goals;

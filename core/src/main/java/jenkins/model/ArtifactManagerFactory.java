@@ -24,10 +24,10 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Run;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**

@@ -24,9 +24,9 @@
 package hudson.tasks;
 
 import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.Describable;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 
 /**
  * {@link Descriptor} for {@link BuildWrapper}.

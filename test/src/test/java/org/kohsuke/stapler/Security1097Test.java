@@ -5,15 +5,14 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.json.SubmittedForm;
-
-import javax.servlet.ServletException;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class Security1097Test {
     @Rule

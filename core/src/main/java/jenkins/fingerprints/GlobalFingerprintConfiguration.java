@@ -26,13 +26,12 @@ package jenkins.fingerprints;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
+import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.logging.Logger;
 
 /**
  * Allows configuring the settings of fingerprints.

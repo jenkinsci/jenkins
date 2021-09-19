@@ -3,14 +3,13 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Node;
-import java.util.concurrent.TimeUnit;
-import jenkins.model.Jenkins;
-
-import net.jcip.annotations.GuardedBy;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * Default convenience implementation of {@link RetentionStrategy} for agents provisioned from {@link Cloud}.

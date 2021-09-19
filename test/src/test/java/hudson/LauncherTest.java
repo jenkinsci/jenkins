@@ -23,6 +23,13 @@
  */
 package hudson;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
@@ -49,19 +56,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeFalse;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

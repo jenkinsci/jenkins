@@ -23,11 +23,11 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,9 +35,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 
 /**

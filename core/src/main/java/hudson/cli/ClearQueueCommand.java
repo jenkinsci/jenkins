@@ -25,9 +25,8 @@
 package hudson.cli;
 
 import hudson.Extension;
-import jenkins.model.Jenkins;
-
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Clears the build queue

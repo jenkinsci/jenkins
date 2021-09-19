@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.User;
-
 import java.util.Map;
 
 /**

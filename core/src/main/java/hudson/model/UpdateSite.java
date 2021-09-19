@@ -25,6 +25,16 @@
 
 package hudson.model;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static jenkins.util.MemoryReductionUtil.EMPTY_STRING_ARRAY;
+import static jenkins.util.MemoryReductionUtil.getPresizedMutableMap;
+import static jenkins.util.MemoryReductionUtil.internInPlace;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -33,14 +43,9 @@ import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
-import static jenkins.util.MemoryReductionUtil.EMPTY_STRING_ARRAY;
-import static jenkins.util.MemoryReductionUtil.getPresizedMutableMap;
-import static jenkins.util.MemoryReductionUtil.internInPlace;
 import hudson.util.TextFile;
-import static java.util.concurrent.TimeUnit.DAYS;
-import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -69,12 +74,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-
-import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;

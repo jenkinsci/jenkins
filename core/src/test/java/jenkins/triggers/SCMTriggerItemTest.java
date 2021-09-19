@@ -3,6 +3,9 @@ package jenkins.triggers;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+import hudson.model.Item;
+import hudson.model.TaskListener;
+import jenkins.scm.SCMDecisionHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
@@ -10,10 +13,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import hudson.model.Item;
-import hudson.model.TaskListener;
-import jenkins.scm.SCMDecisionHandler;
 
 @SuppressWarnings("deprecation")
 @RunWith(PowerMockRunner.class)

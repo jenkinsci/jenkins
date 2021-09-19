@@ -25,30 +25,29 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANTS;
+import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Functions;
 import hudson.PluginWrapper;
+import java.io.IOException;
+import java.util.function.BiPredicate;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
-
-import java.io.IOException;
-import java.util.function.BiPredicate;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANTS;
-import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 
 public class DisablePluginCommandTest {
 

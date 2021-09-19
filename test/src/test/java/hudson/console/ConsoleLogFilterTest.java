@@ -5,14 +5,13 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.Computer;
 import hudson.model.Run;
 import hudson.slaves.SlaveComputer;
+import java.io.IOException;
+import java.io.OutputStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author Kohsuke Kawaguchi

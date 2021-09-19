@@ -25,16 +25,14 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
-import jenkins.model.Jenkins;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.junit.Ignore;
-
 import javax.servlet.http.HttpServletResponse;
-import org.junit.Test;
+import jenkins.model.Jenkins;
+import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestPluginManager;

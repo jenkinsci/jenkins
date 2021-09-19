@@ -24,12 +24,10 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.util.VariableResolver;
+import java.util.Locale;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
-
-import java.util.Locale;
-
-import hudson.util.VariableResolver;
 
 /**
  * {@link ParameterValue} created from {@link BooleanParameterDefinition}.

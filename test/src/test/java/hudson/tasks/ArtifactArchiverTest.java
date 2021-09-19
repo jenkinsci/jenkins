@@ -24,6 +24,17 @@
 
 package hudson.tasks;
 
+import static hudson.tasks.LogRotatorTest.build;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -35,34 +46,21 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Result;
-import static hudson.tasks.LogRotatorTest.build;
+import hudson.model.Run;
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import hudson.model.Run;
-import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
-
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 import org.junit.ClassRule;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;

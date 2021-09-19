@@ -24,10 +24,9 @@
 package hudson.scm;
 
 import hudson.model.Run;
-import org.xml.sax.SAXException;
-
 import java.io.File;
 import java.io.IOException;
+import org.xml.sax.SAXException;
 
 /**
  * {@link ChangeLogParser} for no SCM.

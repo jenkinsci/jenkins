@@ -1,5 +1,9 @@
 package hudson.util.jelly;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -12,11 +16,6 @@ import org.apache.commons.jelly.impl.TagScript;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Jelly tag library for literal-like tags, with an ability to add arbitrary attributes taken from a map.

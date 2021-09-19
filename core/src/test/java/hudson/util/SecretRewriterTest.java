@@ -1,5 +1,9 @@
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.TaskListener;
@@ -13,9 +17,6 @@ import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

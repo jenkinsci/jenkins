@@ -1,7 +1,7 @@
 package hudson.util;
 
-import hudson.model.AdministrativeMonitor;
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
 
 /**
  * A convenient {@link AdministrativeMonitor} implementations that show an error message

@@ -23,21 +23,19 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import javax.servlet.ServletException;
-
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import hudson.model.Descriptor.FormException;
-import hudson.Extension;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**

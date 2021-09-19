@@ -28,10 +28,8 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
-import net.sf.json.JSONObject;
-
 import java.util.Date;
-
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 

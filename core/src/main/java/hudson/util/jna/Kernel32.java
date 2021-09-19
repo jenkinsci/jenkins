@@ -24,9 +24,9 @@
 package hudson.util.jna;
 
 import com.sun.jna.Pointer;
+import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
-import com.sun.jna.WString;
 
 /**
  * JNA interface to Windows Kernel32 exports.

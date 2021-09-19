@@ -23,14 +23,16 @@
  */
 package hudson.model;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import jenkins.scm.RunWithSCM;
-import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -45,9 +47,9 @@ import hudson.scm.NullChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -59,15 +61,6 @@ import hudson.util.AdaptedIterator;
 import hudson.util.HttpResponses;
 import hudson.util.Iterators;
 import hudson.util.VariableResolver;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.xml.sax.SAXException;
-
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -86,14 +79,19 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import static java.util.logging.Level.WARNING;
-
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.scm.RunWithSCM;
+import jenkins.util.SystemProperties;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.SAXException;
 
 /**
  * Base implementation of {@link Run}s that build software.
