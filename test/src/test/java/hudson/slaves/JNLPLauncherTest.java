@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
+import netx.jnlp.runtime.JNLPRuntime;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -207,7 +208,7 @@ public class JNLPLauncherTest {
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
-        args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
+        args.add(Which.jarFile(JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
         args.add(j.createTmpDir());
         args.add("-nosecurity","-jnlp", j.getURL() + "computer/"+c.getName()+"/jenkins-agent.jnlp");

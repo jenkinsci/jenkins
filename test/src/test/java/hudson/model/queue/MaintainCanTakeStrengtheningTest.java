@@ -9,6 +9,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.junit.Rule;
@@ -65,7 +66,7 @@ public class MaintainCanTakeStrengtheningTest {
      * A node property throwing an exception to cause the canTake method fails.
      */
     @TestExtension
-    public static class FaultyNodeProperty extends hudson.slaves.NodeProperty<Node> {
+    public static class FaultyNodeProperty extends NodeProperty<Node> {
         @Override
         public CauseOfBlockage canTake(Queue.BuildableItem item) {
             throw new ArrayIndexOutOfBoundsException();

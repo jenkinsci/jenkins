@@ -43,6 +43,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -283,7 +284,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     // but anyway most likely result == null above so we would not be here.
                 }
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
             throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         }

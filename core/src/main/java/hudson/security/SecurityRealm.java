@@ -36,6 +36,7 @@ import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -661,7 +662,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         
         // Encode the return value
         try {
-            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
+            returnValue = URLEncoder.encode(from, "UTF-8");
         } catch (UnsupportedEncodingException e) { }
 
         // Return encoded value or at least "/" in the case exception occurred during encode()

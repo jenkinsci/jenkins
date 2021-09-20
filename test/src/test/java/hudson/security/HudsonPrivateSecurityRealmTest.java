@@ -55,6 +55,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import jenkins.security.ApiTokenProperty;
@@ -186,7 +187,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     private static String basicHeader(String user, String pass) {
         String str = user +':' + pass;
-        String auth = java.util.Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
+        String auth = Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
         return "Basic " + auth;
     }
 
