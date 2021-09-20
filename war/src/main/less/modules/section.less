@@ -21,7 +21,7 @@
 .jenkins-section__items {
   display: grid;
   grid-template-columns: 1fr;
-  grid-gap: 30px;
+  grid-gap: 2rem;
 
   @media screen and (min-width: 800px) {
     grid-template-columns: 1fr 1fr;
@@ -43,8 +43,8 @@
   text-decoration: none;
 
   // IE11 doesn't support grid-gap, so apply margin, remove it for modern browsers
-  margin: 0 30px 30px 0;
-  @supports (grid-gap: 30px) {
+  margin: 0 2rem 2rem 0;
+  @supports (grid-gap: 2rem) {
     margin: 0;
   }
 
@@ -56,7 +56,7 @@
     bottom: -10px;
     right: -10px;
     z-index: -1;
-    border-radius: 5px;
+    border-radius: 6px;
   }
 
   &:hover,
@@ -88,7 +88,7 @@
     width: 48px;
     height: 48px;
     pointer-events: none;
-    margin: 0 15px 0 0;
+    margin: 0 1rem 0 0;
   }
 
   dt {
@@ -101,7 +101,7 @@
   dd {
     color: var(--text-color);
     opacity: 0.75;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     line-height: 1.6;
   }
