@@ -417,7 +417,6 @@ public class QuotedStringTokenizer
 
                     default:
                         buf.append(c);
-                        continue;
                 }
             }
             buf.append('"');
@@ -483,7 +482,6 @@ public class QuotedStringTokenizer
             else if (c=='\\')
             {
                 escape=true;
-                continue;
             }
             else
                 b.append(c);
