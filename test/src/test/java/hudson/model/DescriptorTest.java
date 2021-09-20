@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.Launcher;
@@ -204,19 +203,16 @@ public class DescriptorTest {
     public void presentStacktraceFromFormException() throws Exception {
         NullPointerException cause = new NullPointerException();
         final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
-        try {
+        FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () ->
             rule.executeOnServer(new Callable<Void>() {
                 @Override public Void call() throws Exception {
                     fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
                     return null;
                 }
-            });
-            fail();
-        } catch (FailingHttpStatusCodeException ex) {
-            String response = ex.getResponse().getContentAsString();
-            assertThat(response, containsString(fe.getMessage()));
-            assertThat(response, containsString(cause.getClass().getCanonicalName()));
-            assertThat(response, containsString(getClass().getCanonicalName()));
-        }
+            }));
+        String response = ex.getResponse().getContentAsString();
+        assertThat(response, containsString(fe.getMessage()));
+        assertThat(response, containsString(cause.getClass().getCanonicalName()));
+        assertThat(response, containsString(getClass().getCanonicalName()));
     }
 }

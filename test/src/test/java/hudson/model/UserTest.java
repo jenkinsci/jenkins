@@ -36,8 +36,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -77,7 +77,6 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
@@ -407,15 +406,7 @@ public class UserTest {
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
-        try{
-            user.doConfigSubmit(null, null);
-            fail("User should not have permission to configure another user.");
-        }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        }
+        assertThrows("User should not have permission to configure another user.", AccessDeniedException3.class, () -> user.doConfigSubmit(null, null));
         form = j.createWebClient().withBasicCredentials(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
 
         form.getInputByName("_.fullName").setValueAttribute("John");
@@ -540,17 +531,11 @@ public class UserTest {
         // User can change only own token
         SecurityContextHolder.getContext().setAuthentication(bob.impersonate2());
         bob.getProperty(ApiTokenProperty.class).changeApiToken();
-        try {
-            alice.getProperty(ApiTokenProperty.class).changeApiToken();
-            fail("Bob should not be authorized to change alice's token");
-        } catch (AccessDeniedException expected) { }
+        assertThrows("Bob should not be authorized to change alice's token", AccessDeniedException3.class, () -> alice.getProperty(ApiTokenProperty.class).changeApiToken());
 
         // ANONYMOUS2 can not change any token
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
-        try {
-            alice.getProperty(ApiTokenProperty.class).changeApiToken();
-            fail("Anonymous should not be authorized to change alice's token");
-        } catch (AccessDeniedException expected) { }
+        assertThrows("Anonymous should not be authorized to change alice's token", AccessDeniedException3.class, () -> alice.getProperty(ApiTokenProperty.class).changeApiToken());
     }
 
     @Issue("SECURITY-243")

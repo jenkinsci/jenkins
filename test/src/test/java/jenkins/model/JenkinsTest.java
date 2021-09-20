@@ -34,8 +34,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -718,12 +718,8 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         WebClient wc = j.createWebClient();
 
-        try {
-            wc.goTo("login123");
-            fail("Page should be protected.");
-        } catch (FailingHttpStatusCodeException e) {
-            assertThat(e.getStatusCode(), is(403));
-        }
+        FailingHttpStatusCodeException e = assertThrows("Page should be protected.", FailingHttpStatusCodeException.class, () -> wc.goTo("login123"));
+        assertThat(e.getStatusCode(), is(403));
     }
 
     @Issue("SECURITY-2047")

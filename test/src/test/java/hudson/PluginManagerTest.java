@@ -27,8 +27,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -177,12 +177,7 @@ public class PluginManagerTest {
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);
         try {
-            try {
-                ucl.loadClass("No such class");
-                fail();
-            } catch (ClassNotFoundException e) {
-                // as expected
-            }
+            assertThrows(ClassNotFoundException.class, () -> ucl.loadClass("No such class"));
 
             ucl.loadClass(Hudson.class.getName());
         } finally {
@@ -270,11 +265,7 @@ public class PluginManagerTest {
         }
         
         // before load depender, of course failed to call Depender.getValue()
-        try {
-            callDependerValue();
-            fail();
-        } catch (ClassNotFoundException ex) {
-        }
+        assertThrows(ClassNotFoundException.class, this::callDependerValue);
         
         // No extensions exist.
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
@@ -306,17 +297,10 @@ public class PluginManagerTest {
         assertEquals("depender", callDependerValue());
         
         // before load dependee, of course failed to list extensions for dependee.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
         // Extension extending a dependee class can't be loaded either
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension");
-            fail();
-        } catch( NoClassDefFoundError ex ){}
-        
+        assertThrows(NoClassDefFoundError.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension"));
+
         // Load dependee.
         {
             dynamicLoad("dependee.hpi");
@@ -360,12 +344,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-21486")
@@ -381,11 +360,7 @@ public class PluginManagerTest {
         }
 
         // dependee is not loaded so we cannot list any extension for it.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
     }
 
     @Issue("JENKINS-21486")
@@ -396,12 +371,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
 
@@ -413,12 +383,7 @@ public class PluginManagerTest {
         }
 
         // Load depender 0.0.2, depending optionally on dependee 0.0.2
-        try {
-            dynamicLoad("depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-12753")
@@ -430,12 +395,7 @@ public class PluginManagerTest {
         File timestamp = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher/.timestamp2");
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
-        try {
-            r.jenkins.getPluginManager().dynamicLoad(jpi);
-            fail("should not have worked");
-        } catch (RestartRequiredException x) {
-            // good
-        }
+        assertThrows(RestartRequiredException.class, () -> r.jenkins.getPluginManager().dynamicLoad(jpi));
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 

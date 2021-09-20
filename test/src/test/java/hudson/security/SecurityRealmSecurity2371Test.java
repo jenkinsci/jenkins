@@ -23,6 +23,9 @@
  */
 package hudson.security;
 
+import static org.junit.Assert.assertThrows;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import java.util.Arrays;
 import java.util.List;
@@ -68,12 +71,7 @@ public class SecurityRealmSecurity2371Test {
             j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toEveryone().grant(Jenkins.ADMINISTER).everywhere().to(USERNAME));
             final JenkinsRule.WebClient webClient = j.createWebClient();
             webClient.goTo("");
-            try {
-                webClient.goTo("manage");
-                Assert.fail("anonymous session should not be able to go to /manage");
-            } catch (Exception ex) {
-                // OK
-            }
+            assertThrows("anonymous session should not be able to go to /manage", FailingHttpStatusCodeException.class, () -> webClient.goTo("manage"));
             final Cookie anonymousCookie = webClient.getCookieManager().getCookie(SESSION_COOKIE_NAME); // dynamic cookie names are only set when run through Winstone
             webClient.login(USERNAME);
             webClient.goTo("");
@@ -86,12 +84,7 @@ public class SecurityRealmSecurity2371Test {
             // Now ensure the old session was actually invalidated / is not associated with the new auth
             webClient.getCookieManager().clearCookies();
             webClient.getCookieManager().addCookie(anonymousCookie);
-            try {
-                webClient.goTo("manage");
-                Assert.fail("anonymous session should not be able to go to /manage");
-            } catch (Exception ex) {
-                // OK
-            }
+            assertThrows("anonymous session should not be able to go to /manage", FailingHttpStatusCodeException.class, () -> webClient.goTo("manage"));
         } finally {
             System.clearProperty(SecurityRealm.class.getName() + ".sessionFixationProtectionMode");
         }

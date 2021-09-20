@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -97,12 +97,8 @@ public class AbstractItemTest {
             assertThat(checkNameAndReturnError(p, "foo-exists"), equalTo(Messages.Jenkins_NotAllowedName("foo-exists")));
         }
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
-            try {
-                p.doCheckNewName("foo");
-                fail("Expecting AccessDeniedException");
-            } catch (AccessDeniedException3 e) {
-                assertThat(e.permission, equalTo(Item.CREATE));
-            }
+            AccessDeniedException3 e = assertThrows(AccessDeniedException3.class, () -> p.doCheckNewName("foo"));
+            assertThat(e.permission, equalTo(Item.CREATE));
         }
     }
 

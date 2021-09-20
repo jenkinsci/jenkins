@@ -28,14 +28,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import java.io.File;
+import java.io.IOException;
 import javax.inject.Inject;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
@@ -63,15 +64,9 @@ public class DefaultFilePathFilterTest {
         assertEquals("hello", s.getRootPath().act(new LocalCallable(forward)));
         FilePath reverse = new FilePath(new File(r.jenkins.root, "reverse"));
         assertFalse(reverse.exists());
-        try {
-            s.getChannel().call(new ReverseCallable(reverse));
-            fail("should have failed");
-        } catch (Exception x) {
-            // good
-
-            // make sure that the stack trace contains the call site info to help assist diagnosis
-            assertThat(Functions.printThrowable(x), containsString(DefaultFilePathFilterTest.class.getName()+".remotePath"));
-        }
+        IOException x = assertThrows(IOException.class, () -> s.getChannel().call(new ReverseCallable(reverse)));
+        // make sure that the stack trace contains the call site info to help assist diagnosis
+        assertThat(Functions.printThrowable(x), containsString(DefaultFilePathFilterTest.class.getName() + ".remotePath"));
         assertFalse(reverse.exists());
         DefaultFilePathFilter.BYPASS = true;
         s.getChannel().call(new ReverseCallable(reverse));
