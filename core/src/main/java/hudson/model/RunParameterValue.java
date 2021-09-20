@@ -23,13 +23,12 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
+import java.util.Locale;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.util.Locale;
 
 public class RunParameterValue extends ParameterValue {
 

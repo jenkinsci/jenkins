@@ -5,8 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import hudson.model.Run.Summary;
 
+import hudson.model.Run.Summary;
 import org.junit.Before;
 import org.junit.Test;
 

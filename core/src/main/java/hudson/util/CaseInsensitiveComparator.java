@@ -23,8 +23,8 @@
  */
 package hudson.util;
 
-import java.util.Comparator;
 import java.io.Serializable;
+import java.util.Comparator;
 
 /**
  * Case-insensitive string comparator.

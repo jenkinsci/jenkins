@@ -27,6 +27,10 @@ package hudson.tasks;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
+import hudson.Extension;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.util.RunList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,17 +43,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import hudson.util.RunList;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import hudson.Extension;
-import hudson.model.Job;
-import hudson.model.Run;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderDescriptor;
 import jenkins.util.io.CompositeIOException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Default implementation of {@link BuildDiscarder}.

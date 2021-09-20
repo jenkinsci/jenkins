@@ -26,14 +26,13 @@ package hudson.model;
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.util.StreamTaskListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
-import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
+import org.kohsuke.stapler.framework.io.LargeText;
 
 /**
  * {@link Thread} for performing one-off task.

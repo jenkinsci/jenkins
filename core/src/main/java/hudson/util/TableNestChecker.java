@@ -23,20 +23,19 @@
  */
 package hudson.util;
 
-import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.XMLFilter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.apache.commons.jelly.XMLOutput;
-
-import java.util.Locale;
-import java.util.Stack;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import org.apache.commons.jelly.XMLOutput;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * {@link XMLFilter} that checks the proper nesting of table related tags.

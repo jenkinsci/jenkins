@@ -24,13 +24,8 @@
  */
 package hudson.model;
 
-import hudson.security.ACLContext;
-import jenkins.model.DependencyDeclarer;
 import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import jenkins.util.DirectedGraph;
-import jenkins.util.DirectedGraph.SCC;
-
+import hudson.security.ACLContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.util.DirectedGraph;
+import jenkins.util.DirectedGraph.SCC;
 
 /**
  * Maintains the build dependencies between {@link AbstractProject}s

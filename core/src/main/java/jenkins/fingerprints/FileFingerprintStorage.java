@@ -24,6 +24,8 @@
 package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -32,17 +34,6 @@ import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.FingerprintFacet;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
@@ -53,6 +44,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jenkins.model.FingerprintFacet;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Default file system storage implementation for fingerprints.

@@ -3,24 +3,23 @@ package hudson.util;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 /**
  * Rewrites XML files by looking for Secrets that are stored with the old key and replaces them

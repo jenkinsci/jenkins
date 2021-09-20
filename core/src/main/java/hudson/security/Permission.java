@@ -23,10 +23,9 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import net.sf.json.util.JSONUtils;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,9 +33,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
+import jenkins.model.Jenkins;
+import net.sf.json.util.JSONUtils;
 import org.jvnet.localizer.Localizable;
 
 /**

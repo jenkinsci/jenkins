@@ -4,14 +4,13 @@ import static org.junit.Assert.assertNotNull;
 
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi

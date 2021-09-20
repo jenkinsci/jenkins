@@ -23,14 +23,13 @@
  */
 package hudson.cli;
 
-import java.util.Collection;
-
+import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.Extension;
-import jenkins.model.ModifiableTopLevelItemGroup;
+import java.util.Collection;
 import jenkins.model.Jenkins;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
 /**

@@ -9,11 +9,10 @@ import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins.MasterComputer;
-import org.jenkinsci.Symbol;
-
 import java.io.IOException;
 import java.util.stream.Collectors;
+import jenkins.model.Jenkins.MasterComputer;
+import org.jenkinsci.Symbol;
 
 /**
  * {@link EnvironmentContributor} that adds the basic set of environment variables that

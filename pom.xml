@@ -509,6 +509,7 @@ THE SOFTWARE.
           <configuration>
             <java>
               <endWithNewline />
+              <importOrder />
               <removeUnusedImports />
             </java>
           </configuration>

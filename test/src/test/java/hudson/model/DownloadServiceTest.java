@@ -4,15 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import hudson.model.DownloadService.Downloadable;
+import hudson.tasks.Maven;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.ToolInstallation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import hudson.tasks.Maven;
-import hudson.tools.DownloadFromUrlInstaller;
-import hudson.tools.ToolInstallation;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.jvnet.hudson.test.WithoutJenkins;

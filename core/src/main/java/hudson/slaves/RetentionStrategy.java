@@ -23,10 +23,11 @@
  */
 package hudson.slaves;
 
-import hudson.ExtensionPoint;
-import hudson.Util;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -35,15 +36,13 @@ import hudson.model.Queue;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import net.jcip.annotations.GuardedBy;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.

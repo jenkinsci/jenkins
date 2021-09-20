@@ -1,13 +1,11 @@
 package hudson.util;
 
+import static hudson.Util.fileToPath;
+
 import hudson.Functions;
 import hudson.Util;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import org.apache.commons.io.LineIterator;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -20,11 +18,12 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static hudson.Util.fileToPath;
+import org.apache.commons.io.LineIterator;
 
 /**
  * Adds more to commons-io.

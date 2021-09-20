@@ -24,20 +24,20 @@
 
 package jenkins.security;
 
+import static org.hamcrest.Matchers.is;
+
 import hudson.remoting.ClassFilter;
 import java.io.File;
 import java.util.logging.Level;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-
 import jenkins.util.BuildListenerAdapter;
 import jenkins.util.TreeString;
 import jenkins.util.TreeStringBuilder;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import static org.hamcrest.Matchers.is;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;

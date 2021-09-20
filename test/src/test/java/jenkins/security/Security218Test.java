@@ -1,5 +1,9 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.fail;
+
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
@@ -7,23 +11,18 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import java.io.File;
-import org.apache.tools.ant.util.JavaEnvUtils;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.util.JavaEnvUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
-import static org.hamcrest.Matchers.containsString;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
 /**

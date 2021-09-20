@@ -24,13 +24,14 @@
 
 package hudson.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.FreeStyleProject;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Locale;
 import org.apache.commons.io.input.NullInputStream;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

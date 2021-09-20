@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;

@@ -38,11 +38,7 @@ import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.util.VariableResolver;
-
 import hudson.util.XStream2;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -53,6 +49,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * XML DOM like structure to preserve a portion of XStream data as-is, so that you can

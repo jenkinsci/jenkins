@@ -24,16 +24,16 @@
 
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import java.net.HttpURLConnection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.Item;
 import hudson.model.RootAction;
+import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;

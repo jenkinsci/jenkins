@@ -27,6 +27,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.RestrictedSince;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import java.awt.Font;
+import java.io.IOException;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
@@ -34,9 +36,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import java.awt.Font;
-import java.io.IOException;
 
 /**
  * Chart generation utility code around JFreeChart.

@@ -27,11 +27,9 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
-
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
+import org.kohsuke.args4j.Argument;
 
 /**
  * CLI Command, which moves the node to the online state.

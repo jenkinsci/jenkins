@@ -23,18 +23,16 @@
  */
 package hudson.model;
 
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.StaplerRequest;
-import org.jvnet.tiger_types.Types;
-
-import java.util.List;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
-
 import net.sf.json.JSONObject;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Descriptor} for {@link JobProperty}.

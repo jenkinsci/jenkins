@@ -24,6 +24,9 @@
 
 package hudson.tools;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -39,15 +42,10 @@ import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
-
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.io.IOException;
 import java.util.List;
-
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
