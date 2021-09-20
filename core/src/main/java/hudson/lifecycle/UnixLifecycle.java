@@ -28,14 +28,15 @@ import static hudson.util.jna.GNUCLibrary.F_GETFD;
 import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
-import com.sun.akuma.JavaVMArguments;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 import hudson.Platform;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.JavaVMArguments;
 
 /**
  * {@link Lifecycle} implementation when Hudson runs on the embedded
@@ -48,15 +49,12 @@ import jenkins.model.Jenkins;
  * @since 1.304
  */
 public class UnixLifecycle extends Lifecycle {
-    private JavaVMArguments args;
+    private List<String> args;
     private Throwable failedToObtainArgs;
 
     public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
-
-            // if we are running as daemon, don't fork into background one more time during restart
-            args.remove("--daemon");
         } catch (UnsupportedOperationException | LinkageError e) {
             // can't restart / see JENKINS-3875
             failedToObtainArgs = e;

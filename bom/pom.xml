@@ -265,11 +265,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
-        <artifactId>akuma</artifactId>
-        <version>1.10</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke</groupId>
         <artifactId>libpam4j</artifactId>
         <version>1.11</version>
       </dependency>
