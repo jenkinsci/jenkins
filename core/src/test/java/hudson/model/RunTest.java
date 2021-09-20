@@ -233,10 +233,10 @@ public class RunTest {
     @Test
     public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final Jenkins group = Mockito.mock(Jenkins.class);
+        Mockito.when(group.getFullName()).thenReturn("j");
         final Job j = Mockito.mock(Job.class);
 
         Mockito.when(j.getParent()).thenReturn(group);
-        Mockito.when(group.getFullName()).thenReturn("j");
         Mockito.when(j.assignBuildNumber()).thenReturn(1, 2);
 
         Run r1 = new Run(j) {};

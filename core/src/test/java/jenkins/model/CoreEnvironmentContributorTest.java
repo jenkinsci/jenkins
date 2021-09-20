@@ -1,8 +1,9 @@
 package jenkins.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import hudson.EnvVars;
 import hudson.model.Computer;
@@ -13,17 +14,11 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CoreEnvironmentContributorTest {
     CoreEnvironmentContributor instance;
 
@@ -35,9 +30,6 @@ public class CoreEnvironmentContributorTest {
     @Mock
     TaskListener listener;
     
-    @Mock
-    Jenkins jenkins;
-
     @After
     public void tearDown() throws Exception {
         mocks.close();
@@ -51,20 +43,26 @@ public class CoreEnvironmentContributorTest {
 
     @Issue("JENKINS-19307")
     @Test
-    @PrepareForTest(fullyQualifiedNames={"hudson.model.Computer", "jenkins.model.Jenkins"})
     public void buildEnvironmentForJobShouldntUseCurrentComputer() throws IOException, InterruptedException {
-        PowerMockito.mockStatic(Computer.class);
-        PowerMockito.mockStatic(Jenkins.class);
-        PowerMockito.when(Jenkins.get()).thenReturn(jenkins);
-        when(jenkins.getRootDir()).thenReturn(new File("."));
-        
-        EnvVars env = new EnvVars();
-        instance.buildEnvironmentFor(job, env, listener);
-        
-        // currentComputer shouldn't be called since it relates to a running build,
-        // which is not the case for calls of this method (e.g. polling) 
-        verifyStatic(Computer.class, times(0));
-        Computer.currentComputer();
+        Computer computer = mock(Computer.class);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (
+                MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class);
+                MockedStatic<Computer> mockedComputer = mockStatic(Computer.class)
+        ) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+            mocked.when(Computer::currentComputer).thenReturn(computer);
+
+            when(jenkins.getRootDir()).thenReturn(new File("."));
+
+            EnvVars env = new EnvVars();
+            instance.buildEnvironmentFor(job, env, listener);
+
+            // currentComputer shouldn't be called since it relates to a running build,
+            // which is not the case for calls of this method (e.g. polling)
+            mockedComputer.verify(Computer::currentComputer, times(0));
+            Computer.currentComputer();
+        }
     }
 
 }
