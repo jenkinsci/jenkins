@@ -42,6 +42,8 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.8.2</xmlunit.version>
+    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
+    <findbugs.threshold>High</findbugs.threshold>
   </properties>
 
   <dependencyManagement>

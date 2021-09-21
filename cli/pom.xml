@@ -15,8 +15,6 @@
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
-    <findbugs.threshold>Medium</findbugs.threshold>
   </properties>
 
   <dependencyManagement>
