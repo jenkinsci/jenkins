@@ -1,23 +1,22 @@
 package jenkins.security.s2m;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.Roles;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Inspects {@link Callable}s that run on the master.

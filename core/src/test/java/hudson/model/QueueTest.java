@@ -1,5 +1,12 @@
 package hudson.model;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,14 +15,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueueTest {

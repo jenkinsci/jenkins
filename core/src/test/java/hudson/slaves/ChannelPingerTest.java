@@ -7,6 +7,10 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
+import hudson.remoting.Channel;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,11 +20,6 @@ import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import hudson.remoting.Channel;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ChannelPinger.class)

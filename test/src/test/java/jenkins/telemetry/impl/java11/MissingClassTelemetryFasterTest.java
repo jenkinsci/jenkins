@@ -23,20 +23,19 @@
  */
 package jenkins.telemetry.impl.java11;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.LoggerRule;
-
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
-
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests without a running Jenkins for Java11 Telemetry of ClassNotFoundException.

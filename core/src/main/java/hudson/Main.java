@@ -23,28 +23,27 @@
  */
 package hudson;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.util.SystemProperties;
+import com.thoughtworks.xstream.core.util.Base64Encoder;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
-import com.thoughtworks.xstream.core.util.Base64Encoder;
 import hudson.util.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.nio.charset.Charset;
+import jenkins.util.SystemProperties;
 
 /**
  * Entry point to Hudson from command line.

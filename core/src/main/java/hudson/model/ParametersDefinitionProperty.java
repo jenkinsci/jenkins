@@ -24,6 +24,10 @@
  */
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
@@ -35,10 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;

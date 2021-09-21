@@ -6,11 +6,10 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.IOUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.io.IOException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class SettingsPathHelper {

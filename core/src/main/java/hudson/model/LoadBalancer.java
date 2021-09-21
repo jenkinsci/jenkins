@@ -31,7 +31,6 @@ import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -24,13 +24,13 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.junit.Assert.assertEquals;
 
 import hudson.model.Computer;
@@ -38,7 +38,6 @@ import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

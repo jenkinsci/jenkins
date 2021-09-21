@@ -26,8 +26,8 @@ package hudson.util;
 
 import com.gargoylesoftware.htmlunit.WebResponseListener;
 import hudson.model.FreeStyleProject;
-import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import org.junit.Assert;
 import org.junit.Rule;

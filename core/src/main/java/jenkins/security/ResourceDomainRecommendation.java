@@ -28,6 +28,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -35,8 +36,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
 
 /**
  * Recommend use of {@link ResourceDomainConfiguration} to users with the system property

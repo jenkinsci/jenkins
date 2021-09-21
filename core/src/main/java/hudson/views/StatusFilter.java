@@ -23,18 +23,17 @@
  */
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.ParameterizedJobMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Job Filter that will filter jobs based on its disabled status

@@ -23,9 +23,20 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,18 +46,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi

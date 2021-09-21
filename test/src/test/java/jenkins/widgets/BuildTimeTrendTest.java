@@ -23,6 +23,11 @@
  */
 package jenkins.widgets;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -38,6 +43,10 @@ import hudson.model.RunMap;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.slaves.DumbSlave;
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.SortedMap;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,16 +54,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.SortedMap;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class BuildTimeTrendTest {
 

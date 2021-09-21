@@ -23,12 +23,12 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
-
 import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import jenkins.model.Jenkins;
 
 /**
  * Marker interface that designates extensible components

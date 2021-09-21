@@ -24,17 +24,14 @@
 package jenkins.security.apitoken;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Saveable;
 import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class ApiTokenStats implements Saveable {

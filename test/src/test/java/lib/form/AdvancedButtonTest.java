@@ -18,7 +18,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 
-
 /**
  *
  *

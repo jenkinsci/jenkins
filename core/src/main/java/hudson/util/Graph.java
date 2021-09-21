@@ -24,26 +24,25 @@
 package hudson.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Calendar;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import jenkins.util.SystemProperties;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.Plot;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletOutputStream;
-import javax.imageio.ImageIO;
-import java.io.IOException;
-import java.util.Calendar;
-import java.awt.image.BufferedImage;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.HeadlessException;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * A JFreeChart-generated graph that's bound to UI.

@@ -35,10 +35,10 @@
 // ========================================================================
 package hudson.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
 
 /* ------------------------------------------------------------ */
 /** StringTokenizer with Quoting support.

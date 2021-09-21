@@ -23,6 +23,14 @@
  */
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
@@ -33,36 +41,24 @@ import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
-
-import jenkins.security.SlaveToMasterCallable;
-import jenkins.slaves.RemotingWorkDirSettings;
-
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
-import org.jvnet.hudson.test.TestExtension;
-
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.awt.GraphicsEnvironment;
 import java.util.logging.Level;
-import static org.hamcrest.Matchers.instanceOf;
+import jenkins.security.SlaveToMasterCallable;
+import jenkins.slaves.RemotingWorkDirSettings;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**

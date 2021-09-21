@@ -25,8 +25,8 @@ package jenkins.model;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import hudson.model.JDK;
 
+import hudson.model.JDK;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;

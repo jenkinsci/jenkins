@@ -23,42 +23,39 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.ParametersAction;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.ParameterDefinition;
-import hudson.Extension;
-import hudson.AbortException;
-import hudson.model.Queue;
 import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.triggers.SCMTriggerItem;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-
-import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
-import jenkins.triggers.SCMTriggerItem;
 
 /**
  * Builds a job, and optionally waits until its completion.

@@ -14,7 +14,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.LogRotator;
 import hudson.util.RobustReflectionConverter;
-
 import java.io.IOException;
 
 /**

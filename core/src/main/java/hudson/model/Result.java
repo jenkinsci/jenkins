@@ -25,11 +25,13 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.init.Initializer;
 import hudson.util.EditDistance;
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -39,12 +41,6 @@ import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.CustomExportedBean;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The build outcome.

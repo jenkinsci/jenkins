@@ -23,10 +23,10 @@
  */
 package hudson.util;
 
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link ThreadFactory} that creates a thread, which in turn displays a stack trace

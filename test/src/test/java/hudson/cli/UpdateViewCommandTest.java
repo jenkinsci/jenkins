@@ -36,7 +36,6 @@ import hudson.model.ListView;
 import hudson.model.MyView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

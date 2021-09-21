@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
@@ -32,10 +33,8 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.NamingThreadFactory;
 import hudson.util.NullStream;
-import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
-import org.apache.commons.io.input.NullInputStream;
-
+import hudson.util.StreamCopyThread;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

@@ -23,6 +23,8 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -32,11 +34,7 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-
 import java.io.IOException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Receives notifications about status changes of {@link Computer}s.

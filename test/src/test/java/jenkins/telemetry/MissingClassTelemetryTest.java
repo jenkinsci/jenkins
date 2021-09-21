@@ -23,10 +23,20 @@
  */
 package jenkins.telemetry;
 
+import static org.junit.Assert.assertEquals;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import net.sf.json.JSONArray;
@@ -40,17 +50,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * This test needs to be here to be able to modify the {@link Telemetry#ENDPOINT} as it's package protected.

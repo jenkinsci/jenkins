@@ -24,11 +24,10 @@
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-
 import java.util.Collections;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Builder step that wants to integrate local environment filter rules should implement this interface

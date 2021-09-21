@@ -23,15 +23,14 @@
  */
 package hudson.node_monitors;
 
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
-import hudson.Extension;
+import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
 
 /**
  * Discovers the architecture of the system to display in the agent list page.

@@ -23,6 +23,10 @@
  */
 package jenkins.install;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+
 import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -42,13 +46,12 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-
 import org.apache.tools.ant.filters.StringInputStream;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -58,15 +61,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.JenkinsRule;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Tests of {@link SetupWizard}.

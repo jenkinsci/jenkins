@@ -24,16 +24,17 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.ExtensionList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.TestExtension;
 

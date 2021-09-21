@@ -17,21 +17,6 @@
  */
 package jenkins.util;
 
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
-import org.apache.tools.ant.BuildEvent;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.SubBuildListener;
-import org.apache.tools.ant.launch.Locator;
-import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.util.CollectionUtils;
-import org.apache.tools.ant.util.FileUtils;
-import org.apache.tools.ant.util.JavaEnvUtils;
-import org.apache.tools.ant.util.LoaderUtils;
-import org.apache.tools.ant.util.ReflectUtil;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ByteArrayOutputStream;
@@ -59,6 +44,20 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.SubBuildListener;
+import org.apache.tools.ant.launch.Locator;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.util.CollectionUtils;
+import org.apache.tools.ant.util.FileUtils;
+import org.apache.tools.ant.util.JavaEnvUtils;
+import org.apache.tools.ant.util.LoaderUtils;
+import org.apache.tools.ant.util.ReflectUtil;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Used to load classes within ant with a different classpath from

@@ -26,10 +26,10 @@ package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
-
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,12 +39,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
-
-import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

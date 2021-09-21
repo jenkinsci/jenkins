@@ -3,11 +3,11 @@ package hudson.node_monitors;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ClockDifference;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

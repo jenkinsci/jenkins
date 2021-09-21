@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.model.Saveable;
-
 import java.io.Closeable;
 import java.io.IOException;
 

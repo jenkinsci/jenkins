@@ -23,10 +23,9 @@
  */
 package org.jenkins.ui.icon;
 
-import org.apache.commons.jelly.JellyContext;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.jelly.JellyContext;
 
 /**
  * An icon set.

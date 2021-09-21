@@ -25,11 +25,10 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.Node.Mode;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
 
 /**
  * Adds the configuration regarding building on the built-in node.

@@ -42,8 +42,12 @@ import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
-import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BuildStep;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,11 +58,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi

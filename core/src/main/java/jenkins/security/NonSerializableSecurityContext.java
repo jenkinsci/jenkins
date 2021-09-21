@@ -15,7 +15,6 @@
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import javax.servlet.http.HttpSession;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

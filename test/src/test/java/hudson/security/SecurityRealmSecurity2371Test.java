@@ -24,6 +24,8 @@
 package hudson.security;
 
 import com.gargoylesoftware.htmlunit.util.Cookie;
+import java.util.Arrays;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -32,9 +34,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Split from {@link SecurityRealmTest} because this is parameterized.

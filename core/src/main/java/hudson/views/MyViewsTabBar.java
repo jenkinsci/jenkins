@@ -23,19 +23,19 @@
  */
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.model.MyViewsProperty;
 import hudson.model.View;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import hudson.model.MyViewsProperty;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;

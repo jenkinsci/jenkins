@@ -27,7 +27,6 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Job;
 import hudson.model.Run;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

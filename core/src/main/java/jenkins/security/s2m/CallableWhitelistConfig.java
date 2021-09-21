@@ -1,12 +1,11 @@
 package jenkins.security.s2m;
 
 import hudson.Util;
-import org.jenkinsci.remoting.RoleSensitive;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.jenkinsci.remoting.RoleSensitive;
 
 /**
  * Set of fully-qualified {@link RoleSensitive} (mostly Callable) class names that are whitelisted by admin.

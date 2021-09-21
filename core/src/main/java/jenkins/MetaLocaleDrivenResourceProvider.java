@@ -23,16 +23,15 @@
  */
 package jenkins;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import java.net.URL;
 import org.apache.log4j.Logger;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.LocaleDrivenResourceProvider;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.net.URL;
 
 /**
  * Look up plugin-provided localized resources for the given URL.
