@@ -103,15 +103,6 @@ THE SOFTWARE.
                     placeholder="${%Password}"
                   />
                 </div>
-                <input type="hidden" name="from" value="${from}" />
-                <div class="submit formRow"><f:submit value="${%signIn}" /></div>
-                <!-- focus the username field -->
-                <script type="text/javascript">
-                  document.getElementById('j_username').focus();
-                  var checkBoxClick = function(event) {
-                    document.getElementById('remember_me').click();
-                  }
-                </script>
 
                 <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
                   <!-- remember me service only available for Spring Security -->
@@ -139,6 +130,15 @@ THE SOFTWARE.
                     </label>
                   </div>
                 </j:if>
+                <input type="hidden" name="from" value="${from}" />
+                <div class="submit formRow"><f:submit value="${%signIn}" /></div>
+                <!-- focus the username field -->
+                <script type="text/javascript">
+                  document.getElementById('j_username').focus();
+                  var checkBoxClick = function(event) {
+                  document.getElementById('remember_me').click();
+                  }
+                </script>
 
               </form>
 
