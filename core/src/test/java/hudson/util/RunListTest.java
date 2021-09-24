@@ -24,23 +24,17 @@
 package hudson.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Run;
 import java.util.ArrayList;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Ignacio Albors
  */
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class RunListTest {
 
 	// RunList for byTimestamp tests
@@ -48,8 +42,8 @@ public class RunListTest {
 
 	// RunList<Run> is ordered from most to least recent
 	private void setUpByTimestampRuns() {
-		Run r1 = PowerMockito.mock(Run.class);
-		Run r2 = PowerMockito.mock(Run.class);
+		Run r1 = mock(Run.class);
+		Run r2 = mock(Run.class);
 
 		when(r1.getNumber()).thenReturn(1);
 		when(r2.getNumber()).thenReturn(2);
@@ -64,7 +58,6 @@ public class RunListTest {
 		rlist = RunList.fromRuns(list);
 	}
 
-	@PrepareForTest(Run.class)
 	@Test
 	public void byTimestampAllRuns() {
 		setUpByTimestampRuns();
@@ -74,7 +67,6 @@ public class RunListTest {
 	}
 
     @Issue("JENKINS-21159")
-	@PrepareForTest(Run.class)
 	@Test
 	@SuppressWarnings("deprecation")
 	public void byTimestampFirstRun() {
@@ -85,7 +77,6 @@ public class RunListTest {
 		assertEquals(1, tested.getFirstBuild().getNumber());
 	}
 
-	@PrepareForTest(Run.class)
 	@Test
 	@SuppressWarnings("deprecation")
 	public void byTimestampLastRun() {
