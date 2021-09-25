@@ -52,7 +52,8 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     public TemporarySpaceMonitor() {}
 
     public DiskSpace getFreeSpace(Computer c) {
-        return DESCRIPTOR.get(c);
+        DiskSpaceMonitorDescriptor descriptor = (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
+        return descriptor != null ? descriptor.get(c) : null;
     }
 
     @Override
@@ -96,7 +97,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      */
     @Deprecated
     public static DiskSpaceMonitorDescriptor install() {
-        return DESCRIPTOR;
+        return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
     }
     
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
