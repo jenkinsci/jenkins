@@ -36,6 +36,8 @@ import java.text.ParseException;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -67,6 +69,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      *      Use injection
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
     @Extension @Symbol("tmpSpace")

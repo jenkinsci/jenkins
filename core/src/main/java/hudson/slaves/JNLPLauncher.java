@@ -179,6 +179,7 @@ public class JNLPLauncher extends ComputerLauncher {
      *      Use {@link Jenkins#getDescriptor(Class)}
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
     /**
