@@ -23,13 +23,12 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.util.DescriptorList;
-import jenkins.model.Jenkins;
-
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * Participates in the rendering of HTML pages for all pages of Hudson.

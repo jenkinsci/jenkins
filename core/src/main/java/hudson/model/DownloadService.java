@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -30,12 +32,10 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
-import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
 import hudson.util.TextFile;
-import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;

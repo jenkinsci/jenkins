@@ -23,6 +23,13 @@
  */
 package jenkins.security;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -30,13 +37,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
-import org.jvnet.hudson.test.TestExtension;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -44,14 +44,13 @@ import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.TestExtension;
 
 public class Security637Test {
     

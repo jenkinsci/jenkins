@@ -23,18 +23,17 @@
  */
 package hudson.init;
 
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.STARTED;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import hudson.Extension;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.jvnet.hudson.reactor.Task;
-
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.METHOD;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
-
-import static hudson.init.InitMilestone.STARTED;
-import static hudson.init.InitMilestone.COMPLETED;
 
 /**
  * Placed on methods to indicate that this method is to be run during the Jenkins start up to perform

@@ -24,6 +24,10 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -31,10 +35,7 @@ import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
 import org.junit.Test;
-
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author pjanouse
@@ -54,8 +55,8 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, succeededSilently());
@@ -73,8 +74,8 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, succeededSilently());
@@ -92,8 +93,8 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2");
 
         assertThat(result, succeededSilently());
@@ -110,8 +111,8 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject", "aProject");
 
         assertThat(result, succeededSilently());

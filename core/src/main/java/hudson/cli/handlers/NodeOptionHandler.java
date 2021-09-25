@@ -25,7 +25,6 @@ package hudson.cli.handlers;
 
 import hudson.model.Node;
 import jenkins.model.Jenkins;
-
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;

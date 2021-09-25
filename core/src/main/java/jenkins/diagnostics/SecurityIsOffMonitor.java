@@ -2,13 +2,12 @@ package jenkins.diagnostics;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
 
 /**
  * Unsecured Jenkins is, well, insecure.

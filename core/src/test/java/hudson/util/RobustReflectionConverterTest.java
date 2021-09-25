@@ -30,12 +30,10 @@ import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.junit.Test;
 
 /**
@@ -61,8 +59,10 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        final ConversionException e = assertThrows(ConversionException.class, () -> read(new XStream()));
-        assertThat(e.getMessage(), containsString("z"));
+        XStream xs = new XStream();
+        xs.allowTypes(new Class[] {Point.class});
+        final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
+        assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
     @Test

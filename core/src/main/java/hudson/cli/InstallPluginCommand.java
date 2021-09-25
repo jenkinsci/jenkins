@@ -26,26 +26,25 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.PluginManager;
-import hudson.util.VersionNumber;
-import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
 import hudson.util.EditDistance;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
+import hudson.util.VersionNumber;
 import java.io.File;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.

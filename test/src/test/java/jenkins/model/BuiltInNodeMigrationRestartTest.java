@@ -1,5 +1,15 @@
 package jenkins.model;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -10,17 +20,6 @@ import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.lang.reflect.Method;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class BuiltInNodeMigrationRestartTest {
     @Rule
@@ -92,6 +91,7 @@ public class BuiltInNodeMigrationRestartTest {
             public static final Logger LOGGER = Logger.getLogger(RuleRunnerImpl.class.getName());
             private Method method;
 
+            @Override
             public void setup(JenkinsRule jenkinsRule, LocalDataOnce recipe) throws Exception {
                 Description desc = jenkinsRule.getTestDescription();
                 method = desc.getTestClass().getMethod((desc.getMethodName()));

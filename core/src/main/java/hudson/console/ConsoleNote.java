@@ -23,18 +23,17 @@
  */
 package hudson.console;
 
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
 import hudson.model.Run;
+import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tools.ant.BuildListener;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -49,12 +48,12 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
-import hudson.remoting.ClassFilter;
+import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tools.ant.BuildListener;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -241,23 +240,25 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(preamble,PREAMBLE))
                 return null;    // not a valid preamble
 
-            DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
-            int macSz = - decoded.readInt();
             byte[] mac;
-            int sz;
-            if (macSz > 0) { // new format
-                mac = new byte[macSz];
-                decoded.readFully(mac);
-                sz = decoded.readInt();
-                if (sz < 0) {
-                    throw new IOException("Corrupt stream");
+            byte[] buf;
+            try (DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in))) {
+                int macSz = -decoded.readInt();
+                int sz;
+                if (macSz > 0) { // new format
+                    mac = new byte[macSz];
+                    decoded.readFully(mac);
+                    sz = decoded.readInt();
+                    if (sz < 0) {
+                        throw new IOException("Corrupt stream");
+                    }
+                } else {
+                    mac = null;
+                    sz = -macSz;
                 }
-            } else {
-                mac = null;
-                sz = - macSz;
+                buf = new byte[sz];
+                decoded.readFully(buf);
             }
-            byte[] buf = new byte[sz];
-            decoded.readFully(buf);
 
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);

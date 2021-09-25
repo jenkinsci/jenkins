@@ -26,11 +26,29 @@
  */
 package jenkins.model;
 
+import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.SYSTEM_CONFIG_LOADED;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
@@ -54,22 +72,11 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import hudson.WebAppMain;
 import hudson.XmlFile;
-import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
-import jenkins.AgentProtocol;
-import jenkins.diagnostics.URICheckEncodingMonitor;
-import jenkins.security.stapler.DoActionFilter;
-import jenkins.security.stapler.StaplerDispatchValidator;
-import jenkins.security.stapler.StaplerFilteredActionListener;
-import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
-import jenkins.security.stapler.TypedFilter;
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
-import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
+import hudson.init.Initializer;
 import hudson.init.TermMilestone;
 import hudson.init.TerminatorFinder;
 import hudson.lifecycle.Lifecycle;
@@ -156,6 +163,7 @@ import hudson.security.PermissionScope;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
@@ -185,9 +193,11 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
+import hudson.util.LogTaskListener;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PluginServletFilter;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
@@ -198,24 +208,76 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.PrintWriter;
+import java.net.BindException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.crypto.SecretKey;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.AgentProtocol;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
-import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
+import jenkins.security.SecurityListener;
+import jenkins.security.stapler.DoActionFilter;
+import jenkins.security.stapler.StaplerDispatchValidator;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.security.stapler.StaplerFilteredActionListener;
+import jenkins.security.stapler.TypedFilter;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import jenkins.util.io.OnMaster;
@@ -236,6 +298,7 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.HttpRedirect;
@@ -249,6 +312,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -256,79 +320,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.verb.POST;
-import org.xml.sax.InputSource;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import javax.crypto.SecretKey;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.BindException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static hudson.Util.fixEmpty;
-import static hudson.Util.fixNull;
-import static hudson.init.InitMilestone.COMPLETED;
-import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import static hudson.init.InitMilestone.JOB_LOADED;
-import static hudson.init.InitMilestone.PLUGINS_PREPARED;
-import static hudson.init.InitMilestone.SYSTEM_CONFIG_LOADED;
-import hudson.init.Initializer;
-import hudson.util.LogTaskListener;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.WebMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.xml.sax.InputSource;
 
 /**
  * Root object of the system.
@@ -915,12 +912,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             // doing this early allows InitStrategy to set environment upfront
-            //Telemetry: add interceptor classloader
-            //These lines allow the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes by this way.
-            if (MissingClassTelemetry.enabled() && !(Thread.currentThread().getContextClassLoader() instanceof CatcherClassLoader)) {
-                Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
-            }
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
@@ -961,20 +952,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
             WebApp webApp = WebApp.get(servletContext);
-
-            //Telemetry: add interceptor classloader
-            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes by this way.
             // JSON binding needs to be able to see all the classes from all the plugins
-
-            ClassLoader classLoaderToAssign;
-            if (MissingClassTelemetry.enabled() && !(pluginManager.uberClassLoader instanceof CatcherClassLoader)) {
-                classLoaderToAssign = new CatcherClassLoader(pluginManager.uberClassLoader);
-            } else {
-                classLoaderToAssign = pluginManager.uberClassLoader;
-            }
-            webApp.setClassLoader(classLoaderToAssign);
-
+            webApp.setClassLoader(pluginManager.uberClassLoader);
             webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
 
             TypedFilter typedFilter = new TypedFilter();
@@ -990,10 +969,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             webApp.setDispatchValidator(new StaplerDispatchValidator());
             webApp.setFilteredDispatchTriggerListener(actionListener);
 
-            //Telemetry: add interceptor classloader
-            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes at this way.
-            adjuncts = new AdjunctManager(servletContext, classLoaderToAssign, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 
@@ -2072,7 +2048,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Label getLabel(String expr) {
         if(expr==null)  return null;
-        expr = hudson.util.QuotedStringTokenizer.unquote(expr);
+        expr = QuotedStringTokenizer.unquote(expr);
         while(true) {
             Label l = labels.get(expr);
             if(l!=null)

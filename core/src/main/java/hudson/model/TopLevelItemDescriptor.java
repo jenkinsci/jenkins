@@ -23,7 +23,12 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.item_category.ItemCategory;
 import org.apache.commons.jelly.Script;
@@ -38,12 +43,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.springframework.security.access.AccessDeniedException;
 
 /**

@@ -23,34 +23,32 @@
  */
 package hudson.model;
 
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
-import hudson.util.FormValidation;
-import hudson.Launcher;
-import hudson.Extension;
 import hudson.EnvVars;
+import hudson.Extension;
+import hudson.Launcher;
 import hudson.slaves.NodeSpecific;
-import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
+import hudson.util.FormValidation;
+import hudson.util.NullStream;
+import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Information about JDK installation.

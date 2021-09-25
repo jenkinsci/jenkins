@@ -24,16 +24,15 @@
 
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
-
 import java.io.IOException;
 import java.util.Collection;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.

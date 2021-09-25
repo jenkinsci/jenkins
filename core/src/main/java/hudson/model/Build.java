@@ -23,27 +23,26 @@
  */
 package hudson.model;
 
+import static hudson.model.Result.FAILURE;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.Recorder;
 import hudson.tasks.Notifier;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
+import hudson.tasks.Recorder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import static hudson.model.Result.FAILURE;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A build of a {@link Project}.

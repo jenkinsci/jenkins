@@ -23,19 +23,18 @@
  */
 package jenkins.security.stapler;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.FunctionList;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.InterceptorAnnotation;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 @Restricted(NoExternalUse.class)
 public class DoActionFilter implements FunctionList.Filter {

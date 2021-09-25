@@ -1,5 +1,10 @@
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
@@ -16,11 +21,6 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

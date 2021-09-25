@@ -32,7 +32,6 @@ import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.util.Iterators;
-
 import java.util.Iterator;
 
 /**

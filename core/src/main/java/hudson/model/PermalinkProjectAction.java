@@ -23,11 +23,10 @@
  */
 package hudson.model;
 
-import jenkins.model.PeepholePermalink;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import jenkins.model.PeepholePermalink;
 
 /**
  * Optional interface for {@link Action}s that are attached

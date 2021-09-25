@@ -206,21 +206,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      Connected to the stderr of the CLI client.
      * @return
      *      Exit code from the CLI command execution
-     *
-     *      <p>
-     *      Jenkins standard exit codes from CLI:
-     *      0 means everything went well.
-     *      1 means further unspecified exception is thrown while performing the command.
-     *      2 means CmdLineException is thrown while performing the command.
-     *      3 means IllegalArgumentException is thrown while performing the command.
-     *      4 mean IllegalStateException is thrown while performing the command.
-     *      5 means AbortException is thrown while performing the command.
-     *      6 means AccessDeniedException is thrown while performing the command.
-     *      7 means BadCredentialsException is thrown while performing the command.
-     *      8-15 are reserved for future usage
-     *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
-     *
-     *      <p>
+     *      <table>
+     *      <caption>Jenkins standard exit codes from CLI</caption>
+     *      <tr><th>Code</th><th>Definition</th></tr>
+     *      <tr><td>0</td><td>everything went well.</td></tr>
+     *      <tr><td>1</td><td>further unspecified exception is thrown while performing the command.</td></tr>
+     *      <tr><td>2</td><td>{@link CmdLineException} is thrown while performing the command.</td></tr>
+     *      <tr><td>3</td><td>{@link IllegalArgumentException} is thrown while performing the command.</td></tr>
+     *      <tr><td>4</td><td>{@link IllegalStateException} is thrown while performing the command.</td></tr>
+     *      <tr><td>5</td><td>{@link AbortException} is thrown while performing the command.</td></tr>
+     *      <tr><td>6</td><td>{@link AccessDeniedException} is thrown while performing the command.</td></tr>
+     *      <tr><td>7</td><td>{@link BadCredentialsException} is thrown while performing the command.</td></tr>
+     *      <tr><td>8-15</td><td>are reserved for future usage.</td></tr>
+     *      <tr><td>16+</td><td>a custom CLI exit error code (meaning defined by the CLI command itself)</td></tr>
+     *      </table>
      *      Note: For details - see JENKINS-32273
      */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {

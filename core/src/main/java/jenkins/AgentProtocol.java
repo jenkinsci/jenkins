@@ -1,15 +1,13 @@
 package jenkins;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.TcpSlaveAgentListener;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
 import jenkins.model.Jenkins;
 
 /**

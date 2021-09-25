@@ -23,26 +23,26 @@
  */
 package hudson.logging;
 
-import jenkins.security.MasterToSlaveCallable;
-import org.jvnet.hudson.test.Url;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import hudson.model.Computer;
-import hudson.remoting.VirtualChannel;
-import java.util.List;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Computer;
+import hudson.remoting.VirtualChannel;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.Url;
 
 /**
  * @author Kohsuke Kawaguchi

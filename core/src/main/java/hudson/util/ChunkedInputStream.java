@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-
 /**
  * <p>Transparently coalesces chunks of a HTTP stream that uses
  * Transfer-Encoding chunked.</p>

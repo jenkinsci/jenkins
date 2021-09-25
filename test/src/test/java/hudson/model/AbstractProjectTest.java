@@ -23,6 +23,19 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -52,7 +65,6 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
-
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -67,18 +79,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -159,14 +159,9 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
-        page = page.getAnchorByText("Workspace").click();
-        try {
-            String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
-            page.getAnchorByText(wipeOutLabel);
-            fail("shouldn't find a link");
-        } catch (ElementNotFoundException e) {
-            // OK
-        }
+        HtmlPage workspace = page.getAnchorByText("Workspace").click();
+        String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+        assertThrows("shouldn't find a link", ElementNotFoundException.class, () -> workspace.getAnchorByText(wipeOutLabel));
     }
 
     /**
@@ -488,21 +483,12 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
-        }
+        CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
+        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created1");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
-        }
-
+        e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
+        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {

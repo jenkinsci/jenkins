@@ -23,28 +23,28 @@
  */
 package hudson.util;
 
+import static com.sun.jna.Pointer.NULL;
+import static hudson.util.jna.GNUCLibrary.LIBC;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
+
+import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
-import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import jenkins.agents.AgentComputerUtil;
 import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
-import jenkins.security.SlaveToMasterCallable;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
-import jenkins.util.java.JavaUtils;
-import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.WinpException;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -52,9 +52,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -72,14 +72,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import static com.sun.jna.Pointer.NULL;
+import jenkins.agents.AgentComputerUtil;
+import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.SystemProperties;
-import static hudson.util.jna.GNUCLibrary.LIBC;
-import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.FINEST;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.io.FileUtils;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
+import org.jvnet.winp.WinProcess;
+import org.jvnet.winp.WinpException;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -1051,7 +1051,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public byte[] readFileToByteArray(File file) throws IOException {
-            try (InputStream in = org.apache.commons.io.FileUtils.openInputStream(file)) {
+            try (InputStream in = FileUtils.openInputStream(file)) {
                 return org.apache.commons.io.IOUtils.toByteArray(in);
             }
         }

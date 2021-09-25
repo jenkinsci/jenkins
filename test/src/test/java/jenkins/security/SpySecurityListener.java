@@ -23,14 +23,14 @@
  */
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.springframework.security.core.userdetails.UserDetails;
 
 //TODO temporary solution, should be moved to Jenkins Test Harness project

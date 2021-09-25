@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -34,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

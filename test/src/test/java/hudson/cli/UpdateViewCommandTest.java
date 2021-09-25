@@ -36,11 +36,11 @@ import hudson.model.ListView;
 import hudson.model.MyView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 public class UpdateViewCommandTest {
 
@@ -49,16 +49,16 @@ public class UpdateViewCommandTest {
     @Rule public final JenkinsRule j = new JenkinsRule();
 
     @Before public void setUp() {
-
-        command = new CLICommandInvoker(j, new UpdateViewCommand());
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        command = new CLICommandInvoker(j, new UpdateViewCommand()).asUser("user");
     }
 
     @Test public void updateViewShouldFailWithoutViewConfigurePermission() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("aView")
         ;
@@ -76,8 +76,8 @@ public class UpdateViewCommandTest {
         ListView tv  = new ListView("tView");
         j.jenkins.addView(tv);
         Jenkins.XSTREAM2.addCompatibilityAlias("org.acme.old.Foo", ListView.class);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/testview-foo.xml"))
                 .invokeWithArgs("tView");
 
@@ -87,8 +87,8 @@ public class UpdateViewCommandTest {
     @Test public void updateViewWithWrongViewTypeShouldFail() throws Exception {
         MyView myView = new MyView("aView");
         j.jenkins.addView(myView);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("aView")
                 ;
@@ -102,8 +102,8 @@ public class UpdateViewCommandTest {
 
         j.jenkins.addView(new ListView("aView"));
 
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("aView")
         ;
@@ -119,9 +119,8 @@ public class UpdateViewCommandTest {
     }
 
     @Test public void updateViewShouldFailIfViewDoesNotExist() {
-
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("not_created")
         ;

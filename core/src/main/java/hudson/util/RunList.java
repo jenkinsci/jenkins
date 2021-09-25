@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import java.util.function.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -35,7 +34,6 @@ import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
-
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -47,6 +45,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.

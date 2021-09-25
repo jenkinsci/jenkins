@@ -5,13 +5,12 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionPoint;
+import java.util.Arrays;
+import java.util.Comparator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * @author Kohsuke Kawaguchi

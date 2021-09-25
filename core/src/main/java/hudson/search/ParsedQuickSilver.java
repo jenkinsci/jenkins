@@ -23,14 +23,14 @@
  */
 package hudson.search;
 
+import java.beans.Introspector;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.beans.Introspector;
 
 /**
  * Parsed {@link QuickSilver}s so that {@link SearchIndex} can be easily created.

@@ -25,9 +25,16 @@
  */
 package hudson;
 
+import static hudson.FilePath.TarCompression.GZIP;
+import static hudson.Util.fileToPath;
+import static hudson.Util.fixEmpty;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -59,7 +66,6 @@ import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -68,6 +74,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -93,6 +100,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -110,9 +118,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.FilePathFilter;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
@@ -127,6 +132,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -139,14 +145,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
-import static hudson.FilePath.TarCompression.GZIP;
-import static hudson.Util.fileToPath;
-import static hudson.Util.fixEmpty;
-import java.io.NotSerializableException;
-
-import java.util.Collections;
-import org.apache.tools.ant.BuildException;
-        
 /**
  * {@link File} like object with remoting support.
  *
@@ -2078,7 +2076,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @NonNull
     private static String[] glob(File dir, String includes, String excludes, boolean defaultExcludes) throws IOException {
         if(isAbsolute(includes))
-            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
+            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See https://ant.apache.org/manual/Types/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes,excludes);
         fs.setDefaultexcludes(defaultExcludes);
         DirectoryScanner ds;
@@ -3360,12 +3358,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final Comparator<String> SHORTER_STRING_FIRST = new Comparator<String>() {
-        @Override
-        public int compare(String o1, String o2) {
-            return o1.length()-o2.length();
-        }
-    };
+    private static final Comparator<String> SHORTER_STRING_FIRST = Comparator.comparingInt(String::length);
 
     /**
      * Gets the {@link FilePath} representation of the "~" directory

@@ -1,24 +1,8 @@
 package hudson;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
-import jenkins.model.Jenkins;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
-
-import org.jvnet.hudson.test.Issue;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,6 +10,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.remoting.Callable;
+import hudson.remoting.Which;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import jenkins.model.Jenkins;
+import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
+import org.mockito.stubbing.Answer;
 
 public class PluginWrapperTest {
 
@@ -95,6 +100,35 @@ public class PluginWrapperTest {
         assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
     }
 
+    @Issue("JENKINS-66563")
+    @Test
+    public void insertJarsIntoClassPath() throws Exception {
+        try (AntClassLoader cl = new AntClassLoader()) {
+            assertInjectingJarsWorks(cl);
+        }
+    }
+
+    @Issue("JENKINS-66563")
+    @Test
+    public void insertJarsIntoClassPathURLCL() throws Exception {
+        try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+            assertInjectingJarsWorks(cl);
+        }
+    }
+
+    private void assertInjectingJarsWorks(ClassLoader cl) throws Exception {
+        PluginWrapper pw = pluginWrapper("pw").version("1").classloader(cl).build();
+        Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e1size = countEnumerationElements(e1);
+        // insert the jar with the resource (lets pick on remoting as it should be very stable)
+        File jarFile = Which.jarFile(Callable.class);
+        pw.injectJarsToClasspath(jarFile);
+        Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e2size = countEnumerationElements(e2);
+        assertThat("expect one more element from the updated classloader",
+                   e2size - e1size, is(1));
+    }
+    
     private void assertContains(Throwable ex, String... patterns) {
         String msg = ex.getMessage();
         for (String pattern : patterns) {
@@ -119,6 +153,7 @@ public class PluginWrapperTest {
         private String requiredCoreVersion = "1.0";
         private final List<PluginWrapper.Dependency> deps = new ArrayList<>();
         private final List<PluginWrapper.Dependency> optDeps = new ArrayList<>();
+        private ClassLoader cl = null;
 
         private PluginWrapperBuilder(String name) {
             this.name = name;
@@ -131,6 +166,11 @@ public class PluginWrapperTest {
 
         public PluginWrapperBuilder requiredCoreVersion(String requiredCoreVersion) {
             this.requiredCoreVersion = requiredCoreVersion;
+            return this;
+        }
+
+        public PluginWrapperBuilder classloader(ClassLoader classloader) {
+            this.cl = classloader;
             return this;
         }
 
@@ -164,7 +204,7 @@ public class PluginWrapperTest {
                     new File("/tmp/" + name + ".jpi"),
                     manifest,
                     null,
-                    null,
+                    cl,
                     new File("/tmp/" + name + ".jpi.disabled"),
                     deps,
                     optDeps
@@ -181,6 +221,12 @@ public class PluginWrapperTest {
         assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT"));
         assertTrue(PluginWrapper.isSnapshot("1.0-20180719.153600-1"));
         assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT (private-abcd1234-jqhacker)"));
+    }
+
+    private static int countEnumerationElements(Enumeration<?> enumeration) {
+        int elements = 0;
+        for (;enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
+        return elements;
     }
 
 }

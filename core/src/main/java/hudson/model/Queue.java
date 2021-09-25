@@ -24,59 +24,56 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.util.Iterators.reverse;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.init.Initializer;
-
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import static hudson.util.Iterators.reverse;
-
 import hudson.cli.declarative.CLIResolver;
+import hudson.init.Initializer;
+import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.Executables;
+import hudson.model.queue.FoldableAction;
+import hudson.model.queue.FutureImpl;
+import hudson.model.queue.MappingWorksheet;
+import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.QueueListener;
+import hudson.model.queue.QueueSorter;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.ScheduleResult.Created;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.FutureImpl;
-import hudson.model.queue.MappingWorksheet;
-import hudson.model.queue.MappingWorksheet.Mapping;
-import hudson.model.queue.QueueSorter;
-import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
-import hudson.model.Node.Mode;
-import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.CauseOfBlockage;
-import hudson.model.queue.FoldableAction;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-
 import hudson.security.Permission;
-import hudson.util.Futures;
-import jenkins.security.QueueItemAuthenticatorProvider;
-import jenkins.security.stapler.StaplerAccessibleType;
-import jenkins.util.SystemProperties;
-import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
-import java.util.concurrent.TimeUnit;
-import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-
+import hudson.util.Futures;
+import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -99,39 +96,34 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
-
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.AsynchronousExecution;
+import jenkins.model.queue.CompositeCauseOfBlockage;
 import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
+import jenkins.util.SystemProperties;
+import jenkins.util.Timer;
+import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.http.HttpServletResponse;
-
-import jenkins.model.queue.AsynchronousExecution;
-import jenkins.model.queue.CompositeCauseOfBlockage;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -1683,8 +1675,8 @@ public class Queue extends ResourceController implements Saveable {
                     // of getCauseOfBlockageForItem(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
-                    // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://jenkins-ci.org/issue/27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // See https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                     // for alternative fixes of this issue.
                     updateSnapshot();
                 }
@@ -2078,6 +2070,17 @@ public class Queue extends ResourceController implements Saveable {
          * Use {@link Executables#getParentOf(Queue.Executable)} that avoids this.
          */
         @NonNull SubTask getParent();
+
+        /**
+         * An umbrella executable (such as a {@link Run}) of which this is one part.
+         * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
+         * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
+         * @return a <em>distinct</em> executable (never {@code this}, unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
+         * @since TODO, but implementations can already implement this with a lower core dependency.
+         */
+        default @CheckForNull Executable getParentExecutable() {
+            return null;
+        }
 
         /**
          * Called by {@link Executor} to perform the task.

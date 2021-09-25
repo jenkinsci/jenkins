@@ -24,11 +24,17 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -40,18 +46,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
