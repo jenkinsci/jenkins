@@ -23,10 +23,9 @@
  */
 package jenkins;
 
-import hudson.ExtensionPoint;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionPoint;
 import java.net.URL;
 
 /**

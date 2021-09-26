@@ -25,12 +25,11 @@ package hudson.diagnosis;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-
-import java.util.logging.Logger;
 
 /**
  * Periodically checks the disk usage of {@code JENKINS_HOME},

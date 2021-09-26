@@ -24,11 +24,10 @@
 
 package hudson.slaves;
 
-import hudson.model.Node;
-import hudson.model.EnvironmentSpecific;
-import hudson.model.TaskListener;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.EnvironmentSpecific;
+import hudson.model.Node;
+import hudson.model.TaskListener;
 import java.io.IOException;
 
 /**

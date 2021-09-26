@@ -23,25 +23,19 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
-import hudson.EnvVars;
-import hudson.Functions;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.ChannelClosedException;
-import jenkins.tasks.filters.EnvVarsFilterLocalRule;
-import jenkins.tasks.filters.EnvVarsFilterableBuilder;
-import jenkins.tasks.filters.EnvVarsFilterException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.tasks.filters.EnvVarsFilterException;
+import jenkins.tasks.filters.EnvVarsFilterLocalRule;
+import jenkins.tasks.filters.EnvVarsFilterableBuilder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Common part between {@link Shell} and {@link BatchFile}.

@@ -32,7 +32,6 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeConverterBinding;
-
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;

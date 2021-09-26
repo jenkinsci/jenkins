@@ -23,13 +23,13 @@
  */
 package hudson.util;
 
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 
+import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
-import java.io.IOException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Model object used to display "Hudson is restarting".

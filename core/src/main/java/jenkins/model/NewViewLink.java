@@ -9,7 +9,6 @@ import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.util.Collections;
 import java.util.List;
-
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

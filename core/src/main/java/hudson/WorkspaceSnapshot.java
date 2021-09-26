@@ -23,10 +23,9 @@
  */
 package hudson;
 
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-
 import java.io.IOException;
 
 /**

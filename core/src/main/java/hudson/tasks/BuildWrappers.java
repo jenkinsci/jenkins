@@ -23,15 +23,14 @@
  */
 package hudson.tasks;
 
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import hudson.Extension;
+import hudson.model.AbstractProject;
+import hudson.model.AbstractProject.AbstractProjectDescriptor;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
-
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * List of all installed {@link BuildWrapper}.

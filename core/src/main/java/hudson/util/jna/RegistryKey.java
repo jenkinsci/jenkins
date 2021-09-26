@@ -16,7 +16,6 @@ Lesser General Public License for more details.
 package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;

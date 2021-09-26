@@ -25,10 +25,10 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
-import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

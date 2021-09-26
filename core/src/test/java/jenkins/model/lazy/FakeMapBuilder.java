@@ -23,14 +23,13 @@
  */
 package jenkins.model.lazy;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Builder for creating a {@link FakeMap}

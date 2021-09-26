@@ -23,77 +23,65 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import antlr.ANTLRException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
+import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
+import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
+import hudson.model.Cause.UserIdCause;
+import hudson.model.Queue.Executable;
+import hudson.model.Queue.Task;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.SubTask;
+import hudson.model.queue.SubTaskContributor;
+import hudson.scm.NullSCM;
+import hudson.scm.PollingResult;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.slaves.Cloud;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProvisioner;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Shell;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-
-import java.net.URL;
-import java.util.Collections;
-
-import org.jvnet.hudson.reactor.ReactorException;
-import org.jvnet.hudson.test.FakeChangeLogSCM;
-import hudson.scm.SCMRevisionState;
-import hudson.scm.PollingResult;
-import hudson.Launcher.RemoteLauncher;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import hudson.model.queue.SubTaskContributor;
-import hudson.model.Queue.Executable;
-import hudson.model.Queue.Task;
-import hudson.model.queue.SubTask;
-import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
-import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
-import jenkins.model.WorkspaceWriter;
-import jenkins.model.Jenkins;
-import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
-import hudson.model.Cause.UserIdCause;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import java.io.Serializable;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
 import java.io.File;
-
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.model.labels.LabelAtom;
-import hudson.scm.SCMDescriptor;
-import hudson.security.ACL;
-import hudson.security.ACLContext;
-import hudson.slaves.Cloud;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProvisioner;
-import org.jvnet.hudson.test.TestExtension;
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -101,10 +89,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
-
+import jenkins.model.Jenkins;
+import jenkins.model.WorkspaceWriter;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  *
@@ -552,14 +549,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doCancelQueue(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doCancelQueue(null, null));
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
     }
     
     @Test
@@ -571,14 +562,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            project.doDoDelete(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Jenkins.READ, user.getId());
         auth.add(Item.READ, user.getId());
         auth.add(Item.DELETE, user.getId());
@@ -608,14 +593,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDoWipeOutWorkspace();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDoWipeOutWorkspace);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.BUILD, user.getId());
         auth.add(Item.WIPEOUT, user.getId());
@@ -646,14 +625,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDisable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDisable);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
@@ -684,14 +657,8 @@ public class ProjectTest {
             project.disable();
         }
         try (ACLContext as = ACL.as(user)) {
-            project.doEnable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doEnable);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());

@@ -4,12 +4,11 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi

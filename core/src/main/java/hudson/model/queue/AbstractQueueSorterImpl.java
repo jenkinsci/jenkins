@@ -2,11 +2,10 @@ package hudson.model.queue;
 
 import hudson.RestrictedSince;
 import hudson.model.Queue.BuildableItem;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.Comparator;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Partial implementation of {@link QueueSorter} in terms of {@link Comparator}.

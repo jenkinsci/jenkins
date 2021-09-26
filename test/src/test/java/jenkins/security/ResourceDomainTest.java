@@ -1,17 +1,22 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
+import java.net.URL;
+import java.time.Instant;
+import java.util.UUID;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,11 +28,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.net.URL;
-import java.time.Instant;
-import java.util.UUID;
 
 @Issue("JENKINS-41891")
 @For({ ResourceDomainRootAction.class, ResourceDomainFilter.class, ResourceDomainConfiguration.class })

@@ -24,16 +24,16 @@
 
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import java.net.HttpURLConnection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.Item;
 import hudson.model.RootAction;
+import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -60,13 +60,9 @@ public class AccessDeniedException3Test {
         realm.addGroups("user", groups);
         r.jenkins.setSecurityRealm(realm);
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
-        try {
-            r.createWebClient().login("user");
-            fail("should not have been allowed to access anything");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-            assertNotNull(x.getResponse().getResponseHeaderValue("X-You-Are-In-Group-Disabled"));
-        }
+        FailingHttpStatusCodeException x = assertThrows("should not have been allowed to access anything", FailingHttpStatusCodeException.class, () -> r.createWebClient().login("user"));
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+        assertNotNull(x.getResponse().getResponseHeaderValue("X-You-Are-In-Group-Disabled"));
     }
 
     @Test
@@ -93,20 +89,13 @@ public class AccessDeniedException3Test {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toEveryone());
         JenkinsRule.WebClient wc = r.createWebClient().login("user");
-        try {
-            wc.goTo("fails/accessDeniedException3");
-            fail("should report an error from AccessDeniedException3");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals("should send a 403 from AccessDeniedException3", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-            assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException3", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
-        }
-        try {
-            wc.goTo("fails/accessDeniedException2");
-            fail("should report an error from AccessDeniedException2");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals("should send a 403 from AccessDeniedException2", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-            assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException2", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
-        }
+        FailingHttpStatusCodeException x = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("fails/accessDeniedException3"));
+        assertEquals("should send a 403 from AccessDeniedException3", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+        assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException3", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
+
+        x = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("fails/accessDeniedException2"));
+        assertEquals("should send a 403 from AccessDeniedException2", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+        assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException2", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
     }
     @TestExtension("captureException")
     public static final class Fails extends InvisibleAction implements RootAction {

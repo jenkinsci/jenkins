@@ -1,22 +1,22 @@
 package hudson.util;
 
+import static hudson.Util.fixEmpty;
+
 import hudson.FilePath;
 import hudson.Util;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.types.selectors.FileSelector;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import static hudson.Util.fixEmpty;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.selectors.FileSelector;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Visits a directory and its contents and pass them to the {@link FileVisitor}.
@@ -140,7 +140,7 @@ public abstract class DirScanner implements Serializable {
             fs.setDefaultexcludes(useDefaultExcludes);
 
             if(dir.exists()) {
-                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                DirectoryScanner ds = fs.getDirectoryScanner(new Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);

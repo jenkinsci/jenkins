@@ -1,13 +1,9 @@
 package hudson.util;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Collections;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
@@ -22,6 +18,10 @@ import hudson.model.Slave;
 import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -31,7 +31,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-
 
 public class ProcessTreeTest {
 
@@ -145,12 +144,7 @@ public class ProcessTreeTest {
 
         ProcessTree processTree = ProcessTree.get();
         processTree.killAll(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
     @Test
@@ -181,12 +175,7 @@ public class ProcessTreeTest {
         StringWriter out = new StringWriter();
         s.createLauncher(new StreamTaskListener(out)).kill(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
 
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
     @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})

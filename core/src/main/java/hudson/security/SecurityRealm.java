@@ -36,6 +36,7 @@ import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,10 +50,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import jenkins.security.AcegiSecurityExceptionFilter;
-import jenkins.security.BasicHeaderProcessor;
 import jenkins.security.AuthenticationSuccessHandler;
+import jenkins.security.BasicHeaderProcessor;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -78,8 +79,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 /**
@@ -661,7 +662,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         
         // Encode the return value
         try {
-            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
+            returnValue = URLEncoder.encode(from, "UTF-8");
         } catch (UnsupportedEncodingException e) { }
 
         // Return encoded value or at least "/" in the case exception occurred during encode()

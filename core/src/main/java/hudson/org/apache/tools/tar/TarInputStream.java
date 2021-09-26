@@ -24,16 +24,15 @@
 package hudson.org.apache.tools.tar;
 
 import hudson.RestrictedSince;
-import org.apache.tools.tar.TarBuffer;
-import org.apache.tools.tar.TarEntry;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
+import org.apache.tools.tar.TarBuffer;
+import org.apache.tools.tar.TarEntry;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * The TarInputStream reads a UNIX tar archive as an InputStream.

@@ -2,7 +2,6 @@ package hudson.util.jna;
 
 import com.sun.jna.Native;
 import hudson.Util;
-
 import java.io.IOException;
 
 /**

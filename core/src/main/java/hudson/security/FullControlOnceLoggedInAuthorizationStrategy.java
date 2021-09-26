@@ -25,16 +25,15 @@ package hudson.security;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
+import java.util.Collections;
+import java.util.List;
+import javax.inject.Inject;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-
-import javax.inject.Inject;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * {@link AuthorizationStrategy} that grants full-control to authenticated user

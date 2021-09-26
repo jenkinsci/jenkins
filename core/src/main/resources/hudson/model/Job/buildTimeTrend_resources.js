@@ -36,7 +36,7 @@ function buildTimeTrend_displayBuilds(data) {
 /**
  * Generate SVG Icon
  */
-function generateSVGIcon(iconName) {
+function generateSVGIcon(iconName, iconSizeClass) {
 
 	const imagesURL = document.head.getAttribute('data-imagesurl');
 
@@ -79,7 +79,7 @@ function generateSVGIcon(iconName) {
 	svg1.appendChild(use1);
 
 	const svg2 = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-	svg2.setAttribute('class', 'svg-icon icon-' + iconName + ' icon-sm');
+	svg2.setAttribute('class', 'svg-icon icon-' + iconName + ' ' + (iconSizeClass || 'icon-sm'));
 	svg2.setAttribute('viewBox', "0 0 24 24");
 	const use2 = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 	use2.setAttribute('href', imagesURL + '/build-status/build-status-sprite.svg#' + buildStatus)

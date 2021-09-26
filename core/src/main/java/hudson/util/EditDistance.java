@@ -19,8 +19,8 @@
  */
 package hudson.util;
 
-import java.util.Collection;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Computes the string edit distance.

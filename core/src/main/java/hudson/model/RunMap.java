@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import static java.util.logging.Level.FINEST;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -32,13 +36,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
-
-import static java.util.logging.Level.FINEST;
 import java.util.logging.Logger;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;

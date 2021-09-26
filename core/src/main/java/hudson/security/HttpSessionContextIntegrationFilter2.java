@@ -24,14 +24,14 @@
 package hudson.security;
 
 import hudson.model.User;
-import jenkins.security.seed.UserSeedProperty;
+import java.io.IOException;
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jenkins.security.seed.UserSeedProperty;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

@@ -23,12 +23,12 @@
  */
 package hudson.cli;
 
-import static java.util.logging.Level.FINE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
 
+import java.io.ByteArrayInputStream;
 import java.io.Console;
 import java.io.DataInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +44,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
-
 import org.apache.sshd.common.config.keys.FilePasswordProvider;
 import org.apache.sshd.common.util.io.resource.PathResource;
 import org.apache.sshd.common.util.security.SecurityUtils;

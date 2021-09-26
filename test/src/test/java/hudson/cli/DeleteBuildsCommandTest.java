@@ -24,6 +24,15 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.Functions;
 import hudson.model.ExecutorTest;
 import hudson.model.FreeStyleProject;
@@ -36,15 +45,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * @author pjanouse

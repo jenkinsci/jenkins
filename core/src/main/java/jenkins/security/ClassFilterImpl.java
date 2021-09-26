@@ -25,6 +25,8 @@
 package jenkins.security;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
@@ -50,8 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -101,7 +101,7 @@ public class ClassFilterImpl extends ClassFilter {
     }
 
     private static void mockOff() {
-        LOGGER.warning("Disabling class filtering since we appear to be in a special test environment, perhaps Mockito/PowerMock");
+        LOGGER.warning("Disabling class filtering since we appear to be in a special test environment, perhaps Mockito");
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 

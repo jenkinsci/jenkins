@@ -1,5 +1,7 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
@@ -11,18 +13,11 @@ import hudson.slaves.ComputerLauncherFilter;
 import hudson.slaves.DelegatingComputerLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.Jenkins;
-import jenkins.security.ChannelConfigurator;
-import jenkins.util.SystemProperties;
-import org.jenkinsci.remoting.engine.JnlpConnectionState;
-
-import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

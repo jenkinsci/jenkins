@@ -24,13 +24,12 @@
 package hudson;
 
 import hudson.tasks.UserNameResolver;
-import jenkins.model.Jenkins;
 import hudson.util.CopyOnWriteList;
-
 import java.util.AbstractList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collection;
+import jenkins.model.Jenkins;
 
 /**
  * Compatibility layer for legacy manual registration of extension points.

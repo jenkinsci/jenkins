@@ -25,11 +25,9 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
-import jenkins.model.Jenkins;
-
 import java.util.Map;
 import java.util.TreeMap;
-
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.springframework.security.access.AccessDeniedException;
 

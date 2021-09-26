@@ -1,12 +1,11 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.SlaveComputer;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Intercepts the new creation of {@link Channel} and tweak its configuration.

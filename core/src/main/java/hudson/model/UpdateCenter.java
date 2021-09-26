@@ -23,7 +23,13 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -32,22 +38,8 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
-import hudson.security.ACLContext;
-import hudson.security.Permission;
-import hudson.util.VersionNumber;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.text.MessageFormat;
-import java.util.concurrent.TimeUnit;
-
-import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
-
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
@@ -56,32 +48,15 @@ import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.Permission;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PersistedList;
+import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import jenkins.MissingDependencyException;
-import jenkins.RestartRequiredException;
-import jenkins.install.InstallUtil;
-import jenkins.model.Jenkins;
-import jenkins.util.io.OnMaster;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.io.output.NullOutputStream;
-import org.jenkinsci.Symbol;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.net.ssl.SSLHandshakeException;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,9 +68,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -113,21 +91,39 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import javax.net.ssl.SSLHandshakeException;
+import javax.servlet.ServletException;
+import jenkins.MissingDependencyException;
+import jenkins.RestartRequiredException;
+import jenkins.install.InstallUtil;
+import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
+import jenkins.util.io.OnMaster;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.output.NullOutputStream;
+import org.jenkinsci.Symbol;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.core.Authentication;
-
 
 /**
  * Controls update center capability.

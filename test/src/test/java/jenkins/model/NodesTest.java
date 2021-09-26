@@ -24,6 +24,16 @@
 
 package jenkins.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.Node;
@@ -35,15 +45,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 public class NodesTest {
 
@@ -54,14 +55,10 @@ public class NodesTest {
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomically() throws Exception {
         InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(node));
+        String className = InvalidNode.class.getName();
+        assertThat("The exception should be from failing to serialize the node",
+                e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
         assertThat("The node should not exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), nullValue());
     }
@@ -72,14 +69,10 @@ public class NodesTest {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(newNode);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(newNode));
+        String className = InvalidNode.class.getName();
+        assertThat("The exception should be from failing to serialize the node",
+                e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
         assertThat("The old node should still exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), sameInstance(oldNode));
     }

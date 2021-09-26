@@ -23,14 +23,16 @@
  */
 package hudson.cli;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.parse;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.client.Messages;
+import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
 import java.io.DataInputStream;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,12 +54,11 @@ import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.parse;
-import jakarta.websocket.ClientEndpointConfig;
-import jakarta.websocket.Endpoint;
-import jakarta.websocket.EndpointConfig;
-import jakarta.websocket.Session;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;

@@ -23,11 +23,11 @@
  */
 package hudson.cli;
 
-import java.util.List;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 

@@ -24,20 +24,19 @@
  */
 package hudson.util;
 
-import hudson.Util;
-import jenkins.model.Jenkins;
-import jenkins.security.CryptoConfidentialKey;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
+import hudson.Util;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import jenkins.model.Jenkins;
+import jenkins.security.CryptoConfidentialKey;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Historical algorithms for decrypting {@link Secret}s.

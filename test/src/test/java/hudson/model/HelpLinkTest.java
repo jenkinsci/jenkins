@@ -4,20 +4,18 @@ import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.WebResponseListener;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.MatrixProject;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import hudson.matrix.MatrixProject;
-
-import java.util.List;
-
-import hudson.tasks.Publisher;
-import hudson.tasks.BuildStepDescriptor;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**

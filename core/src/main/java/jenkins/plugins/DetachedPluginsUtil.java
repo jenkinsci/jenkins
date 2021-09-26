@@ -1,15 +1,11 @@
 package jenkins.plugins;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
-import jenkins.util.java.JavaUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Dedicated class to handle the logic related to so-called <em>detached plugins</em>.
@@ -145,7 +145,7 @@ public class DetachedPluginsUtil {
     }
 
     private static Stream<String> configLines(InputStream is) throws IOException {
-        return org.apache.commons.io.IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*"));
+        return IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*"));
     }
 
     /**

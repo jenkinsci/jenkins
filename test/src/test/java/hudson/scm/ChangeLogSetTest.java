@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;

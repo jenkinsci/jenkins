@@ -23,6 +23,10 @@
  */
 package jenkins.cli;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 import hudson.Functions;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -31,19 +35,14 @@ import hudson.model.Item;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 
 public class StopBuildsCommandTest {
 

@@ -23,9 +23,15 @@
  */
 package hudson.model;
 
-import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 
+import antlr.ANTLRException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
@@ -43,19 +49,10 @@ import hudson.model.labels.LabelVisitor;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
+import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithChildren;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Collection;
@@ -67,13 +64,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Group of {@link Node}s.
@@ -463,14 +461,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns the label that represents {@code this&rhs}
+     * Returns the label that represents {@code this&&rhs}
      */
     public Label and(Label rhs) {
         return new LabelExpression.And(this,rhs);
     }
 
     /**
-     * Returns the label that represents {@code this|rhs}
+     * Returns the label that represents {@code this||rhs}
      */
     public Label or(Label rhs) {
         return new LabelExpression.Or(this,rhs);

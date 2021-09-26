@@ -23,15 +23,14 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
@@ -267,7 +266,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * This enables using a private address for inbound tcp agents,
      * separate from Jenkins root URL.
      *
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-63222">JENKINS-63222</a>
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {

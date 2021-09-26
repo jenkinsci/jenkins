@@ -24,22 +24,20 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 @Extension(ordinal = Integer.MIN_VALUE)
 @Symbol("prepareQuietDown")

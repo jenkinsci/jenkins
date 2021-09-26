@@ -28,10 +28,9 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import java.io.Serializable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.io.Serializable;
 
 /**
  * The order of execution of the rules is determined by first their type (local before global)

@@ -1,5 +1,8 @@
 package jenkins.util.groovy;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
@@ -9,9 +12,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;

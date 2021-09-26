@@ -9,6 +9,13 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.servlet.ServletException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -27,14 +34,6 @@ import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.xml.sax.helpers.DefaultHandler;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * {@link ModelObject} that has context menu in the breadcrumb.

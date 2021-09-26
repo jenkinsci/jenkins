@@ -23,9 +23,24 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.security.ACL;
@@ -36,7 +51,6 @@ import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SidACL;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Fingerprinter;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,39 +63,22 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.CreateFileBuilder;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-
 
 //TODO: Refactoring: Tests should be exchanged with FingerprinterTest somehow
 /**

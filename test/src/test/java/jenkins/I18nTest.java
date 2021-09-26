@@ -24,16 +24,15 @@
 package jenkins;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestPluginManager;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
