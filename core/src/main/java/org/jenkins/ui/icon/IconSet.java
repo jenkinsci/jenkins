@@ -111,13 +111,6 @@ public class IconSet {
     }
 
     /**
-     * @return the amount of icons.
-     */
-    public int size() {
-        return icons.iconsByCSSSelector.size();
-    }
-
-    /**
      * Get an icon instance from a class specification.
      * @param iconClassSpec The icon's class spec as defined on the &lt;l:icon class&gt; attribute.
      * @return The icon instance, or {@code null} if no such icon.

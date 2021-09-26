@@ -1,9 +1,10 @@
 package org.jenkins.ui.icon;
 
-import org.junit.jupiter.api.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 public class IconSetTest {
 
@@ -12,6 +13,7 @@ public class IconSetTest {
      */
     @Test
     void testIconSetSize() {
-        assertThat("icons", IconSet.icons.size(), greaterThanOrEqualTo(371));
+        final Map<String, Icon> coreIcons = IconSet.icons.getCoreIcons();
+        assertThat("icons", coreIcons.size(), greaterThanOrEqualTo(371));
     }
 }
