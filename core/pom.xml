@@ -43,7 +43,7 @@ THE SOFTWARE.
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.8.2</xmlunit.version>
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
-    <findbugs.threshold>High</findbugs.threshold>
+    <spotbugs.threshold>High</spotbugs.threshold>
   </properties>
 
   <dependencyManagement>
@@ -812,7 +812,7 @@ THE SOFTWARE.
       <id>spotbugs</id>
       <properties>
         <!-- In the default profile we always fail the build if there SpotBugs errors -->
-        <findbugs.failOnError>true</findbugs.failOnError>
+        <spotbugs.failOnError>true</spotbugs.failOnError>
       </properties>
     </profile>
     <profile>

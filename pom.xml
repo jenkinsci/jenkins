@@ -95,9 +95,9 @@ THE SOFTWARE.
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
-    <findbugs.effort>Max</findbugs.effort>
-    <findbugs.threshold>Medium</findbugs.threshold>
-    <findbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</findbugs.excludeFilterFile>
+    <spotbugs.effort>Max</spotbugs.effort>
+    <spotbugs.threshold>Medium</spotbugs.threshold>
+    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.24</access-modifier.version>
     <junit.jupiter.version>5.8.0</junit.jupiter.version>
