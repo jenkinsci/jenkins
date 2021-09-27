@@ -24,9 +24,9 @@
  */
 package hudson.model.listeners;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.XmlFile;
 import hudson.model.Saveable;
 import java.util.logging.Level;

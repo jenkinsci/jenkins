@@ -28,12 +28,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.ElementSelectors;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi, Alan Harder

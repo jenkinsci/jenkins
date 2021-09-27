@@ -2,10 +2,10 @@ package jenkins.util.groovy;
 
 import groovy.lang.GroovyObjectSupport;
 import lib.FormTagLib;
+import lib.JenkinsTagLib;
 import lib.LayoutTagLib;
 import org.kohsuke.stapler.jelly.groovy.JellyBuilder;
 import org.kohsuke.stapler.jelly.groovy.Namespace;
-import lib.JenkinsTagLib;
 
 /**
  * Base class for utility classes for Groovy view scripts

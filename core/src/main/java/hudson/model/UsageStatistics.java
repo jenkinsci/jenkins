@@ -23,35 +23,24 @@
  */
 package hudson.model;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
+import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.Util;
-import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor;
 import hudson.security.Permission;
 import hudson.util.Secret;
-import static java.util.concurrent.TimeUnit.DAYS;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.CipherInputStream;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.DataInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -65,9 +54,18 @@ import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.jcraft.jzlib.GZIPOutputStream;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author Kohsuke Kawaguchi

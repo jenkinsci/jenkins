@@ -23,24 +23,23 @@
  */
 package hudson.cli;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import hudson.Extension;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import jenkins.model.Jenkins;
+import jline.TerminalFactory;
+import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
-
-import java.util.List;
-import java.io.PrintStream;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-
-import jline.UnsupportedTerminal;
-import jline.TerminalFactory;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -95,7 +94,7 @@ public class GroovyshCommand extends CLICommand {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert args.length == 1;
                 assert args[0] instanceof Shell;

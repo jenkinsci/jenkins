@@ -24,24 +24,25 @@
 
 package hudson;
 
-import hudson.model.Node;
-import org.apache.tools.ant.DirectoryScanner;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.is;
-import org.junit.Test;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
-import org.junit.Rule;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
+
+import hudson.model.Node;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import org.apache.tools.ant.DirectoryScanner;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class FilePathTest {
 
@@ -101,13 +102,8 @@ public class FilePathTest {
 
         assertThat(good.exists(), is(false));
         
-        try {
-            zipFile.unzip(targetLocation);
-            fail("The evil.txt should have triggered an exception");
-        }
-        catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocation));
+        assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
         // as the unzip operation failed, the good.txt was potentially unzipped
         // but we need to make sure that the evil.txt is not there
@@ -130,13 +126,8 @@ public class FilePathTest {
 
         assertThat(good.exists(), is(false));
 
-        try {
-            zipFile.unzip(targetLocation);
-            fail("The evil.txt should have triggered an exception");
-        }
-        catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocation));
+        assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
         // as the unzip operation failed, the good.txt was potentially unzipped
         // but we need to make sure that the evil.txt is not there
@@ -159,13 +150,8 @@ public class FilePathTest {
 
         assertThat(simple3.exists(), is(false));
 
-        try {
-            zipFile.unzip(targetLocation);
-            fail("The ../simple3.txt should have triggered an exception");
-        }
-        catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocation));
+        assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
         assertThat(simple3.exists(), is(false));
     }
@@ -242,13 +228,8 @@ public class FilePathTest {
 
         assertThat(evilEntry.exists(), is(false));
 
-        try {
-            zipFile.unzip(targetLocationFoo);
-            fail("The ../foo_evil.txt should have triggered an exception");
-        } catch(IOException e){
-            e.printStackTrace();
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocationFoo));
+        assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
         assertThat(evilEntry.exists(), is(false));
     }
@@ -272,12 +253,8 @@ public class FilePathTest {
 
         assertThat(evilEntry.exists(), is(false));
 
-        try {
-            zipFile.unzip(targetLocationFoo);
-            fail("The ../foo_evil.txt should have triggered an exception");
-        } catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocationFoo));
+        assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
         assertThat(evilEntry.exists(), is(false));
     }

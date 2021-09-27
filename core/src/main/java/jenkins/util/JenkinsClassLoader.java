@@ -1,13 +1,11 @@
 package jenkins.util;
 
-import jenkins.ClassLoaderReflectionToolkit;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+import jenkins.ClassLoaderReflectionToolkit;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Public versions of various {@link ClassLoader} methods for use in {@link

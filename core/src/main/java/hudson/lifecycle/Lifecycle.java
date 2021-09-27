@@ -25,17 +25,15 @@ package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import jenkins.util.SystemProperties;
 import hudson.Util;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 
 /**

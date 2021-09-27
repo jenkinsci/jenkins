@@ -23,6 +23,10 @@
  */
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.ExtensionList;
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
@@ -31,10 +35,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class BuiltInNodeMigrationTest {
     @Rule

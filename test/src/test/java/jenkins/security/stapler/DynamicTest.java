@@ -1,6 +1,11 @@
 package jenkins.security.stapler;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
+import java.util.stream.Stream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -9,12 +14,6 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.util.stream.Stream;
 
 @Issue("SECURITY-400")
 public class DynamicTest {

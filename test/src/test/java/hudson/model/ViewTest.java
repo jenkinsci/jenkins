@@ -23,85 +23,78 @@
  */
 package hudson.model;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionList;
-import hudson.diagnosis.OldDataMonitor;
-import hudson.views.ViewsTabBar;
-import jenkins.model.Jenkins;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.jvnet.hudson.test.Issue;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-
-import hudson.XmlFile;
-import hudson.matrix.AxisList;
-import hudson.matrix.LabelAxis;
-import hudson.matrix.MatrixProject;
-import hudson.model.Queue.Task;
-import hudson.model.Node.Mode;
-
-import org.jvnet.hudson.test.Email;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.w3c.dom.Text;
-
 import static hudson.model.Messages.Hudson_ViewName;
-import hudson.security.ACL;
-import hudson.security.AccessDeniedException3;
-import hudson.slaves.DumbSlave;
-import hudson.util.FormValidation;
-import hudson.util.HudsonIsLoading;
-import java.io.File;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Collection;
-import java.net.HttpURLConnection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import jenkins.model.ProjectNamingStrategy;
-import jenkins.security.NotReallyRoleSensitiveCallable;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlLabel;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.ExtensionList;
+import hudson.XmlFile;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.matrix.AxisList;
+import hudson.matrix.LabelAxis;
+import hudson.matrix.MatrixProject;
+import hudson.model.Node.Mode;
+import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import hudson.security.AccessDeniedException3;
+import hudson.slaves.DumbSlave;
+import hudson.util.FormValidation;
+import hudson.util.HudsonIsLoading;
+import hudson.views.ViewsTabBar;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.servlet.ServletException;
-
+import jenkins.model.Jenkins;
+import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.LoggerRule;
@@ -110,6 +103,9 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.w3c.dom.Text;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -468,12 +464,7 @@ public class ViewTest {
         view.rename("renamed");
         assertEquals("View should have name foo.", "renamed", view.getDisplayName());
         ListView view2 = listView("foo");
-        try{
-            view2.rename("renamed");
-            fail("Attempt to rename job with a name used by another view with the same owner should throw exception");
-        }
-        catch(Exception Exception){
-        }
+        assertThrows("Attempt to rename job with a name used by another view with the same owner should throw exception", Descriptor.FormException.class, () -> view2.rename("renamed"));
         assertEquals("View should not be renamed if required name has another view with the same owner", "foo", view2.getDisplayName());
     }
 
@@ -704,16 +695,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(ORIGINAL_BAD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -752,16 +739,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -796,13 +779,9 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();

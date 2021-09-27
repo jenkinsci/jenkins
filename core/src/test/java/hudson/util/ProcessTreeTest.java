@@ -1,5 +1,9 @@
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+
 import hudson.ChannelRule;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ProcessTree.OSProcess;
@@ -7,10 +11,6 @@ import hudson.util.ProcessTree.ProcessCallable;
 import java.io.IOException;
 import java.io.Serializable;
 import jenkins.security.MasterToSlaveCallable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;

@@ -1,27 +1,26 @@
 package hudson.tasks;
 
+import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
 import static org.junit.Assert.assertFalse;
 
 import hudson.EnvVars;
-import hudson.model.labels.LabelAtom;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Result;
+import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
-
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.ExtractResourceSCM;
-import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
-import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
 

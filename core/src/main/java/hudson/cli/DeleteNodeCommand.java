@@ -26,11 +26,10 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Node;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * CLI command, which deletes Jenkins nodes.

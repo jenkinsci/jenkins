@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-import jenkins.model.Jenkins;
 import hudson.remoting.Which;
+import jenkins.model.Jenkins;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.JellyTestSuiteBuilder;

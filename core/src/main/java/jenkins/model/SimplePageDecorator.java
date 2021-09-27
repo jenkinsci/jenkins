@@ -26,7 +26,6 @@ package jenkins.model;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-
 import java.util.List;
 
 /**

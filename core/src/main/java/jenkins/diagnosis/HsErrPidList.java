@@ -1,20 +1,10 @@
 package jenkins.diagnosis;
 
-import com.sun.akuma.JavaVMArguments;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
-
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardOpenOption;
-import jenkins.model.Jenkins;
-import jenkins.security.stapler.StaplerDispatchable;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,11 +13,18 @@ import java.io.Reader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.JavaVMArguments;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
 
 /**
@@ -71,8 +68,7 @@ public class HsErrPidList extends AdministrativeMonitor {
             // on different platforms, rules about the default locations are a lot more subtle.
 
             // check our arguments in the very end since this might fail on some platforms
-            JavaVMArguments args = JavaVMArguments.current();
-            for (String a : args) {
+            for (String a : JavaVMArguments.current()) {
                 // see https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/felog001.html
                 if (a.startsWith(ERROR_FILE_OPTION)) {
                     scan(a.substring(ERROR_FILE_OPTION.length()));

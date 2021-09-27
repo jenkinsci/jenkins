@@ -23,10 +23,11 @@
  */
 package jenkins.security;
 
+import static org.junit.Assert.assertTrue;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Signature;
 import java.util.Base64;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 

@@ -23,6 +23,8 @@
  */
 package hudson.cli.declarative;
 
+import static java.util.logging.Level.SEVERE;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Extension;
@@ -48,7 +50,6 @@ import java.util.MissingResourceException;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;

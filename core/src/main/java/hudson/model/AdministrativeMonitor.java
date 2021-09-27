@@ -23,17 +23,15 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-
-import java.util.Set;
 import java.io.IOException;
-
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

@@ -24,6 +24,7 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -38,7 +39,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;

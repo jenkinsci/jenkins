@@ -23,15 +23,24 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -44,18 +53,8 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
-
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.concurrent.TimeUnit;
-import java.util.List;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Utilization statistics for a node or a set of nodes.

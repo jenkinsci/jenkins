@@ -24,12 +24,11 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-
 import java.awt.Color;
-import java.util.List;
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 
 /**
  * Color constants consistent with the Hudson color palette. 

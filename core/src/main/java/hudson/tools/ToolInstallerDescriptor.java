@@ -29,10 +29,9 @@ import hudson.model.AutoCompletionCandidates;
 import hudson.model.Descriptor;
 import hudson.model.labels.LabelExpression;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
 
 /**

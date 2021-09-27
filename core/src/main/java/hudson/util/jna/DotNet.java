@@ -23,13 +23,12 @@
  */
 package hudson.util.jna;
 
+import java.net.UnknownHostException;
 import org.jinterop.dcom.common.IJIAuthInfo;
 import org.jinterop.dcom.common.JIException;
 import org.jinterop.winreg.IJIWinReg;
 import org.jinterop.winreg.JIPolicyHandle;
 import org.jinterop.winreg.JIWinRegFactory;
-
-import java.net.UnknownHostException;
 
 /**
  * .NET related code.

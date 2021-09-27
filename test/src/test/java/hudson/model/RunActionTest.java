@@ -24,12 +24,13 @@
 
 package hudson.model;
 
-import hudson.XmlFile;
-import java.io.File;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
+
+import hudson.XmlFile;
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

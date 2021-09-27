@@ -29,6 +29,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.model.Hudson;
+import java.io.File;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,13 +43,6 @@ import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Alan Harder

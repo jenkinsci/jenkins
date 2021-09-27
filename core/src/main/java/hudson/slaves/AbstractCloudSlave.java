@@ -23,19 +23,18 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
-import jenkins.model.Jenkins;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Partial implementation of {@link Slave} to be used by {@link AbstractCloudImpl}.

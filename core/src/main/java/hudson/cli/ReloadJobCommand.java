@@ -27,15 +27,13 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
-
 import hudson.model.Items;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * Reloads job from the disk.

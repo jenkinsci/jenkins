@@ -23,13 +23,11 @@
  */
 package hudson.cli.handlers;
 
-import hudson.model.ViewGroup;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.View;
-
+import hudson.model.ViewGroup;
 import java.util.StringTokenizer;
-
 import jenkins.model.Jenkins;
-
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -37,8 +35,6 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.springframework.security.access.AccessDeniedException;
 
 /**

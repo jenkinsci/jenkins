@@ -23,15 +23,15 @@
  */
 package jenkins.diagnostics;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AdministrativeMonitor;
 import hudson.model.ProjectTest;
 import hudson.model.Slave;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ControllerExecutorsAgentsTest {
     

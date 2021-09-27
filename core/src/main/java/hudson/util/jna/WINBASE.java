@@ -15,8 +15,8 @@ Lesser General Public License for more details.
  */
 package hudson.util.jna;
 
-import com.sun.jna.Structure;
 import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;

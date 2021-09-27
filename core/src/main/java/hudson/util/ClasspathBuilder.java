@@ -2,12 +2,11 @@ package hudson.util;
 
 import hudson.FilePath;
 import hudson.remoting.Which;
-
-import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used to build up an argument in the classpath format.

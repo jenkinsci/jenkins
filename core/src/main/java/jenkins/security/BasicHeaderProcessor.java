@@ -1,13 +1,14 @@
 package jenkins.security;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import java.io.IOException;
 import java.util.List;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

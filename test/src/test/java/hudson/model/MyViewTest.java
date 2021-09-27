@@ -23,23 +23,24 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.Test;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-import java.io.IOException;
-import java.util.logging.Level;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import org.junit.Rule;
-import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import java.io.IOException;
+import java.util.logging.Level;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.springframework.security.core.context.SecurityContextHolder;
 

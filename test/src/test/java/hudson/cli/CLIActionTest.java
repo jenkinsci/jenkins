@@ -1,5 +1,7 @@
 package hudson.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -36,8 +38,6 @@ import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,6 +46,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Option;
 
 public class CLIActionTest {
@@ -59,7 +60,7 @@ public class CLIActionTest {
     public LoggerRule logging = new LoggerRule();
 
     @Test
-    @org.jvnet.hudson.test.recipes.PresetData(org.jvnet.hudson.test.recipes.PresetData.DataSet.NO_ANONYMOUS_READACCESS)
+    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();

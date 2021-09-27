@@ -1,12 +1,11 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Slave;
 import java.security.SecureRandom;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.agents.WebSocketAgents;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;

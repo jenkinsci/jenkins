@@ -13,17 +13,16 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import jenkins.security.MasterToSlaveCallable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi

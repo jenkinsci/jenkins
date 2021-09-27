@@ -23,13 +23,12 @@
  */
 package hudson;
 
-import hudson.MarkupText.SubText;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.MarkupText.SubText;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi

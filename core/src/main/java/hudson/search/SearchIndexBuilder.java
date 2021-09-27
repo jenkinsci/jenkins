@@ -24,7 +24,6 @@
 package hudson.search;
 
 import hudson.model.AbstractModelObject;
-
 import java.util.ArrayList;
 import java.util.List;
 

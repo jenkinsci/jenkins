@@ -1,8 +1,7 @@
 package jenkins.security.s2m;
 
-import hudson.Extension;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;

@@ -3,10 +3,9 @@ package jenkins.scm;
 import hudson.DescriptorExtensionList;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Descriptor} for {@link SCMCheckoutStrategy}.

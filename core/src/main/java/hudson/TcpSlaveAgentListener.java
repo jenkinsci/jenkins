@@ -23,41 +23,38 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.AperiodicWork;
+import hudson.slaves.OfflineCause;
+import hudson.util.VersionNumber;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.SequenceInputStream;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.URL;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
-import edu.umd.cs.findbugs.annotations.Nullable;
-
-import hudson.model.AperiodicWork;
-import hudson.util.VersionNumber;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
-import hudson.slaves.OfflineCause;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.SocketAddress;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Base64;
-import jenkins.AgentProtocol;
-
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.nio.channels.ServerSocketChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;

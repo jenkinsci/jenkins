@@ -3,9 +3,8 @@ package hudson.console;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.MarkupText.SubText;
-import org.jenkinsci.Symbol;
-
 import java.util.regex.Pattern;
+import org.jenkinsci.Symbol;
 
 /**
  * Annotates URLs in the console output to hyperlink.
