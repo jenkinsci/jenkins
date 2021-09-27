@@ -35,6 +35,9 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,6 +105,11 @@ public class SlaveComputerTest {
         // Both listeners should fire and not cause the other not to fire.
         Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
         Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+
+        // We should get the stack trace too.
+        assertThat(nodeA.getComputer().getLog(), allOf(
+                containsString("\tat " + IOExceptionOnOnlineListener.class.getName() + ".onOnline"),
+                containsString("\tat " + RuntimeExceptionOnOnlineListener.class.getName() + ".onOnline")));
     }
 
     @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")
