@@ -28,7 +28,7 @@ import java.util.SortedMap;
 
 /**
  * @author kingfai
- * @deprecated Does not behave very consistently. Either write a real functional test with {@code JenkinsRule}, or use PowerMock/Mockito.
+ * @deprecated Does not behave very consistently. Either write a real functional test with {@code JenkinsRule}, or use Mockito.
  */
 @Deprecated
 @SuppressWarnings("rawtypes")

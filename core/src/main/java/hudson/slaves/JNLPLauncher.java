@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
@@ -125,7 +126,8 @@ public class JNLPLauncher extends ComputerLauncher {
                 ? RemotingWorkDirSettings.getEnabledDefaults() 
                 : RemotingWorkDirSettings.getDisabledDefaults());
     }
-    
+
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "workDirSettings in readResolve is needed for data migration.")
     protected Object readResolve() {
         if (workDirSettings == null) {
             // For the migrated code agents are always disabled
@@ -203,6 +205,7 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();

@@ -26,142 +26,179 @@ package jenkins.model;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({JenkinsLocationConfiguration.class, Stapler.class})
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class JenkinsGetRootUrlTest {
 
     private Jenkins jenkins;
+    private StaplerRequest staplerRequest;
     private JenkinsLocationConfiguration config;
 
     @Before
     public void setUp() {
-
         jenkins = mock(Jenkins.class, Mockito.CALLS_REAL_METHODS);
         config = mock(JenkinsLocationConfiguration.class);
-
-        mockStatic(JenkinsLocationConfiguration.class);
-        when(JenkinsLocationConfiguration.get()).thenReturn(config);
-
-        mockStatic(Stapler.class);
+        staplerRequest = mock(StaplerRequest.class);
     }
 
     @Test
     public void getConfiguredRootUrl() {
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
 
-        configured("http://configured.host");
+            configured("http://configured.host");
 
-        rootUrlIs("http://configured.host/");
+            rootUrlIs("http://configured.host/");
+        }
     }
 
     @Test
     public void getAccessedRootUrl() {
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
 
-        accessing("https://real.host/jenkins/");
+            accessing("https://real.host/jenkins/");
 
-        rootUrlIs("https://real.host/jenkins/");
+            rootUrlIs("https://real.host/jenkins/");
+        }
     }
 
     @Test
     public void preferConfiguredOverAccessed() {
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
+            configured("http://configured.host/");
+            accessing("http://real.host/");
 
-        configured("http://configured.host/");
-        accessing("http://real.host/");
-
-        rootUrlIs("http://configured.host/");
+            rootUrlIs("http://configured.host/");
+        }
     }
 
     @Issue("JENKINS-16368")
     @Test
     public void doNotInheritProtocolWhenDispatchingRequest() {
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
+            configured("http://configured.host/");
+            accessing("https://real.host/");
 
-        configured("http://configured.host/");
-        accessing("https://real.host/");
-
-        rootUrlIs("http://configured.host/");
+            rootUrlIs("http://configured.host/");
+        }
     }
 
     @Issue("JENKINS-16511")
     @Test
     public void doNotInheritProtocolWhenDispatchingRequest2() {
-        configured("https://ci/jenkins/");
-        accessing("http://localhost:8080/");
-        rootUrlIs("https://ci/jenkins/");
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
+            configured("https://ci/jenkins/");
+            accessing("http://localhost:8080/");
+            rootUrlIs("https://ci/jenkins/");
+        }
     }
     
     @Issue("JENKINS-10675")
     @Test
     public void useForwardedProtoWhenPresent() {
-        configured("https://ci/jenkins/");
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
+            configured("https://ci/jenkins/");
 
-        // Without a forwarded protocol, it should use the request protocol
-        accessing("http://ci/jenkins/");
-        rootUrlFromRequestIs("http://ci/jenkins/");
+            // Without a forwarded protocol, it should use the request protocol
+            accessing("http://ci/jenkins/");
+            rootUrlFromRequestIs("http://ci/jenkins/");
 
-        accessing("http://ci:8080/jenkins/");
-        rootUrlFromRequestIs("http://ci:8080/jenkins/");
+            accessing("http://ci:8080/jenkins/");
+            rootUrlFromRequestIs("http://ci:8080/jenkins/");
 
-        // With a forwarded protocol, it should use the forwarded protocol
-        accessing("https://ci/jenkins/");
-        withHeader("X-Forwarded-Proto", "https");
-        rootUrlFromRequestIs("https://ci/jenkins/");
+            // With a forwarded protocol, it should use the forwarded protocol
+            accessing("https://ci/jenkins/");
+            withHeader("X-Forwarded-Proto", "https");
+            rootUrlFromRequestIs("https://ci/jenkins/");
 
-        accessing("http://ci/jenkins/");
-        withHeader("X-Forwarded-Proto", "http");
-        rootUrlFromRequestIs("http://ci/jenkins/");
+            accessing("http://ci/jenkins/");
+            withHeader("X-Forwarded-Proto", "http");
+            rootUrlFromRequestIs("http://ci/jenkins/");
 
-        // ServletRequest.getServerPort is not always meaningful.
-        // http://tomcat.apache.org/tomcat-5.5-doc/config/http.html#Proxy_Support or
-        // http://wiki.eclipse.org/Jetty/Howto/Configure_mod_proxy#Configuring_mod_proxy_as_a_Reverse_Proxy.5D
-        // can be used to ensure that it is hardcoded or that X-Forwarded-Port is interpreted.
-        // But this is not something that can be configured purely from the reverse proxy; the container must be modified too.
-        // And the standard bundled Jetty in Jenkins does not work that way;
-        // it will return 80 even when Jenkins is fronted by Apache with SSL.
-        accessing("http://ci/jenkins/"); // as if the container is not aware of the forwarded port
-        withHeader("X-Forwarded-Port", "443"); // but we tell it
-        withHeader("X-Forwarded-Proto", "https");
-        rootUrlFromRequestIs("https://ci/jenkins/");
+            // ServletRequest.getServerPort is not always meaningful.
+            // http://tomcat.apache.org/tomcat-5.5-doc/config/http.html#Proxy_Support or
+            // http://wiki.eclipse.org/Jetty/Howto/Configure_mod_proxy#Configuring_mod_proxy_as_a_Reverse_Proxy.5D
+            // can be used to ensure that it is hardcoded or that X-Forwarded-Port is interpreted.
+            // But this is not something that can be configured purely from the reverse proxy; the container must be modified too.
+            // And the standard bundled Jetty in Jenkins does not work that way;
+            // it will return 80 even when Jenkins is fronted by Apache with SSL.
+            accessing("http://ci/jenkins/"); // as if the container is not aware of the forwarded port
+            withHeader("X-Forwarded-Port", "443"); // but we tell it
+            withHeader("X-Forwarded-Proto", "https");
+            rootUrlFromRequestIs("https://ci/jenkins/");
+        }
     }
 
     @Issue("JENKINS-58041")
     @Test
     public void useForwardedProtoWithIPv6WhenPresent() {
-        configured("http://[::1]/jenkins/");
+        try (
+                MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
+                MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
+        ) {
+            mocked.when(JenkinsLocationConfiguration::get).thenReturn(config);
+            mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
+            configured("http://[::1]/jenkins/");
 
-        // Without a forwarded protocol, it should use the request protocol
-        accessing("http://[::1]/jenkins/");
-        rootUrlFromRequestIs("http://[::1]/jenkins/");
-        
-        accessing("http://[::1]:8080/jenkins/");
-        rootUrlFromRequestIs("http://[::1]:8080/jenkins/");
+            // Without a forwarded protocol, it should use the request protocol
+            accessing("http://[::1]/jenkins/");
+            rootUrlFromRequestIs("http://[::1]/jenkins/");
 
-        // With a forwarded protocol, it should use the forwarded protocol
-        accessing("http://[::1]/jenkins/");
-        withHeader("X-Forwarded-Host", "[::2]");
-        rootUrlFromRequestIs("http://[::2]/jenkins/");
+            accessing("http://[::1]:8080/jenkins/");
+            rootUrlFromRequestIs("http://[::1]:8080/jenkins/");
 
-        accessing("http://[::1]:8080/jenkins/");
-        withHeader("X-Forwarded-Proto", "https");
-        withHeader("X-Forwarded-Host", "[::1]:8443");
-        rootUrlFromRequestIs("https://[::1]:8443/jenkins/");
+            // With a forwarded protocol, it should use the forwarded protocol
+            accessing("http://[::1]/jenkins/");
+            withHeader("X-Forwarded-Host", "[::2]");
+            rootUrlFromRequestIs("http://[::2]/jenkins/");
+
+            accessing("http://[::1]:8080/jenkins/");
+            withHeader("X-Forwarded-Proto", "https");
+            withHeader("X-Forwarded-Host", "[::1]:8443");
+            rootUrlFromRequestIs("https://[::1]:8443/jenkins/");
+        }
 
     }
 

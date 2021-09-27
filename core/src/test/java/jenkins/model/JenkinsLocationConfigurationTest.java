@@ -24,13 +24,12 @@
 package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
@@ -44,12 +43,7 @@ public class JenkinsLocationConfigurationTest {
     @Before
     public void setUp() {
         config = mock(JenkinsLocationConfiguration.class, Mockito.CALLS_REAL_METHODS);
-        Answer<String> mockVoid = new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) {
-                return "stub";
-            }
-        };
+        Answer<String> mockVoid = invocation -> "stub";
         Mockito.doAnswer(mockVoid).when(config).save();      
         Mockito.doAnswer(mockVoid).when(config).save();
     }

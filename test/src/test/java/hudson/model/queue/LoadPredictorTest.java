@@ -93,35 +93,6 @@ public class LoadPredictorTest {
         return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<>()));
     }
 
-    /**
-     * Test scenario is:
-     *
-     * - a computer with two executors, one is building something now
-     * - a future load of size 1 is predicted but it'll start after the currently building something is completed.
-     * - hence the currently available executor should be considered available (unlike in test1)
-     */
-    @Test
-    public void test2() throws Exception {
-        Task t = mock(Task.class);
-        when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
-
-        Computer c = createMockComputer(2);
-        Executor e = c.getExecutors().get(0);
-
-        when(e.isIdle()).thenReturn(false);
-        when(e.getEstimatedRemainingTimeMillis()).thenReturn(300L);
-
-        JobOffer o = createMockOffer(c.getExecutors().get(1));
-
-        MappingWorksheet mw = new MappingWorksheet(wrap(t), Collections.singletonList(o));
-
-        // since the currently busy executor will free up before a future predicted load starts,
-        // we should have a valid executor remain in the queue
-        assertEquals(1,mw.executors.size());
-        assertEquals(1,mw.works.size());
-    }
-
     private JobOffer createMockOffer(Executor e) throws NoSuchFieldException, IllegalAccessException {
         JobOffer o = mock(JobOffer.class);
         when(o.getExecutor()).thenReturn(e);
