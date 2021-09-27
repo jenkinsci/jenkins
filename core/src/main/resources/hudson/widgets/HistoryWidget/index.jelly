@@ -24,7 +24,6 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set target="${it}" property="trimmed" value="${all==null}"/>
   <j:parse var="paneTitle">
     <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>
     <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
@@ -42,84 +41,54 @@ THE SOFTWARE.
     -->
     <span class="build-rss-links">
         <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">
-          <span class="build-rss-all-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
+          <span class="build-rss-all-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
             Atom feed ${%for all}
         </a>
         <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">
-          <span class="build-rss-failed-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
+          <span class="build-rss-failed-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
           Atom feed ${%for failures}
         </a>
     </span>
   </j:parse>
 
   <j:set var="page" value="${it.historyPageFilter}" />
-  <div id="buildHistoryPage" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
+  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
     <div id="buildHistoryPageNav">
-      <div class="nav pageOne" title="Page 1 (Newest/Latest Builds)"></div>
-      <div class="nav pageUp" title="Newer Builds"></div>
-      <div class="nav pageDown" title="Older Builds "></div>
+      <div class="buildHistoryPageNav__item buildHistoryPageNav__item--page-one pageOne" title="Page 1 (Newest/Latest Builds)">
+        <div class="buildHistoryPageNav__item-page-one-top"></div>
+        <l:svgIcon href="${resURL}/images/svgs/go-up.svg#arrow" viewBox="0 0 16 16" />
+      </div>
+      <div class="buildHistoryPageNav__item pageUp" title="Newer Builds">
+        <l:svgIcon href="${resURL}/images/svgs/go-up.svg#arrow" viewBox="0 0 16 16" />
+      </div>
+      <div class="buildHistoryPageNav__item pageDown" title="Older Builds">
+        <l:svgIcon href="${resURL}/images/svgs/go-down.svg#arrow" viewBox="0 0 16 16" />
+      </div>
     </div>
-    <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="stripped">
 
-    <tr class="build-search-row">
+    <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
+      <tr class="build-search-row">
         <td>
-            <table>
-                <tr>
-                    <td>
-                        <span class="clear" title="${%Clear}">x</span>
-                        <input placeholder="${%find}"></input>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-
-        <!-- build history -->
-    <st:include page="entries.jelly" it="${page}" />
-
-    <!--
-      If we are trimming the build history because it's too long,
-      show the link to fetch all the records by using AJAX.
-    -->
-    <j:if test="${it.trimmed}">
-      <tr class="build-row">
-        <td colspan="3" align="right">
-          <script>
-            function replace(a, b) {
-                  var p = a.parentNode;
-                  var next = a.nextSibling;
-                  p.removeChild(a);
-                  p.insertBefore(b,next);
-            }
-
-            function loadAllBuildHistory() {
-              // first display the "loading..." icon
-              var box = $("loadAllBuildHistory");
-              box.innerHTML = '<img src="${imagesURL}/spinner.gif" alt=""/>';
-
-              // then actually fetch the HTML
-              new Ajax.Request("${it.baseUrl}/buildHistory/all",{
-                method: "get",
-                onComplete: function(rsp,_) {
-                  <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
-                  var hist = $$("buildHistory");
-
-                  var newhist = document.createElement('div');
-                  newhist.innerHTML = rsp.responseText;
-                  newhist.headers = hist.headers
-
-                  replace(hist, newhist);
-                  fireBuildHistoryChanged();
-                }
-            });
-            }
-          </script>
+          <div class="jenkins-search">
+            <input type="search" placeholder="${%find}" class="jenkins-search__input" />
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+          </div>
+          <j:if test="${page.runs.isEmpty()}">
+            <div id="no-builds" class="jenkins-pane__information">
+              No builds
+            </div>
+          </j:if>
+          <j:if test="${!page.runs.isEmpty()}">
+            <div id="no-builds" class="jenkins-pane__information" style="display: none;">
+              No builds
+            </div>
+          </j:if>
         </td>
       </tr>
-    </j:if>
-  </l:pane>
+
+      <st:include page="entries.jelly" it="${page}" />
+    </l:pane>
   </div>
-  <script defer="true">
-    updateBuildHistory("${it.baseUrl}/buildHistory/ajax", ${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber});
-  </script>
+
+  <script src="${resURL}/jsbundles/filter-build-history.js" type="text/javascript"/>
 </j:jelly>

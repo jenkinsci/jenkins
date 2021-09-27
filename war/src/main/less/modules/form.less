@@ -1,0 +1,113 @@
+.jenkins-search {
+  position: relative;
+
+  &__input {
+    appearance: none;
+    display: block;
+    background: var(--input-color);
+    border: 2px solid var(--input-border);
+    border-radius: 6px;
+    width: 100%;
+    margin: 0;
+    padding: 0 4px 0 29px;
+    line-height: 30px;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
+
+    // Safari adds unwanted padding - let's remove it
+    &::-webkit-search-decoration {
+      -webkit-appearance: none;
+    }
+
+    // By default the clear text button doesn't change the cursor on hover - lets turn it into a pointer
+    &::-webkit-search-cancel-button:hover {
+      cursor: pointer;
+    }
+
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: 0 0 0 5px var(--focus-input-glow);
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    width: 16px;
+    height: 16px;
+    fill: var(--input-border-hover);
+    transition: 0.2s ease;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 17px;
+    width: 0;
+    height: 0;
+    color: inherit;
+    border: 2px solid currentColor;
+    border-radius: 100%;
+    opacity: 0;
+    transition: 0.2s ease;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 17px;
+    width: 0;
+    height: 0;
+    color: inherit;
+    border: 2px solid currentColor;
+    border-radius: 100%;
+    animation: loading-spinner 0.5s infinite linear;
+    clip-path: inset(0 0 8px 8px);
+    opacity: 0;
+    transition: 0.2s ease;
+  }
+
+  &--loading {
+    .jenkins-search__icon {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    &::before {
+      opacity: 0.2;
+      top: 9px;
+      left: 9px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &::after {
+      opacity: 1;
+      top: 9px;
+      left: 9px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &:focus-within {
+    .jenkins-search__icon {
+      fill: var(--focus-input-border);
+    }
+  }
+}
+
+@keyframes loading-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
