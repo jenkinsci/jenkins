@@ -23,19 +23,18 @@
  */
 package hudson.model;
 
-import hudson.model.Fingerprint.RangeSet;
-import java.io.File;
-
-import jenkins.fingerprints.FileFingerprintStorage;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import hudson.model.Fingerprint.RangeSet;
+import java.io.File;
+import jenkins.fingerprints.FileFingerprintStorage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

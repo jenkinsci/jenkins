@@ -1,16 +1,9 @@
 package hudson.init;
 
+import static java.util.logging.Level.WARNING;
+
 import com.google.inject.Injector;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import org.jvnet.hudson.annotation_indexer.Index;
-import org.jvnet.hudson.reactor.Milestone;
-import org.jvnet.hudson.reactor.MilestoneImpl;
-import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.Task;
-import org.jvnet.hudson.reactor.TaskBuilder;
-import org.jvnet.localizer.ResourceBundleHolder;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +16,14 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
+import org.jvnet.hudson.annotation_indexer.Index;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.MilestoneImpl;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.Task;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.localizer.ResourceBundleHolder;
 
 /**
  * @author Kohsuke Kawaguchi

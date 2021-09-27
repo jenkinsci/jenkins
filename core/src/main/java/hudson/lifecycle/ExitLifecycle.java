@@ -25,15 +25,12 @@ package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jenkins.model.Jenkins;
 
 /**
  * {@link Lifecycle} that delegates the responsibility to restart Jenkins to an external

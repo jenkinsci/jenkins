@@ -24,6 +24,8 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
@@ -35,6 +37,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
+import hudson.util.io.Archiver;
+import hudson.util.io.ArchiverFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,11 +59,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.util.io.Archiver;
-import hudson.util.io.ArchiverFactory;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;

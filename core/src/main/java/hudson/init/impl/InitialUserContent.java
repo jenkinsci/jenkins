@@ -24,13 +24,13 @@
 package hudson.init.impl;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import hudson.init.Initializer;
-import jenkins.model.Jenkins;
-import hudson.model.Messages;
-import org.apache.commons.io.FileUtils;
 
+import hudson.init.Initializer;
+import hudson.model.Messages;
 import java.io.File;
 import java.io.IOException;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Prepares userContent folder and put a readme if it doesn't exist.

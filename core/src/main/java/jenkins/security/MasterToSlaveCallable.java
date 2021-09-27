@@ -6,7 +6,6 @@ import hudson.remoting.ChannelClosedException;
 import jenkins.slaves.RemotingVersionInfo;
 import org.jenkinsci.remoting.RoleChecker;
 
-
 /**
  * Convenient {@link Callable} meant to be run on agent.
  *

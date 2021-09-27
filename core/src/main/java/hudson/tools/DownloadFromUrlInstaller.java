@@ -5,15 +5,14 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
-import net.sf.json.JSONObject;
-
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.net.URL;
+import net.sf.json.JSONObject;
 
 /**
  * Partial convenience implementation of {@link ToolInstaller} that just downloads

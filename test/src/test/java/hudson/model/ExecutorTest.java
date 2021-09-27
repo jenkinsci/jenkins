@@ -1,14 +1,13 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 
 import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
@@ -16,18 +15,16 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
+import java.io.IOException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
-
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 

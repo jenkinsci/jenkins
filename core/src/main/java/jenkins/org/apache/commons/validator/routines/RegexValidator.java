@@ -17,12 +17,11 @@
 /* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
 package jenkins.org.apache.commons.validator.routines;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * <b>Regular Expression</b> validation (using JDK 1.4+ regex support).

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.65</version>
+    <version>1.67</version>
     <relativePath />
   </parent>
 
@@ -66,11 +66,11 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.309</revision>
+    <revision>2.314</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -100,10 +100,9 @@ THE SOFTWARE.
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
-    <access-modifier.version>1.24</access-modifier.version>
-    <junit.jupiter.version>5.7.2</junit.jupiter.version>
-    <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.12.2</spotless.version>
+    <access-modifier.version>1.25</access-modifier.version>
+    <junit.jupiter.version>5.8.1</junit.jupiter.version>
+    <spotless.version>2.13.1</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -130,19 +129,8 @@ THE SOFTWARE.
 
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>3.12.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermock.version}</version>
+        <artifactId>mockito-inline</artifactId>
+        <version>3.12.4</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -431,7 +419,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.45.1</version>
+              <version>9.0</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
@@ -508,6 +496,7 @@ THE SOFTWARE.
           <configuration>
             <java>
               <endWithNewline />
+              <importOrder />
               <removeUnusedImports />
             </java>
           </configuration>
@@ -770,7 +759,7 @@ THE SOFTWARE.
     <profile>
       <id>jdk11</id>
       <properties>
-        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported

@@ -24,17 +24,16 @@
 package hudson.org.apache.tools.tar;
 
 import hudson.RestrictedSince;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.apache.tools.tar.TarBuffer;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
@@ -143,7 +142,7 @@ public class TarOutputStream extends FilterOutputStream {
      */
     public void finish() throws IOException {
         // See Bugzilla 28776 for a discussion on this
-        // http://issues.apache.org/bugzilla/show_bug.cgi?id=28776
+        // https://bz.apache.org/bugzilla/show_bug.cgi?id=28776
         this.writeEOFRecord();
         this.writeEOFRecord();
     }

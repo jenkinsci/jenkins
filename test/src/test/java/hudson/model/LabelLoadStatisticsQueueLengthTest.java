@@ -1,5 +1,10 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor.FormException;
 import hudson.model.LoadStatistics.LoadStatisticsUpdater;
@@ -10,19 +15,13 @@ import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import java.io.IOException;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.util.Collections;
-
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test that a {@link Label}'s {@link LoadStatistics#queueLength} correctly

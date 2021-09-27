@@ -1,22 +1,26 @@
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.stream.Collectors;
-
-import hudson.model.User;
-import java.util.Collections;
-import jenkins.model.Jenkins;
-import jenkins.security.seed.UserSeedProperty;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.util.Cookie;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.model.User;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import jenkins.model.Jenkins;
+import jenkins.security.seed.UserSeedProperty;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,15 +28,6 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.Stapler;
-import test.security.realm.InMemorySecurityRealm;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -41,6 +36,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
+import test.security.realm.InMemorySecurityRealm;
 
 public class TokenBasedRememberMeServices2Test {
 

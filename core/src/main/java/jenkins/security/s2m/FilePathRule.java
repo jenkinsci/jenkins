@@ -1,7 +1,6 @@
 package jenkins.security.s2m;
 
 import hudson.FilePath;
-
 import java.util.regex.Pattern;
 
 /**

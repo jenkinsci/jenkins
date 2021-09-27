@@ -27,10 +27,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import hudson.Util;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Test;
 
 /**

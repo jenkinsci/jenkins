@@ -27,32 +27,23 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
+import hudson.model.Label;
+import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormApply;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
-import hudson.model.Label;
-import hudson.model.Saveable;
-import hudson.model.listeners.SaveableListener;
-import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
-
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,9 +54,16 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Atomic single token label, like "foo" or "bar".

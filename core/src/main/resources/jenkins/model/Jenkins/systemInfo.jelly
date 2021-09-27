@@ -105,10 +105,10 @@ THE SOFTWARE.
         </div>
         <script type="text/javascript">
             var w = document.getElementById('main-panel').offsetWidth - 30;
-            document.write('<img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=' + w + '&amp;height=500" alt="[${%Memory usage graph}]" />');
+            document.write('<img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=' + w + '&amp;height=500" srcset="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=' + w + '&amp;height=500&amp;scale=2 2x" alt="[${%Memory usage graph}]" />');
         </script>
         <noscript>
-            <img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Memory usage graph}]" />
+            <img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300" srcset="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Memory usage graph}]" />
         </noscript>
       <l:isAdmin>
         <h1>${%Thread Dumps}</h1>

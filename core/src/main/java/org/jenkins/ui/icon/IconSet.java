@@ -23,13 +23,12 @@
  */
 package org.jenkins.ui.icon;
 
-import org.apache.commons.jelly.JellyContext;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.jelly.JellyContext;
 
 /**
  * An icon set.
@@ -428,6 +427,7 @@ public class IconSet {
         images.add("folder-delete");
         images.add("folder");
         images.add("gear");
+        images.add("gear2");
         images.add("go-down");
         images.add("go-up");
         images.add("graph");

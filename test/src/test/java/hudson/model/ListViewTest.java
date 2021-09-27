@@ -24,9 +24,20 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -35,7 +46,8 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
-
+import hudson.views.StatusFilter;
+import hudson.views.ViewJobFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,27 +59,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import hudson.views.StatusFilter;
-import hudson.views.ViewJobFilter;
-import jenkins.model.Jenkins;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
-
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -293,12 +287,8 @@ public class ListViewTest {
         assertEquals(0, itemsNow.size());
 
         // remove a not contained job
-        try {
-            view.doRemoveJobFromView("job2");
-            fail("Remove job2");
-        } catch(Failure e) {
-            assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
-        }
+        Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
+        assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
     }
 
     @Test public void getItemsNames() throws Exception {

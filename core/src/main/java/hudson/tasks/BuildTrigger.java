@@ -23,6 +23,8 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -57,8 +59,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
@@ -336,12 +336,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         if(changed) {
-            StringBuilder b = new StringBuilder();
-            for (String p : projects) {
-                if(b.length()>0)    b.append(',');
-                b.append(p);
-            }
-            childProjects = b.toString();
+            childProjects = String.join(",", projects);
         }
 
         return changed;

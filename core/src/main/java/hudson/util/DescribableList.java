@@ -31,25 +31,24 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.AbstractProject;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.Saveable;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.DependencyDeclarer;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific

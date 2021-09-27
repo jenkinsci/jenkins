@@ -1,18 +1,17 @@
 package hudson.model.queue;
 
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
-import jenkins.model.Jenkins;
 import hudson.model.LoadBalancer;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
-
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import jenkins.model.Jenkins;
 
 /**
  * Singleton extension point for sorting buildable items
@@ -27,12 +26,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * @since 1.618
      */
-    public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = new Comparator<Queue.BlockedItem>() {
-        @Override
-        public int compare(Queue.BlockedItem o1, Queue.BlockedItem o2) {
-            return Long.compare(o1.getInQueueSince(), o2.getInQueueSince());
-        }
-    };
+    public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = Comparator.comparingLong(Queue.Item::getInQueueSince);
 
     /**
      * Sorts the buildable items list. The items at the beginning will be executed

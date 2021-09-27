@@ -23,16 +23,15 @@
  */
 package hudson.diagnosis;
 
+import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
+import java.io.IOException;
 import jenkins.model.Jenkins;
-import hudson.Extension;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
 
 /**
  * If Hudson is run with a lot of jobs but no views, suggest the user that they can create views.

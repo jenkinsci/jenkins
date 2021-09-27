@@ -23,25 +23,7 @@
  */
 package jenkins.security.seed;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import hudson.model.User;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import test.security.realm.InMemorySecurityRealm;
-
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -49,8 +31,25 @@ import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
+
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.model.User;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import test.security.realm.InMemorySecurityRealm;
 
 public class UserSeedPropertyTest {
 
@@ -156,12 +155,8 @@ public class UserSeedPropertyTest {
         assertUserNotConnected(wc, ALICE);
         assertUserConnected(wc, "anonymous");
 
-        try {
-            wc.login(ALICE);
-            fail("Alice does not exist any longer and so should not be able to login");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows("Alice does not exist any longer and so should not be able to login", FailingHttpStatusCodeException.class, () -> wc.login(ALICE));
+        assertEquals(401, e.getStatusCode());
     }
 
     @Test
@@ -194,12 +189,8 @@ public class UserSeedPropertyTest {
             // even after the security realm deleted the user, they can still connect, until session invalidation
             assertUserConnected(wc, ALICE);
 
-            try {
-                requestRenewSeedForUser(alice);
-                fail("The feature should be disabled");
-            } catch (FailingHttpStatusCodeException e) {
-                // as the feature is disabled, we cannot renew the seed
-            }
+            // as the feature is disabled, we cannot renew the seed
+            assertThrows("The feature should be disabled", FailingHttpStatusCodeException.class, () -> requestRenewSeedForUser(alice));
 
             // failed attempt to renew the seed does not have any effect
             assertUserConnected(wc, ALICE);
@@ -211,12 +202,8 @@ public class UserSeedPropertyTest {
             assertUserConnected(wc, ALICE);
 
             JenkinsRule.WebClient wc2 = j.createWebClient();
-            try {
-                wc2.login(ALICE);
-                fail("Alice is not longer backed by security realm");
-            } catch (FailingHttpStatusCodeException e) {
-                assertEquals(401, e.getStatusCode());
-            }
+            FailingHttpStatusCodeException e = assertThrows("Alice is not longer backed by security realm", FailingHttpStatusCodeException.class, () -> wc2.login(ALICE));
+            assertEquals(401, e.getStatusCode());
         } finally {
             UserSeedProperty.DISABLE_USER_SEED = currentStatus;
         }
@@ -293,11 +280,7 @@ public class UserSeedPropertyTest {
             assertNotNull(alice);
 
             HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
-            try {
-                htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel");
-                fail("Seed section should not be displayed");
-            } 
-            catch (ElementNotFoundException e) {}
+            assertThrows("Seed section should not be displayed", ElementNotFoundException.class, () -> htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel"));
         }
         finally {
             UserSeedProperty.HIDE_USER_SEED_SECTION = currentStatus;

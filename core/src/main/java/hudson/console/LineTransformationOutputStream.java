@@ -24,7 +24,6 @@
 package hudson.console;
 
 import hudson.util.ByteArrayOutputStream2;
-
 import java.io.IOException;
 import java.io.OutputStream;
 

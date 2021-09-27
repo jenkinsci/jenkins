@@ -24,6 +24,8 @@
 
 package hudson.model.listeners;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -32,7 +34,6 @@ import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 

@@ -11,7 +11,6 @@ import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Executor;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
-
 import java.io.File;
 import java.io.IOException;
 

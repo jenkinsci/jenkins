@@ -23,10 +23,10 @@
  */
 package hudson.util;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import static hudson.Util.fixEmpty;
 import static hudson.util.FormValidation.APPLY_CONTENT_SECURITY_POLICY_HEADERS;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -34,12 +34,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +42,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
-
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 
 /**

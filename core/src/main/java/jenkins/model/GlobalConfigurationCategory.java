@@ -1,12 +1,11 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
 import org.jenkinsci.Symbol;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Grouping of related {@link GlobalConfiguration}s.

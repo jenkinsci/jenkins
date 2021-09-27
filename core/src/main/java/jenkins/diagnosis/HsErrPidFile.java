@@ -2,13 +2,12 @@ package jenkins.diagnosis;
 
 import hudson.Util;
 import hudson.util.HttpResponses;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Serves hs_err_pid file.

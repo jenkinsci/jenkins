@@ -24,26 +24,24 @@
 
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import hudson.FilePath;
-import hudson.tasks.Mailer;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsSessionRule;
-
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.gargoylesoftware.htmlunit.WebRequest;
+import hudson.FilePath;
+import hudson.tasks.Mailer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 public class UserRestartTest {
 

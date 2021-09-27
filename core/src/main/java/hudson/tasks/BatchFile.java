@@ -23,12 +23,15 @@
  */
 package hudson.tasks;
 
-import hudson.FilePath;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import hudson.util.LineEndingConversion;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import org.jenkinsci.Symbol;
@@ -39,11 +42,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes commands by using Windows batch file.

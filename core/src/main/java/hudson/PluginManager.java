@@ -23,6 +23,17 @@
  */
 package hudson;
 
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -52,6 +63,48 @@ import hudson.util.Retrier;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
@@ -97,68 +150,11 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static hudson.init.InitMilestone.COMPLETED;
-import static hudson.init.InitMilestone.PLUGINS_LISTED;
-import static hudson.init.InitMilestone.PLUGINS_PREPARED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
-import static java.util.stream.Collectors.toList;
-
-import org.springframework.security.core.Authentication;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -624,7 +620,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
     @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
-        Set<String> names = new HashSet();
+        Set<String> names = new HashSet<>();
 
         ServletContext context = Jenkins.get().servletContext;
         Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
@@ -2100,11 +2096,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * {@link ClassLoader} that can see all plugins.
      */
     public final class UberClassLoader extends ClassLoader {
-        /**
-         * Make generated types visible.
-         * Keyed by the generated class name.
-         */
-        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<>();
         /** Cache of loaded, or known to be unloadable, classes. */
         private final Map<String,Class<?>> loaded = new HashMap<>();
 
@@ -2112,19 +2103,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             super(PluginManager.class.getClassLoader());
         }
 
-        public void addNamedClass(String className, Class c) {
-            generatedClasses.put(className, new WeakReference<>(c));
-        }
-
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            WeakReference<Class> wc = generatedClasses.get(name);
-            if (wc!=null) {
-                Class c = wc.get();
-                if (c!=null)    return c;
-                else            generatedClasses.remove(name,wc);
-            }
-
             if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
                 throw new ClassNotFoundException("ignoring " + name);
             }

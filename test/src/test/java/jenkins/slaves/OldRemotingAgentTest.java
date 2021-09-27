@@ -23,6 +23,10 @@
  */
 package jenkins.slaves;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.MarkupText;
@@ -44,6 +48,12 @@ import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.util.Collection;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -55,17 +65,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.net.URISyntaxException;
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for old Remoting agent versions

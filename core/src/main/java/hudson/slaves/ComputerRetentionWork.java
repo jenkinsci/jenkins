@@ -23,16 +23,15 @@
  */
 package hudson.slaves;
 
+import hudson.Extension;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.PeriodicWork;
+import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
-
-import hudson.model.Computer;
-import hudson.model.Queue;
 import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.PeriodicWork;
-import hudson.Extension;
 import org.jenkinsci.Symbol;
 
 /**

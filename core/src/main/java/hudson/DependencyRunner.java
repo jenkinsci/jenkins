@@ -25,16 +25,15 @@
 package hudson;
 
 import hudson.model.AbstractProject;
-import hudson.security.ACLContext;
-import jenkins.model.Jenkins;
 import hudson.security.ACL;
-
+import hudson.security.ACLContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Collection;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Runs a job on all projects in the order of dependencies

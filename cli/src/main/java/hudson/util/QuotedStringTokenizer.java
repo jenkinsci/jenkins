@@ -35,10 +35,10 @@
 // ========================================================================
 package hudson.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
 
 /* ------------------------------------------------------------ */
 /** StringTokenizer with Quoting support.
@@ -417,7 +417,6 @@ public class QuotedStringTokenizer
 
                     default:
                         buf.append(c);
-                        continue;
                 }
             }
             buf.append('"');
@@ -483,7 +482,6 @@ public class QuotedStringTokenizer
             else if (c=='\\')
             {
                 escape=true;
-                continue;
             }
             else
                 b.append(c);

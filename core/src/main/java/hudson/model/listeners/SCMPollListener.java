@@ -25,10 +25,9 @@ package hudson.model.listeners;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.scm.PollingResult;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
-
+import hudson.scm.PollingResult;
 import java.io.IOException;
 
 /**

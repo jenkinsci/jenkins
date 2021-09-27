@@ -1,8 +1,7 @@
 package jenkins.security.s2m;
 
-import hudson.Extension;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -29,7 +28,18 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
+    /**
+     * @deprecated Use {@link #getAgentToControllerAccessControl()} instead
+     */
+    @Deprecated
     public boolean getMasterToSlaveAccessControl() {
+        return getAgentToControllerAccessControl();
+    }
+
+    /**
+     * @since TODO
+     */
+    public boolean getAgentToControllerAccessControl() {
         return !rule.getMasterKillSwitch();
     }
 

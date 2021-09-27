@@ -27,11 +27,10 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
+import java.util.HashSet;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
-
-import java.util.List;
-import java.util.HashSet;
 
 /**
  * CLI command, which deletes a job or multiple jobs.

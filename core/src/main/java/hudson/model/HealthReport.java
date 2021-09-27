@@ -26,17 +26,16 @@ package hudson.model;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
-import jenkins.util.NonLocalizable;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jenkins.model.Jenkins;
+import jenkins.util.NonLocalizable;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents health of something (typically project).
