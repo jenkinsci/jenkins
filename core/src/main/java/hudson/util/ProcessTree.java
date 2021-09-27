@@ -435,7 +435,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         if(!enabled)
             return DEFAULT;
 
-        // Check for the existance of vetoers if I don't know already
+        // Check for the existence of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
                 VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
