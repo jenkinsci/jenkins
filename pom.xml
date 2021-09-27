@@ -425,7 +425,6 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <consoleOutput>true</consoleOutput>
-            <failsOnError>true</failsOnError>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
