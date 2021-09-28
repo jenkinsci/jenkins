@@ -29,7 +29,7 @@ THE SOFTWARE.
     <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Legend}</a>
       <a href="rssAll" class="yui-button link-button">
         <span class="leading-icon">
-          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                      ariaHidden="true"
                      href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>
@@ -37,7 +37,7 @@ THE SOFTWARE.
       </a>
       <a href="rssFailed" class="yui-button link-button">
         <span class="leading-icon">
-          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                      ariaHidden="true"
                      href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>
@@ -45,7 +45,7 @@ THE SOFTWARE.
       </a>
       <a href="rssLatest" class="yui-button link-button">
         <span class="leading-icon">
-          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
+          <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                      ariaHidden="true"
                      href="${imagesURL}/material-icons/feed.svg#feed"/>
         </span>

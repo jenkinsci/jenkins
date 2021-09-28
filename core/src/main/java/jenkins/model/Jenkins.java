@@ -888,7 +888,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      If non-null, use existing plugin manager.  create a new one.
      */
     @SuppressFBWarnings({
-        "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
         "DM_EXIT" // Exit is wanted here
     })
@@ -1917,7 +1916,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    public void addView(View v) throws IOException {
+    public void addView(@NonNull View v) throws IOException {
         viewGroupMixIn.addView(v);
     }
 
@@ -2833,6 +2832,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @see AuthorizationStrategy#getRootACL()
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
@@ -3204,6 +3204,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
+    @NonNull
     @Override
     public LabelAtom getSelfLabel() {
         if (nodeNameAndSelfLabelOverride != null) {
@@ -3377,7 +3378,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         g.requires(loadJobs.toArray(new Handle[0])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             @Override
-            public void run(Reactor reactor) throws Exception {
+            public void run(Reactor reactor) {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
                 // to inspect what already existed in memory (in case of reloading)

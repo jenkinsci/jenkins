@@ -847,95 +847,96 @@ table.parameters > tbody:hover {
 
 #buildHistoryPage {
   position: relative;
-}
 
-#buildHistoryPage .build-search-row td {
-    position: relative;
-}
+  .build-search-row, .build-search-no-results-row {
+    &:hover {
+      background: transparent !important;
+    }
 
-#buildHistoryPage .build-search-row .clear {
-    position: absolute;
-    padding: 0 4px;
-    cursor: pointer;
-    top: 4px;
-    right: 6px;
-    opacity: 0.5;
-}
+    td {
+      padding: 8px;
+    }
+  }
 
-#buildHistoryPage .build-search-row .clear:hover {
-    background-color: var(--very-light-grey);
-    border: 1px solid var(--medium-grey);
-    padding-right: 3px;
-    border-top-right-radius: 2px;
-}
+  .build-search-no-results-row {
+    border: none!important;
+    width: 100%!important;
+    background: transparent;
 
-#buildHistoryPage .build-search-row input {
-    width: 100%;
-    padding-left: 5px;
-    padding-right: 20px;
-}
-
-#buildHistoryPage .build-search-row table {
-    width: 100%;
-}
-
-#buildHistoryPage .build-search-row .build-search-help {
-    width: 20px;
-}
-
-#buildHistoryPage .build-search-row .icon-help {
-    position: absolute;
-    cursor: pointer;
-    top: 6px;
+    td {
+      padding-top: 0!important;
+    }
+  }
 }
 
 #buildHistoryPageNav {
   position: absolute;
-  right: -21px;
-  top: 41px;
-  border: 1px solid;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  right: -28px;
+  top: 96px;
+  border-radius: 6px;
+  background: var(--input-color);
+  border: 2px solid var(--input-border);
   visibility: hidden;
-}
+  z-index: 0;
+  opacity: 0;
+  transition: 0.2s ease;
 
-#buildHistoryPageNav .nav {
-  width: 16px;
-  height: 16px;
-  background: no-repeat;
-  background-position: center;
-  background-size: 16px 16px;
-  margin: 4px 2px;
-  cursor: pointer;
+  // Invisible pseudo element on the left so #buildHistoryPageNav
+  // doesn't disappear when moving cursor over gap
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -8px;
+    bottom: 0;
+    width: 8px;
+    background: transparent;
+    z-index: -1;
+  }
+
+  .buildHistoryPageNav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 8px;
+    height: 30px;
+    cursor: pointer;
+    transition: opacity .2s ease;
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &:active {
+      opacity: 0.25;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    &-page-one-top {
+      width: 12px;
+      height: 2px;
+      background: currentColor;
+      margin: 2px 0;
+      border-radius: 2px;
+    }
+
+    svg {
+      fill: currentColor;
+      width: 12px;
+      height: 12px;
+    }
+  }
 }
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  border-color: var(--light-grey) !important;
-}
-
-#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav:hover {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav .pageOne {
-  background-image: url(../../images/16x16/go_top.png);
-}
-
-#buildHistoryPageNav .pageUp {
-  background-image: url(../../images/16x16/go_up.png);
-}
-
-#buildHistoryPageNav .pageDown {
-  background-image: url(../../images/16x16/go_down.png);
-}
-
-#buildHistoryPageNav .find {
-  background-image: url(../../images/16x16/find.png);
+  right: -38px;
+  opacity: 1;
 }
 
 .build-row.model-link-active {

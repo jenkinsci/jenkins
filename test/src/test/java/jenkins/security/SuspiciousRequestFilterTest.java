@@ -40,7 +40,7 @@ public class SuspiciousRequestFilterTest {
         assertThat(Foo.getInstance().baz, is(nullValue()));
         assertThat(response.getStatusCode(), is(HttpServletResponse.SC_BAD_REQUEST));
         // Actually served by Jetty; never even gets as far as SuspiciousRequestFilter.
-        assertThat(response.getContentAsString(), containsString("Ambiguous path parameter in URI"));
+        assertThat(response.getContentAsString(), containsString("Ambiguous path parameter"));
     }
 
     @Ignore("No longer passes Jetty")
