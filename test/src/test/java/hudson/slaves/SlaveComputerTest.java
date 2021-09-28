@@ -23,6 +23,10 @@
  */
 package hudson.slaves;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -35,9 +39,6 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
