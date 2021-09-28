@@ -53,12 +53,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
- * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
+ * the {@link ServletContext}, so properties like {@code jenkins.whatever.Clazz.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not
  * have to be changed.
  *
  * <p>This should be used to obtain hudson/jenkins "app"-level parameters
- * (e.g. {@code hudson.DNSMultiCast.disabled}), but not for system parameters
+ * (e.g. {@code jenkins.whatever.Clazz.disabled}), but not for system parameters
  * (e.g. {@code os.name}).
  *
  * <p>If you run multiple instances of Jenkins in the same virtual machine and wish
