@@ -14,6 +14,6 @@ public class IconSetTest {
     @Test
     void testIconSetSize() {
         final Map<String, Icon> coreIcons = IconSet.icons.getCoreIcons();
-        assertThat("icons", coreIcons.size(), greaterThanOrEqualTo(371));
+        assertThat("icons", coreIcons.size(), greaterThanOrEqualTo(350));
     }
 }
