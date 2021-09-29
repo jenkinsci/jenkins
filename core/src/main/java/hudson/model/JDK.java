@@ -174,7 +174,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
 
         @Override
         public String getDisplayName() {
-            return Messages.Hudson_JdkDisplayName();
+            return Messages.JDK_DisplayName();
         }
 
         @Override
