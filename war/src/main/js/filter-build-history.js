@@ -34,12 +34,7 @@ function updateBuilds() {
                 while (rows.length > 0 && rows[firstBuildRow].classList.contains('transitive')) {
                     Element.remove(rows[firstBuildRow]);
                 }
-
-                console.log("Extraordinary man")
-                console.log(rsp.responseText)
-                console.log(buildHistoryContainer.headers)
-                console.log(rsp.getResponseHeader("n"))
-
+                
                 // insert new rows
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
