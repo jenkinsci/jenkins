@@ -35,6 +35,11 @@ function updateBuilds() {
                     Element.remove(rows[firstBuildRow]);
                 }
 
+                console.log("Extraordinary man")
+                console.log(rsp.responseText)
+                console.log(buildHistoryContainer.headers)
+                console.log(rsp.getResponseHeader("n"))
+
                 // insert new rows
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
@@ -59,7 +64,7 @@ function updateBuilds() {
                 }
 
                 // next update
-                buildHistoryContainer.headers = ["n",rsp.getResponseHeader("n")];
+                buildHistoryContainer.headers = ["n", rsp.getResponseHeader("n")];
                 checkAllRowCellOverflows();
                 createRefreshTimeout();
             }
@@ -399,9 +404,6 @@ function loadPage(params, focusOnSearch) {
         onSuccess: function(rsp) {
             pageSearchInputContainer.classList.remove("jenkins-search--loading");
             buildHistoryContainer.classList.remove("jenkins-pane--loading");
-
-            console.log(rsp.responseText)
-            console.log(rsp.responseText === "<table class=\"pane\"></table>")
 
             if (rsp.responseText === "<table class=\"pane\"></table>") {
                 noBuildsBanner.style.display = "block"
