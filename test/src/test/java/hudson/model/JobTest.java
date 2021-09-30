@@ -373,7 +373,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = new String(out.toByteArray());
+        final String oldB2Log = out.toString();
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -390,7 +390,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = new String(out.toByteArray());
+        final String newB2Log = out.toString();
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 

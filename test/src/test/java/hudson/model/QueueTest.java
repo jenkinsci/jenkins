@@ -102,6 +102,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -177,7 +178,7 @@ public class QueueTest {
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -386,7 +387,7 @@ public class QueueTest {
         CauseAction ca = build.getAction(CauseAction.class);
         assertNotNull(ca);
         StringBuilder causes = new StringBuilder();
-        for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
+        for (Cause c : ca.getCauses()) causes.append(c.getShortDescription()).append("\n");
         assertEquals("Build causes should have all items, even duplicates",
                 "Started by user SYSTEM\nStarted by user SYSTEM\n"
                 + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
