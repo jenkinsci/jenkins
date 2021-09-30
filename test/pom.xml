@@ -81,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1589.vc23fca066d5c</version>
+      <version>1626.v46b0925e70db</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -159,7 +159,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-inline</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

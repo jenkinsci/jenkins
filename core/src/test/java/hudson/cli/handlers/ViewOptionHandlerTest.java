@@ -28,6 +28,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -41,22 +43,15 @@ import jenkins.model.Jenkins;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
-@PrepareForTest(Jenkins.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ViewOptionHandlerTest {
 
     @Mock private Setter<View> setter;
@@ -67,7 +62,6 @@ public class ViewOptionHandlerTest {
     @Mock private View inner;
     @Mock private CompositeView nested;
     @Mock private CompositeView outer;
-    @Mock private Jenkins jenkins;
 
     private AutoCloseable mocks;
 
@@ -92,9 +86,20 @@ public class ViewOptionHandlerTest {
         when(outer.getViewName()).thenReturn("outer");
         when(outer.getDisplayName()).thenCallRealMethod();
         when(outer.getView("nested")).thenReturn(nested);
+    }
 
-        PowerMockito.mockStatic(Jenkins.class);
-        PowerMockito.when(Jenkins.get()).thenReturn(jenkins);
+    @Test public void resolveTopLevelView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            parse("outer");
+
+            verify(setter).addValue(outer);
+        }
+    }
+
+    private void mockJenkins(MockedStatic<Jenkins> mocked, Jenkins jenkins) {
+        mocked.when(Jenkins::get).thenReturn(jenkins);
         when(jenkins.getView("outer")).thenReturn(outer);
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
         when(jenkins.getACL()).thenReturn(new ACL() {
@@ -105,134 +110,169 @@ public class ViewOptionHandlerTest {
         });
     }
 
-    @Test public void resolveTopLevelView() throws Exception {
-
-        parse("outer");
-
-        verify(setter).addValue(outer);
-    }
-
     @Test public void resolveNestedView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            parse("outer/nested");
 
-        parse("outer/nested");
-
-        verify(setter).addValue(nested);
+            verify(setter).addValue(nested);
+        }
     }
 
     @Test public void resolveOuterView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            parse("outer/nested/inner");
 
-        parse("outer/nested/inner");
-
-        verify(setter).addValue(inner);
+            verify(setter).addValue(inner);
+        }
     }
 
     @Test public void ignoreLeadingAndTrailingSlashes() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            parse("/outer/nested/inner/");
 
-        parse("/outer/nested/inner/");
-
-        verify(setter).addValue(inner);
+            verify(setter).addValue(inner);
+        }
     }
 
     @Test public void reportNonexistentTopLevelView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertEquals(
+                    "No view named missing_view inside view Jenkins",
+                    parseFailedWith(IllegalArgumentException.class, "missing_view")
+            );
 
-        assertEquals(
-                "No view named missing_view inside view Jenkins",
-                parseFailedWith(IllegalArgumentException.class, "missing_view")
-        );
-
-        verifyNoInteractions(setter);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportNonexistentNestedView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertEquals(
+                    "No view named missing_view inside view outer",
+                    parseFailedWith(IllegalArgumentException.class, "outer/missing_view")
+            );
 
-        assertEquals(
-                "No view named missing_view inside view outer",
-                parseFailedWith(IllegalArgumentException.class, "outer/missing_view")
-        );
-
-        verifyNoInteractions(setter);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportNonexistentInnerView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertEquals(
+                    "No view named missing_view inside view nested",
+                    parseFailedWith(IllegalArgumentException.class, "outer/nested/missing_view")
+            );
 
-        assertEquals(
-                "No view named missing_view inside view nested",
-                parseFailedWith(IllegalArgumentException.class, "outer/nested/missing_view")
-        );
-
-        verifyNoInteractions(setter);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportTraversingViewThatIsNotAViewGroup() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertEquals(
+                    "inner view can not contain views",
+                    parseFailedWith(IllegalStateException.class, "outer/nested/inner/missing")
+            );
 
-        assertEquals(
-                "inner view can not contain views",
-                parseFailedWith(IllegalStateException.class, "outer/nested/inner/missing")
-        );
-
-        verifyNoInteractions(setter);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportEmptyViewNameRequestAsNull() {
-        assertNull(handler.getView(""));
-        verifyNoInteractions(setter);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertNull(handler.getView(""));
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportViewSpaceNameRequestAsIAE() {
-        final IllegalArgumentException e = assertThrows("No exception thrown. Expected IllegalArgumentException",
-                IllegalArgumentException.class, () -> assertNull(handler.getView(" ")));
-        assertEquals("No view named   inside view Jenkins", e.getMessage());
-        verifyNoInteractions(setter);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            final IllegalArgumentException e = assertThrows("No exception thrown. Expected IllegalArgumentException",
+                    IllegalArgumentException.class, () -> assertNull(handler.getView(" ")));
+            assertEquals("No view named   inside view Jenkins", e.getMessage());
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void reportNullViewAsNPE() {
-        assertThrows(NullPointerException.class, () -> handler.getView(null));
-        verifyNoInteractions(setter);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            assertThrows(NullPointerException.class, () -> handler.getView(null));
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void refuseToReadOuterView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            denyAccessOn(outer);
 
-        denyAccessOn(outer);
+            assertEquals(
+                    "Access denied for: outer",
+                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+            );
 
-        assertEquals(
-                "Access denied for: outer",
-                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
-        );
+            verify(outer).checkPermission(View.READ);
 
-        verify(outer).checkPermission(View.READ);
-
-        verifyNoInteractions(nested);
-        verifyNoInteractions(inner);
-        verifyNoInteractions(setter);
+            verifyNoInteractions(nested);
+            verifyNoInteractions(inner);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void refuseToReadNestedView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            denyAccessOn(nested);
 
-        denyAccessOn(nested);
+            assertEquals(
+                    "Access denied for: nested",
+                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+            );
 
-        assertEquals(
-                "Access denied for: nested",
-                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
-        );
+            verify(nested).checkPermission(View.READ);
 
-        verify(nested).checkPermission(View.READ);
-
-        verifyNoInteractions(inner);
-        verifyNoInteractions(setter);
+            verifyNoInteractions(inner);
+            verifyNoInteractions(setter);
+        }
     }
 
     @Test public void refuseToReadInnerView() throws Exception {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mockJenkins(mocked, jenkins);
+            denyAccessOn(inner);
 
-        denyAccessOn(inner);
+            assertEquals(
+                    "Access denied for: inner",
+                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+            );
 
-        assertEquals(
-                "Access denied for: inner",
-                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
-        );
+            verify(inner).checkPermission(View.READ);
 
-        verify(inner).checkPermission(View.READ);
-
-        verifyNoInteractions(setter);
+            verifyNoInteractions(setter);
+        }
     }
 
     private void denyAccessOn(View view) {

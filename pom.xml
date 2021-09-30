@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.314</revision>
+    <revision>2.315</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -95,15 +95,13 @@ THE SOFTWARE.
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
-    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
-    <findbugs.effort>Max</findbugs.effort>
-    <findbugs.threshold>High</findbugs.threshold>
-    <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+    <spotbugs.effort>Max</spotbugs.effort>
+    <spotbugs.threshold>Medium</spotbugs.threshold>
+    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.24</access-modifier.version>
-    <junit.jupiter.version>5.8.0</junit.jupiter.version>
-    <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.13.0</spotless.version>
+    <access-modifier.version>1.25</access-modifier.version>
+    <junit.jupiter.version>5.8.1</junit.jupiter.version>
+    <spotless.version>2.13.1</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -130,19 +128,8 @@ THE SOFTWARE.
 
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
+        <artifactId>mockito-inline</artifactId>
         <version>3.12.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermock.version}</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>

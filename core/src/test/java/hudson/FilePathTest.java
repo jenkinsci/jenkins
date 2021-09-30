@@ -478,7 +478,7 @@ public class FilePathTest {
     }
 
     @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        assumeFalse("Test uses POSIX-specific features", Functions.isWindows() || Platform.isDarwin());
         File tmp = temp.getRoot();
         File original = new File(tmp,"original");
         FilePath originalP = new FilePath(channels.french, original.getPath());
