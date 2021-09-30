@@ -65,13 +65,13 @@ THE SOFTWARE.
              </j:choose>  
         </j:if>
         <j:if test="${!empty(healthReports)}">
-            <div class="healthReportDetails">
-                <table border="0">
+            <div class="jenkins-tooltip healthReportDetails">
+                <table class="bigtable" border="0">
                     <thead>
                         <tr>
                             <th align="left">W</th>
                             <th align="left">${%Description}</th>
-                            <th align="right">%</th>
+                            <th align="left">%</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,7 +81,7 @@ THE SOFTWARE.
                                     <l:icon class="${rpt.iconClassName} icon-sm" />
                                 </td>
                                 <td>${rpt.localizableDescription}</td>
-                                <td align="right">${rpt.score}</td>
+                                <td>${rpt.score}</td>
                             </tr>
                         </j:forEach>
                     </tbody>
