@@ -23,6 +23,19 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -34,7 +47,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.collect.Iterables;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -53,26 +65,20 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
-
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -144,7 +150,7 @@ public class AbstractProjectTest {
     @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void wipeWorkspaceProtected2() throws Exception {
-        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE, "anonymous");
+        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(Item.WORKSPACE, "anonymous");
 
         // make sure that the deletion is protected in the same way
         wipeWorkspaceProtected();
@@ -153,14 +159,9 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
-        page = page.getAnchorByText("Workspace").click();
-        try {
-            String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
-            page.getAnchorByText(wipeOutLabel);
-            fail("shouldn't find a link");
-        } catch (ElementNotFoundException e) {
-            // OK
-        }
+        HtmlPage workspace = page.getAnchorByText("Workspace").click();
+        String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+        assertThrows("shouldn't find a link", ElementNotFoundException.class, () -> workspace.getAnchorByText(wipeOutLabel));
     }
 
     /**
@@ -197,7 +198,7 @@ public class AbstractProjectTest {
 
         form = j.createWebClient().getPage(p, "configure").getFormByName("config");
         input = form.getInputByName("blockBuildWhenUpstreamBuilding");
-        assert input.isChecked() : "blockBuildWhenUpstreamBuilding check box is not checked.";
+        assertTrue("blockBuildWhenUpstreamBuilding check box is not checked.", input.isChecked());
     }
 
     /**
@@ -283,19 +284,19 @@ public class AbstractProjectTest {
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         MockFolder d = j.jenkins.createProject(MockFolder.class, "d");
         Items.move(p, d);
         assertEquals(p, j.jenkins.getItemByFullName("d/edited"));
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         d.renameTo("d2");
         p = j.jenkins.getItemByFullName("d2/edited", FreeStyleProject.class);
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
     }
 
     @Test
@@ -482,21 +483,12 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
-        }
+        CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
+        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
-        try {
-            AbstractProject<?, ?> not_found = AbstractProject.resolveForCLI("never_created1");
-            fail("Exception should occur before!");
-        } catch (CmdLineException e) {
-            assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
-        }
-
+        e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
+        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {
@@ -560,8 +552,8 @@ public class AbstractProjectTest {
          */
         assertThat(responseContent, allOf(
                 containsString("warning"),
-                // as there is only master that is currently used, it's de facto the nearest to whatever
-                containsString("master"),
+                // as there is only the built-in node that is currently used, it's de facto the nearest to whatever
+                containsString("built-in"),
                 containsString("whatever")
         ));
     }

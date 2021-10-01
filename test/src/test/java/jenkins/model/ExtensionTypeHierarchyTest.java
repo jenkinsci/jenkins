@@ -5,13 +5,12 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionPoint;
+import java.util.Arrays;
+import java.util.Comparator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -21,8 +20,8 @@ public class ExtensionTypeHierarchyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    public static interface Animal extends ExtensionPoint {}
-    public static interface White extends ExtensionPoint {}
+    public interface Animal extends ExtensionPoint {}
+    public interface White extends ExtensionPoint {}
 
     @TestExtension
     public static class Swan implements Animal, White {}
@@ -51,6 +50,7 @@ public class ExtensionTypeHierarchyTest {
      */
     private <T> T[] sort(T[] a) {
         Arrays.sort(a,new Comparator<T>() {
+            @Override
             public int compare(T o1, T o2) {
                 return o1.getClass().getName().compareTo(o2.getClass().getName());
             }

@@ -49,10 +49,12 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     public LegacySecurityRealm() {
     }
 
+    @Override
     public SecurityComponents createSecurityComponents() {
         return new SecurityComponents(this);
     }
 
+    @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if(authentication instanceof ContainerAuthentication)
             return authentication;
@@ -101,6 +103,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.LegacySecurityRealm_Displayname();
         }

@@ -23,11 +23,16 @@
  */
 package jenkins.security;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.junit.After;
 import org.junit.Before;
@@ -36,12 +41,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class StackTraceSuppressionTest {
 

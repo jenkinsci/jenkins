@@ -23,6 +23,7 @@
  */
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.FullDuplexHttpStream;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
@@ -58,13 +59,15 @@ public abstract class FullDuplexHttpService {
      * Set to true if the servlet container doesn't support chunked encoding.
      */
     @Restricted(NoExternalUse.class)
-    public static boolean DIY_CHUNKING = SystemProperties.getBoolean("hudson.diyChunking");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean DIY_CHUNKING = SystemProperties.getBoolean("hudson.diyChunking");
 
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.
      */
     @Restricted(NoExternalUse.class)
-    public static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     protected final UUID uuid;
 
@@ -146,7 +149,7 @@ public abstract class FullDuplexHttpService {
     /**
      * HTTP response that allows a client to use this service.
      */
-    public static abstract class Response extends HttpResponses.HttpResponseException {
+    public abstract static class Response extends HttpResponses.HttpResponseException {
 
         private final Map<UUID, FullDuplexHttpService> services;
 

@@ -27,9 +27,9 @@ package hudson.tools;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.LineEndingConversion;
+import java.io.ObjectStreamException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import java.io.ObjectStreamException;
 
 /**
  * Installs a tool by running an arbitrary shell command.

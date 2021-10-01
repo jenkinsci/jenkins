@@ -23,12 +23,13 @@
  */
 package hudson.model.listeners;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class ItemListenerTest {
     @Test
     public void onCreatedViaCLI() throws Exception {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
-                withStdin(new ByteArrayInputStream(("<project><actions/><builders/><publishers/><buildWrappers/></project>").getBytes())).
+                withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes())).
                 invokeWithArgs("testJob");
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
         assertNotNull("job should be created: " + result, j.jenkins.getItem("testJob"));

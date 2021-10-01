@@ -23,27 +23,30 @@
  */
 package hudson.slaves;
 
-import hudson.ExtensionPoint;
-import hudson.Util;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.ExtensionPoint;
+import hudson.Util;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Computer;
+import hudson.model.Descriptor;
+import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import net.jcip.annotations.GuardedBy;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -160,6 +163,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @Override
         @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
@@ -169,6 +173,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension(ordinal=100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
             }

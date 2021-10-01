@@ -23,9 +23,15 @@
  */
 package hudson.model;
 
-import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 
+import antlr.ANTLRException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
@@ -43,19 +49,10 @@ import hudson.model.labels.LabelVisitor;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
+import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithChildren;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Collection;
@@ -64,17 +61,17 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Group of {@link Node}s.
@@ -89,16 +86,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Display name of this label.
      */
     @NonNull
-    protected transient final String name;
+    protected final transient String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
     @NonNull
-    public transient final LoadStatistics loadStatistics;
+    public final transient LoadStatistics loadStatistics;
     @NonNull
-    public transient final NodeProvisioner nodeProvisioner;
+    public final transient NodeProvisioner nodeProvisioner;
 
     public Label(@NonNull String name) {
         this.name = name;
@@ -144,6 +141,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
+    @Override
     @NonNull
     public String getDisplayName() {
         return name;
@@ -161,6 +159,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return "label/" + Util.rawEncode(name) + '/';
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -184,6 +183,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public final boolean matches(final Collection<LabelAtom> labels) {
         return matches(new VariableResolver<Boolean>() {
+            @Override
             public Boolean resolve(String name) {
                 for (LabelAtom a : labels)
                     if (a.getName().equals(name))
@@ -214,7 +214,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             if (o1 == o2) {
                 return 0;
             }
-            return o1 instanceof Jenkins ? -1 : (o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName()));
+            return o1 instanceof Jenkins ? -1 : o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName());
         }
     }
 
@@ -461,14 +461,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns the label that represents {@code this&rhs}
+     * Returns the label that represents {@code this&&rhs}
      */
     public Label and(Label rhs) {
         return new LabelExpression.And(this,rhs);
     }
 
     /**
-     * Returns the label that represents {@code this|rhs}
+     * Returns the label that represents {@code this||rhs}
      */
     public Label or(Label rhs) {
         return new LabelExpression.Or(this,rhs);
@@ -524,6 +524,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return name.hashCode();
     }
 
+    @Override
     public final int compareTo(Label that) {
         return this.name.compareTo(that.name);
     }
@@ -542,6 +543,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return name;
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
@@ -554,15 +556,18 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         public ConverterImpl() {
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return Label.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Label src = (Label) source;
             writer.setValue(src.getExpression());
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return Jenkins.get().getLabel(reader.getValue());
         }

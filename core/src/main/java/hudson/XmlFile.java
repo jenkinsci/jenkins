@@ -33,16 +33,6 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.Locator2;
-import org.xml.sax.helpers.DefaultHandler;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -50,15 +40,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.io.IOUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.Locator2;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Represents an XML data file that Jenkins uses as a data file.
@@ -118,6 +120,7 @@ import org.apache.commons.io.IOUtils;
 public final class XmlFile {
     private final XStream xs;
     private final File file;
+    private final boolean force;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
@@ -126,8 +129,19 @@ public final class XmlFile {
     }
 
     public XmlFile(XStream xs, File file) {
+        this(xs, file, true);
+    }
+
+    /**
+     * @param force Whether or not to flush the page cache to the storage device with {@link
+     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     * @since 2.304
+     */
+    public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
         this.file = file;
+        this.force = force;
     }
 
     public File getFile() {
@@ -186,7 +200,9 @@ public final class XmlFile {
 
     public void write( Object o ) throws IOException {
         mkdirs();
-        AtomicFileWriter w = new AtomicFileWriter(file);
+        AtomicFileWriter w = force
+                ? new AtomicFileWriter(file)
+                : new AtomicFileWriter(file.toPath(), StandardCharsets.UTF_8, false, false);
         try {
             w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
@@ -296,7 +312,7 @@ public final class XmlFile {
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
             final String encoding;
-            public Eureka(String encoding) {
+            Eureka(String encoding) {
                 this.encoding = encoding;
             }
         }

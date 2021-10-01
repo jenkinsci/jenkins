@@ -23,14 +23,11 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.Task;
 import hudson.model.queue.FoldableAction;
 import hudson.util.XStream2;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.RunAction2;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
 public class CauseAction implements FoldableAction, RunAction2 {
@@ -110,15 +109,18 @@ public class CauseAction implements FoldableAction, RunAction2 {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return "Cause";
     }
 
+    @Override
     public String getIconFileName() {
         // no icon
         return null;
     }
 
+    @Override
     public String getUrlName() {
         return "cause";
     }
@@ -162,6 +164,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
         }
     }
 
+    @Override
     public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {
         CauseAction existing = item.getAction(CauseAction.class);
         if (existing!=null) {

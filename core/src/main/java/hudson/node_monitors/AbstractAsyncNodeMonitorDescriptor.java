@@ -1,14 +1,15 @@
 package hudson.node_monitors;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
-import jenkins.model.Jenkins;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,15 +17,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
 
 /**
  * Sophisticated version of {@link AbstractNodeMonitorDescriptor} that
@@ -104,7 +102,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
 
         final Map<Computer,T> data = new HashMap<>();
 
-        for (Entry<Computer, Future<T>> e : futures.entrySet()) {
+        for (Map.Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();
             Future<T> f = futures.get(c);
             data.put(c, null);  // sentinel value

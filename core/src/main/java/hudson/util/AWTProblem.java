@@ -38,4 +38,3 @@ public class AWTProblem extends BootFailure {
         this.cause = cause;
     }
 }
-

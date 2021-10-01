@@ -23,27 +23,27 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
-import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import jenkins.util.SystemProperties;
-
-import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
@@ -64,6 +64,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -76,7 +77,20 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.SimpleTimeZone;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -85,15 +99,22 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
+import jenkins.util.io.PathRemover;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -216,9 +237,9 @@ public class Util {
     @NonNull
     public static String loadFile(@NonNull File logfile, @NonNull Charset charset) throws IOException {
         // Note: Until charset handling is resolved (e.g. by implementing
-        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
+        // https://issues.jenkins.io/browse/JENKINS-48923 ), this method
         // must be able to handle character encoding errors. As reported at
-        // https://issues.jenkins-ci.org/browse/JENKINS-49112 Run.getLog() calls
+        // https://issues.jenkins.io/browse/JENKINS-49112 Run.getLog() calls
         // loadFile() to fully read the generated log file. This file might
         // contain unmappable and/or malformed byte sequences. We need to make
         // sure that in such cases, no CharacterCodingException is thrown.
@@ -228,7 +249,7 @@ public class Util {
         // from a Charset and the reader returned by Files.newBufferedReader()
         // handle malformed and unmappable byte sequences for the specified
         // encoding; the latter is more picky and will throw an exception.
-        // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
         try {
             return FileUtils.readFileToString(logfile, charset);
         } catch (FileNotFoundException e) {
@@ -393,7 +414,7 @@ public class Util {
         // by default, the permissions of the created directory are 0700&(~umask)
         // whereas the old approach created a temporary directory with permissions
         // 0777&(~umask).
-        // To avoid permissions problems like https://issues.jenkins-ci.org/browse/JENKINS-48407
+        // To avoid permissions problems like https://issues.jenkins.io/browse/JENKINS-48407
         // we can pass POSIX file permissions as an attribute (see, for example,
         // https://github.com/jenkinsci/jenkins/pull/3161 )
         final Path tempPath;
@@ -860,7 +881,21 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = raw.charAt(j) == ' ';
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
+    private static final boolean[] fullUriMap = new boolean[123];
+    static {
+        String raw = "               0123456789       ABCDEFGHIJKLMNOPQRSTUVWXYZ      abcdefghijklmnopqrstuvwxyz";
+        //            !"#$%&'()*+,-./0123456789:;<=>?@                          [\]^_`                          {|}~
+        //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) fullUriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            fullUriMap[i] = raw.charAt(j) == ' ';
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
@@ -876,6 +911,23 @@ public class Util {
      */
     @NonNull
     public static String rawEncode(@NonNull String s) {
+        return encode(s, uriMap);
+    }
+
+    /**
+     * Encode a single path component for use in an HTTP URL.
+     * Escapes all special characters including those outside
+     * of the characters specified in RFC1738.
+     * All characters outside numbers and letters without diacritic are encoded.
+     * Note that slash ({@code /}) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
+     */
+    @NonNull
+    public static String fullEncode(@NonNull String s){
+        return encode(s, fullUriMap);
+    }
+
+    private static String encode(String s, boolean[] map){
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -885,7 +937,7 @@ public class Util {
             int codePoint = Character.codePointAt(s, i);
             if((codePoint&0xffffff80)==0) { // 1 byte
                 c = s.charAt(i);
-                if (c > 122 || uriMap[c]) {
+                if (c > 122 || map[c]) {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);
@@ -1135,7 +1187,9 @@ public class Util {
 
     /**
      * Concatenate multiple strings by inserting a separator.
+     * @deprecated since TODO; use {@link String#join(CharSequence, Iterable)}
      */
+    @Deprecated
     @NonNull
     public static String join(@NonNull Collection<?> strings, @NonNull String separator) {
         StringBuilder buf = new StringBuilder();
@@ -1244,7 +1298,7 @@ public class Util {
             Path tempSymlinkPath = symlink.toPath();
             Files.createSymbolicLink(tempSymlinkPath, target);
             try {
-                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempSymlinkPath, pathForSymlink, StandardCopyOption.ATOMIC_MOVE);
                 return true;
             } catch (
                 UnsupportedOperationException |
@@ -1387,7 +1441,7 @@ public class Util {
      * but don't remember it right now.
      *
      * @since 1.204
-     * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
+     * @deprecated since 2008-05-13. This method is broken (see JENKINS-1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
      * Use {@link #encode(String)} instead.
@@ -1422,7 +1476,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if ((numberStr == null) || (numberStr.length() == 0)) {
+        if (numberStr == null || numberStr.length() == 0) {
             return defaultNumber;
         }
         try {
@@ -1474,7 +1528,7 @@ public class Util {
      * @throws IllegalArgumentException When {@code derived} does not derive from {@code base}, or when {@code base}
      *                                  does not contain the specified method.
      * @throws AbstractMethodError If the derived class doesn't override the given method.
-     * @since TODO
+     * @since 2.259
      */
     public static <T> T ifOverridden(Supplier<T> supplier, @NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         if (isOverridden(base, derived, methodName, types)) {
@@ -1561,10 +1615,10 @@ public class Util {
      * implementing this by ourselves allow it to be more lenient about
      * escaping of URI.
      *
-     * @deprecated Use {@code isAbsoluteOrSchemeRelativeUri} instead if your goal is to prevent open redirects
+     * @deprecated Use {@link #isSafeToRedirectTo} instead if your goal is to prevent open redirects
      */
     @Deprecated
-    @RestrictedSince("1.651.2 / 2.TODO")
+    @RestrictedSince("1.651.2 / 2.3")
     @Restricted(NoExternalUse.class)
     public static boolean isAbsoluteUri(@NonNull String uri) {
         int idx = uri.indexOf(':');
@@ -1778,15 +1832,4 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
-
-    /**
-     * If this flag is true, native implementations of {@link FilePath#chmod}
-     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
-     * <p>
-     * This should only be enabled if the setgid/setuid/sticky bits are
-     * intentionally set on the Jenkins installation and they are being
-     * overwritten by Jenkins erroneously.
-     */
-    @Restricted(value = NoExternalUse.class)
-    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

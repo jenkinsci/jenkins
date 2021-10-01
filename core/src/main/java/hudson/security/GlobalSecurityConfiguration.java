@@ -23,33 +23,29 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.RestrictedSince;
 import hudson.markup.MarkupFormatter;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Describable;
 import hudson.model.ManagementLink;
 import hudson.util.FormApply;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
-
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -79,7 +75,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     /**
      * @since 2.24
-     * @return true if the slave agent port is enforced on this instance.
+     * @return true if the inbound agent port is enforced on this instance.
      */
     @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {
@@ -193,11 +189,10 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
-    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
+    @RestrictedSince("2.222")
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**
-     * @return
      * @see Describable#getDescriptor()
      */
     @SuppressWarnings("unchecked")

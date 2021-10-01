@@ -34,17 +34,20 @@ import org.jenkinsci.Symbol;
  */
 @Extension(ordinal=100) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction {
+    @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return "gear2.png";
+            return "gear.png";
         else
             return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ManageJenkinsAction_DisplayName();
     }
 
+    @Override
     public String getUrlName() {
         return "/manage";
     }

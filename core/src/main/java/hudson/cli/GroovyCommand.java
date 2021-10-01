@@ -23,18 +23,17 @@
  */
 package hudson.cli;
 
-import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
-import jenkins.model.Jenkins;
+import groovy.lang.GroovyShell;
 import hudson.Extension;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Executes the specified groovy script.
@@ -57,6 +56,7 @@ public class GroovyCommand extends CLICommand {
     @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
     public List<String> remaining = new ArrayList<>();
 
+    @Override
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -85,4 +85,3 @@ public class GroovyCommand extends CLICommand {
         return null; // never called
     }
 }
-

@@ -1,8 +1,9 @@
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.Page;
 import java.net.URL;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -31,6 +32,6 @@ public class Security177Test {
 
     private void verifyNoSniff(Page p) {
         String v = p.getWebResponse().getResponseHeaderValue("X-Content-Type-Options");
-        assertEquals(v,"nosniff");
+        assertEquals("nosniff", v);
     }
 }

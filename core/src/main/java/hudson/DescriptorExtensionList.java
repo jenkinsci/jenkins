@@ -23,34 +23,32 @@
  */
 package hudson;
 
-import hudson.model.Descriptor;
-import hudson.model.Describable;
-import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.model.Jenkins;
-import hudson.model.ViewDescriptor;
-import hudson.model.Descriptor.FormException;
-import hudson.util.AdaptedIterator;
-import hudson.util.Iterators.FlattenIterator;
-import hudson.slaves.NodeDescriptor;
-import hudson.tasks.Publisher;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.CopyOnWriteArrayList;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
+import hudson.model.ViewDescriptor;
+import hudson.slaves.NodeDescriptor;
+import hudson.tasks.Publisher;
+import hudson.util.AdaptedIterator;
+import hudson.util.Iterators.FlattenIterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.ExtensionComponentSet;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
-import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * {@link ExtensionList} for holding a set of {@link Descriptor}s, which is a group of descriptors for
@@ -179,6 +177,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean add(D d) {
         boolean r = super.add(d);
         getDescriptorExtensionList().add(d);
@@ -243,7 +242,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
+    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor>> getLegacyDescriptors(Class<T> type) {
         return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
     }
 
@@ -252,14 +251,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static Iterable<Descriptor> listLegacyInstances() {
         return new Iterable<Descriptor>() {
+            @Override
             public Iterator<Descriptor> iterator() {
                 return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
                     new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                        @Override
                         protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
                             return v.iterator();
                         }
                     }) {
 
+                    @Override
                     protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
                         return item.getInstance();
                     }

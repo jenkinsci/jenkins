@@ -23,8 +23,8 @@
  */
 package hudson.node_monitors;
 
-import hudson.model.AdministrativeMonitor;
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
 
 /**
  * If {@link NodeMonitor} marks the node as offline, we'll show this to the admin to get their attention.
@@ -44,6 +44,7 @@ public class MonitorMarkedNodeOffline extends AdministrativeMonitor {
 
     public boolean active = false;
 
+    @Override
     public boolean isActivated() {
         return active;
     }

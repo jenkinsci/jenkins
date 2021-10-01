@@ -28,7 +28,6 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
 import javax.servlet.http.HttpServletResponse;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +80,7 @@ public class ParameterizedJobMixInTest {
         Assert.assertTrue(item.task instanceof FreeStyleProject);
 
         Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
-        Assert.assertTrue((waitingItem.timestamp.getTimeInMillis() - triggerTime) > 45000);
+        Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);
 
         Jenkins.get().getQueue().doCancelItem(1);
     }

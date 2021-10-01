@@ -24,14 +24,16 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,13 +78,13 @@ public class CopyJobCommandTest {
             grant(Item.READ).onItems(d1, p, d2).to("bob", "charlie", "debbie").
             grant(Item.CREATE).onItems(d2).to("charlie", "debbie").
             grant(Item.EXTENDED_READ).onItems(p).to("debbie"));
-        copyJobCommand.setTransportAuth2(User.get("alice").impersonate2());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("alice").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
-        copyJobCommand.setTransportAuth2(User.get("bob").impersonate2());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("bob").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
-        copyJobCommand.setTransportAuth2(User.get("charlie").impersonate2());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("charlie").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
-        copyJobCommand.setTransportAuth2(User.get("debbie").impersonate2());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("debbie").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));
     }

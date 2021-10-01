@@ -24,22 +24,20 @@
 package hudson.node_monitors;
 
 import hudson.Functions;
-import jenkins.MasterToSlaveFileCallable;
-import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-
+import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Locale;
-
+import jenkins.MasterToSlaveFileCallable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * {@link AbstractNodeMonitorDescriptor} for {@link NodeMonitor} that checks a free disk space of some directory.
@@ -169,6 +167,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
     protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
         public GetUsableSpace() {}
+        @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;

@@ -3,7 +3,6 @@ package jenkins;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.remoting.ChannelProperty;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -60,10 +59,7 @@ class FilePathFilterAggregator extends FilePathFilter {
     }
 
     public void remove(FilePathFilter f) {
-        for (Entry e : all) {
-            if (e.filter==f)
-                all.remove(e);
-        }
+        all.removeIf(e -> e.filter == f);
     }
 
     /**

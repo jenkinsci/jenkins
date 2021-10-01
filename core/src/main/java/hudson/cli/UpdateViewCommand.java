@@ -23,11 +23,9 @@
  */
 package hudson.cli;
 
-import javax.xml.transform.stream.StreamSource;
-
 import hudson.Extension;
 import hudson.model.View;
-
+import javax.xml.transform.stream.StreamSource;
 import org.kohsuke.args4j.Argument;
 
 /**

@@ -24,11 +24,11 @@
  */
 package hudson.model;
 
-import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.Extension;
@@ -62,6 +62,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -69,6 +70,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.scm.RunWithSCM;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -127,7 +129,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(User.class.getName() + ".skipPermissionCheck");
 
     /**
      * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
@@ -136,8 +139,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
      * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
      * <p>
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">JENKINS-22346</a>.
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-22346">JENKINS-22346</a>.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
@@ -153,6 +157,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * SECURITY-406.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
     /**
@@ -251,6 +256,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
+    @Override
     public int compareTo(@NonNull User that) {
         return idStrategy().compare(this.id, that.id);
     }
@@ -264,6 +270,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
+    @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
@@ -361,7 +368,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation2());
@@ -388,7 +395,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
@@ -596,7 +603,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
-     * @since TODO
+     * @since 2.266
      */
     public static @CheckForNull User get2(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)
@@ -671,15 +678,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
+    @Override
     public @NonNull String getDisplayName() {
         return getFullName();
     }
 
     /**
-     * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
+     * true if {@link RunWithSCM#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
      */
-    private boolean relatedTo(@NonNull AbstractBuild<?, ?> b) {
-        if (b.hasParticipant(this)) {
+    private boolean relatedTo(@NonNull Run<?, ?> b) {
+        if (b instanceof RunWithSCM && ((RunWithSCM) b).hasParticipant(this)) {
             return true;
         }
         for (Cause cause : b.getCauses()) {
@@ -694,14 +702,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the list of {@link Build}s that include changes by this user,
-     * by the timestamp order.
+     * Searches for builds which include changes by this user or which were triggered by this user.
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
-                allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
+                allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
     }
 
     /**
@@ -716,7 +723,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return r;
     }
 
-    public @Override String toString() {
+    @Override
+    public String toString() {
         return id;
     }
 
@@ -792,6 +800,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Save the user configuration.
      */
+    @Override
     public synchronized void save() throws IOException {
         if (!isIdOrFullnameAllowed(id)) {
             throw FormValidation.error(Messages.User_IllegalUsername(id));
@@ -859,7 +868,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (UserPropertyDescriptor d : UserProperty.all()) {
             UserProperty p = getProperty(d.clazz);
 
-            JSONObject o = json.optJSONObject("userProperty" + (i++));
+            JSONObject o = json.optJSONObject("userProperty" + i++);
             if (o != null) {
                 if (p != null) {
                     p = p.reconfigure(req, o);
@@ -909,8 +918,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+        for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
+            for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
                 if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
@@ -1014,6 +1023,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return Collections.unmodifiableList(actions);
     }
 
+    @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
@@ -1120,7 +1130,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.

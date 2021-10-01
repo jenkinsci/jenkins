@@ -23,20 +23,21 @@
  */
 package hudson.util;
 
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.AxisState;
-import org.jfree.chart.axis.CategoryTick;
-import org.jfree.chart.axis.CategoryLabelPosition;
-import org.jfree.chart.plot.PlotRenderingInfo;
-import org.jfree.chart.entity.EntityCollection;
-import org.jfree.chart.entity.CategoryLabelEntity;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.text.TextBlock;
-
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
+import org.jfree.chart.axis.AxisState;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPosition;
+import org.jfree.chart.axis.CategoryTick;
+import org.jfree.chart.entity.CategoryLabelEntity;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.text.TextBlock;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleEdge;
 
 /**
  * This class implements X-axis label skipping algorithm to
@@ -62,7 +63,7 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
         }
 
         if (isTickLabelsVisible()) {
-            java.util.List ticks = refreshTicks(g2, state, plotArea, edge);
+            List ticks = refreshTicks(g2, state, plotArea, edge);
             state.setTicks(ticks);
 
             // remember the last drawn label so that we can avoid drawing overlapping labels.
@@ -110,8 +111,8 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                     x0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     x1 = x0 - state.getMax();
                 }
-                Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
-                        (y1 - y0));
+                Rectangle2D area = new Rectangle2D.Double(x0, y0, x1 - x0,
+                        y1 - y0);
                 if (r == null || !r.intersects(area)) {
                     Point2D anchorPoint = RectangleAnchor.coordinates(area,
                             position.getCategoryAnchor());

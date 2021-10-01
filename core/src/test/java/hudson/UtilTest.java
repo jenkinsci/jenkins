@@ -24,9 +24,33 @@
  */
 package hudson;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
 import hudson.util.StreamTaskListener;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -36,26 +60,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -128,7 +132,7 @@ public class UtilTest {
         assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
         // 1ms
         assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
-        // Test HUDSON-2843 (locale with comma as fraction separator got exception for <10 sec)
+        // Test JENKINS-2843 (locale with comma as fraction separator got exception for <10 sec)
         Locale saveLocale = Locale.getDefault();
         Locale.setDefault(Locale.GERMANY);
         try {
@@ -147,7 +151,7 @@ public class UtilTest {
     public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
-        assertEquals(encoded, "http://hudson/job/Hudson%20Job");
+        assertEquals("http://hudson/job/Hudson%20Job", encoded);
     }
 
     /**
@@ -167,6 +171,26 @@ public class UtilTest {
         };
         for (int i = 0; i < data.length; i += 2) {
             assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));
+        }
+    }
+
+    /**
+     * Test the fullEncode() method.
+     */
+    @Test
+    public void testFullEncode(){
+        String[] data = {
+                "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz",
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                "01234567890!@$&*()-_=+',.", "01234567890%21%40%24%26%2A%28%29%2D%5F%3D%2B%27%2C%2E",
+                " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
+                "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
+                "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
+                "Foo \uD800\uDF98 Foo", "Foo%20%F0%90%8E%98%20Foo",
+                "\u00E9 ", "%C3%A9%20"
+        };
+        for (int i = 0; i < data.length; i += 2) {
+            assertEquals("test " + i, data[i + 1], Util.fullEncode(data[i]));
         }
     }
 
@@ -338,11 +362,12 @@ public class UtilTest {
 
 		private String error;
 
-		public DigesterThread(String string, String expectedDigest) {
+		DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}
 
+		@Override
 		public void run() {
 			for (int i=0; i < 1000; i++) {
 				String digest = Util.getDigestOf(this.string);
@@ -355,6 +380,7 @@ public class UtilTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testIsAbsoluteUri() {
         assertTrue(Util.isAbsoluteUri("http://foobar/"));
         assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
@@ -562,7 +588,7 @@ public class UtilTest {
         File aa = new File(a, "aa");
         aa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa");
+        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
 
         File b = new File(root, "b");
         b.mkdir();
@@ -592,9 +618,7 @@ public class UtilTest {
 
     @Test
     public void ifOverriddenFailure() {
-        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
-            Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method");
-        });
+        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
     }
 

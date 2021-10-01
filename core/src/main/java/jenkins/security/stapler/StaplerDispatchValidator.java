@@ -25,20 +25,9 @@
 package jenkins.security.stapler;
 
 import com.google.common.annotations.VisibleForTesting;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.apache.commons.io.IOUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CancelRequestHandlingException;
-import org.kohsuke.stapler.DispatchValidator;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebApp;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +50,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CancelRequestHandlingException;
+import org.kohsuke.stapler.DispatchValidator;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * Validates views dispatched by Stapler. This validation consists of two phases:
@@ -90,6 +90,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     /**
      * Escape hatch to disable dispatch validation.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* script-console editable */ boolean DISABLED = SystemProperties.getBoolean(ESCAPE_HATCH);
 
     private static @CheckForNull Boolean setStatus(@NonNull StaplerRequest req, @CheckForNull Boolean status) {

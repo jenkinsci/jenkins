@@ -23,13 +23,13 @@
  */
 package hudson.model;
 
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
-import net.sf.json.JSONObject;
 import hudson.Extension;
-
 import java.util.Objects;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link ParameterDefinition} that is either 'true' or 'false'.
@@ -37,12 +37,20 @@ import java.util.Objects;
  * @author huybrechts
  */
 public class BooleanParameterDefinition extends SimpleParameterDefinition {
-    private final boolean defaultValue;
+    private boolean defaultValue;
 
+    /**
+     * @since 2.281
+     */
     @DataBoundConstructor
+    public BooleanParameterDefinition(String name) {
+        super(name);
+    }
+
     public BooleanParameterDefinition(String name, boolean defaultValue, String description) {
-        super(name, description);
-        this.defaultValue = defaultValue;
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
     }
 
     @Override
@@ -59,6 +67,14 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         return defaultValue;
     }
 
+    /**
+     * @since 2.281
+     */
+    @DataBoundSetter
+    public void setDefaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         BooleanParameterValue value = req.bindJSON(BooleanParameterValue.class, jo);
@@ -66,6 +82,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         return value;
     }
 
+    @Override
     public ParameterValue createValue(String value) {
         return new BooleanParameterValue(getName(),Boolean.parseBoolean(value),getDescription());
     }
@@ -103,7 +120,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
     // to avoid picking the Java reserved word "boolean" as the primary identifier
-    @Extension @Symbol({"booleanParam"})
+    @Extension @Symbol("booleanParam")
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

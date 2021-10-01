@@ -23,14 +23,14 @@
  */
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.springframework.security.core.userdetails.UserDetails;
 
 //TODO temporary solution, should be moved to Jenkins Test Harness project
@@ -103,7 +103,7 @@ public abstract class SpySecurityListener extends SecurityListener {
         }
 
         public void assertNoNewEvents(){
-            assertEquals("list of event should be empty", eventList.size(), 0);
+            assertEquals("list of event should be empty", 0, eventList.size());
         }
 
         public void clear(){
@@ -111,4 +111,3 @@ public abstract class SpySecurityListener extends SecurityListener {
         }
     }
 }
-

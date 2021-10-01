@@ -3,7 +3,6 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

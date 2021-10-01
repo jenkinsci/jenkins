@@ -24,27 +24,6 @@
 package hudson.model;
 
 import hudson.ExtensionList;
-import jenkins.util.xml.FilteredFunctionContext;
-import jenkins.model.Jenkins;
-import jenkins.security.SecureRequester;
-
-import org.dom4j.CharacterData;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentFactory;
-import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.*;
-import org.kohsuke.stapler.export.TreePruner.ByDepth;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -54,8 +33,33 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.stream.StreamResult;
+import jenkins.model.Jenkins;
+import jenkins.security.SecureRequester;
+import jenkins.util.xml.FilteredFunctionContext;
+import org.dom4j.CharacterData;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.Model;
+import org.kohsuke.stapler.export.ModelBuilder;
+import org.kohsuke.stapler.export.NamedPathPruner;
+import org.kohsuke.stapler.export.SchemaGenerator;
+import org.kohsuke.stapler.export.TreePruner;
+import org.kohsuke.stapler.export.TreePruner.ByDepth;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -78,10 +82,12 @@ public class Api extends AbstractModelObject {
         this.bean = bean;
     }
 
+    @Override
     public String getDisplayName() {
         return "API";
     }
 
+    @Override
     public String getSearchUrl() {
         return "api";
     }
@@ -108,7 +114,7 @@ public class Api extends AbstractModelObject {
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
-        TreePruner pruner = (tree!=null) ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
+        TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
         p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
@@ -121,7 +127,7 @@ public class Api extends AbstractModelObject {
                 for (String exclude : excludes) {
                     XPath xExclude = dom.createXPath(exclude);
                     xExclude.setFunctionContext(functionContext);
-                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)xExclude.selectNodes(dom);
+                    List<org.dom4j.Node> list = xExclude.selectNodes(dom);
                     for (org.dom4j.Node n : list) {
                         Element parent = n.getParent();
                         if(parent!=null)

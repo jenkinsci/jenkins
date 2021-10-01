@@ -23,22 +23,30 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
+import hudson.model.Computer;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.User;
+import hudson.model.View;
 import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Controls authorization throughout Hudson.
@@ -171,7 +179,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * If such enumeration is impossible, do the best to list as many as possible, then
      * return it. In the worst case, just return an empty list. Doing so would prevent
-     * users from using role names as group names (see HUDSON-2716 for such one such report.)
+     * users from using role names as group names (see JENKINS-2716 for such one such report.)
      *
      * @return
      *      never null.

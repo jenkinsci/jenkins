@@ -28,9 +28,8 @@ import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleNote;
-import org.jenkinsci.Symbol;
-
 import java.util.regex.Pattern;
+import org.jenkinsci.Symbol;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -47,11 +46,11 @@ public class MavenErrorNote extends ConsoleNote {
 
     @Extension @Symbol("mavenErrors")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Maven Errors";
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
+    public static final Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
 }
-

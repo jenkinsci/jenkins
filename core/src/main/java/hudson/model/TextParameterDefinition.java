@@ -24,20 +24,29 @@
 package hudson.model;
 
 import hudson.Extension;
+import java.util.Objects;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.util.Objects;
-
 /**
  * {@link StringParameterDefinition} that uses textarea, instead of text box.
  */
 public class TextParameterDefinition extends StringParameterDefinition {
+
+    /**
+     * @since 2.281
+     */
     @DataBoundConstructor
+    public TextParameterDefinition(String name) {
+        super(name);
+    }
+
     public TextParameterDefinition(String name, String defaultValue, String description) {
-        super(name, defaultValue, description);
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
     }
 
     @Extension @Symbol({"text","textParam"})
@@ -46,6 +55,11 @@ public class TextParameterDefinition extends StringParameterDefinition {
         public String getDisplayName() {
             return Messages.TextParameterDefinition_DisplayName();
         }
+    }
+
+    @Override
+    public StringParameterValue getDefaultParameterValue() {
+        return new TextParameterValue(getName(), getDefaultValue(), getDescription());
     }
 
     @Override

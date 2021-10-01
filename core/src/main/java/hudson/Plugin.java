@@ -23,33 +23,33 @@
  */
 package hudson;
 
-import java.util.concurrent.TimeUnit;
-import jenkins.model.Jenkins;
+import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.Descriptor.FormException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.File;
-
-import net.sf.json.JSONObject;
-import com.thoughtworks.xstream.XStream;
-import hudson.init.Initializer;
-import hudson.init.Terminator;
-import java.net.URL;
-import java.util.Locale;
-import java.util.logging.Logger;
-import jenkins.model.GlobalConfiguration;
 
 /**
  * Base class of Hudson plugin.
@@ -57,8 +57,8 @@ import jenkins.model.GlobalConfiguration;
  * <p>
  * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
- * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
- * https://jenkins.io/redirect/developer/extension-points</a>.
+ * points, see <a href="https://www.jenkins.io/redirect/developer/extension-points">
+ * https://www.jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -139,9 +139,9 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#get()} to access the singleton Jenkins instance,
      * although the plugin start up happens relatively early in the initialization
-     * stage and not all the data are loaded in Hudson.
+     * stage and not all the data are loaded in Jenkins.
      *
      * <p>
      * If a plugin wants to run an initialization step after all plugins and extension points
@@ -275,6 +275,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * @since 1.245
      */
+    @Override
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         XmlFile config = getConfigXml();
@@ -309,7 +310,8 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**
      * Dummy instance of {@link Plugin} to be used when a plugin didn't

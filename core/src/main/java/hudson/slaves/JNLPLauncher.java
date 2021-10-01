@@ -23,17 +23,18 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
+import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
@@ -51,7 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * If the agent needs to tunnel the connection to the master,
+     * If the agent needs to tunnel the connection to the controller,
      * specify the "host:port" here. This can include the special
      * syntax "host:" and ":port" to indicate the default host/port
      * shall be used.
@@ -75,6 +76,13 @@ public class JNLPLauncher extends ComputerLauncher {
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
     private boolean webSocket;
+
+    /**
+     * @see #getInboundAgentUrl()
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
 
     /**
      * Constructor.
@@ -118,7 +126,8 @@ public class JNLPLauncher extends ComputerLauncher {
                 ? RemotingWorkDirSettings.getEnabledDefaults() 
                 : RemotingWorkDirSettings.getDisabledDefaults());
     }
-    
+
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "workDirSettings in readResolve is needed for data migration.")
     protected Object readResolve() {
         if (workDirSettings == null) {
             // For the migrated code agents are always disabled
@@ -196,6 +205,8 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @NonNull
+        @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }
@@ -248,5 +259,24 @@ public class JNLPLauncher extends ComputerLauncher {
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {
         return JavaUtils.isRunningWithJava8OrBelow();
+    }
+
+    /**
+     * Overrides the url that inbound TCP agents should connect to
+     * as advertised in the agent.jnlp file. If not set, the default
+     * behavior is unchanged and returns the root URL.
+     *
+     * This enables using a private address for inbound tcp agents,
+     * separate from Jenkins root URL.
+     *
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-63222">JENKINS-63222</a>
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getInboundAgentUrl() {
+        String url = SystemProperties.getString(CUSTOM_INBOUND_URL_PROPERTY);
+        if (url == null || url.isEmpty()) {
+            return Jenkins.get().getRootUrl();
+        }
+        return url;
     }
 }

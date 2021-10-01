@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import static java.util.logging.Level.FINE;
+
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
@@ -35,11 +37,14 @@ import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.core.util.Primitives;
 import com.thoughtworks.xstream.core.util.SerializationMembers;
+import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
+import hudson.security.ACL;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,13 +56,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import static java.util.logging.Level.FINE;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import net.jcip.annotations.GuardedBy;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.util.xstream.CriticalXStreamException;
+import net.jcip.annotations.GuardedBy;
+import org.acegisecurity.Authentication;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -72,6 +77,9 @@ import jenkins.util.xstream.CriticalXStreamException;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustReflectionConverter implements Converter {
+
+    private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAllAuthentications", false);
+    private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ADMINS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAdmins", false);
 
     protected final ReflectionProvider reflectionProvider;
     protected final Mapper mapper;
@@ -133,10 +141,12 @@ public class RobustReflectionConverter implements Converter {
         }
     }
 
+    @Override
     public boolean canConvert(Class type) {
         return true;
     }
 
+    @Override
     public void marshal(Object original, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final Object source = serializationMethodInvoker.callWriteReplace(original);
 
@@ -209,6 +219,7 @@ public class RobustReflectionConverter implements Converter {
 
         // Child elements not covered already processed as attributes ...
         reflectionProvider.visitSerializableFields(source, new ReflectionProvider.Visitor() {
+            @Override
             public void visit(String fieldName, Class fieldType, Class definedIn, Object newObj) {
                 if (!seenAsAttributes.contains(fieldName) && newObj != null) {
                     Mapper.ImplicitCollectionMapping mapping = mapper.getImplicitCollectionDefForFieldName(source.getClass(), fieldName);
@@ -234,7 +245,7 @@ public class RobustReflectionConverter implements Converter {
                     if (!mapper.shouldSerializeMember(definedIn, aliasName)) {
                         return;
                     }
-                    com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
+                    ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
 
                     Class actualType = newObj.getClass();
 
@@ -267,6 +278,7 @@ public class RobustReflectionConverter implements Converter {
         context.convertAnother(newObj, converter);
     }
 
+    @Override
     public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         Object result = instantiateNewInstance(reader, context);
         result = doUnmarshal(result, reader, context);
@@ -368,8 +380,8 @@ public class RobustReflectionConverter implements Converter {
             reader.moveUp();
         }
 
-        // Report any class/field errors in Saveable objects
-        if (context.get("ReadError") != null && context.get("Saveable") == result) {
+        // Report any class/field errors in Saveable objects if it happens during loading of existing data from disk
+        if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == result) {
             // Avoid any error in OldDataMonitor to be catastrophic. See JENKINS-62231 and JENKINS-59582
             // The root cause is the OldDataMonitor extension is not ready before a plugin triggers an error, for 
             // example when trying to load a field that was created by a new version and you downgrade to the previous
@@ -390,6 +402,26 @@ public class RobustReflectionConverter implements Converter {
             context.put("ReadError", null);
         }
         return result;
+    }
+
+    /**
+     * Returns whether the current user authentication is allowed to have errors loading data reported.
+     *
+     * <p>{@link ACL#SYSTEM} always has errors reported.
+     * If {@link #RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS} is {@code true}, errors are reported for all authentications.
+     * Otherwise errors are reported for users with {@link Jenkins#ADMINISTER} permission if {@link #RECORD_FAILURES_FOR_ADMINS} is {@code true}.</p>
+     *
+     * @return whether the current user authentication is allowed to have errors loading data reported.
+     */
+    private static boolean shouldReportUnloadableDataForCurrentUser() {
+        if (RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS) {
+            return true;
+        }
+        final Authentication authentication = Jenkins.getAuthentication();
+        if (authentication.equals(ACL.SYSTEM)) {
+            return true;
+        }
+        return RECORD_FAILURES_FOR_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
     public static void addErrorInContext(UnmarshallingContext context, Throwable e) {

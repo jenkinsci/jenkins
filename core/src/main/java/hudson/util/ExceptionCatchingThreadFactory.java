@@ -23,10 +23,10 @@
  */
 package hudson.util;
 
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link ThreadFactory} that creates a thread, which in turn displays a stack trace
@@ -46,12 +46,14 @@ public class ExceptionCatchingThreadFactory implements ThreadFactory, Thread.Unc
         this.core = core;
     }
 
+    @Override
     public Thread newThread(Runnable r) {
         Thread t = core.newThread(r);
         t.setUncaughtExceptionHandler(this);
         return t;
     }
 
+    @Override
     public void uncaughtException(Thread t, Throwable e) {
         LOGGER.log(Level.WARNING, "Thread "+t.getName()+" terminated unexpectedly",e);
     }

@@ -23,19 +23,17 @@
  */
 package hudson.util;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.AbstractList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.ListIterator;
-import java.util.AbstractList;
+import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.HashSet;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -56,7 +54,7 @@ public class Iterators {
     /**
      * Produces {A,B,C,D,E,F} from {{A,B},{C},{},{D,E,F}}.
      */
-    public static abstract class FlattenIterator<U,T> implements Iterator<U> {
+    public abstract static class FlattenIterator<U,T> implements Iterator<U> {
         private final Iterator<? extends T> core;
         private Iterator<U> cur;
 
@@ -71,6 +69,7 @@ public class Iterators {
 
         protected abstract Iterator<U> expand(T t);
 
+        @Override
         public boolean hasNext() {
             while(!cur.hasNext()) {
                 if(!core.hasNext())
@@ -80,11 +79,13 @@ public class Iterators {
             return true;
         }
 
+        @Override
         public U next() {
             if(!hasNext())  throw new NoSuchElementException();
             return cur.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -95,7 +96,7 @@ public class Iterators {
      *
      * @since 1.150
      */
-    public static abstract class FilterIterator<T> implements Iterator<T> {
+    public abstract static class FilterIterator<T> implements Iterator<T> {
         private final Iterator<? extends T> core;
         private T next;
         private boolean fetched;
@@ -127,11 +128,13 @@ public class Iterators {
          */
         protected abstract boolean filter(T t);
 
+        @Override
         public boolean hasNext() {
             fetch();
             return fetched;
         }
 
+        @Override
         public T next() {
             fetch();
             if(!fetched)  throw new NoSuchElementException();
@@ -139,6 +142,7 @@ public class Iterators {
             return next;
         }
 
+        @Override
         public void remove() {
             core.remove();
         }
@@ -158,6 +162,7 @@ public class Iterators {
             super(core);
         }
 
+        @Override
         protected boolean filter(T t) {
             return seen.add(t);
         }
@@ -172,14 +177,17 @@ public class Iterators {
         return () -> {
             final ListIterator<T> itr = lst.listIterator(lst.size());
             return new Iterator<T>() {
+                @Override
                 public boolean hasNext() {
                     return itr.hasPrevious();
                 }
 
+                @Override
                 public T next() {
                     return itr.previous();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -197,14 +205,17 @@ public class Iterators {
         return () -> {
             final Iterator<T> itr = base.iterator();
             return new Iterator<T>() {
+                @Override
                 public boolean hasNext() {
                     return itr.hasNext();
                 }
 
+                @Override
                 public T next() {
                     return itr.next();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -225,12 +236,14 @@ public class Iterators {
         if(size<0)  throw new IllegalArgumentException("List size is negative");
 
         return new AbstractList<Integer>() {
+            @Override
             public Integer get(int index) {
                 if(index<0 || index>=size)
                     throw new IndexOutOfBoundsException();
                 return start+index*step;
             }
 
+            @Override
             public int size() {
                 return size;
             }
@@ -257,7 +270,7 @@ public class Iterators {
     /**
      * Casts {@link Iterator} by taking advantage of its covariant-ness.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public static <T> Iterator<T> cast(Iterator<? extends T> itr) {
         return (Iterator)itr;
     }
@@ -265,7 +278,7 @@ public class Iterators {
     /**
      * Casts {@link Iterable} by taking advantage of its covariant-ness.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public static <T> Iterable<T> cast(Iterable<? extends T> itr) {
         return (Iterable)itr;
     }
@@ -273,9 +286,10 @@ public class Iterators {
     /**
      * Returns an {@link Iterator} that only returns items of the given subtype.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public static <U,T extends U> Iterator<T> subType(Iterator<U> itr, final Class<T> type) {
         return (Iterator)new FilterIterator<U>(itr) {
+            @Override
             protected boolean filter(U u) {
                 return type.isInstance(u);
             }
@@ -287,14 +301,17 @@ public class Iterators {
      */
     public static <T> Iterator<T> readOnly(final Iterator<T> itr) {
         return new Iterator<T>() {
+            @Override
             public boolean hasNext() {
                 return itr.hasNext();
             }
 
+            @Override
             public T next() {
                 return itr.next();
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
@@ -317,6 +334,7 @@ public class Iterators {
     @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
         return () -> new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
+            @Override
             protected Iterator<T> expand(Iterable<? extends T> iterable) {
                 return Iterators.<T>cast(iterable).iterator();
             }
@@ -359,11 +377,13 @@ public class Iterators {
             private T next;
             private boolean end;
             private int index=0;
+            @Override
             public boolean hasNext() {
                 fetch();
                 return next!=null;
             }
 
+            @Override
             public T next() {
                 fetch();
                 T r = next;
@@ -385,6 +405,7 @@ public class Iterators {
                 }
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
@@ -396,7 +417,9 @@ public class Iterators {
     }
 
     /**
-     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * Calls {@code next()} on {@code iterator}, either {@code count} times
+     * or until {@code hasNext()} returns {@code false}, whichever comes first.
+     *
      * @param iterator some iterator
      * @param count a nonnegative count
      */

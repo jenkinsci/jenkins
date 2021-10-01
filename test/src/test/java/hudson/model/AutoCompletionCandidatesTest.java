@@ -6,12 +6,11 @@ import hudson.matrix.AxisList;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.Arrays;
-import java.util.TreeSet;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -61,6 +60,6 @@ public class AutoCompletionCandidatesTest {
     }
 
     private void assertContains(AutoCompletionCandidates c, String... values) {
-        assertEquals(new TreeSet<String>(Arrays.asList(values)), new TreeSet<String>(c.getValues()));
+        assertEquals(new TreeSet<>(Arrays.asList(values)), new TreeSet<>(c.getValues()));
     }
 }

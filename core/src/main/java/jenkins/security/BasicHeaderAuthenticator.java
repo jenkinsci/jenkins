@@ -35,7 +35,7 @@ public abstract class BasicHeaderAuthenticator implements ExtensionPoint {
      * <p>
      * When no processor can validate the username/password pair, caller will make
      * the request processing fail.
-     * @since TODO
+     * @since 2.266
      */
     @CheckForNull
     public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {

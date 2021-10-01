@@ -26,9 +26,8 @@ package hudson;
 import static org.junit.Assert.assertEquals;
 
 import hudson.model.Saveable;
-import org.junit.Test;
-
 import java.io.IOException;
+import org.junit.Test;
 
 /**
  * Tests {@link BulkChange}.
@@ -61,6 +60,7 @@ public class BulkChangeTest {
             setY(y);
         }
 
+        @Override
         public void save() throws IOException {
             if(BulkChange.contains(this))   return;
             saveCount++;

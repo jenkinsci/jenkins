@@ -2,23 +2,7 @@ import $ from 'jquery';
 import { getWindow } from 'window-handle';
 import page from '../../util/page';
 import tableMetadata from './model/ConfigTableMetaData';
-import behaviorShim from '../../util/behavior-shim';
 import jenkinsLocalStorage from '../../util/jenkinsLocalStorage';
-
-/**
- * Extracting this call from outside of the addPageTabs due to a regression
- * in 2.216/2.217 (see JENKINS-61429)
- *
- * The proxied call to Behaviour.specify needs to be called from outside of the
- * addPageTabs function. Otherwise, it will not apply to existing draggable
- * elements on the form. It would only only apply to new elements.
- *
- * Extracting this Behaviour.specify call to the module level causes it to be executed
- * on script load, and this seems to set up the event listeners properly.
- */
-behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function(el) {
-    page.fixDragEvent(el);
-});
 
 export var tabBarShowPreferenceKey = 'config:usetabs';
 
@@ -32,8 +16,6 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
             var configTables = $(configSelector);
             if (configTables.length > 0) {
                 var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
-
-                page.fixDragEvent(configTables);
 
                 if (tabBarShowPreference === "yes") {
                     configTables.each(function() {

@@ -23,16 +23,14 @@
  */
 package hudson;
 
-import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.model.Jenkins;
 import hudson.util.AdaptedIterator;
 import hudson.util.DescriptorList;
 import hudson.util.Iterators;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
-
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.ExtensionComponentSet;
+import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 
 /**
@@ -170,6 +168,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     public @NonNull Iterator<T> iterator() {
         // we need to intercept mutation, so for now don't allow Iterator.remove 
         return new AdaptedIterator<ExtensionComponent<T>,T>(Iterators.readOnly(ensureLoaded().iterator())) {
+            @Override
             protected T adapt(ExtensionComponent<T> item) {
                 return item.getInstance();
             }
@@ -183,10 +182,12 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         return Collections.unmodifiableList(ensureLoaded());
     }
 
+    @Override
     public T get(int index) {
         return ensureLoaded().get(index).getInstance();
     }
     
+    @Override
     public int size() {
         return ensureLoaded().size();
     }
@@ -244,7 +245,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         return removed;
     }
 
-    private <T> boolean removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
+    private boolean removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
         for (ExtensionComponent<T> c : collection) {
             if (c.getInstance().equals(t)) {
                 return collection.remove(c);
@@ -341,7 +342,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
             Collection<ExtensionComponent<T>> found = load(delta);
             if (!found.isEmpty()) {
-                List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
+                List<ExtensionComponent<T>> l = new ArrayList<>(extensions);
                 l.addAll(found);
                 extensions = sort(l);
                 fireOnChangeListeners = true;

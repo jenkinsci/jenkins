@@ -33,7 +33,7 @@ You can read a description of the [building and debugging process here].
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
 ```sh
-mvn -am -pl war,bom -DskipTests -Dspotbugs.skip clean install
+mvn -am -pl war,bom -DskipTests -Dspotbugs.skip -Dspotless.check.skip clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
@@ -115,6 +115,14 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
+## IntelliJ suggestion
+
+In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
+The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
+This will help minimize the diff, which makes reviewing PRs easier.
+
+We also do not recommend `*` imports in the production code.
+Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.
@@ -141,24 +149,24 @@ just submit a pull request.
 
 # Links
 
-* [Jenkins Contribution Landing Page](https://jenkins.io/participate/)
-* [Jenkins IRC Channel](https://jenkins.io/chat/)
+* [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
+* [Jenkins IRC Channel](https://www.jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
-* [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
+* [List of newbie-friendly issues in the core](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
-[download Maven]: https://maven.apache.org/download.cgi
-[Preparing for Plugin Development]: https://jenkins.io/doc/developer/tutorial/prepare/
-[newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
-[Participate]: https://jenkins.io/participate/
-[building and debugging process here]: https://jenkins.io/doc/developer/building/
+[Preparing for Plugin Development]: https://www.jenkins.io/doc/developer/tutorial/prepare/
+[newbie friendly issues]: https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
+[Participate]: https://www.jenkins.io/participate/
+[building and debugging process here]: https://www.jenkins.io/doc/developer/building/
 [guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins
 [Remote Debug Flags]: https://stackoverflow.com/questions/975271/remote-debugging-a-java-application
 [Acceptance Test Harness (ATH)]: https://github.com/jenkinsci/acceptance-test-harness
-[backporting process]: https://jenkins.io/download/lts/
+[backporting process]: https://www.jenkins.io/download/lts/
 [proposed template]: .github/PULL_REQUEST_TEMPLATE.md
 [MIT license]: ./LICENSE.txt
-[contributor agreement]: https://jenkins.io/project/governance/#cla
-[Jenkins Security Team]: https://jenkins.io/security/#team
+[contributor agreement]: https://www.jenkins.io/project/governance/#cla
+[Jenkins Security Team]: https://www.jenkins.io/security/#team
 [ci.jenkins.io]: https://ci.jenkins.io/
-[Jenkins Pipeline]: https://jenkins.io/doc/book/pipeline/
+[Jenkins Pipeline]: https://www.jenkins.io/doc/book/pipeline/
 [Jenkinsfile]: ./Jenkinsfile
+[download Maven here]: https://maven.apache.org/download.cgi

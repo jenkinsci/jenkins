@@ -24,7 +24,6 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Icon type.
@@ -34,7 +33,7 @@ import org.kohsuke.stapler.Stapler;
  */
 public enum IconType {
     CORE,
-    PLUGIN,;
+    PLUGIN;
 
     /**
      * Qualify the supplied icon url.

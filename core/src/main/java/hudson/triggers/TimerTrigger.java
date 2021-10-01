@@ -24,9 +24,11 @@
  */
 package hudson.triggers;
 
-import antlr.ANTLRException;
-import hudson.Extension;
 import static hudson.Util.fixNull;
+
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.Item;
@@ -38,13 +40,10 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Trigger} that runs a job periodically.
@@ -69,10 +68,12 @@ public class TimerTrigger extends Trigger<BuildableItem> {
 
     @Extension @Symbol("cron")
     public static class DescriptorImpl extends TriggerDescriptor {
+        @Override
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.TimerTrigger_DisplayName();
         }

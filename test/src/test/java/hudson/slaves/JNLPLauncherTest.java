@@ -23,6 +23,14 @@
  */
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
@@ -33,36 +41,25 @@ import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
-
-import jenkins.security.SlaveToMasterCallable;
-import jenkins.slaves.RemotingWorkDirSettings;
-
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
-import org.jvnet.hudson.test.TestExtension;
-
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.awt.*;
 import java.util.logging.Level;
-import static org.hamcrest.Matchers.instanceOf;
+import jenkins.security.SlaveToMasterCallable;
+import jenkins.slaves.RemotingWorkDirSettings;
+import netx.jnlp.runtime.JNLPRuntime;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -197,13 +194,13 @@ public class JNLPLauncherTest {
     }
 
     private static class DelegatingComputerLauncherImpl extends DelegatingComputerLauncher {
-        public DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
+        DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }
 
     private static class ComputerLauncherFilterImpl extends ComputerLauncherFilter {
-        public ComputerLauncherFilterImpl(ComputerLauncher launcher) {
+        ComputerLauncherFilterImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }
@@ -211,7 +208,7 @@ public class JNLPLauncherTest {
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
-        args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
+        args.add(Which.jarFile(JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
         args.add(j.createTmpDir());
         args.add("-nosecurity","-jnlp", j.getURL() + "computer/"+c.getName()+"/jenkins-agent.jnlp");
@@ -268,10 +265,10 @@ public class JNLPLauncherTest {
      * Adds an Inbound TCP agent to the system and returns it.
      */
     private Computer addTestAgent(ComputerLauncher launcher) throws Exception {
-        List<Node> agents = new ArrayList<Node>(j.jenkins.getNodes());
+        List<Node> agents = new ArrayList<>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
         agents.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
-                launcher, RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
+                launcher, RetentionStrategy.INSTANCE, new ArrayList<>()));
         j.jenkins.setNodes(agents);
         Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);
@@ -279,6 +276,7 @@ public class JNLPLauncherTest {
     }
 
     private static class NoopTask extends SlaveToMasterCallable<String,RuntimeException> {
+        @Override
         public String call() {
             return "done";
         }
@@ -307,7 +305,7 @@ public class JNLPLauncherTest {
 
     @Test
     public void testObsoletedJnlpFileDownload() throws Exception {
-        assertJnlpFileDownload("/slave-agent.jnlp");
+        assertJnlpFileDownload("/slave-agent.jnlp"); // deliberately uses old URL
     }
 
     private void assertJnlpFileDownload(String filename) throws Exception {

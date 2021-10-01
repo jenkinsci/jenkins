@@ -25,6 +25,9 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
@@ -49,7 +52,6 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
-import hudson.util.TagCloud.WeightFunction;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -59,8 +61,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -98,19 +98,22 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
-    /** @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-46652">JENKINS-46652</a> */
+    /** @see <a href="https://issues.jenkins.io/browse/JENKINS-46652">JENKINS-46652</a> */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* not final */ boolean SKIP_BUILD_CHECK_ON_FLYWEIGHTS = SystemProperties.getBoolean(Node.class.getName() + ".SKIP_BUILD_CHECK_ON_FLYWEIGHTS", true);
 
     /**
      * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
-    protected volatile transient boolean holdOffLaunchUntilSave;
+    protected transient volatile boolean holdOffLaunchUntilSave;
 
+    @Override
     public String getDisplayName() {
         return getNodeName(); // default implementation
     }
 
+    @Override
     public String getSearchUrl() {
         Computer c = toComputer();
         if (c != null) {
@@ -282,11 +285,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
-        return new TagCloud<>(getAssignedLabels(), new WeightFunction<LabelAtom>() {
-            public float weight(LabelAtom item) {
-                return item.getTiedJobCount();
-            }
-        });
+        return new TagCloud<>(getAssignedLabels(), Label::getTiedJobCount);
     }
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
@@ -310,7 +309,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return all the labels assigned dynamically to this node.
      * This calls all the LabelFinder implementations with the node converts
      * the results into Labels.
-     * @return HashSet<Label>.
      */
     private HashSet<LabelAtom> getDynamicLabels() {
         HashSet<LabelAtom> result = new HashSet<>();
@@ -517,16 +515,18 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return NodeProperty.for_(this);
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
+    @Override
     public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
         if (form==null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
         final AtomicReference<BindInterceptor> old = new AtomicReference<>();
-        old.set(req.setBindListener(new BindInterceptor() {
+        old.set(req.setBindInterceptor(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
                 if (jsonForProperties != jsonSource) {
@@ -537,9 +537,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
-                } catch (FormException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (IOException e) {
+                } catch (FormException | IOException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
@@ -552,6 +550,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
     }
 
+    @Override
     public abstract NodeDescriptor getDescriptor();
 
     /**

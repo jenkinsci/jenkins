@@ -23,21 +23,26 @@
  */
 package hudson.util;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.ChartRenderingInfo;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.plot.Plot;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletOutputStream;
-import javax.imageio.ImageIO;
+import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Calendar;
-import java.awt.image.BufferedImage;
-import java.awt.*;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
+import jenkins.util.SystemProperties;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.Plot;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * A JFreeChart-generated graph that's bound to UI.
@@ -56,9 +61,13 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  * @since 1.320
  */
 public abstract class Graph {
+    @Restricted(NoExternalUse.class)
+    /* package for test */ static /* non-final for script console */ int MAX_AREA = SystemProperties.getInteger(Graph.class.getName() + ".maxArea", 10_000_000); // 4k*2.5k
+
     private final long timestamp;
-    private final int defaultW;
-    private final int defaultH;
+    private final int defaultWidth;
+    private final int defaultHeight;
+    private final int defaultScale = 1;
     private volatile JFreeChart graph;
 
     /**
@@ -66,14 +75,14 @@ public abstract class Graph {
      *      Timestamp of this graph. Used for HTTP cache related headers.
      *      If the graph doesn't have any timestamp to tie it to, pass -1.
      */
-    protected Graph(long timestamp, int defaultW, int defaultH) {
+    protected Graph(long timestamp, int defaultWidth, int defaultHeight) {
         this.timestamp = timestamp;
-        this.defaultW = defaultW;
-        this.defaultH = defaultH;
+        this.defaultWidth = defaultWidth;
+        this.defaultHeight = defaultHeight;
     }
 
-    protected Graph(Calendar timestamp, int defaultW, int defaultH) {
-        this(timestamp.getTimeInMillis(),defaultW,defaultH);
+    protected Graph(Calendar timestamp, int defaultWidth, int defaultHeight) {
+        this(timestamp.getTimeInMillis(), defaultWidth, defaultHeight);
     }
 
     /**
@@ -83,9 +92,19 @@ public abstract class Graph {
 
     private BufferedImage render(StaplerRequest req, ChartRenderingInfo info) {
         String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
+        if (w == null) {
+            w = String.valueOf(defaultWidth);
+        }
+
         String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
+        if (h == null) {
+            h = String.valueOf(defaultHeight);
+        }
+
+        String s = req.getParameter("scale");
+        if (s == null) {
+            s = String.valueOf(defaultScale);
+        }
 
         Color graphBg = stringToColor(req.getParameter("graphBg"));
         Color plotBg = stringToColor(req.getParameter("plotBg"));
@@ -95,7 +114,22 @@ public abstract class Graph {
         Plot p = graph.getPlot();
         p.setBackgroundPaint(plotBg);
 
-        return graph.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
+        int width = Math.min(Integer.parseInt(w), 2560);
+        int height = Math.min(Integer.parseInt(h), 1440);
+        int scale = Math.min(Integer.parseInt(s), 3);
+        Dimension safeDimension = safeDimension(width, height, defaultWidth, defaultHeight);
+        return graph.createBufferedImage(safeDimension.width * scale, safeDimension.height * scale,
+                safeDimension.width, safeDimension.height, info);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public static Dimension safeDimension(int width, int height, int defaultWidth, int defaultHeight) {
+        if (width <= 0 || height <= 0 || width > MAX_AREA/height) {
+            width = defaultWidth;
+            height = defaultHeight;
+        }
+        return new Dimension(width, height);
     }
 
     @NonNull private static Color stringToColor(@CheckForNull String s) {

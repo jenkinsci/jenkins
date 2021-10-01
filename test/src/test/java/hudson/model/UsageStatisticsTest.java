@@ -23,14 +23,34 @@
  */
 package hudson.model;
 
-import com.google.common.io.Resources;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.zip.GZIPInputStream;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -38,24 +58,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.security.KeyFactory;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.jvnet.hudson.test.TestPluginManager;
 
 /**
@@ -131,8 +133,6 @@ public class UsageStatisticsTest {
      * a background update of that cache.
      * <p/>
      * <p>This method triggers that update and waits until the cache is filled during roughly 1 second max.</p>
-     *
-     * @throws InterruptedException
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
         ArchitectureMonitor.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
@@ -140,8 +140,8 @@ public class UsageStatisticsTest {
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {
-            final Computer master = j.jenkins.getComputers()[0];
-            value = descriptor.get(master);
+            final Computer builtIn = j.jenkins.getComputers()[0];
+            value = descriptor.get(builtIn);
             Thread.sleep(200);
         }
     }
@@ -162,10 +162,10 @@ public class UsageStatisticsTest {
         return sorted;
     }
 
-    private void compareWithFile(String fileName, Object object) throws IOException {
+    private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
+        String fileContent = new String(Files.readAllBytes(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI())), StandardCharsets.UTF_8);
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));

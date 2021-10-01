@@ -5,26 +5,22 @@
  */
 package hudson.security.csrf;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
+import hudson.Util;
+import hudson.model.ModelObject;
+import hudson.model.PersistentDescriptor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.Extension;
-import hudson.model.PersistentDescriptor;
-import jenkins.util.SystemProperties;
-import hudson.Util;
-import jenkins.model.Jenkins;
-import hudson.model.ModelObject;
-
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-
+import jenkins.model.Jenkins;
 import jenkins.security.HexStringConfidentialKey;
-
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -43,6 +39,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     private boolean excludeClientIPFromCrumb;
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final: Groovy Console */ boolean EXCLUDE_SESSION_ID = SystemProperties.getBoolean(DefaultCrumbIssuer.class.getName() + ".EXCLUDE_SESSION_ID");
 
     @DataBoundConstructor
@@ -97,7 +94,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         if (request instanceof HttpServletRequest) {
             String newCrumb = issueCrumb(request, salt);
-            if ((newCrumb != null) && (crumb != null)) {
+            if (newCrumb != null && crumb != null) {
                 // String.equals() is not constant-time, but this is
                 return MessageDigest.isEqual(newCrumb.getBytes(StandardCharsets.US_ASCII),
                         crumb.getBytes(StandardCharsets.US_ASCII));
@@ -123,7 +120,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     @Extension @Symbol("standard")
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject, PersistentDescriptor {
 
-        private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
+        private static final HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
         
         public DescriptorImpl() {
             super(CRUMB_SALT.get(), SystemProperties.getString("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));

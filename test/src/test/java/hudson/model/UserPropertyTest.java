@@ -1,6 +1,19 @@
 package hudson.model;
 
-import com.google.common.base.Throwables;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyMap;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -12,20 +25,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import static java.lang.System.currentTimeMillis;
-import static java.util.Collections.emptyMap;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -185,7 +184,7 @@ public class UserPropertyTest {
                 File userFile = getUserFile();
                 writeStringToFile(userFile, String.valueOf(currentTimeMillis()), true);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                throw new UncheckedIOException(e);
             }
         }
 

@@ -244,6 +244,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             this.identity = identity;
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             SecurityRealm sr = Jenkins.get().getSecurityRealm();
             if (sr.allowsSignup()) {

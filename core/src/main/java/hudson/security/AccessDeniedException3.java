@@ -1,7 +1,7 @@
 package hudson.security;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.util.SystemProperties;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 /**
  * {@link AccessDeniedException} with more information.
  * @author Kohsuke Kawaguchi
- * @since TODO
+ * @since 2.266
  */
 public class AccessDeniedException3 extends AccessDeniedException {
 

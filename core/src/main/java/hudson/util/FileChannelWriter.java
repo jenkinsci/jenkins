@@ -1,8 +1,5 @@
 package hudson.util;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -13,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * This class has been created to help make {@link AtomicFileWriter} hopefully more reliable in some corner cases.
@@ -23,7 +22,7 @@ import java.util.logging.Logger;
  * <p>The goal using this is to reduce as much as we can the likeliness to see zero-length files be created in place
  * of the original ones.</p>
  *
- * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-34855">JENKINS-34855</a>
+ * @see <a href="https://issues.jenkins.io/browse/JENKINS-34855">JENKINS-34855</a>
  * @see <a href="https://github.com/jenkinsci/jenkins/pull/2548">PR-2548</a>
  */
 @Restricted(NoExternalUse.class)
@@ -45,12 +44,12 @@ public class FileChannelWriter extends Writer {
      * So we introduced this field to be able to still get a better integrity for the use case of {@link AtomicFileWriter}.
      * Because from there, we make sure to call {@link #close()} from {@link AtomicFileWriter#commit()} anyway.
      */
-    private boolean forceOnFlush;
+    private final boolean forceOnFlush;
 
     /**
      * See forceOnFlush. You probably never want to set forceOnClose to false.
      */
-    private boolean forceOnClose;
+    private final boolean forceOnClose;
 
     /**
      * @param filePath     the path of the file to write to.

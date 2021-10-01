@@ -1,13 +1,12 @@
 package jenkins.util.io;
 
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Uses a presence/absence of a file as a persisted boolean storage.
@@ -51,7 +50,11 @@ public class FileBoolean {
     public boolean isOff() { return !get(); }
 
     public void set(boolean b) {
-        if (b) on(); else off();
+        if (b) {
+            on();
+        } else {
+            off();
+        }
     }
 
     public void on() {

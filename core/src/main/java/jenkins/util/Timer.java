@@ -1,10 +1,10 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 

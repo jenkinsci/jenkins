@@ -66,7 +66,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
      * <p>
      * If the user name and the password pair doesn't match, throw {@link AuthenticationException} to reject the login
      * attempt.
-     * @since TODO
+     * @since 2.266
      */
     protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "authenticate", String.class, String.class)) {
@@ -173,10 +173,12 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     }
 
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
+        @Override
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
             // authentication is assumed to be done already in the retrieveUser method
         }
 
+        @Override
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
             return doAuthenticate(username,authentication.getCredentials().toString());
         }

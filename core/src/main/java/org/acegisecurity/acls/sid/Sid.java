@@ -28,9 +28,9 @@ package org.acegisecurity.acls.sid;
 public interface Sid {
 
     @Override
-    public boolean equals(Object obj);
+    boolean equals(Object obj);
 
     @Override
-    public int hashCode();
+    int hashCode();
 
 }

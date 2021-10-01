@@ -23,30 +23,28 @@
  */
 package hudson.cli;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import jenkins.model.Jenkins;
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause.UserCause;
-
+import hudson.slaves.OfflineCause;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * @author ogondza
@@ -101,7 +99,7 @@ public class ComputerStateTest {
         assertThat(result, succeededSilently());
         assertTrue(slave.toComputer().isOffline());
 
-        UserCause cause = (UserCause) slave.toComputer().getOfflineCause();
+        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
     }
@@ -120,7 +118,7 @@ public class ComputerStateTest {
         assertThat(result, succeededSilently());
         assertTrue(slave.toComputer().isOffline());
 
-        UserCause cause = (UserCause) slave.toComputer().getOfflineCause();
+        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
     }

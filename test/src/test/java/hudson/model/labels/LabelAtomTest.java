@@ -1,19 +1,18 @@
 package hudson.model.labels;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.slaves.Cloud;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.empty;
 
 public class LabelAtomTest {
 
@@ -57,11 +56,24 @@ public class LabelAtomTest {
         assertThat(l2.getClouds(), is(empty()));
     }
 
+    @Test
+    public void isEmpty() throws Exception {
+        Label l = new LabelAtom("label");
+        assertThat(l.isEmpty(), is(true));
+        l = new LabelAtom("label");
+        j.createSlave("node", "label", null);
+        assertThat(l.isEmpty(), is(false));
+        Label l2 = new LabelAtom("label2");
+        Cloud test = new TestCloud("test", "label2");
+        j.jenkins.clouds.add(test);
+        assertThat(l2.isEmpty(), is(false));
+    }
+
     private static class TestCloud extends Cloud {
 
         private final List<Label> labels;
 
-        public TestCloud(String name, String labelString) {
+        TestCloud(String name, String labelString) {
             super(name);
             labels = new ArrayList<>();
             for (String l : labelString.split(" ")) {

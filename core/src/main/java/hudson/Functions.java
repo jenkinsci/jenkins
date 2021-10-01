@@ -25,19 +25,17 @@
  */
 package hudson;
 
-import hudson.model.Computer;
-import hudson.model.Slave;
-import hudson.security.*;
-
-import java.text.SimpleDateFormat;
-import java.util.function.Predicate;
-import jenkins.util.SystemProperties;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
@@ -51,11 +49,12 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
-import jenkins.model.SimplePageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
+import hudson.model.PasswordParameterDefinition;
 import hudson.model.Run;
+import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
@@ -63,6 +62,12 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
+import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -81,13 +86,12 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
-import hudson.util.jna.GNUCLibrary;
+import hudson.util.RunList;
 import hudson.util.Secret;
+import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -109,6 +113,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,31 +125,34 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
+import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
-
+import jenkins.model.SimplePageDecorator;
+import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -154,25 +162,14 @@ import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
-
-import hudson.model.PasswordParameterDefinition;
-import hudson.util.RunList;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.io.IOUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -190,6 +187,7 @@ public class Functions {
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
@@ -230,12 +228,10 @@ public class Functions {
 
     /**
      * Returns a localized string for the specified date, not including time.
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
-        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
     public static String rfc822Date(Calendar cal) {
@@ -244,9 +240,6 @@ public class Functions {
 
     /**
      * Returns a human-readable string describing the time difference between now and the specified date.
-     *
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String getTimeSpanString(Date date) {
@@ -643,6 +636,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
@@ -931,7 +925,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "https://jenkins.io/";
+                footerURL = "https://www.jenkins.io/";
             }
         }
         return footerURL;
@@ -978,7 +972,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().getDescriptorList(ComputerLauncher.class);
     }
 
     /**
@@ -1253,6 +1247,7 @@ public class Functions {
             return buf.append(c.getName());
         }
 
+        @Override
         public int compareTo(Tag that) {
             int r = Double.compare(that.ordinal, this.ordinal);
             if (r!=0)   return r; // descending for ordinal by reversing the order for compare
@@ -1448,7 +1443,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        public ThreadSorterBase() {
+        ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
@@ -1479,6 +1474,7 @@ public class Functions {
             return map.get(ti.getThreadId());
         }
 
+        @Override
         public int compare(ThreadInfo a, ThreadInfo b) {
             int result = compare(a.getThreadId(), b.getThreadId());
             if (result == 0)
@@ -1491,6 +1487,7 @@ public class Functions {
 
         private static final long serialVersionUID = 5053631350439192685L;
 
+        @Override
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
             if (result == 0)
@@ -1541,9 +1538,6 @@ public class Functions {
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
-                        sb.append('\n');
-                        break;
                     case TIMED_WAITING:
                         sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
@@ -1683,7 +1677,7 @@ public class Functions {
         if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            s.append(sw.toString());
+            s.append(sw);
             return;
         }
         Throwable lower = t.getCause();
@@ -1704,7 +1698,7 @@ public class Functions {
                 summary = summary.substring(0, summary.length() - suffix.length());
             }
         }
-        s.append(summary).append(IOUtils.LINE_SEPARATOR);
+        s.append(summary).append(System.lineSeparator());
         StackTraceElement[] trace = t.getStackTrace();
         int end = trace.length;
         if (higher != null) {
@@ -1718,7 +1712,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+            s.append(prefix).append("\tat ").append(trace[i]).append(System.lineSeparator());
         }
     }
 
@@ -1948,7 +1942,7 @@ public class Functions {
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {
-        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
+        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see JENKINS-3608
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
@@ -2087,7 +2081,7 @@ public class Functions {
         /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
         if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
             LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
-                    " is not backed by hudson.util.Secret. Learn more: https://jenkins.io/redirect/hudson.util.Secret");
+                    " is not backed by hudson.util.Secret. Learn more: https://www.jenkins.io/redirect/hudson.util.Secret");
         }
 
         /* Return plain value if it's not a Secret and the escape hatch is set */
@@ -2277,15 +2271,6 @@ public class Functions {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal != null) { // headers used only by deprecated Remoting-based CLI
-                int p = tal.getAdvertisedPort();
-                rsp.setIntHeader("X-Hudson-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
         }
     }
 

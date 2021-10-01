@@ -1,10 +1,9 @@
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import java.net.URL;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -27,6 +26,7 @@ public class AboutJenkins extends ManagementLink {
         return "about";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.AboutJenkins_DisplayName();
     }

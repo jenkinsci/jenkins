@@ -1,6 +1,7 @@
 package jenkins.model;
 
-import com.google.common.base.Predicate;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -16,11 +17,10 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient base implementation for {@link Permalink}s that satisfy
@@ -73,6 +73,11 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      * This is the "G(B)" as described in the class javadoc.
      */
     public abstract boolean apply(Run<?,?> run);
+
+    @Override
+    public boolean test(Run<?, ?> run) {
+        return apply(run);
+    }
 
     /** @deprecated No longer used. */
     @Deprecated

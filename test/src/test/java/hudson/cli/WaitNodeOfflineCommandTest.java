@@ -24,18 +24,6 @@
 
 package hudson.cli;
 
-import hudson.slaves.DumbSlave;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -43,6 +31,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
+
+import hudson.slaves.DumbSlave;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -73,9 +72,7 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnOfflineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
-        while (true) {
-            if(slave.toComputer().isOffline())
-                break;
+        while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 
@@ -102,9 +99,7 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnDisconnectedNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
-        while (true) {
-            if(slave.toComputer().isOffline())
-                break;
+        while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 
@@ -134,6 +129,7 @@ public class WaitNodeOfflineCommandTest {
         boolean timeoutOccurred = false;
 
         FutureTask task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 final CLICommandInvoker.Result result = command
                         .authorizedTo(Jenkins.READ)

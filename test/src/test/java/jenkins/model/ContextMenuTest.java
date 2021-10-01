@@ -24,6 +24,12 @@
 
 package jenkins.model;
 
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
+import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.FreeStyleProject;
@@ -33,14 +39,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import static jenkins.model.ModelObjectWithContextMenu.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.Stapler;
@@ -94,7 +96,7 @@ public class ContextMenuTest {
     }
 
     private static Map<String,String> parse(ContextMenu menu) {
-        Map<String,String> r = new TreeMap<String,String>();
+        Map<String,String> r = new TreeMap<>();
         for (MenuItem mi : menu.items) {
             r.put(mi.url.replaceFirst("^.*/(.)", "$1"), mi.displayName);
         }

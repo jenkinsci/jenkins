@@ -23,10 +23,11 @@
  */
 package hudson.node_monitors;
 
-import hudson.Util;
 import hudson.Extension;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.Computer;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -34,10 +35,8 @@ import org.jenkinsci.Symbol;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
-
-import java.io.IOException;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Checks the swap space availability.
@@ -99,6 +98,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
             return new MonitorTask();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SwapSpaceMonitor_DisplayName();
         }
@@ -113,6 +113,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
      * Obtains the string that represents the architecture.
      */
     private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage,IOException> {
+        @Override
         public MemoryUsage call() throws IOException {
             MemoryMonitor mm;
             try {

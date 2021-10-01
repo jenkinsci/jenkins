@@ -24,15 +24,14 @@
 
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 public class AssetManagerTest {
 
@@ -45,12 +44,5 @@ public class AssetManagerTest {
         URL url = new URL(j.getURL() + "assets");
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());
-    }
-
-    @Test
-    public void handlebarsLoad() throws Exception {
-        URL url = new URL(j.getURL() + "assets/handlebars/jsmodules/handlebars3.js");
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        assertEquals(HttpURLConnection.HTTP_OK, httpCon.getResponseCode());
     }
 }

@@ -23,9 +23,6 @@
  */
 package hudson.util;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -59,13 +56,14 @@ public class RingBufferLogHandler extends Handler {
 
     /**
      * @return int DEFAULT_RING_BUFFER_SIZE
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
-     * @since TODO
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
         return DEFAULT_RING_BUFFER_SIZE;
     }
 
+    @Override
     public synchronized void publish(LogRecord record) {
         int len = records.length;
         records[(start+size)%len]=record;
@@ -89,6 +87,7 @@ public class RingBufferLogHandler extends Handler {
      */
     public List<LogRecord> getView() {
         return new AbstractList<LogRecord>() {
+            @Override
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
@@ -96,6 +95,7 @@ public class RingBufferLogHandler extends Handler {
                 }
             }
 
+            @Override
             public int size() {
                 return size;
             }
@@ -103,6 +103,8 @@ public class RingBufferLogHandler extends Handler {
     }
 
     // noop
+    @Override
     public void flush() {}
+    @Override
     public void close() throws SecurityException {}
 }

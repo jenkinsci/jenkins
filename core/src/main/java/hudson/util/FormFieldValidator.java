@@ -23,6 +23,9 @@
  */
 package hudson.util;
 
+import static hudson.Util.fixEmpty;
+import static hudson.util.FormValidation.APPLY_CONTENT_SECURITY_POLICY_HEADERS;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
@@ -31,12 +34,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +42,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
-
-import static hudson.Util.fixEmpty;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -230,6 +230,11 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             // 1x16 spacer needed for IE since it doesn't support min-height
+            if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                    response.setHeader(header, "sandbox; default-src 'none';");
+                }
+            }
             response.getWriter().print("<div class="+ cssClass +"><img src='"+
                     request.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                     message+"</div>");
@@ -243,7 +248,7 @@ public abstract class FormFieldValidator {
      *      Use {@link FormValidation.URLCheck}
      */
     @Deprecated
-    public static abstract class URLCheck extends FormFieldValidator {
+    public abstract static class URLCheck extends FormFieldValidator {
 
         public URLCheck(StaplerRequest request, StaplerResponse response) {
             // can be used to check the existence of any file in file system
@@ -320,6 +325,7 @@ public abstract class FormFieldValidator {
             super(request, response);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             if(value==null) {// nothing entered yet
@@ -371,6 +377,7 @@ public abstract class FormFieldValidator {
             this.errorIfNotExist = errorIfNotExist;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
@@ -440,6 +447,7 @@ public abstract class FormFieldValidator {
             this.expectingFile = expectingFile;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
@@ -520,10 +528,11 @@ public abstract class FormFieldValidator {
             super(request, response, true);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
-            Exception exceptions[] = {null};
+            Exception[] exceptions = {null};
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
                 @Override
                 public void ok() {
@@ -556,10 +565,8 @@ public abstract class FormFieldValidator {
                 public void validate(File fexe) {
                     try {
                         self.checkExecutable(fexe);
-                    } catch (IOException ioe) {
-                        exceptions[0] = ioe;
-                    } catch (ServletException se) {
-                        exceptions[0] = se;
+                    } catch (IOException | ServletException ex) {
+                        exceptions[0] = ex;
                     }
                 }
             });
@@ -600,6 +607,7 @@ public abstract class FormFieldValidator {
             this.errorMessage = errorMessage;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             try {
                 String v = request.getParameter("value");
@@ -640,6 +648,7 @@ public abstract class FormFieldValidator {
             super(null);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             try {
                 String value = request.getParameter("value");

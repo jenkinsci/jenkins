@@ -28,66 +28,51 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Launcher;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Computer;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.util.FormValidation;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.security.ACLContext;
-
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTriggerTest;
-
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
-import org.jvnet.hudson.test.ToolInstallations;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.jvnet.hudson.test.TestBuilder;
 import org.xml.sax.SAXException;
 
 public class BuildTriggerTest {
@@ -152,56 +137,6 @@ public class BuildTriggerTest {
         doTriggerTest(true, Result.UNSTABLE, Result.FAILURE);
     }
 
-    private void doMavenTriggerTest(boolean evenWhenUnstable) throws Exception {
-        File problematic = new File(System.getProperty("user.home"), ".m2/repository/org/apache/maven/plugins/maven-surefire-plugin/2.4.3/maven-surefire-plugin-2.4.3.pom");
-        if (problematic.isFile()) {
-            try {
-                new SAXReader().read(problematic);
-            } catch (DocumentException x) {
-                x.printStackTrace();
-                // somehow maven-surefire-plugin-2.4.3.pom got corrupted on CI builders
-                Assume.assumeNoException(x);
-            }
-        }
-        FreeStyleProject dp = createDownstreamProject();
-        ToolInstallations.configureMaven3();
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
-        if (!evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } // otherwise do nothing which gets FAILURE
-        // First build should not trigger downstream project
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-        assertNoDownstreamBuild(dp, b);
-
-        if (evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } else {
-            // Configure for SUCCESS
-            m.setGoals("clean");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
-        }
-        // Next build should trigger downstream project
-        b = m.scheduleBuild2(0).get();
-        assertDownstreamBuild(dp, b);
-    }
-
-    @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
-    public void mavenBuildTrigger() throws Exception {
-        doMavenTriggerTest(false);
-    }
-
-    @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
-    public void mavenTriggerEvenWhenUnstable() throws Exception {
-        doMavenTriggerTest(true);
-    }
-
     /** @see ReverseBuildTriggerTest#upstreamProjectSecurity */
     @Test
     public void downstreamProjectSecurity() throws Exception {
@@ -212,9 +147,9 @@ public class BuildTriggerTest {
         auth.add(Computer.BUILD, "anonymous");
         j.jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream =j. createFreeStyleProject("upstream");
-        org.acegisecurity.Authentication alice = User.get("alice").impersonate();
+        org.acegisecurity.Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
-        Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
+        Map<Permission,Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
@@ -242,7 +177,7 @@ public class BuildTriggerTest {
         j.waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
         // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
-        Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission,Set<String>>();
+        Map<Permission,Set<String>> grantedPermissions = new HashMap<>();
         grantedPermissions.put(Item.READ, Collections.singleton("alice"));
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
@@ -387,7 +322,7 @@ public class BuildTriggerTest {
             }
         }
 
-        public SlowTrigger(String childProjects) {
+        SlowTrigger(String childProjects) {
             super(childProjects, true);
         }
 

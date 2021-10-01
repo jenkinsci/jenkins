@@ -23,23 +23,6 @@
  */
 package jenkins.install;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
-import org.mockito.Mockito;
-
 import hudson.Main;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.DownloadJob.Failure;
@@ -49,9 +32,27 @@ import hudson.model.UpdateCenter.DownloadJob.Pending;
 import hudson.model.UpdateCenter.DownloadJob.Success;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
+import org.mockito.Mockito;
+import org.springframework.security.core.Authentication;
 
 /**
  * Test
@@ -82,7 +83,7 @@ public class InstallUtilTest {
      * Test jenkins startup sequences and the changes to the startup type..
      */
     @Test
-    public void test_typeTransitions() {
+    public void test_typeTransitions() throws IOException, ServletException {
         InstallUtil.getLastExecVersionFile().delete();
         InstallUtil.getConfigFile().delete();
         
@@ -96,7 +97,7 @@ public class InstallUtilTest {
         //   1. A successful run of the install wizard.
         //   2. A success upgrade.
         //   3. A successful restart.
-        InstallUtil.saveLastExecVersion();
+        Jenkins.get().getSetupWizard().completeSetup();
 
         // Fudge things a little now, pretending there's a restart...
 
@@ -159,16 +160,16 @@ public class InstallUtilTest {
 
 						InstallationStatus status;
 						if("Success".equals(statusType)) {
-							status = Mockito.mock(Success.class);
+							status = Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else if("Failure".equals(statusType)) {
-							status = Mockito.mock(Failure.class);
+							status = Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else if("Installing".equals(statusType)) {
-							status = Mockito.mock(Installing.class);
+							status = Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
 						}
 						else {
-							status = Mockito.mock(Pending.class);
+							status = Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
 						}
 
 						nameMap.put(statusType, status.getClass().getSimpleName());
@@ -180,7 +181,7 @@ public class InstallUtilTest {
 					json.put("dependencies", new JSONArray());
 					Plugin p = new Plugin(getId(), json);
 
-					InstallationJob job = new InstallationJob(p, null, null, false);
+					InstallationJob job = new InstallationJob(p, null, (Authentication) null, false);
 						job.status = status;
 						job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
 		                updates.add(job);

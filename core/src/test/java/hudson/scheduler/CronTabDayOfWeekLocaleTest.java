@@ -8,14 +8,12 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.Url;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * A collection of unit tests focused around crontabs restricted to particular
@@ -50,8 +48,8 @@ public class CronTabDayOfWeekLocaleTest {
      * HUDSON-8656.
      */
     @Test
-    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
-    public void hudson8658() throws Exception {
+    @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
+    public void hudson8656() throws Exception {
         final Calendar cal = Calendar.getInstance(locale);
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00

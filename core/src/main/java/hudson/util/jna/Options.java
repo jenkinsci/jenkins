@@ -15,12 +15,13 @@ Lesser General Public License for more details.
  */
 package hudson.util.jna;
 
-import static com.sun.jna.Library.*;
-import com.sun.jna.win32.W32APITypeMapper;
-import com.sun.jna.win32.W32APIFunctionMapper;
+import static com.sun.jna.Library.OPTION_FUNCTION_MAPPER;
+import static com.sun.jna.Library.OPTION_TYPE_MAPPER;
 
-import java.util.Map;
+import com.sun.jna.win32.W32APIFunctionMapper;
+import com.sun.jna.win32.W32APITypeMapper;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *

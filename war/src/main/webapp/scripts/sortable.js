@@ -71,10 +71,10 @@ var Sortable = (function() {
              * Using the innerHTML will return the escaped content that could be reused directly within the wrapper.
              */
             cell.innerHTML = '<a href="#" class="sortheader">'+cell.innerHTML+'<span class="sortarrow"></span></a>';
-            this.arrows.push(cell.firstChild.lastChild);
+            this.arrows.push(cell.firstElementChild.lastElementChild);
 
             var self = this;
-            cell.firstChild.onclick = function () {
+            cell.firstElementChild.onclick = function () {
                 self.onClicked(this);
                 return false;
             };

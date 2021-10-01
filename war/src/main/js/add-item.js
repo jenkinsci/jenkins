@@ -160,9 +160,30 @@ $.when(getItems()).done(function(data) {
     }
 
     function drawItem(elem) {
-      var desc = checkForLink(elem.description);
-      var $item = $(['<li tabindex="0" role="radio" aria-checked="false" class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
-      elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
+      var item = document.createElement('li');
+      item.tabIndex = 0;
+      item.className = cleanClassName(elem.class);
+      item.setAttribute('role', 'radio');
+      item.setAttribute('aria-checked', 'false');
+
+      var label = item.appendChild(document.createElement('label'));
+
+      var radio = label.appendChild(document.createElement('input'));
+      radio.type = 'radio';
+      radio.name = 'mode';
+      radio.value = elem.class;
+
+      var displayName = label.appendChild(document.createElement('span'));
+      displayName.className = 'label';
+
+      displayName.appendChild(document.createTextNode(elem.displayName));
+
+      var desc = item.appendChild(document.createElement('div'));
+      desc.className = 'desc';
+      desc.innerHTML = checkForLink(elem.description);
+
+      var iconDiv = drawIcon(elem);
+      item.appendChild(iconDiv);
 
       function select(e) {
         e.preventDefault();
@@ -183,32 +204,41 @@ $.when(getItems()).done(function(data) {
         }
       }
 
-      $item.click(select);
-
-      $item.keypress(function(e) {
-        switch (e.which) {
-          case 13:
-          case 32:
-            $(this).trigger('click');
-            e.stopPropagation();
-            break;
+      item.addEventListener('click', select);
+      item.addEventListener('keydown', function (evt) {
+        if (evt.code === 'Space' || evt.code === 'Enter') {
+          this.click();
+          evt.stopPropagation();
         }
       });
 
-      return $item;
+      return item;
     }
 
     function drawIcon(elem) {
-      var $icn;
+      var iconDiv = document.createElement('div');
       if (elem.iconClassName && elem.iconQualifiedUrl) {
-        $icn = $('<div class="icon">');
-        $(['<img class="', elem.iconClassName, ' icon-xlg" src="', elem.iconQualifiedUrl, '">'].join('')).appendTo($icn);
+        iconDiv.className = 'icon';
+        
+        var img1 = document.createElement('img');
+        img1.className = elem.iconClassName + ' icon-xlg';
+        img1.src = elem.iconQualifiedUrl;
+        iconDiv.appendChild(img1);
+        
+        // Example for Freestyle project
+        // <div class="icon"><img class="icon-freestyle-project icon-xlg" src="/jenkins/static/108b2346/images/48x48/freestyleproject.png"></div>
       } else if (elem.iconFilePathPattern) {
-        $icn = $('<div class="icon">');
+        iconDiv.className = 'icon';
+        
         var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
-        $(['<img src="', iconFilePath, '">'].join('')).appendTo($icn);
+        
+        var img2 = document.createElement('img');
+        img2.src = iconFilePath;
+        iconDiv.appendChild(img2);
+        
+        // Example for Maven project
+        // <div class="icon"><img src="/jenkins/plugin/maven-plugin/images/48x48/mavenmoduleset.png"></div>
       } else {
-        $icn = $('<div class="default-icon">');
         var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D', 'c-6699CC'];
         var desc = elem.description || '';
         var name = elem.displayName;
@@ -216,10 +246,21 @@ $.when(getItems()).done(function(data) {
         var aName = name.split(' ');
         var a = name.substring(0,1);
         var b = ((aName.length === 1) ? name.substring(1,2) : aName[1].substring(0,1));
-        $(['<span class="a">',a,'</span><span class="b">',b,'</span>'].join('')).appendTo($icn);
-        $icn.addClass(colorClass);
+        
+        var spanFakeImgA = document.createElement('span');
+        spanFakeImgA.className = "a";
+        spanFakeImgA.innerText = a;
+        iconDiv.appendChild(spanFakeImgA);
+        var spanFakeImgB = document.createElement('span');
+        spanFakeImgB.className = "b";
+        spanFakeImgB.innerText = b;
+        iconDiv.appendChild(spanFakeImgB);
+        iconDiv.className = colorClass + ' default-icon';
+        
+        // Example for MockFolder
+        // <div class="default-icon c-49728B"><span class="a">M</span><span class="b">o</span></div>
       }
-      return $icn;
+      return iconDiv;
     }
 
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.

@@ -1,9 +1,9 @@
 package hudson.model;
 
-import org.kohsuke.stapler.StaplerRequest;
 import hudson.cli.CLICommand;
-
 import java.io.IOException;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Convenient base class for {@link ParameterDefinition} whose value can be represented in a context-independent single string token.
@@ -15,6 +15,10 @@ public abstract class SimpleParameterDefinition extends ParameterDefinition {
         super(name);
     }
 
+    /**
+     * @deprecated Prefer {@link #SimpleParameterDefinition(String)} with a {@link DataBoundConstructor} and allow {@link #setDescription} to be used as needed
+     */
+    @Deprecated
     protected SimpleParameterDefinition(String name, String description) {
         super(name, description);
     }

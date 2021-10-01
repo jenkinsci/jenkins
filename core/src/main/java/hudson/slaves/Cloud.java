@@ -24,29 +24,28 @@
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionPoint;
-import hudson.Extension;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Actionable;
 import hudson.model.Computer;
-import hudson.model.Slave;
-import hudson.security.PermissionScope;
-import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.Label;
 import hudson.model.Descriptor;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.security.PermissionScope;
+import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -104,6 +103,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         this.name = name;
     }
 
+    @Override
     public String getDisplayName() {
         return name;
     }
@@ -118,10 +118,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return "cloud/" + name;
     }
 
+    @Override
     public @NonNull String getSearchUrl() {
         return getUrl();
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -221,6 +223,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return canProvision(state.getLabel());
     }
 
+    @Override
     public Descriptor<Cloud> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -254,7 +257,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
 
     /**
      * Parameter object for {@link hudson.slaves.Cloud}.
-     * @since TODO
+     * @since 2.259
      */
     public static final class CloudState {
         /**

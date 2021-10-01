@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -11,7 +12,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -21,16 +21,20 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -40,19 +44,10 @@ import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -84,11 +79,7 @@ public class ApiTokenPropertyTest {
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");
-        assertEquals(u, wc.executeOnServer(new Callable<User>() {
-            public User call() throws Exception {
-                return User.current();
-            }
-        }));
+        assertEquals(u, wc.executeOnServer(User::current));
         
         // Make sure the UI shows the token to the user
         HtmlPage config = wc.goTo(u.getUrl() + "/configure");
@@ -103,7 +94,7 @@ public class ApiTokenPropertyTest {
     @Test
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User u = User.get("foo");
+        User u = User.getOrCreateByIdOrFullName("foo");
         String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
 
         // we won't accept historically used initial value as it may be compromised
@@ -127,7 +118,7 @@ public class ApiTokenPropertyTest {
     @Test
     public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User u = User.get("foo");
+        User u = User.getOrCreateByIdOrFullName("foo");
         final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         final String token = t.getApiToken();
         
@@ -142,8 +133,8 @@ public class ApiTokenPropertyTest {
     @Test
     public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.get("foo");
-        User bar = User.get("bar");
+        User foo = User.getOrCreateByIdOrFullName("foo");
+        User bar = User.getOrCreateByIdOrFullName("bar");
         final ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
         final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
         

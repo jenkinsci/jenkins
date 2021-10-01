@@ -25,7 +25,7 @@ package hudson.util;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,6 +41,7 @@ public final class CharSpool extends Writer {
     private char[] last = new char[1024];
     private int pos;
 
+    @Override
     public void write(char[] cbuf, int off, int len) {
         while(len>0) {
             int sz = Math.min(last.length-pos,len);
@@ -57,21 +58,24 @@ public final class CharSpool extends Writer {
             return;
 
         if(buf==null)
-            buf = new LinkedList<>();
+            buf = new ArrayList<>();
         buf.add(last);
         last = new char[1024];
         pos = 0;
     }
 
+    @Override
     public void write(int c) {
         renew();
         last[pos++] = (char)c;
     }
 
+    @Override
     public void flush() {
         // noop
     }
 
+    @Override
     public void close() {
         // noop
     }

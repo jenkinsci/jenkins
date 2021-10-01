@@ -23,6 +23,13 @@
  */
 package hudson.tasks;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -39,14 +46,15 @@ import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
 import hudson.tasks.Maven.MavenInstaller;
 import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
+import java.util.Collections;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathGlobalSettingsProvider;
@@ -58,17 +66,7 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -118,7 +116,7 @@ public class MavenTest {
         j.jenkins.getJDKs().add(varJDK);
         j.jenkins.getNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
+                        new EnvironmentVariablesNodeProperty.Entry("VAR_MAVEN", mavenVar), new EnvironmentVariablesNodeProperty.Entry("VAR_JAVA",
                                 javaVar))));
 
         FreeStyleProject project = j.createFreeStyleProject();
@@ -183,7 +181,7 @@ public class MavenTest {
     }
 
     private void verify() throws Exception {
-        MavenInstallation[] l = j.get(DescriptorImpl.class).getInstallations();
+        MavenInstallation[] l = j.get(MavenInstallation.DescriptorImpl.class).getInstallations();
         assertEquals(1,l.length);
         j.assertEqualBeans(l[0],new MavenInstallation("myMaven","/tmp/foo", JenkinsRule.NO_PROPERTIES),"name,home");
 
@@ -218,7 +216,7 @@ public class MavenTest {
     public void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
         final String properties = "global.path=$GLOBAL_PATH\nmy.path=$PATH\\\\Dir";
         final StringParameterDefinition parameter = new StringParameterDefinition("PATH", "C:\\Windows");
-        final Entry envVar = new Entry("GLOBAL_PATH", "D:\\Jenkins");
+        final EnvironmentVariablesNodeProperty.Entry envVar = new EnvironmentVariablesNodeProperty.Entry("GLOBAL_PATH", "D:\\Jenkins");
 
         FreeStyleProject project = j.createFreeStyleProject();
         // This test implements legacy behavior, when Build Variables are injected by default
@@ -274,7 +272,7 @@ public class MavenTest {
     @Issue("JENKINS-18898")
     @Test public void testNullHome() {
         EnvVars env = new EnvVars();
-        new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
+        new MavenInstallation("_", "", Collections.emptyList()).buildEnvVars(env);
         assertTrue(env.isEmpty());
     }
 
@@ -374,5 +372,33 @@ public class MavenTest {
         MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
         assertNotEquals(maven3.hashCode(), maven2.hashCode());
         assertNotEquals(maven3, maven2);
+    }
+
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithoutJellyTrace() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage htmlPage = wc.goTo("configureTools");
+        HtmlForm configForm = htmlPage.getFormByName("config");
+        j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * Ensure the form is still working when using {@link org.kohsuke.stapler.jelly.JellyFacet#TRACE}=true
+     */
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithJellyTrace() throws Exception {
+        boolean currentValue = JellyFacet.TRACE;
+        try {
+            JellyFacet.TRACE = true;
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            HtmlPage htmlPage = wc.goTo("configureTools");
+            HtmlForm configForm = htmlPage.getFormByName("config");
+            j.assertGoodStatus(j.submit(configForm));
+        } finally {
+            JellyFacet.TRACE = currentValue;
+        }
     }
 }

@@ -23,23 +23,22 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.AbortException;
+import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.util.DescriptorList;
-
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -93,8 +92,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  * is then fed to {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)} to
  * create {@link ParameterValue}s.
  *
- * TODO: what Jelly pages does this object need for rendering UI?
- * TODO: {@link ParameterValue} needs to have some mechanism to expose values to the build
  * @see StringParameterDefinition
  */
 @ExportedBean(defaultVisibility=3)
@@ -103,19 +100,22 @@ public abstract class ParameterDefinition implements
 
     private final String name;
 
-    private final String description;
+    private String description;
 
     public ParameterDefinition(@NonNull String name) {
-        this(name, null);
-    }
-
-    public ParameterDefinition(@NonNull String name, String description) {
-        //Checking as pipeline does not enforce annotations
         if (name == null) {
             throw new IllegalArgumentException("Parameter name must be non-null");
         }
         this.name = name;
-        this.description = description;
+    }
+
+    /**
+     * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link org.kohsuke.stapler.DataBoundConstructor} and allow {@link #setDescription} to be used as needed
+     */
+    @Deprecated
+    public ParameterDefinition(@NonNull String name, String description) {
+        this(name);
+        setDescription(description);
     }
 
     /**
@@ -147,13 +147,21 @@ public abstract class ParameterDefinition implements
     }
 
     /**
+     * @since 2.281
+     */
+    @DataBoundSetter
+    public void setDescription(@CheckForNull String description) {
+        this.description = Util.fixEmpty(description);
+    }
+
+    /**
      * return parameter description, applying the configured MarkupFormatter for jenkins instance.
      * @since 1.521
      */
     @CheckForNull
     public String getFormattedDescription() {
         try {
-            return Jenkins.get().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(getDescription());
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";

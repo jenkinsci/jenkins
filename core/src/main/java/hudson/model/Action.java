@@ -23,9 +23,8 @@
  */
 package hudson.model;
 
-import hudson.Functions;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.Functions;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -107,6 +106,7 @@ public interface Action extends ModelObject {
      *
      * @return Can be null in case the action is hidden.
      */
+    @Override
     @CheckForNull String getDisplayName();
 
     /**

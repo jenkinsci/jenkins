@@ -25,7 +25,6 @@ package hudson.console;
 
 import hudson.Extension;
 import hudson.MarkupText;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +66,7 @@ public class ExpandableDetailsNote extends ConsoleNote {
 
     @Extension
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Expandable details";
         }

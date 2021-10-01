@@ -1,10 +1,31 @@
 package jenkins.model;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.PluginWrapper;
+import hudson.cli.CLICommandInvoker;
+import hudson.cli.DisablePluginCommand;
+import hudson.model.Descriptor;
+import hudson.model.MyView;
+import hudson.model.User;
+import hudson.model.View;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
+import hudson.tasks.Shell;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -16,36 +37,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.WithPlugin;
-
-import hudson.PluginWrapper;
-import hudson.cli.CLICommandInvoker;
-import hudson.cli.DisablePluginCommand;
-import hudson.lifecycle.RestartNotSupportedException;
-import hudson.model.Descriptor;
-import hudson.model.MyView;
-import hudson.model.User;
-import hudson.model.View;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.ProjectMatrixAuthorizationStrategy;
-import hudson.tasks.Shell;
-
-import jenkins.security.ApiTokenProperty;
-
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 
 /**
  * As Jenkins.MANAGE can be enabled on startup with jenkins.security.ManagePermission property, we need a test class
@@ -120,8 +111,8 @@ public class JenkinsManagePermissionTest {
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
                 .grant(Jenkins.READ).everywhere().to(MANAGER)
         );
-        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
-        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(READER).assertFails("computer/(built-in)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(MANAGER).assertFails("computer/(built-in)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     // End of ComputerTest
@@ -216,7 +207,7 @@ public class JenkinsManagePermissionTest {
             @Override
             public boolean matches(final Object item) {
                 final WebResponse response = (WebResponse) item;
-                return (response.getStatusCode() == httpStatus);
+                return response.getStatusCode() == httpStatus;
             }
 
             @Override

@@ -23,6 +23,9 @@
  */
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -56,9 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
@@ -185,7 +185,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * The default implementation returns true.
      *
      * <p>
-     * See issue #1348 for more discussion of this feature.
+     * See issue JENKINS-1348 for more discussion of this feature.
      *
      * @since 1.196
      */
@@ -406,7 +406,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         if (is1_346OrLater()) {
-            // This is to work around HUDSON-5827 in a general way.
+            // This is to work around JENKINS-5827 in a general way.
             // don't let the SCM.compareRemoteRevisionWith(...) see SCMRevisionState that it didn't produce.
             SCMRevisionState baseline2;
             if (baseline!=SCMRevisionState.NONE) {
@@ -683,6 +683,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public abstract ChangeLogParser createChangeLogParser();
 
+    @Override
     public SCMDescriptor<?> getDescriptor() {
         return (SCMDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -728,7 +729,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Jenkins.get().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
+        return Jenkins.get().getDescriptorList(SCM.class);
     }
 
     /**

@@ -1,16 +1,14 @@
 package hudson.model;
 
-import jenkins.model.IdStrategy;
-
 import java.io.File;
-import java.io.IOException;
+import jenkins.model.IdStrategy;
 
 class TestUserIdMapper extends UserIdMapper {
 
     private File usersDirectory;
     private IdStrategy idStrategy;
 
-    TestUserIdMapper(File usersDirectory, IdStrategy idStrategy) throws IOException {
+    TestUserIdMapper(File usersDirectory, IdStrategy idStrategy) {
         this.usersDirectory = usersDirectory;
         this.idStrategy = idStrategy;
     }

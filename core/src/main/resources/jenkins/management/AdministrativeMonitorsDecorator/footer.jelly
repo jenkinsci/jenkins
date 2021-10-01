@@ -38,7 +38,7 @@ THE SOFTWARE.
                 <a id="visible-am-button"
                    class="am-button"
                    href="#"
-                   data-href="${rootURL}/administrativeMonitors/nonSecurityPopupContent"
+                   data-href="${rootURL}/administrativeMonitorsApi/nonSecurityPopupContent"
                    title="${%tooltip(activeNonSecurityAMCount)}">
                     <l:svgIcon
                             href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px"/>
@@ -56,7 +56,7 @@ THE SOFTWARE.
                 <a id="visible-sec-am-button"
                    class="am-button security-am"
                    href="#"
-                   data-href="${rootURL}/administrativeMonitors/securityPopupContent"
+                   data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"
                    title="${%tooltipSec(activeSecurityAMCount)}">
                     <l:svgIcon
                             href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_warning_shield_24px"/>

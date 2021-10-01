@@ -24,6 +24,8 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -35,7 +37,6 @@ import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
-import jenkins.util.MemoryReductionUtil;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
@@ -48,10 +49,9 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.function.Predicate;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.Authentication;
@@ -76,11 +76,7 @@ public class Items {
      * @see Trigger#start
      * @since 1.482
      */
-    private static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private static final ThreadLocal<Boolean> updatingByXml = ThreadLocal.withInitial(() -> false);
     /**
      * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getName()}.
      * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
@@ -170,7 +166,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 2.266
      */
     public static List<TopLevelItemDescriptor> all2(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<>();
@@ -472,8 +468,8 @@ public class Items {
      *
      * @param root the root.
      * @param type the type.
+     * @param pred the predicate.
      * @param <T> the type.
-     * @param <T> the predicate.
      * @return An {@link Iterable} for all items.
      * @since 2.221
      */
@@ -492,7 +488,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.266
      */
     public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type) {
         return allItems2(authentication, root, type, t -> true);
@@ -520,7 +516,7 @@ public class Items {
      * @param <T> the type.
      * @param pred the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.266
      */
     public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
         return new AllItemsIterable<>(root, authentication, type, pred);

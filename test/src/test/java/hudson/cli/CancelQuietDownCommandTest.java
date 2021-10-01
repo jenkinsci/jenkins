@@ -24,17 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.util.OneShotEvent;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Future;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -43,6 +32,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.util.OneShotEvent;
+import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -92,7 +91,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldResetQuietReason() throws Exception {
         final String testReason = "reason";
-        j.jenkins.getActiveInstance().doQuietDown(false, 0, testReason);
+        Jenkins.get().doQuietDown(false, 0, testReason);
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
         assertThat(j.jenkins.getQuietDownReason(), equalTo(testReason));
         final CLICommandInvoker.Result result = command

@@ -23,19 +23,18 @@
  */
 package hudson.security;
 
-import com.google.common.collect.ImmutableSet;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import net.sf.json.util.JSONUtils;
-
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
+import jenkins.model.Jenkins;
+import net.sf.json.util.JSONUtils;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -52,14 +51,7 @@ public final class Permission {
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
      */
-    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
-
-        // break eclipse compilation 
-        //Override
-        public int compare(@NonNull Permission one, @NonNull Permission two) {
-            return one.getId().compareTo(two.getId());
-        }
-    };
+    public static final Comparator<Permission> ID_COMPARATOR = Comparator.comparing(Permission::getId);
 
     public final @NonNull Class owner;
 
@@ -157,7 +149,7 @@ public final class Permission {
         this.description = description;
         this.impliedBy = impliedBy;
         this.enabled = enable;
-        this.scopes = ImmutableSet.copyOf(scopes);
+        this.scopes = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(scopes)));
         this.id = owner.getName() + '.' + name;
 
         group.add(this);

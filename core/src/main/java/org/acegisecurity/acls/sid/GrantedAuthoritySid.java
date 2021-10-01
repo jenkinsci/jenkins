@@ -36,7 +36,7 @@ public class GrantedAuthoritySid implements Sid {
     }
 
     /**
-     * @since TODO
+     * @since 2.266
      */
     public GrantedAuthoritySid(GrantedAuthority ga) {
         grantedAuthority = ga.getAuthority();

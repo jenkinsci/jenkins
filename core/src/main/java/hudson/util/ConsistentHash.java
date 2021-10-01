@@ -23,18 +23,16 @@
  */
 package hudson.util;
 
-import java.lang.RuntimeException;
+import hudson.util.Iterators.DuplicateFilterIterator;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
-
-import hudson.util.Iterators.DuplicateFilterIterator;
 
 /**
  * Consistent hash.
@@ -83,6 +81,7 @@ public class ConsistentHash<T> {
             this.item = item;
         }
 
+        @Override
         public int compareTo(Point that) {
             return Integer.compare(this.hash, that.hash);
         }
@@ -147,17 +146,20 @@ public class ConsistentHash<T> {
             return new DuplicateFilterIterator<>(new Iterator<T>() {
                 int pos = 0;
 
+                @Override
                 public boolean hasNext() {
                     return pos < owner.length;
                 }
 
+                @Override
                 public T next() {
                     if (!hasNext()) {
                         throw new NoSuchElementException();
                     }
-                    return (T) owner[(start + (pos++)) % owner.length];
+                    return (T) owner[(start + pos++) % owner.length];
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

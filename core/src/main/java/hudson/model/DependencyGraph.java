@@ -24,14 +24,8 @@
  */
 package hudson.model;
 
-import hudson.security.ACLContext;
-import jenkins.model.DependencyDeclarer;
-import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import jenkins.util.DirectedGraph;
-import jenkins.util.DirectedGraph.SCC;
-
+import hudson.security.ACLContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,9 +35,12 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.util.DirectedGraph;
+import jenkins.util.DirectedGraph.SCC;
 
 /**
  * Maintains the build dependencies between {@link AbstractProject}s
@@ -132,12 +129,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             }
         }
 
-        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
-            @Override
-            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-                return topoOrder.get(o1)-topoOrder.get(o2);
-            }
-        };
+        topologicalOrder = Comparator.comparingInt(topoOrder::get);
 
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
     }
@@ -213,13 +205,13 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) {
-            return ImmutableList.of();
+            return Collections.emptyList();
         } else {
-            ImmutableList.Builder<Dependency> builder = ImmutableList.builder();
+            List<Dependency> builder = new ArrayList<>();
             for (DependencyGroup dependencyGroup : v) {
                 builder.addAll(dependencyGroup.getGroup());
             }
-            return builder.build();
+            return Collections.unmodifiableList(builder);
         }
 
     }
@@ -342,7 +334,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
-        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
+        for (Map.Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             e.getValue().sort(NAME_COMPARATOR);
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
@@ -350,6 +342,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<DependencyGroup>() {
+        @Override
         public int compare(DependencyGroup lhs, DependencyGroup rhs) {
             int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
             return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
@@ -361,6 +354,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
+    @Override
     public int compare(AbstractProject o1, AbstractProject o2) {
         return topologicalOrder.compare(o1,o2);
     }

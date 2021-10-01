@@ -24,6 +24,8 @@
 
 package hudson.tools;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -31,7 +33,6 @@ import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -39,9 +40,8 @@ import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -51,7 +51,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-23517")
     @Test public void offlineNodeForJDK() throws Exception {
-        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
         JDK jdk = new JDK("my-jdk", globalDefaultLocation, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
         r.jenkins.getJDKs().add(jdk);
@@ -129,8 +129,8 @@ public class InstallerTranslatorTest {
                 ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
                 : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
         final AbstractCommandInstaller ci2 = Functions.isWindows()
-                ? new BatchCommandInstaller("master", "echo hello", "C:\\jdk2")
-                : new CommandInstaller("master", "echo hello", "/opt/jdk2");
+                ? new BatchCommandInstaller("built-in", "echo hello", "C:\\jdk2")
+                : new CommandInstaller("built-in", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
 
         JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));

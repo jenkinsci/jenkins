@@ -24,6 +24,15 @@
 
 package jenkins.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
@@ -34,30 +43,18 @@ import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
 import hudson.model.ProminentProjectAction;
 import hudson.model.queue.FoldableAction;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matchers;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TransientActionFactoryTest {
 
@@ -100,16 +97,16 @@ public class TransientActionFactoryTest {
         // getAllActions
         List<? extends Action> allActions = p.getAllActions();
         assertEquals(1, LazyFactory.count);
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
-        assertThat(Util.filter(allActions, MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(1));
+        assertThat(Util.filter(allActions, MyProminentProjectAction.class), Matchers.iterableWithSize(1));
         LazyFactory.count = 0;
         // getActions(Class)
-        assertThat(p.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(p.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
-        assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(1, LazyFactory.count);
-        assertThat(p.getActions(MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(MyProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(2, LazyFactory.count);
         LazyFactory.count = 0;
         // different context type
@@ -117,10 +114,10 @@ public class TransientActionFactoryTest {
         assertNull(d.getAction(FoldableAction.class));
         assertNull(d.getAction(ProminentProjectAction.class));
         allActions = d.getAllActions();
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
-        assertThat(d.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(d.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(0));
+        assertThat(d.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(d.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
     }
     @SuppressWarnings("rawtypes")
@@ -145,13 +142,13 @@ public class TransientActionFactoryTest {
         // getAllActions
         List<? extends Action> allActions = p.getAllActions();
         assertEquals(1, OldFactory.count);
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(1));
         OldFactory.count = 0;
         // getActions(Class)
-        assertThat(p.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(p.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
         assertEquals(1, OldFactory.count);
-        assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(2, OldFactory.count);
     }
     @TestExtension("compatibility") public static class OldFactory extends TransientActionFactory<FreeStyleProject> {
@@ -192,13 +189,14 @@ public class TransientActionFactoryTest {
 
         private String allocation;
 
-        public MyProminentProjectAction() {
+        MyProminentProjectAction() {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             new Exception("MyProminentProjectAction allocated at: ").printStackTrace(pw);
             allocation = sw.toString();
         }
 
+        @Override
         public String toString() {
             return allocation;
         }

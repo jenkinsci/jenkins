@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import com.google.common.collect.ImmutableSet;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -34,11 +33,15 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.Describable;
 import hudson.model.Saveable;
-
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +77,7 @@ public class PersistedList<T> extends AbstractList<T> {
         this.owner = owner;
     }
 
+    @Override
     @WithBridgeMethods(void.class)
     public boolean add(T item) {
         data.add(item);
@@ -81,6 +85,7 @@ public class PersistedList<T> extends AbstractList<T> {
         return true;
     }
 
+    @Override
     @WithBridgeMethods(void.class)
     public boolean addAll(Collection<? extends T> items) {
         data.addAll(items);
@@ -93,6 +98,7 @@ public class PersistedList<T> extends AbstractList<T> {
         onModified();
     }
 
+    @Override
     public T get(int index) {
         return data.get(index);
     }
@@ -115,6 +121,7 @@ public class PersistedList<T> extends AbstractList<T> {
         return r;
     }
 
+    @Override
     public int size() {
         return data.size();
     }
@@ -147,6 +154,7 @@ public class PersistedList<T> extends AbstractList<T> {
         data.replaceBy(copy);
     }
 
+    @Override
     public boolean remove(Object o) {
         boolean b = data.remove((T)o);
         if (b)  _onModified();
@@ -166,10 +174,12 @@ public class PersistedList<T> extends AbstractList<T> {
     }
 
 
+    @Override
     public void clear() {
         data.clear();
     }
 
+    @Override
     public Iterator<T> iterator() {
         return data.iterator();
     }
@@ -191,7 +201,7 @@ public class PersistedList<T> extends AbstractList<T> {
     }
 
     // TODO until https://github.com/jenkinsci/jenkins-test-harness/pull/243 is widely adopted:
-    private static final Set<String> IGNORED_CLASSES = ImmutableSet.of("org.jvnet.hudson.test.TestBuilder", "org.jvnet.hudson.test.TestNotifier");
+    private static final Set<String> IGNORED_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("org.jvnet.hudson.test.TestBuilder", "org.jvnet.hudson.test.TestNotifier")));
     // (SingleFileSCM & ExtractResourceWithChangesSCM would also be nice to suppress, but they are not kept in a PersistedList.)
     private static boolean ignoreSerializationErrors(Object o) {
         if (o != null) {
@@ -225,7 +235,8 @@ public class PersistedList<T> extends AbstractList<T> {
     /**
      * Gets all the {@link Describable}s in an array.
      */
-    public <T> T[] toArray(T[] array) {
+    @Override
+    public <X> X[] toArray(X[] array) {
         return data.toArray(array);
     }
 
@@ -233,10 +244,12 @@ public class PersistedList<T> extends AbstractList<T> {
         data.addAllTo(dst);
     }
 
+    @Override
     public boolean isEmpty() {
         return data.isEmpty();
     }
 
+    @Override
     public boolean contains(Object item) {
         return data.contains(item);
     }
@@ -258,23 +271,30 @@ public class PersistedList<T> extends AbstractList<T> {
             copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
         }
 
+        @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
             return PersistedList.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (PersistedList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
 
             try {
-                PersistedList r = (PersistedList)context.getRequiredType().newInstance();
+                PersistedList r = (PersistedList)context.getRequiredType().getDeclaredConstructor().newInstance();
                 r.data.replaceBy(core);
                 return r;
+            } catch (NoSuchMethodException e) {
+                NoSuchMethodError x = new NoSuchMethodError();
+                x.initCause(e);
+                throw x;
             } catch (InstantiationException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
@@ -283,8 +303,20 @@ public class PersistedList<T> extends AbstractList<T> {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
+            } catch (InvocationTargetException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else if (t instanceof IOException) {
+                    throw new UncheckedIOException((IOException) t);
+                } else if (t instanceof Exception) {
+                    throw new RuntimeException(t);
+                } else if (t instanceof Error) {
+                    throw (Error) t;
+                } else {
+                    throw new Error(e);
+                }
             }
         }
     }
 }
-

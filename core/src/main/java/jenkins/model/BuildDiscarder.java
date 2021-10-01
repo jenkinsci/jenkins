@@ -14,7 +14,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.LogRotator;
 import hudson.util.RobustReflectionConverter;
-
 import java.io.IOException;
 
 /**
@@ -64,16 +63,19 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
             };
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             // abstract class, so there shouldn't be any instance.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             // force unmarshal as LogRotator
             return ref.unmarshal(reader,context);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==BuildDiscarder.class;
         }

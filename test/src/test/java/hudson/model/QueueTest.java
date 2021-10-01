@@ -23,6 +23,26 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -52,7 +72,6 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
@@ -78,40 +97,9 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
-import jenkins.model.BlockedBecauseOfBuildInProgress;
-import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import jenkins.triggers.ReverseBuildTrigger;
-import org.acegisecurity.acls.sid.PrincipalSid;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.MockQueueItemAuthenticator;
-import org.jvnet.hudson.test.SequenceLock;
-import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.recipes.LocalData;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -130,26 +118,39 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
-
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
+import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.triggers.ReverseBuildTrigger;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -351,6 +352,7 @@ public class QueueTest {
         FreeStyleProject project = r.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();
@@ -422,7 +424,7 @@ public class QueueTest {
         }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
-        List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
+        List<Future<MatrixBuild>> futures = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             futures.add(m.scheduleBuild2(0, new UserIdCause(), new ParametersAction(new StringParameterValue("FOO", "value" + i))));
@@ -439,14 +441,14 @@ public class QueueTest {
         cloud.label = r.jenkins.getLabel("remote");
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNodes(Collections.emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
+            throw new AssertionError(Arrays.toString(r.jenkins.getQueue().getItems()), x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -467,7 +469,8 @@ public class QueueTest {
         assertFalse(Queue.isBlockedByShutdown(task));
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
-        assert task.exec instanceof OneOffExecutor : task.exec;
+        assertNotNull(task.exec);
+        assertThat(task.exec, instanceOf(OneOffExecutor.class));
     }
 
     @Issue("JENKINS-24519")
@@ -480,7 +483,8 @@ public class QueueTest {
         r.createSlave(label);
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
-        assert task.exec instanceof OneOffExecutor : task.exec;
+        assertNotNull(task.exec);
+        assertThat(task.exec, instanceOf(OneOffExecutor.class));
     }
 
     @Issue("JENKINS-41127")
@@ -733,7 +737,7 @@ public class QueueTest {
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                return new FreeStyleProject(parent,name){
                      @Override
                     public Label getAssignedLabel(){
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
@@ -773,7 +777,7 @@ public class QueueTest {
         //project2 should not be in pendings
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
         for(Queue.BuildableItem item : items){
-            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName()));
+            assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
         }
     }
 
@@ -788,22 +792,14 @@ public class QueueTest {
         p.setAssignedNode(slave);
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
-        try {
-            f.get(3, TimeUnit.SECONDS);
-            fail("Should time out (as the slave is offline).");
-        } catch (TimeoutException e) {
-        }
+        assertThrows("Should time out (as the agent is offline)", TimeoutException.class, () -> f.get(3, TimeUnit.SECONDS));
 
         Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
         Queue.getInstance().doCancelItem(item.getId());
         assertNull(Queue.getInstance().getItem(p));
 
-        try {
-            f.get(10, TimeUnit.SECONDS);
-            fail("Should not get (as it is cancelled).");
-        } catch (CancellationException e) {
-        }
+        assertThrows("Should not get (as it is cancelled)", CancellationException.class, () -> f.get(10, TimeUnit.SECONDS));
     }
 
     @Test public void waitForStartAndCancelBeforeStart() throws Exception {
@@ -820,16 +816,15 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException | ServletException e) {
-                       e.printStackTrace();
+                   } catch (IOException e) {
+                       throw new UncheckedIOException(e);
+                   } catch (ServletException e) {
+                       throw new RuntimeException(e);
                    }
             }
             }, 2, TimeUnit.SECONDS);
 
-        try {
-            f.waitForStart();
-            fail("Expected an CancellationException to be thrown");
-        } catch (CancellationException e) {}
+        assertThrows(CancellationException.class, () -> f.waitForStart());
     }
 
     @Ignore("TODO flakes in CI")
@@ -877,7 +872,7 @@ public class QueueTest {
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
@@ -896,7 +891,7 @@ public class QueueTest {
                 new Axis("axis", "a", "b")
         ));
 
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
@@ -948,7 +943,7 @@ public class QueueTest {
             Thread.sleep(10);
         }
         assertTrue(Queue.getInstance().getItems()[0].isBlocked());
-        assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+        assertEquals(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName(), matrixProject.displayName);
 
         //once the upstream is completed, the downstream can join the buildable queue again.
         r.assertBuildStatusSuccess(upstream);
@@ -957,7 +952,7 @@ public class QueueTest {
         }
         assertFalse(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
-        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+        assertEquals(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName(), matrixProject.displayName);
     }
 
     //let's make sure that the downstream project is not started before the upstream --> we want to simulate
@@ -994,7 +989,7 @@ public class QueueTest {
 
         FreeStyleProject project = r.createFreeStyleProject("project");
 
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        Map<Permission, Set<String>> permissions = new HashMap<>();
         permissions.put(Item.READ, Collections.singleton("bob"));
         permissions.put(Item.DISCOVER, Collections.singleton("james"));
         AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
@@ -1015,7 +1010,7 @@ public class QueueTest {
             if (element.getNodeName().equals("task")) {
                 for (DomNode child: ((DomElement) element).getChildNodes()) {
                     if (child.getNodeName().equals("name")) {
-                        assertEquals(child.asText(), "project");
+                        assertEquals("project", child.asText());
                     } else if (child.getNodeName().equals("url")) {
                         assertNotNull(child.asText());
                     }
@@ -1120,7 +1115,7 @@ public class QueueTest {
         r.jenkins.setCrumbIssuer(null);
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, Item.CANCEL).everywhere().to("admin")
+                .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
                 .grant(Jenkins.READ).everywhere().to("user")
         );
 

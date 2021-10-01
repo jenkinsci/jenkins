@@ -25,6 +25,9 @@
  */
 package hudson.model;
 
+import static hudson.Util.fixEmpty;
+
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.ExtensionListView;
 import hudson.Functions;
 import hudson.Platform;
@@ -34,6 +37,14 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
+import java.io.File;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.List;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
@@ -42,17 +53,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.List;
-
-import static hudson.Util.fixEmpty;
-import edu.umd.cs.findbugs.annotations.Nullable;
-
 public class Hudson extends Jenkins {
 
     /**
@@ -60,14 +60,14 @@ public class Hudson extends Jenkins {
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
+    private final transient CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
 
     /**
     * List of registered {@link hudson.slaves.ComputerListener}s.
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
+    private final transient CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
     /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated
@@ -281,7 +281,7 @@ public class Hudson extends Jenkins {
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
         if (isAdmin(req)) return true;
 
-        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
+        rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
         return false;
     }
 
@@ -305,7 +305,7 @@ public class Hudson extends Jenkins {
      */
     @Deprecated
     public static boolean isAdmin() {
-        return Jenkins.get().getACL().hasPermission(ADMINISTER);
+        return Jenkins.get().hasPermission(ADMINISTER);
     }
 
     /**
@@ -340,7 +340,6 @@ public class Hudson extends Jenkins {
         }
 
         public CloudList() {// needed for XStream deserialization
-            super();
         }
     }
 }

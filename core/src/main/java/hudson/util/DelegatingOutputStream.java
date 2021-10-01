@@ -24,8 +24,8 @@
 package hudson.util;
 
 import java.io.FilterOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Works like {@link FilterOutputStream} except its performance problem.
@@ -42,6 +42,7 @@ public abstract class DelegatingOutputStream extends OutputStream {
         this.out = out;
     }
 
+    @Override
     public void write(int b) throws IOException {
         out.write(b);
     }

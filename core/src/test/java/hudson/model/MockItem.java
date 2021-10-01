@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.model.queue.CauseOfBlockage;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +33,7 @@ import java.util.List;
 public class MockItem extends Queue.Item {
 
     public MockItem(long id) {
-        super(null, Collections.<Action>emptyList(), id, null);
+        super(null, Collections.emptyList(), id, null);
     }
 
     public MockItem(Queue.Task task) {

@@ -23,6 +23,8 @@
  */
 package hudson.cli.declarative;
 
+import static java.util.logging.Level.SEVERE;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Extension;
@@ -48,7 +50,6 @@ import java.util.MissingResourceException;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
@@ -76,6 +77,7 @@ public class CLIRegisterer extends ExtensionFinder {
         return ExtensionComponentSet.EMPTY;
     }
 
+    @Override
     public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
         if (type==CLICommand.class)
             return (List)discover(jenkins);
@@ -269,6 +271,7 @@ public class CLIRegisterer extends ExtensionFinder {
                             printError(errorMessage);
                         }
 
+                        @Override
                         protected int run() throws Exception {
                             throw new UnsupportedOperationException();
                         }

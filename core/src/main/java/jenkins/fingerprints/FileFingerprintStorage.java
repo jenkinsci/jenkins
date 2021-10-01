@@ -24,6 +24,8 @@
 package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -32,17 +34,7 @@ import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.FingerprintFacet;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.xmlpull.v1.XmlPullParserException;
-
+import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +44,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jenkins.model.FingerprintFacet;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Default file system storage implementation for fingerprints.
@@ -74,7 +73,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Load the Fingerprint with the given unique id.
      */
+    @Override
     public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
+        if (!isAllowed(id)) {
+            return null;
+        }
         return load(getFingerprintFile(id));
     }
 
@@ -120,12 +123,18 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     /**
      * Saves the given Fingerprint in local XML-based database.
+     *
+     * @param fp Fingerprint file to be saved.
      */
-    public synchronized void save(Fingerprint fp) throws IOException {
-        File file = getFingerprintFile(fp.getHashString());
-        save(fp, file);
+    @Override
+    public void save(Fingerprint fp) throws IOException {
+        final File file;
+        synchronized (fp) {
+            file = getFingerprintFile(fp.getHashString());
+            save(fp, file);
+        }
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
-        //  https://issues.jenkins-ci.org/browse/JENKINS-62543
+        //  https://issues.jenkins.io/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
@@ -137,7 +146,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
-            try (PrintWriter w = new PrintWriter(afw)) {
+            try (PrintWriter w = new PrintWriter(new BufferedWriter(afw))) {
                 w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
@@ -153,7 +162,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.println("</number>");
                     w.println("  </original>");
                 }
-                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins-ci.org/browse/JENKINS-25808
+                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins.io/browse/JENKINS-25808
                 w.print("  <md5sum>");
                 w.print(fp.getHashString());
                 w.println("</md5sum>");
@@ -188,6 +197,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Deletes the Fingerprint with the given unique ID.
      */
+    @Override
     public void delete(String id) throws IOException {
         File file = getFingerprintFile(id);
         if (!file.exists()) {
@@ -218,6 +228,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Returns true if there's some data in the local fingerprint database.
      */
+    @Override
     public boolean isReady() {
         return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
     }
@@ -287,6 +298,15 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
     }
 
+    private static boolean isAllowed(String id) {
+        try {
+            Util.fromHexString(id);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
     private static String messageOfParseException(Throwable throwable) {
         if (throwable instanceof XmlPullParserException || throwable instanceof EOFException) {
             return throwable.getMessage();
@@ -312,6 +332,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         return FileFingerprintStorage.load(fingerprintFile);
     }
 
+    @Override
     protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
         return Jenkins.get()._getFingerprint(fp.getHashString());
     }

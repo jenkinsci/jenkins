@@ -26,6 +26,15 @@ package jenkins.install;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
+import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
+import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
+import hudson.model.UpdateCenter.DownloadJob.Installing;
+import hudson.model.UpdateCenter.InstallationJob;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -34,30 +43,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Provider;
-
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import jenkins.util.xml.XMLUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import com.google.common.base.Function;
-import com.thoughtworks.xstream.XStream;
-
-import hudson.Functions;
-import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
-import hudson.model.UpdateCenter.DownloadJob.Installing;
-import hudson.model.UpdateCenter.InstallationJob;
-import hudson.model.UpdateCenter.UpdateCenterJob;
-import hudson.util.VersionNumber;
-import java.util.logging.Level;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import jenkins.util.xml.XMLUtils;
 
 /**
  * Jenkins install utilities.
@@ -79,7 +75,7 @@ public class InstallUtil {
      */
     private static class ProviderChain<T> implements Provider<T> {
         private final Iterator<Function<Provider<T>,T>> functions;
-        public ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
+        ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
             this.functions = functions;
         }
         @Override
@@ -160,9 +156,8 @@ public class InstallUtil {
 
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
 
-        // Neither the top level config or the lastExecVersionFile have a version
-        // stored in them, which means it's a new install.
-        if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+        // has the setup wizard been completed?
+        if (!SetupWizard.getUpdateStateFile().exists()) {
             Jenkins j = Jenkins.get();
             
             // Allow for skipping
@@ -177,15 +172,6 @@ public class InstallUtil {
                 }
             }
 
-            if (!FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion)) {
-                // Edge case: used Jenkins 1 but did not save the system config page,
-                // the version is not persisted and returns 1.0, so try to check if
-                // they actually did anything
-                if (!j.getItemMap().isEmpty() || !j.getNodes().isEmpty()) {
-                    return InstallState.UPGRADE;
-                }
-            }
-            
             return InstallState.INITIAL_SECURITY_SETUP;
         }
 
@@ -308,7 +294,6 @@ public class InstallUtil {
 
     /**
      * Persists a list of installing plugins; this is used in the case Jenkins fails mid-installation and needs to be restarted
-     * @param installingPlugins
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();

@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Enumeration;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -48,6 +48,10 @@ public class MaskingClassLoader extends ClassLoader {
     private final List<String> masksClasses = new CopyOnWriteArrayList<>();
 
     private final List<String> masksResources = new CopyOnWriteArrayList<>();
+
+    static {
+        registerAsParallelCapable();
+    }
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));

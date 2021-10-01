@@ -23,19 +23,16 @@
  */
 package hudson.slaves;
 
+import static hudson.Util.fixNull;
+import static java.util.logging.Level.INFO;
+
 import antlr.ANTLRException;
 import hudson.Extension;
-import static hudson.Util.fixNull;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Queue;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormValidation;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-
-import net.jcip.annotations.GuardedBy;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.Calendar;
@@ -43,7 +40,10 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.INFO;
+import net.jcip.annotations.GuardedBy;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link RetentionStrategy} that controls the agent based on a schedule.
@@ -165,6 +165,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return isOnlineScheduled();
     }
 
+    @Override
     @GuardedBy("hudson.model.Queue.lock")
     public synchronized long check(final SlaveComputer c) {
         boolean shouldBeOnline = isOnlineScheduled();
@@ -175,6 +176,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                     + "this point in time", new Object[]{c.getName()});
             if (c.isLaunchSupported()) {
                 Computer.threadPoolForRemoting.submit(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             c.connect(true).get();
@@ -245,6 +247,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
 
     @Extension @Symbol("schedule")
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+        @Override
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();
         }

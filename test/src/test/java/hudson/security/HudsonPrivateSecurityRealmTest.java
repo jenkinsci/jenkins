@@ -24,29 +24,8 @@
 
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import hudson.ExtensionList;
-import hudson.model.User;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
-import hudson.security.pages.SignupPage;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import jenkins.security.ApiTokenProperty;
-import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import jenkins.security.seed.UserSeedProperty;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -56,13 +35,34 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.lang.StringUtils;
-
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.util.Cookie;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
+import hudson.model.User;
+import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
-
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import jenkins.security.ApiTokenProperty;
+import jenkins.security.SecurityListener;
+import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.seed.UserSeedProperty;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,8 +72,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -189,7 +187,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     private static String basicHeader(String user, String pass) {
         String str = user +':' + pass;
-        String auth = java.util.Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
+        String auth = Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
         return "Basic " + auth;
     }
 
@@ -514,12 +512,11 @@ public class HudsonPrivateSecurityRealmTest {
         assertThat(w2, hasXPath("//name", is("user_hashed")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createAccountWithHashedPasswordRequiresPrefix() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-
-        securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt()));
+        assertThrows(IllegalArgumentException.class, () -> securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt())));
     }
 
     @Test
@@ -551,14 +548,14 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue("version 2a is supported", BCrypt.checkpw("a", "$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void ensureHashingVersion_2x_isNotSupported() {
-        BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm");
+        assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void ensureHashingVersion_2y_isNotSupported() {
-        BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V.");
+        assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
     }
     
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {

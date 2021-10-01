@@ -1,5 +1,10 @@
 package jenkins.security.stapler;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kohsuke.stapler.Function;
@@ -8,12 +13,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.json.JsonResponse;
 import org.kohsuke.stapler.lang.FieldRef;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class StaplerSignaturesTest {
     @Test
@@ -97,6 +96,7 @@ public class StaplerSignaturesTest {
                 "method java.lang.Object wait long",
                 "method java.lang.Object wait"
         ));
+        @Override
         public void getFoo() {}
         public void subtypeExclusive(){}
         public void subtypeExclusive(String arg){}

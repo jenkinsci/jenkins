@@ -28,13 +28,11 @@ import hudson.model.AsyncAperiodicWork;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.PeriodicWork;
 import hudson.security.ACL;
-
+import hudson.security.ACLContext;
 import java.io.File;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -84,6 +82,7 @@ public abstract class SafeTimerTask extends TimerTask {
      */
     private static boolean ALREADY_LOGGED = false;
 
+    @Override
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.

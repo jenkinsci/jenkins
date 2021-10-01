@@ -3,16 +3,43 @@ package jenkins.install;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.BulkChange;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.ProxyConfiguration;
+import hudson.model.DownloadService;
+import hudson.model.PageDecorator;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
+import hudson.model.User;
+import hudson.security.AccountCreationFailedException;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.SecurityRealm;
+import hudson.security.csrf.CrumbIssuer;
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
+import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
+import hudson.util.PluginServletFilter;
+import hudson.util.VersionNumber;
+import java.io.File;
 import java.io.IOException;
+import java.net.HttpRetryException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -23,54 +50,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
+import jenkins.security.s2m.AdminWhitelistRule;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import hudson.BulkChange;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.ProxyConfiguration;
-import hudson.model.PageDecorator;
-import hudson.model.UpdateCenter;
-import hudson.model.UpdateSite;
-import hudson.model.User;
-import hudson.security.AccountCreationFailedException;
-import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.SecurityRealm;
-import hudson.security.csrf.CrumbIssuer;
-import hudson.util.HttpResponses;
-import hudson.util.PluginServletFilter;
-import hudson.util.VersionNumber;
-import java.io.File;
-import java.net.HttpRetryException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Iterator;
-import java.util.List;
-
-import jenkins.model.Jenkins;
-import jenkins.security.s2m.AdminWhitelistRule;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -94,6 +92,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * The security token parameter name
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in several plugins")
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
@@ -124,7 +123,7 @@ public class SetupWizard extends PageDecorator {
      *
      * If you do not provide any value to that system property, the default admin account will not have an API Token.
      *
-     * @since TODO (for the existence of the sysprop, not the availability to plugin)
+     * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -143,11 +142,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins jenkins = Jenkins.get();
         
         if(newInstall) {
-            // this was determined to be a new install, don't run the update wizard here
-            setCurrentLevel(Jenkins.getVersion());
-            
-            // Create an admin user by default with a 
-            // difficult password
+            // Create an admin user by default with a difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
                 try (BulkChange bc = new BulkChange(jenkins)) {
@@ -181,7 +176,7 @@ public class SetupWizard extends PageDecorator {
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
     
-                    // set master -> slave security:
+                    // set controller -> agent security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
                         .setMasterKillSwitch(false);
                 
@@ -460,7 +455,7 @@ public class SetupWizard extends PageDecorator {
     }
 
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
-        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString());
+        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString(), StandardCharsets.UTF_8);
     }
     
     /**
@@ -553,19 +548,52 @@ public class SetupWizard extends PageDecorator {
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
             String updateCenterJsonUrl = updateSite.getUrl();
             String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            VersionNumber version = Jenkins.getVersion();
+            if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
+                // Allow remote update site to distinguish based on the current version
+                // This looks a bit hacky but UpdateCenter#toUpdateCenterCheckUrl does something similar
+                suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
+            }
             try {
                 URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
                 
                 try {
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
+
+                    JSONObject initialPluginObject = null;
+
                     if(connection instanceof HttpURLConnection) {
                         int responseCode = ((HttpURLConnection)connection).getResponseCode();
                         if(HttpURLConnection.HTTP_OK != responseCode) {
                             throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
                         }
+
+                        if (DownloadService.signatureCheck) {
+                            /* If the platform-plugins.json file was obtained remotely, assume that it's a JSONObject and perform a signature check on it */
+                            initialPluginObject = JSONObject.fromObject(initialPluginJson);
+                            final FormValidation result = updateSite.verifySignatureInternal(initialPluginObject);
+                            if (result.kind != FormValidation.Kind.OK) {
+                                LOGGER.log(Level.WARNING, "Ignoring remote platform-plugins.json: " + result.getMessage());
+                                throw result;
+                            }
+                        }
                     }
-                    
-                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
-                    initialPluginList = JSONArray.fromObject(initialPluginJson);
+
+                    /*
+                        The initial version of this code expected platform-plugins.json to be an array.
+                        This structure does not work when we want to add a signature block, so a wrapper object is also supported.
+                        In that case, the original array is expected to be in the 'categories' key.
+                     */
+                    if (initialPluginObject != null) {
+                        initialPluginList = initialPluginObject.getJSONArray("categories");
+                    } else {
+                        try {
+                            initialPluginList = JSONArray.fromObject(initialPluginJson);
+                        } catch (Exception ex) {
+                            /* Second attempt: It's not a remote file, but still wrapped */
+                            initialPluginList = JSONObject.fromObject(initialPluginJson).getJSONArray("categories");
+                        }
+                    }
                     break updateSiteList;
                 } catch(Exception e) {
                     // not found or otherwise unavailable
@@ -737,6 +765,7 @@ public class SetupWizard extends PageDecorator {
                 } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
                     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
+                        @Override
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";
                         }

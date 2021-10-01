@@ -35,6 +35,8 @@
 }
 .Checkbox .svg-icon {
   opacity: 0;
+  fill: #fff;
+  fill: var(--checkbox-fill);
   transition: opacity 0.1s linear;
 }
 .Checkbox input[type="checkbox"] + .Checkbox-indicator {

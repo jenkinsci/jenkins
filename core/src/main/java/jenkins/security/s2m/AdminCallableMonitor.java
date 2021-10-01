@@ -4,15 +4,14 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AdministrativeMonitor;
 import hudson.remoting.Callable;
+import java.io.IOException;
+import javax.inject.Inject;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.inject.Inject;
-import java.io.IOException;
 
 /**
  * Report any rejected {@link Callable}s and {@link FilePath} executions and allow
@@ -21,7 +20,7 @@ import java.io.IOException;
  * @since 1.587 / 1.580.1
  * @author Kohsuke Kawaguchi
  */
-@Extension @Symbol("slaveToMasterAccessControl")
+@Extension @Symbol({"agentToControllerAccessControl", "slaveToMasterAccessControl"})
 public class AdminCallableMonitor extends AdministrativeMonitor {
     @Inject
     Jenkins jenkins;
@@ -30,7 +29,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     AdminWhitelistRule rule;
 
     public AdminCallableMonitor() {
-        super("slaveToMasterAccessControl");
+        super("slaveToMasterAccessControl"); // TODO Can we change this while retaining compatibility?
     }
 
     @Override

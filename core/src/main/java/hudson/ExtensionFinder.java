@@ -23,10 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -42,18 +38,6 @@ import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.ExtensionFilter;
-import jenkins.ExtensionRefreshException;
-import jenkins.ProxyInjector;
-import jenkins.model.Jenkins;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.util.ClassUtils;
-
-import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -64,13 +48,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.annotation.PostConstruct;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionFilter;
+import jenkins.ExtensionRefreshException;
+import jenkins.ProxyInjector;
+import jenkins.model.Jenkins;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.util.ClassUtils;
 
 /**
  * Discovers the implementations of an extension point.
@@ -216,7 +211,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     /**
      * Captures information about the annotation that we use to mark Guice-instantiated components.
      */
-    public static abstract class GuiceExtensionAnnotation<T extends Annotation> {
+    public abstract static class GuiceExtensionAnnotation<T extends Annotation> {
         public final Class<T> annotationType;
 
         protected GuiceExtensionAnnotation(Class<T> annotationType) {
@@ -259,7 +254,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         /**
          * Map from {@link GuiceExtensionAnnotation#annotationType} to {@link GuiceExtensionAnnotation}
          */
-        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = Maps.newHashMap();
+        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = new HashMap<>();
 
         public GuiceFinder() {
             refreshExtensionAnnotations();
@@ -293,6 +288,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             // expose Injector via lookup mechanism for interop with non-Guice clients
             Jenkins.get().lookup.set(Injector.class,new ProxyInjector() {
+                @Override
                 protected Injector resolve() {
                     return getContainer();
                 }
@@ -306,12 +302,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
-        private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
-            List<IndexItem<?,Object>> indices = Lists.newArrayList();
+        private List<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
+            List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
-                Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
+                for (IndexItem<?, Object> indexItem : Index.load(gea.annotationType, Object.class, classLoader)) {
+                    indices.add(indexItem);
+                }
             }
-            return ImmutableList.copyOf(indices);
+            return Collections.unmodifiableList(indices);
         }
 
         public Injector getContainer() {
@@ -330,7 +328,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
             refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
-            List<IndexItem<?, Object>> delta = Lists.newArrayList();
+            List<IndexItem<?, Object>> delta = new ArrayList<>();
             for (Class<? extends Annotation> annotationType : extensionAnnotations.keySet()) {
                 delta.addAll(Sezpoz.listDelta(annotationType,sezpozIndex));
             }
@@ -346,7 +344,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             try {
                 final Injector child = container.createChildInjector(modules);
                 container = child;
-                List<IndexItem<?, Object>> l = Lists.newArrayList(sezpozIndex);
+                List<IndexItem<?, Object>> l = new ArrayList<>(sezpozIndex);
                 l.addAll(deltaExtensions.getLoadedIndex());
                 sezpozIndex = l;
 
@@ -386,6 +384,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return gea.isActive(e);
         }
 
+        @Override
         public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson jenkins) {
             // the find method contract requires us to traverse all known components
             List<ExtensionComponent<U>> result = new ArrayList<>();
@@ -396,7 +395,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private <U> void _find(Class<U> type, List<ExtensionComponent<U>> result, Injector container) {
-            for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
+            for (Map.Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
                 if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
                     Annotation a = annotations.get(e.getKey());
                     Object o = e.getValue().getProvider().get();
@@ -432,9 +431,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             FaultTolerantScope(boolean verbose) {
                 this.verbose = verbose;
             }
+            @Override
             public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
                 final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
                 return new Provider<T>() {
+                    @Override
                     public T get() {
                         try {
                             return base.get();
@@ -461,7 +462,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             private final List<IndexItem<?,Object>> index;
             private final List<IndexItem<?,Object>> loadedIndex;
 
-            public SezpozModule(List<IndexItem<?,Object>> index) {
+            SezpozModule(List<IndexItem<?,Object>> index) {
                 this.index = index;
                 this.loadedIndex = new ArrayList<>();
             }
@@ -486,14 +487,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     return;
                 }
                 try {
-                    ClassLoader ecl = c.getClassLoader();
-                    if (ecl != null) { // Not bootstrap classloader
-                        Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
-                        m.setAccessible(true);
-                        m.invoke(ecl, c);
-                    }
                     for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
-                        /**
+                        /*
                          * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
                          */
                         cc.getGenericSuperclass();
@@ -508,7 +503,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                 } catch (Exception x) {
-                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                    throw new LinkageError("Failed to resolve "+c, x);
                 }
             }
 
@@ -547,11 +542,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             // make unique key, because Guice wants that.
                             Key key = Key.get(extType, Names.named(item.className() + "." + item.memberName()));
                             annotations.put(key,a);
-                            bind(key).toProvider(new Provider() {
-                                    public Object get() {
-                                        return instantiate(item);
-                                    }
-                                }).in(scope);
+                            bind(key).toProvider(() -> instantiate(item)).in(scope);
                         }
                         loadedIndex.add(item);
                     } catch (Exception|LinkageError e) {
@@ -564,14 +555,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
-                return Collections.unmodifiableList(loadedIndex);
+                return Collections.unmodifiableList(new ArrayList<>(loadedIndex));
             }
 
             @Override
             public <T> void onProvision(ProvisionInvocation<T> provision) {
                 final T instance = provision.provision();
                 if (instance == null) return;
-                List<Method> methods = new LinkedList<>();
+                List<Method> methods = new ArrayList<>();
                 Class c = instance.getClass();
 
                 // find PostConstruct methods in class hierarchy, the one from parent class being first in list
@@ -649,7 +640,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 5. dead lock
             if (indices==null) {
                 ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
+                indices = Collections.unmodifiableList(StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false).collect(Collectors.toList()));
             }
             return indices;
         }
@@ -667,9 +658,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             final List<IndexItem<Extension, Object>> delta = listDelta(Extension.class,old);
 
-            List<IndexItem<Extension,Object>> r = Lists.newArrayList(old);
+            List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
-            indices = ImmutableList.copyOf(r);
+            indices = Collections.unmodifiableList(r);
 
             return new ExtensionComponentSet() {
                 @Override
@@ -681,7 +672,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         static <T extends Annotation> List<IndexItem<T,Object>> listDelta(Class<T> annotationType, List<? extends IndexItem<?,Object>> old) {
             // list up newly discovered components
-            final List<IndexItem<T,Object>> delta = Lists.newArrayList();
+            final List<IndexItem<T,Object>> delta = new ArrayList<>();
             ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
             for (IndexItem<T,Object> ii : Index.load(annotationType, Object.class, cl)) {
                 if (!old.contains(ii)) {
@@ -691,6 +682,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return delta;
         }
 
+        @Override
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
             return _find(type,getIndices());
         }

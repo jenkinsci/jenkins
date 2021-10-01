@@ -25,13 +25,12 @@ package hudson.security;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
+import java.util.Collection;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * {@link AuthorizationStrategy} implementation that emulates the legacy behavior.
@@ -47,16 +46,19 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     public LegacyAuthorizationStrategy() {
     }
 
+    @Override
     public ACL getRootACL() {
         return LEGACY_ACL;
     }
 
+    @Override
     public Collection<String> getGroups() {
         return Collections.singleton("admin");
     }
 
     @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        @Override
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
         }

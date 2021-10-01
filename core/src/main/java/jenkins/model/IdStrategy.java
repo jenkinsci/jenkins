@@ -23,24 +23,23 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.util.CaseInsensitiveComparator;
-import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.ProtectedExternally;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * The strategy to use for manipulating converting names (e.g. user names, group names, etc) into ids.
@@ -56,6 +55,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive strategy.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in several plugins")
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**
@@ -296,7 +296,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         public String keyFor(@NonNull String id) {
             int index = id.lastIndexOf('@'); // The @ can be used in local-part if quoted correctly
             // => the last @ is the one used to separate the domain and local-part
-            return index == -1 ? id : id.substring(0, index) + (id.substring(index).toLowerCase(Locale.ENGLISH));
+            return index == -1 ? id : id.substring(0, index) + id.substring(index).toLowerCase(Locale.ENGLISH);
         }
 
         @Override

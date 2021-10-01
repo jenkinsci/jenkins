@@ -23,12 +23,12 @@
  */
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.Collection;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import org.springframework.security.core.Authentication;
@@ -99,7 +99,7 @@ public class Tasks {
      * in case some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
      * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication2()}
-     * @since TODO
+     * @since 2.266
      */
     public static @NonNull Authentication getAuthenticationOf2(@NonNull Task t) {
         for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {

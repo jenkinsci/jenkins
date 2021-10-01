@@ -31,16 +31,13 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Arrays;
-
 import jenkins.util.xstream.CriticalXStreamException;
-
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -95,18 +92,22 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     /**
      * Returns an iterator.
      */
+    @Override
     public Iterator<E> iterator() {
         final Iterator<? extends E> itr = core.iterator();
         return new Iterator<E>() {
             private E last;
+            @Override
             public boolean hasNext() {
                 return itr.hasNext();
             }
 
+            @Override
             public E next() {
                 return last=itr.next();
             }
 
+            @Override
             public void remove() {
                 CopyOnWriteList.this.remove(last);
             }
@@ -138,7 +139,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<>();
     }
 
-    public <E> E[] toArray(E[] array) {
+    public <T> T[] toArray(T[] array) {
         return core.toArray(array);
     }
 
@@ -178,15 +179,18 @@ public class CopyOnWriteList<E> implements Iterable<E> {
             super(mapper);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==CopyOnWriteList.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (CopyOnWriteList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public CopyOnWriteList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             // read the items from xml into a list

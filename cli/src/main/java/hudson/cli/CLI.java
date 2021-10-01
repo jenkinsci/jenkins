@@ -23,14 +23,16 @@
  */
 package hudson.cli;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.parse;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.client.Messages;
+import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
 import java.io.DataInputStream;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,11 +54,11 @@ import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.*;
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.Session;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
@@ -82,11 +84,11 @@ public class CLI {
             throw new NotTalkingToJenkinsException(c);
     }
     /*package*/ static final class NotTalkingToJenkinsException extends IOException {
-        public NotTalkingToJenkinsException(String s) {
+        NotTalkingToJenkinsException(String s) {
             super(s);
         }
 
-        public NotTalkingToJenkinsException(URLConnection c) {
+        NotTalkingToJenkinsException(URLConnection c) {
             super("There's no Jenkins running at " + c.getURL().toString());
         }
     }
@@ -177,6 +179,7 @@ public class CLI {
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
                 // bypass host name check, too.
                 HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    @Override
                     @SuppressFBWarnings(value = "WEAK_HOSTNAME_VERIFIER", justification = "User set parameter to skip verifier.")
                     public boolean verify(String s, SSLSession sslSession) {
                         return true;
@@ -372,7 +375,7 @@ public class CLI {
     private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
         FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
-        try (final ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
+        try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();
             if (is.read() != 0) { // cf. FullDuplexHttpService
@@ -420,10 +423,14 @@ public class CLI {
                 public void run() {
                     try {
                         final OutputStream stdin = streamStdin();
-                        int c;
-                        // TODO check available to avoid sending lots of one-byte frames
-                        while (!complete && (c = System.in.read()) != -1) {
-                           stdin.write(c);
+                        byte[] buf = new byte[60_000]; // less than 64Kb frame size for WS
+                        while (!complete) {
+                            int len = System.in.read(buf);
+                            if (len == -1) {
+                                break;
+                            } else {
+                                stdin.write(buf, 0, len);
+                            }
                         }
                         sendEndStdin();
                     } catch (IOException x) {

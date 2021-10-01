@@ -23,6 +23,8 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Hudson;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,9 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -90,6 +89,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return owner.getName();
     }
 
+    @Override
     public Iterator<Permission> iterator() {
         return getPermissions().iterator();
     }
@@ -125,6 +125,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return null;
     }
 
+    @Override
     public int compareTo(PermissionGroup that) {
         // first, sort by the 'compare order' number. This is so that
         // we can put Hudson.PERMISSIONS first.

@@ -35,15 +35,18 @@ import hudson.Util;
  */
 public class HexBinaryConverter implements Converter {
 
+    @Override
     public boolean canConvert(Class type) {
         return type==byte[].class;
     }
 
+    @Override
     public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
         byte[] data = (byte[]) source;
         writer.setValue(Util.toHexString(data));
     }
 
+    @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         String data = reader.getValue(); // needs to be called before hasMoreChildren.
         return Util.fromHexString(data);

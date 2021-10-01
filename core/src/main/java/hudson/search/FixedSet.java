@@ -26,7 +26,6 @@ package hudson.search;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -46,6 +45,7 @@ public class FixedSet implements SearchIndex {
         this(Arrays.asList(items));
     }
 
+    @Override
     public void find(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {
@@ -56,6 +56,7 @@ public class FixedSet implements SearchIndex {
         }
     }
 
+    @Override
     public void suggest(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {

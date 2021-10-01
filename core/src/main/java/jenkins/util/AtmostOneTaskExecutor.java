@@ -1,12 +1,11 @@
 package jenkins.util;
 
-import com.google.common.util.concurrent.SettableFuture;
 import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -62,9 +61,9 @@ public class AtmostOneTaskExecutor<V> {
      * If a task is already submitted and pending execution, non-null.
      * Guarded by "synchronized(this)"
      */
-    private SettableFuture<V> pending;
+    private CompletableFuture<V> pending;
 
-    private SettableFuture<V> inprogress;
+    private CompletableFuture<V> inprogress;
 
     public AtmostOneTaskExecutor(ExecutorService base, Callable<V> task) {
         this.base = base;
@@ -82,7 +81,7 @@ public class AtmostOneTaskExecutor<V> {
 
     public synchronized Future<V> submit() {
         if (pending==null) {
-            pending = SettableFuture.create();
+            pending = new CompletableFuture<>();
             maybeRun();
         }
         return pending;
@@ -105,10 +104,10 @@ public class AtmostOneTaskExecutor<V> {
                     }
 
                     try {
-                        inprogress.set(task.call());
+                        inprogress.complete(task.call());
                     } catch (Throwable t) {
                         LOGGER.log(Level.WARNING, null, t);
-                        inprogress.setException(t);
+                        inprogress.completeExceptionally(t);
                     } finally {
                         synchronized (AtmostOneTaskExecutor.this) {
                             // if next one is pending, get that scheduled

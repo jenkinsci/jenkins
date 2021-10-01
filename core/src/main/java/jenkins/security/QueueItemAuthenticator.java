@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
@@ -12,7 +13,6 @@ import hudson.model.Queue.Task;
 import hudson.model.queue.Tasks;
 import java.util.Calendar;
 import java.util.Collections;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -38,7 +38,7 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *      returning non-null will determine the identity. If null is returned, the next
      *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
      *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
-     * @since TODO
+     * @since 2.266
      */
     public @CheckForNull Authentication authenticate2(Queue.Item item) {
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Task.class)) {
@@ -64,7 +64,7 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *      returning non-null will determine the identity. If null is returned, the next
      *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
      *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
-     * @since TODO
+     * @since 2.266
      */
     public @CheckForNull Authentication authenticate2(Queue.Task task) {
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Item.class)) {

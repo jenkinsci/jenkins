@@ -24,6 +24,9 @@
 
 package hudson.triggers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -35,8 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -107,7 +108,7 @@ public class TriggerStartTest {
 
     public static class MockTrigger extends Trigger<Item> {
 
-        public transient List<Boolean> calls = new ArrayList<Boolean>();
+        public transient List<Boolean> calls = new ArrayList<>();
 
         @DataBoundConstructor public MockTrigger() {}
 
@@ -117,7 +118,7 @@ public class TriggerStartTest {
         }
 
         @Override protected Object readResolve() throws ObjectStreamException {
-            calls = new ArrayList<Boolean>();
+            calls = new ArrayList<>();
             return super.readResolve();
         }
 

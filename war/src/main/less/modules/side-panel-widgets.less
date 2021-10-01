@@ -198,14 +198,15 @@
 
 .build-row.multi-line .build-row-cell .left-bar {
   position: absolute;
-  top: 19px;
-  bottom: 3px;
-  left: 14px;
+  top: 31px;
+  bottom: 10px;
+  left: 17px;
   border-left: 1px solid var(--medium-grey);
 }
 
 .build-row-cell .pane.build-name .display-name {
   margin-left: 20px;
+  word-break: break-all;
 }
 
 .build-row-cell .indent-multiline {
@@ -214,4 +215,27 @@
 
 .build-row.overflow-checked .build-row-cell {
   visibility: visible;
+}
+
+.jenkins-pane {
+  &__information {
+    text-align: center;
+    line-height: 80px;
+    background-color: rgba(204, 204, 204, 0.2);
+    margin-top: 10px;
+    font-weight: 600;
+    border-radius: 6px;
+  }
+
+  .build-row {
+    transition: opacity 0.2s ease;
+
+    &-cell {
+      padding: 4px 8px;
+    }
+  }
+
+  &--loading .build-row {
+    opacity: 0.5;
+  }
 }

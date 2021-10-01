@@ -24,21 +24,19 @@
 package hudson.util;
 
 import hudson.RestrictedSince;
-import org.apache.commons.lang.ArrayUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.crypto.SecretKey;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
-
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import org.apache.commons.lang.ArrayUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Encrypt/decrypt data by using a "session" key that only lasts for
@@ -49,7 +47,7 @@ import java.util.Base64;
  * @since 1.162 and restricted since TODO
  */
 @Restricted(NoExternalUse.class)
-@RestrictedSince("TODO")
+@RestrictedSince("2.236")
 public class Protector {
     private static final String ALGORITHM_MODE = "AES/CBC/PKCS5Padding";
     private static final String ALGORITHM = "AES";

@@ -2,7 +2,6 @@ package jenkins.model;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.EnvironmentContributor;
 import hudson.model.Executor;
@@ -10,10 +9,10 @@ import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import java.io.IOException;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins.MasterComputer;
 import org.jenkinsci.Symbol;
-
-import java.io.IOException;
 
 /**
  * {@link EnvironmentContributor} that adds the basic set of environment variables that
@@ -41,6 +40,8 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
 
     @Override
     public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+        env.put("CI", "true");
+
         Jenkins jenkins = Jenkins.get();
         String rootUrl = jenkins.getRootUrl();
         if(rootUrl!=null) {
@@ -58,13 +59,13 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
-                env.put("NODE_NAME", "master");
+                env.put("NODE_NAME", Jenkins.get().getSelfLabel().getName());
             } else {
                 env.put("NODE_NAME", e.getOwner().getName());
             }
             Node n = e.getOwner().getNode();
             if (n != null)
-                env.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+                env.put("NODE_LABELS", n.getAssignedLabels().stream().map(Object::toString).collect(Collectors.joining(" ")));
         }
     }
 }

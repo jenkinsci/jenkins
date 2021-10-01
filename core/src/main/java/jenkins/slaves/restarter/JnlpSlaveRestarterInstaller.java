@@ -1,5 +1,8 @@
 package jenkins.slaves.restarter;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Computer;
@@ -9,16 +12,12 @@ import hudson.remoting.EngineListener;
 import hudson.remoting.EngineListenerAdapter;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import jenkins.model.Jenkins.MasterComputer;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
 import jenkins.security.MasterToSlaveCallable;
 
 /**
@@ -34,7 +33,7 @@ import jenkins.security.MasterToSlaveCallable;
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
-        MasterComputer.threadPoolForRemoting.submit(new Install(c, listener));
+        Computer.threadPoolForRemoting.submit(new Install(c, listener));
     }
     private static class Install implements Callable<Void> {
         private final Computer c;

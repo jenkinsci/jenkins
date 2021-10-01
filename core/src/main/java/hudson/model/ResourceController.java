@@ -23,15 +23,14 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.AdaptedIterator;
-
-import java.util.Set;
-import java.util.Collection;
 import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 
 /**
@@ -48,14 +47,17 @@ public class ResourceController {
      * View of {@link #inProgress} that exposes its {@link ResourceList}.
      */
     private final Collection<ResourceList> resourceView = new AbstractCollection<ResourceList>() {
+        @Override
         public Iterator<ResourceList> iterator() {
             return new AdaptedIterator<ResourceActivity,ResourceList>(inProgress.iterator()) {
+                @Override
                 protected ResourceList adapt(ResourceActivity item) {
                     return item.getResourceList();
                 }
             };
         }
 
+        @Override
         public int size() {
             return inProgress.size();
         }
@@ -190,4 +192,3 @@ public class ResourceController {
         }
     }
 }
-

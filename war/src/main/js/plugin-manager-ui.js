@@ -1,7 +1,8 @@
+import debounce from 'lodash/debounce'
+import requestAnimationFrame from 'raf';
+
 import pluginManagerAvailable from './templates/plugin-manager/available.hbs'
 import pluginManager from './api/pluginManager';
-
-import debounce from 'lodash/debounce'
 
 function applyFilter(searchQuery) {
     // debounce reduces number of server side calls while typing
@@ -33,11 +34,16 @@ function applyFilter(searchQuery) {
 
         clearOldResults()
         var rows = pluginManagerAvailable({
-            plugins: plugins.filter(plugin => !selectedPlugins.includes(plugin.name)),
+            plugins: plugins.filter(plugin => selectedPlugins.indexOf(plugin.name) === -1),
             admin
         });
 
         tbody.insertAdjacentHTML('beforeend', rows);
+
+        // @see JENKINS-64504 - Update the sticky buttons position after each search.
+        requestAnimationFrame(() => {
+            layoutUpdateCallback.call()
+        })
     })
 }
 

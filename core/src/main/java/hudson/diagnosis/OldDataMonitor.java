@@ -23,8 +23,9 @@
  */
 package hudson.diagnosis;
 
-import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Main;
@@ -52,11 +53,9 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -101,6 +100,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         return Messages.OldDataMonitor_DisplayName();
     }
 
+    @Override
     public boolean isActivated() {
         return !data.isEmpty();
     }
@@ -242,7 +242,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final VersionNumber min;
         final VersionNumber max;
         final boolean single;
-        final public String extra;
+        public final String extra;
 
         public VersionRange(VersionRange previous, String version, String extra) {
             if (previous == null) {
@@ -273,7 +273,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String toString() {
-            return min==null ? "" : min.toString() + (single ? "" : " - " + max.toString());
+            return min==null ? "" : min + (single ? "" : " - " + max.toString());
         }
 
         /**
@@ -325,12 +325,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
-        saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                VersionNumber version = entry.getValue().max;
-                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
-            }
+        saveAndRemoveEntries(entry -> {
+            VersionNumber version = entry.getValue().max;
+            return version != null && (thruVer == null || !version.isNewerThan(thruVer));
         });
 
         return HttpResponses.forwardToPreviousPage();
@@ -342,12 +339,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                return entry.getValue().max == null;
-            }
-        });
+        saveAndRemoveEntries(entry -> entry.getValue().max == null);
 
         return HttpResponses.forwardToPreviousPage();
     }
@@ -366,7 +358,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
          */
         List<SaveableReference> removed = new ArrayList<>();
         for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
-            if (matchingPredicate.apply(entry)) {
+            if (matchingPredicate.test(entry)) {
                 Saveable s = entry.getKey().get();
                 if (s != null) {
                     try {
@@ -465,6 +457,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             return Messages.OldDataMonitor_Description();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.OldDataMonitor_DisplayName();
         }

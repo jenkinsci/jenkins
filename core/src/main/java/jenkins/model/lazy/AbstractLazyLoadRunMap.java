@@ -23,6 +23,10 @@
  */
 package jenkins.model.lazy;
 
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.RunMap;
@@ -39,14 +43,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 /**
  * {@link SortedMap} that keeps build records by their build numbers, in the descending order
@@ -204,6 +203,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         numberOnDisk = list;
     }
 
+    @Override
     public Comparator<? super Integer> comparator() {
         return Collections.reverseOrder();
     }
@@ -232,6 +232,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @param toKey
      *      Smallest build number-1 to be in the returned set (-1 because this is exclusive)
      */
+    @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
         // TODO: if this method can produce a lazy map, that'd be wonderful
         // because due to the lack of floor/ceil/higher/lower kind of methods
@@ -252,20 +253,24 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber.subMap(fromKey, toKey)));
     }
 
+    @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
         return subMap(Integer.MAX_VALUE, toKey);
     }
 
+    @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
         return subMap(fromKey, Integer.MIN_VALUE);
     }
 
+    @Override
     public Integer firstKey() {
         R r = newestBuild();
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }
 
+    @Override
     public Integer lastKey() {
         R r = oldestBuild();
         if (r==null)    throw new NoSuchElementException();

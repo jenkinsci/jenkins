@@ -1,11 +1,10 @@
 package hudson.tasks;
 
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.CheckPoint;
-import hudson.Launcher;
 import hudson.model.Describable;
-
 import java.io.IOException;
 
 /**
@@ -16,11 +15,13 @@ import java.io.IOException;
  */
 public enum BuildStepMonitor {
     NONE {
+        @Override
         public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             return bs.perform(build,launcher,listener);
         }
     },
     STEP {
+        @Override
         public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             CheckPoint cp = new CheckPoint(bs.getClass().getName(),bs.getClass());
             if (bs instanceof Describable) {
@@ -36,6 +37,7 @@ public enum BuildStepMonitor {
         }
     },
     BUILD {
+        @Override
         public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             if (bs instanceof Describable) {
                 CheckPoint.COMPLETED.block(listener, ((Describable) bs).getDescriptor().getDisplayName());

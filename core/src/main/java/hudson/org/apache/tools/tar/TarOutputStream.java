@@ -24,16 +24,16 @@
 package hudson.org.apache.tools.tar;
 
 import hudson.RestrictedSince;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.apache.tools.tar.TarBuffer;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
@@ -142,7 +142,7 @@ public class TarOutputStream extends FilterOutputStream {
      */
     public void finish() throws IOException {
         // See Bugzilla 28776 for a discussion on this
-        // http://issues.apache.org/bugzilla/show_bug.cgi?id=28776
+        // https://bz.apache.org/bugzilla/show_bug.cgi?id=28776
         this.writeEOFRecord();
         this.writeEOFRecord();
     }
@@ -153,6 +153,7 @@ public class TarOutputStream extends FilterOutputStream {
      * TarBuffer's close().
      * @throws IOException on error
      */
+    @Override
     public void close() throws IOException {
         if (!closed) {
             this.finish();
@@ -256,6 +257,7 @@ public class TarOutputStream extends FilterOutputStream {
      * @param b The byte written.
      * @throws IOException on error
      */
+    @Override
     public void write(int b) throws IOException {
         this.oneBuf[0] = (byte) b;
 
@@ -270,6 +272,7 @@ public class TarOutputStream extends FilterOutputStream {
      * @param wBuf The buffer to write to the archive.
      * @throws IOException on error
      */
+    @Override
     public void write(byte[] wBuf) throws IOException {
         this.write(wBuf, 0, wBuf.length);
     }
@@ -288,8 +291,9 @@ public class TarOutputStream extends FilterOutputStream {
      * @param numToWrite The number of bytes to write.
      * @throws IOException on error
      */
+    @Override
     public void write(byte[] wBuf, int wOffset, int numToWrite) throws IOException {
-        if ((this.currBytes + numToWrite) > this.currSize) {
+        if (this.currBytes + numToWrite > this.currSize) {
             throw new IOException("request to write '" + numToWrite
                                   + "' bytes exceeds size in header of '"
                                   + this.currSize + "' bytes for entry '"
@@ -305,7 +309,7 @@ public class TarOutputStream extends FilterOutputStream {
         }
 
         if (this.assemLen > 0) {
-            if ((this.assemLen + numToWrite) >= this.recordBuf.length) {
+            if (this.assemLen + numToWrite >= this.recordBuf.length) {
                 int aLen = this.recordBuf.length - this.assemLen;
 
                 System.arraycopy(this.assemBuf, 0, this.recordBuf, 0,
@@ -358,12 +362,8 @@ public class TarOutputStream extends FilterOutputStream {
      * An EOF record consists of a record of all zeros.
      */
     private void writeEOFRecord() throws IOException {
-        for (int i = 0; i < this.recordBuf.length; ++i) {
-            this.recordBuf[i] = 0;
-        }
+        Arrays.fill(this.recordBuf, (byte) 0);
 
         this.buffer.writeRecord(this.recordBuf);
     }
 }
-
-

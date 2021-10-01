@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import static java.util.logging.Level.FINEST;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -32,12 +36,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
-
-import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
@@ -95,15 +96,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Walks through builds, newer ones first.
      */
+    @Override
     public Iterator<R> iterator() {
         return new Iterator<R>() {
             R last = null;
             R next = newestBuild();
 
+            @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
+            @Override
             public R next() {
                 last = next;
                 if (last!=null)
@@ -113,6 +117,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 return last;
             }
 
+            @Override
             public void remove() {
                 if (last==null)
                     throw new UnsupportedOperationException();
@@ -154,11 +159,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      *      Use {@link ReverseComparator}
      */
     @Deprecated
-    public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
-        public int compare(Comparable o1, Comparable o2) {
-            return o2.compareTo(o1);
-        }
-    };
+    public static final Comparator<Comparable> COMPARATOR = Comparator.reverseOrder();
 
     /**
      * {@link Run} factory.
@@ -168,12 +169,12 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     @Override
-    protected final int getNumberOf(R r) {
+    protected int getNumberOf(R r) {
         return r.getNumber();
     }
 
     @Override
-    protected final String getIdOf(R r) {
+    protected String getIdOf(R r) {
         return r.getId();
     }
 

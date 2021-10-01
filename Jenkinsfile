@@ -36,7 +36,7 @@ for(j = 0; j < jdks.size(); j++) {
 
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
-                    timeout(time: 180, unit: 'MINUTES') {
+                    timeout(time: 300, unit: 'MINUTES') {
                         // See below for what this method does - we're passing an arbitrary environment
                         // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
                         withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
@@ -60,6 +60,12 @@ for(j = 0; j < jdks.size(); j++) {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+                        if (! fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
+                            error 'junit 4 tests are no longer being run for the core package'
+                        }
+                        if (! fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
+                            error 'junit 4 tests are no longer being run for the test package'
+                        } // cli has been migrated to junit 5
                     }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)

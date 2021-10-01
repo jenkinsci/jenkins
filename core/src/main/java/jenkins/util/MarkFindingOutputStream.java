@@ -24,6 +24,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
      */
     private int match = 0;
 
+    @Override
     public synchronized void write(int b) throws IOException {
         if (MBYTES[match] == b) {// another byte matched. Good. Keep going...
             match++;
@@ -46,6 +47,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
         }
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         final int start = off; 
         final int end = off + len;
@@ -85,11 +87,13 @@ public abstract class MarkFindingOutputStream extends OutputStream {
             base.write(b, off, len-match);
     }
 
+    @Override
     public void flush() throws IOException {
         flushPartialMatch();
         base.flush();
     }
 
+    @Override
     public void close() throws IOException {
         flushPartialMatch();
         base.close();

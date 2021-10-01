@@ -3,9 +3,7 @@ package hudson.util;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
-
 import org.junit.Test;
 
 /**
@@ -28,8 +26,8 @@ public class PackedMapTest {
         PackedMap<String,String> p = PackedMap.of(o);
         assertEquals("b",p.get("a"));
         assertEquals("d", p.get("c"));
-        assertEquals(p.size(),2);
-        for (Entry<String,String> e : p.entrySet()) {
+        assertEquals(2, p.size());
+        for (Map.Entry<String,String> e : p.entrySet()) {
             System.out.println(e.getKey()+'='+e.getValue());
         }
 

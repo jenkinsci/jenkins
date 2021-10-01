@@ -24,21 +24,20 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.search.Search;
 import hudson.search.UserSearchProperty;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Flavor;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Flavor;
 
 /**
  * Data representation of the auto-completion candidates.
@@ -68,6 +67,7 @@ public class AutoCompletionCandidates implements HttpResponse {
         return values;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
         Search.Result r = new Search.Result();
         for (String value : values) {

@@ -39,7 +39,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
  * In Jenkins, we need {@link Jenkins} instance to perform remember-me service,
  * because it relies on {@link ConfidentialStore}. However, security
  * filters can be initialized before Jenkins is initialized.
- * (See #1210 for example.)
+ * (See JENKINS-1210 for example.)
  *
  * <p>
  * So to work around the problem, we use a proxy.
@@ -50,17 +50,20 @@ import org.springframework.security.web.authentication.RememberMeServices;
 public class RememberMeServicesProxy implements RememberMeServices {
     private volatile RememberMeServices delegate;
 
+    @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
         RememberMeServices d = delegate;
         if(d!=null)     return d.autoLogin(request,response);
         return null;
     }
 
+    @Override
     public void loginFail(HttpServletRequest request, HttpServletResponse response) {
         RememberMeServices d = delegate;
         if(d!=null)     d.loginFail(request,response);
     }
 
+    @Override
     public void loginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
         RememberMeServices d = delegate;
         if(d!=null)     d.loginSuccess(request,response,successfulAuthentication);

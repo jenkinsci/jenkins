@@ -23,31 +23,31 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.DescriptorExtensionList;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Environment;
+import hudson.model.Node;
 import hudson.model.Queue.BuildableItem;
+import hudson.model.Queue.Task;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.TaskListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Environment;
-import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.Queue.Task;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-
+import hudson.tools.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Extensible property of {@link Node}.
@@ -82,6 +82,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
 
     protected void setNode(N node) { this.node = node; }
 
+    @Override
     public NodePropertyDescriptor getDescriptor() {
         return (NodePropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -170,6 +171,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
         // default is no-op
     }
 
+    @Override
     public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
         return form==null ? null : getDescriptor().newInstance(req, form);
     }
@@ -186,6 +188,6 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * given project.
      */
     public static List<NodePropertyDescriptor> for_(Node node) {
-        return NodePropertyDescriptor.for_(all(),node);
+        return PropertyDescriptor.for_(all(),node);
     }
 }

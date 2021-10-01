@@ -23,15 +23,14 @@
  */
 package hudson.tasks;
 
-import hudson.ExtensionPoint;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-
 
 /**
  * {@link BuildStep}s that perform the actual build.
@@ -51,6 +50,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
     /**
      * Default implementation that does nothing.
      */
+    @Override
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
     }
@@ -59,10 +59,12 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
      * Returns {@link BuildStepMonitor#NONE} by default, as {@link Builder}s normally don't depend
      * on its previous result.
      */
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public Descriptor<Builder> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }

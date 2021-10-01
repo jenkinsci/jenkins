@@ -23,11 +23,11 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Util;
 import java.io.IOException;
 import java.util.Locale;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -130,6 +130,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
 
     private static FormFillFailure _errorWithMarkup(@NonNull final String message, final FormValidation.Kind kind) {
         return new FormFillFailure(kind, message) {
+            @Override
             public String renderHtml() {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 if (req == null) { // being called from some other context
@@ -153,6 +154,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      */
     public static FormFillFailure respond(FormValidation.Kind kind, final String html) {
         return new FormFillFailure(kind) {
+            @Override
             public String renderHtml() {
                 return html;
             }
@@ -181,6 +183,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         this.kind = kind;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
             throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");

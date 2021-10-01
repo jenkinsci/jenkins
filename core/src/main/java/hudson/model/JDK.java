@@ -23,34 +23,32 @@
  */
 package hudson.model;
 
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
-import hudson.util.FormValidation;
-import hudson.Launcher;
-import hudson.Extension;
 import hudson.EnvVars;
+import hudson.Extension;
+import hudson.Launcher;
 import hudson.slaves.NodeSpecific;
-import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
+import hudson.util.FormValidation;
+import hudson.util.NullStream;
+import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Information about JDK installation.
@@ -111,7 +109,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to 'java'.
      */
     private File getExecutable() {
-        String execName = (File.separatorChar == '\\') ? "java.exe" : "java";
+        String execName = File.separatorChar == '\\' ? "java.exe" : "java";
         return new File(getHome(),"bin/"+execName);
     }
 
@@ -144,10 +142,12 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         buildEnvVars((Map)env);
     }
 
+    @Override
     public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
         return new JDK(getName(), translateFor(node, log));
     }
 
+    @Override
     public JDK forEnvironment(EnvVars environment) {
         return new JDK(getName(), environment.expand(getHome()));
     }
@@ -172,15 +172,18 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
+        @Override
         public String getDisplayName() {
             return "JDK"; // TODO I18N
         }
 
-        public @Override JDK[] getInstallations() {
+        @Override
+        public JDK[] getInstallations() {
             return Jenkins.get().getJDKs().toArray(new JDK[0]);
         }
 
-        public @Override void setInstallations(JDK... jdks) {
+        @Override
+        public void setInstallations(JDK... jdks) {
             Jenkins.get().setJDKs(Arrays.asList(jdks));
         }
 

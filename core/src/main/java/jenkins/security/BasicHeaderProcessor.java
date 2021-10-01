@@ -1,12 +1,14 @@
 package jenkins.security;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import java.io.IOException;
 import java.util.List;
-import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -45,6 +47,7 @@ public class BasicHeaderProcessor implements Filter {
     private AuthenticationEntryPoint authenticationEntryPoint;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
@@ -56,6 +59,7 @@ public class BasicHeaderProcessor implements Filter {
         this.rememberMeServices = rememberMeServices;
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
@@ -148,6 +152,7 @@ public class BasicHeaderProcessor implements Filter {
         return BasicHeaderAuthenticator.all();
     }
 
+    @Override
     public void destroy() {
     }
 

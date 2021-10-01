@@ -27,39 +27,49 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
+import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.util.HttpResponses;
-import hudson.model.FreeStyleProject;
-import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
-
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.Socket;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import jenkins.AgentProtocol;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
@@ -68,24 +78,14 @@ import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.Socket;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Tests of the {@link Jenkins} class instance logic.
@@ -371,20 +371,23 @@ public class JenkinsTest {
     public static class RootActionImpl implements UnprotectedRootAction {
         private int count;
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "foobar";
         }
 
         public HttpResponse doDynamic() {
-            assertEquals("anonymous", Jenkins.get().getAuthentication2().getName());
+            assertEquals("anonymous", Jenkins.getAuthentication2().getName());
             count++;
             return HttpResponses.html("OK");
         }
@@ -425,14 +428,17 @@ public class JenkinsTest {
     @TestExtension("testErrorPageShouldBeAnonymousAccessible")
     public static class ReportError implements UnprotectedRootAction {
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "error";
         }
@@ -449,7 +455,7 @@ public class JenkinsTest {
             listener.onRestart();
 
         ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
-        Mockito.verify(listenerMock).onOffline(Mockito.eq(j.jenkins.toComputer()), captor.capture());
+        Mockito.verify(listenerMock).onOffline(ArgumentMatchers.eq(j.jenkins.toComputer()), captor.capture());
         assertTrue(captor.getValue().toString().contains("restart"));
     }
 
@@ -530,7 +536,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
         assertThat("We should have additional enabled protocol", 
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
         assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
@@ -550,7 +556,7 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertNotSame("The protocol list must have been really refreshed", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
         assertThat("We should have disabled one protocol", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
 
@@ -574,7 +580,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
         assertThat("There should be two additional enabled protocols",
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
         assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
@@ -598,7 +604,7 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
         assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
@@ -690,7 +696,7 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber storedVersion = Jenkins.getStoredVersion();
         assertNotNull(storedVersion);
-        assertEquals(storedVersion.toString(), "1.0");
+        assertEquals("1.0", storedVersion.toString());
 
         Jenkins.VERSION = null;
         j.jenkins.save();
@@ -703,5 +709,60 @@ public class JenkinsTest {
     @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
     public void jobCreatedByInitializerIsRetained() {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    }
+
+    @Issue("SECURITY-2047")
+    @Test
+    public void testLogin123() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
+        WebClient wc = j.createWebClient();
+
+        FailingHttpStatusCodeException e = assertThrows("Page should be protected.", FailingHttpStatusCodeException.class, () -> wc.goTo("login123"));
+        assertThat(e.getStatusCode(), is(403));
+    }
+
+    @Issue("SECURITY-2047")
+    @Test
+    public void testLogin123WithRead() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                grant(Jenkins.READ).everywhere().to("bob"));
+        WebClient wc = j.createWebClient();
+
+        wc.login("bob");
+        HtmlPage login123 = wc.goTo("login123");
+        assertThat(login123.getWebResponse().getStatusCode(), is(200));
+        assertThat(login123.getWebResponse().getContentAsString(), containsString("This should be protected"));
+    }
+
+    @Test
+    public void testLogin() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                grant(Jenkins.READ).everywhere().to("bob"));
+        WebClient wc = j.createWebClient();
+
+        HtmlPage login = wc.goTo("login");
+        assertThat(login.getWebResponse().getStatusCode(), is(200));
+        assertThat(login.getWebResponse().getContentAsString(), containsString("login"));
+    }
+
+    @TestExtension({"testLogin123", "testLogin123WithRead"})
+    public static class ProtectedRootAction implements RootAction {
+        @Override
+        public String getIconFileName() {
+            return "document.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "I am PROTECTED";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "login123";
+        }
     }
 }

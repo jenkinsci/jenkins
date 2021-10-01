@@ -24,14 +24,16 @@
 
 package jenkins.tasks;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.LineTransformationOutputStream;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -48,38 +50,28 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.slaves.ComputerLauncher;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.tasks.Maven;
 import hudson.tasks.Shell;
-import hudson.tasks.Maven.MavenInstallation;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Locale;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.ToolInstallations;
 
 public class SimpleBuildWrapperTest {
 
@@ -142,7 +134,7 @@ public class SimpleBuildWrapperTest {
     }
     private static class SpecialEnvSlave extends Slave {
         SpecialEnvSlave(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
-            super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+            super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.emptyList());
         }
         @Override public Computer createComputer() {
             return new SpecialEnvComputer(this);
@@ -167,18 +159,6 @@ public class SimpleBuildWrapperTest {
         r.assertLogContains("ran DisposerImpl #1", b);
         r.assertLogNotContains("ran DisposerImpl #2", b);
     }
-    @Test public void disposerWithMaven() throws Exception {
-        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
-        r.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven);
-        MavenModuleSet p = r.createProject(MavenModuleSet.class, "p");
-        p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        p.setIsFingerprintingDisabled(true);
-        p.setIsArchivingDisabled(true);
-        p.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-        MavenModuleSetBuild b = p.scheduleBuild2(0).get();
-        r.assertLogContains("ran DisposerImpl #1", b);
-        r.assertLogNotContains("ran DisposerImpl #2", b);
-    }
     public static class WrapperWithDisposer extends SimpleBuildWrapper {
         @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
             context.setDisposer(new DisposerImpl());
@@ -187,7 +167,7 @@ public class SimpleBuildWrapperTest {
             private static final long serialVersionUID = 1;
             private int tearDownCount = 0;
             @Override public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-                listener.getLogger().println("ran DisposerImpl #" + (++tearDownCount));
+                listener.getLogger().println("ran DisposerImpl #" + ++tearDownCount);
             }
         }
         @TestExtension({ "disposer", "failedJobWithInterruptedDisposer" }) public static class DescriptorImpl extends BuildWrapperDescriptor {

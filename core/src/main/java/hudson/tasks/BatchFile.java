@@ -23,12 +23,15 @@
  */
 package hudson.tasks;
 
-import hudson.FilePath;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import hudson.util.LineEndingConversion;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import org.jenkinsci.Symbol;
@@ -39,11 +42,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes commands by using Windows batch file.
@@ -69,14 +67,17 @@ public class BatchFile extends CommandInterpreter {
 
     private Integer unstableReturn;
 
+    @Override
     public String[] buildCommandLine(FilePath script) {
         return new String[] {"cmd","/c","call",script.getRemote()};
     }
 
+    @Override
     protected String getContents() {
         return LineEndingConversion.convertEOL(command+"\r\nexit %ERRORLEVEL%",LineEndingConversion.EOLType.Windows);
     }
 
+    @Override
     protected String getFileExtension() {
         return ".bat";
     }
@@ -111,6 +112,7 @@ public class BatchFile extends CommandInterpreter {
             return "/help/project-config/batch.html";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.BatchFile_DisplayName();
         }
@@ -139,6 +141,7 @@ public class BatchFile extends CommandInterpreter {
             return FormValidation.ok();
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }

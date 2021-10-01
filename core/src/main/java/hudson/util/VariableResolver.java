@@ -55,11 +55,7 @@ public interface VariableResolver<V> {
     /**
      * Empty resolver that always returns null.
      */
-    VariableResolver NONE = new VariableResolver() {
-        public Object resolve(String name) {
-            return null;
-        }
-    };
+    VariableResolver NONE = name -> null;
 
     /**
      * {@link VariableResolver} backed by a {@link Map}.
@@ -71,6 +67,7 @@ public interface VariableResolver<V> {
             this.data = data;
         }
 
+        @Override
         public V resolve(String name) {
             return data.get(name);
         }
@@ -90,6 +87,7 @@ public interface VariableResolver<V> {
             this.resolvers = resolvers.toArray(new VariableResolver[0]);
         }
 
+        @Override
         public V resolve(String name) {
             for (VariableResolver<? extends V> r : resolvers) {
                 V v = r.resolve(name);

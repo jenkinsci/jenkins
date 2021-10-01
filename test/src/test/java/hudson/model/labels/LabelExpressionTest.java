@@ -23,6 +23,8 @@
  */
 package hudson.model.labels;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -41,19 +43,18 @@ import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SequenceLock;
-import org.jvnet.hudson.test.TestBuilder;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -76,6 +77,7 @@ public class LabelExpressionTest {
 
         FreeStyleProject p1 = j.createFreeStyleProject();
         p1.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 seq.phase(0); // first, make sure the w32 agent is occupied
                 seq.phase(2);
@@ -137,17 +139,17 @@ public class LabelExpressionTest {
     }
 
     /**
-     * Make sure we can reset the label of an existing slave.
+     * Make sure we can reset the label of an existing agent.
      */
     @Test
     public void setLabelString() throws Exception {
         DumbSlave s = j.createSlave("foo", "", null);
 
-        assertSame(s.getLabelString(), "");
+        assertSame("", s.getLabelString());
 
         s.setLabelString("bar");
 
-        assertSame(s.getLabelString(), "bar");
+        assertSame("bar", s.getLabelString());
     }
 
     /**
@@ -164,7 +166,10 @@ public class LabelExpressionTest {
         parseAndVerify("foo||(bar&&zot)", "foo||(bar&&zot)");
 
         parseAndVerify("(foo||bar)&&zot", "(foo||bar)&&zot");
+        parseAndVerify("(foo||bar)&&zot", "  ( foo || bar )  && zot");
         parseAndVerify("foo->bar", "foo ->\tbar");
+        parseAndVerify("foo->bar", "foo -> bar");
+        parseAndVerify("foo->bar", "   foo \t\t ->   bar \t ");
         parseAndVerify("!foo<->bar", "!foo <-> bar");
     }
 
@@ -175,27 +180,34 @@ public class LabelExpressionTest {
     }
 
     private void parseAndVerify(String expected, String expr) throws ANTLRException {
-        assertEquals(expected, LabelExpression.parseExpression(expr).getName());
+        assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
     public void parserError() throws Exception {
         parseShouldFail("foo bar");
         parseShouldFail("foo (bar)");
+        parseShouldFail("foo(bar)");
+        parseShouldFail("a <- b");
+        parseShouldFail("a -< b");
+        parseShouldFail("a - b");
+        parseShouldFail("->");
+        parseShouldFail("-<");
+        parseShouldFail("-!");
     }
 
     @Test
     public void laxParsing() {
         // this should parse as an atom
         LabelAtom l = (LabelAtom) j.jenkins.getLabel("lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getName(),"lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getExpression(),"\"lucene.zones.apache.org (Solaris 10)\"");
+        assertEquals("lucene.zones.apache.org (Solaris 10)", l.getName());
+        assertEquals("\"lucene.zones.apache.org (Solaris 10)\"", l.getExpression());
     }
 
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", "dummy",
                 j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
 
@@ -241,9 +253,95 @@ public class LabelExpressionTest {
         j.jenkins.getLabelAtom("solaris-x86");
     }
 
+    @Test
+    public void expression_atom_simple() throws Exception {
+        Label label = Label.parseExpression("a");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    public void expression_atom_simpleLonger() throws Exception {
+        Label label = Label.parseExpression("abc123def");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    public void expression_atom_withDash() throws Exception {
+        Label label = Label.parseExpression("a-b");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_withDashes() throws Exception {
+        Label label = Label.parseExpression("--a----b-c-");
+        assertThat(label, instanceOf(LabelAtom.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_doubleDash() throws Exception {
+        assertEquals(new LabelAtom("--"), Label.parseExpression("--"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashBeforeImplies() throws Exception {
+        assertEquals(new LabelAtom("a-").implies(new LabelAtom("b")), Label.parseExpression("a-->b"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashAfterImplies() throws Exception {
+        assertEquals(new LabelAtom("a").implies(new LabelAtom("-b")), Label.parseExpression("a->-b"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_justDash() throws Exception {
+        assertEquals(new LabelAtom("-"), Label.parseExpression("-"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashBefore() throws Exception {
+        assertEquals(new LabelAtom("-1"), Label.parseExpression("-1"));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_atom_dashAround() throws Exception {
+        assertEquals(new LabelAtom("-abc-"), Label.parseExpression("-abc-"));
+    }
+
+    @Test
+    public void expression_implies() throws Exception {
+        Label label = Label.parseExpression("a -> b");
+        assertThat(label, instanceOf(LabelExpression.Implies.class));
+    }
+
+    @Test
+    @Issue("JENKINS-66613")
+    public void expression_implies_withoutSpaces() throws Exception {
+        Label label = Label.parseExpression("a->b");
+        assertThat(label, instanceOf(LabelExpression.Implies.class));
+    }
+
+    @Test
+    public void expression_and() throws Exception {
+        Label label = Label.parseExpression("a && b");
+        assertThat(label, instanceOf(LabelExpression.And.class));
+    }
+
+    @Test
+    public void expression_and_withoutSpaces() throws Exception {
+        Label label = Label.parseExpression("a&&b");
+        assertThat(label, instanceOf(LabelExpression.And.class));
+    }
+
     private void parseShouldFail(String expr) {
         try {
-            LabelExpression.parseExpression(expr);
+            Label.parseExpression(expr);
             fail(expr + " should fail to parse");
         } catch (ANTLRException e) {
             // expected
@@ -253,6 +351,7 @@ public class LabelExpressionTest {
     @Test
     public void formValidation() throws Exception {
         j.executeOnServer(new Callable<Object>() {
+            @Override
             public Object call() throws Exception {
                 Label l = j.jenkins.getLabel("foo");
                 DumbSlave s = j.createSlave(l);
@@ -260,7 +359,7 @@ public class LabelExpressionTest {
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("master && goo").renderHtml();
+                msg = LabelExpression.validate("built-in && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

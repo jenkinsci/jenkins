@@ -1,15 +1,13 @@
 package hudson.init;
 
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 public class InitMilestoneTest {
 
@@ -21,11 +19,11 @@ public class InitMilestoneTest {
 
         List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
 
-        assertEquals(attained.get(0), InitMilestone.EXTENSIONS_AUGMENTED);
-        assertEquals(attained.get(1), InitMilestone.SYSTEM_CONFIG_LOADED);
-        assertEquals(attained.get(2), InitMilestone.SYSTEM_CONFIG_ADAPTED);
-        assertEquals(attained.get(3), InitMilestone.JOB_LOADED);
-        assertEquals(attained.get(4), InitMilestone.JOB_CONFIG_ADAPTED);
+        assertEquals(InitMilestone.EXTENSIONS_AUGMENTED, attained.get(0));
+        assertEquals(InitMilestone.SYSTEM_CONFIG_LOADED, attained.get(1));
+        assertEquals(InitMilestone.SYSTEM_CONFIG_ADAPTED, attained.get(2));
+        assertEquals(InitMilestone.JOB_LOADED, attained.get(3));
+        assertEquals(InitMilestone.JOB_CONFIG_ADAPTED, attained.get(4));
     }
 
     // Using @Initializer in static methods to check all the InitMilestones are loaded in all tests instances and make them fail,

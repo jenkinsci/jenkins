@@ -1,18 +1,18 @@
 package hudson;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+
 import hudson.model.Node;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXParseException;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class XmlFileTest {
 
@@ -33,7 +33,7 @@ public class XmlFileTest {
     // KXml2Driver is able to parse XML 1.0 even if it has control characters which
     // should be illegal.  Ignoring this test until we switch to a more compliant driver
     @Ignore
-    @Test(expected = SAXParseException.class)
+    @Test
     public void xml1_0_withSpecialCharsShouldFail() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_0_with_special_chars.xml");
         XStream2  xs = new XStream2();
@@ -41,9 +41,7 @@ public class XmlFileTest {
 
         XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
-            Node n = (Node) xmlFile.read();
-            assertThat(n.getNumExecutors(), is(2));
-            assertThat(n.getMode().toString(), is("NORMAL"));
+            assertThrows(SAXParseException.class, xmlFile::read);
         }
     }
 

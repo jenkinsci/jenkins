@@ -23,10 +23,11 @@
  */
 package jenkins.util;
 
-import javax.servlet.ServletContextEvent;
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
+import javax.servlet.ServletContextEvent;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.hamcrest.Matchers;
 import org.junit.Assume;

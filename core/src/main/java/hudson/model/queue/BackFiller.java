@@ -1,25 +1,23 @@
 package hudson.model.queue;
 
-import com.google.common.collect.Iterables;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.InvisibleAction;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.ExecutorSlot;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.MappingWorksheet.WorkChunk;
-import java.util.concurrent.TimeUnit;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 
 /**
  * Experimental.
@@ -110,7 +108,7 @@ public class BackFiller extends LoadPredictor {
 
             // figure out how many executors we need on each computer?
             Map<Computer,Integer> footprint = new HashMap<>();
-            for (Entry<WorkChunk, ExecutorChunk> e : m.toMap().entrySet()) {
+            for (Map.Entry<WorkChunk, ExecutorChunk> e : m.toMap().entrySet()) {
                 Computer c = e.getValue().computer;
                 Integer v = footprint.get(c);
                 if (v==null)    v = 0;
@@ -130,13 +128,12 @@ public class BackFiller extends LoadPredictor {
 
             // now, based on the real predicted loads, figure out the approximation of when we can
             // start executing this guy.
-            for (Entry<Computer, Integer> e : footprint.entrySet()) {
+            for (Map.Entry<Computer, Integer> e : footprint.entrySet()) {
                 Computer computer = e.getKey();
                 Timeline timeline = new Timeline();
                 for (LoadPredictor lp : LoadPredictor.all()) {
-                    for (FutureLoad fl : Iterables.limit(lp.predict(worksheet, computer, slot.start, slot.end),100)) {
-                        timeline.insert(fl.startTime, fl.startTime+fl.duration, fl.numExecutors);
-                    }
+                    StreamSupport.stream(lp.predict(worksheet, computer, slot.start, slot.end).spliterator(), false).limit(100).forEach(fl ->
+                            timeline.insert(fl.startTime, fl.startTime + fl.duration, fl.numExecutors));
                 }
 
                 Long x = timeline.fit(slot.start, slot.duration, computer.countExecutors()-e.getValue());

@@ -23,15 +23,12 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.security.Permission;
-import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Configures the project naming strategy.
@@ -58,7 +55,7 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
             }
         }
         if (j.getProjectNamingStrategy() == null) {
-            j.setProjectNamingStrategy(DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
+            j.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
         return true;
     }

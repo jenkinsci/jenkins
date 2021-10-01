@@ -23,26 +23,6 @@
  */
 package hudson.lifecycle;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Move;
-import org.apache.tools.ant.types.FileSet;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
@@ -53,8 +33,25 @@ import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Move;
+import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ManagementLink} that allows the installation as a Windows service.
@@ -78,18 +75,22 @@ public class WindowsInstallerLink extends ManagementLink {
         this.hudsonWar = jenkinsWar;
     }
 
+    @Override
     public String getIconFileName() {
         return "installer.gif";
     }
 
+    @Override
     public String getUrlName() {
         return "install";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.WindowsInstallerLink_DisplayName();
     }
 
+    @Override
     public String getDescription() {
         return Messages.WindowsInstallerLink_Description();
     }
@@ -192,12 +193,14 @@ public class WindowsInstallerLink extends ManagementLink {
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
+            @Override
             public void run() {
                 try {
                     Thread.sleep(1000);
 
                     // let the service start after we close our sockets, to avoid conflicts
                     Runtime.getRuntime().addShutdownHook(new Thread("service starter") {
+                        @Override
                         public void run() {
                             try {
                                 if(!oldRoot.equals(installationDir)) {

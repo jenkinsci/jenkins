@@ -32,7 +32,6 @@ import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.util.Iterators;
-
 import java.util.Iterator;
 
 /**
@@ -110,6 +109,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
             return n != null && n.getMode() == Mode.NORMAL;
         }
 
+        @Override
         public void remove() {
             // why does Iterators.FilterIterator do the stupid thing and allow remove?
             // (remove should remove the object last returned by next(), but it won't if hasNext() is called

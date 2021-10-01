@@ -2,12 +2,11 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.Callable;
+import java.util.Collection;
+import javax.inject.Inject;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
-
-import javax.inject.Inject;
-import java.util.Collection;
 
 /**
  * Whitelists {@link Callable}s that are approved by the admins.

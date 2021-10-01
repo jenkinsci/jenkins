@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,7 +49,7 @@ public abstract class SecurityListener implements ExtensionPoint {
      * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
      * or any other way plugins can propose.
      * @param details details of the newly authenticated user, such as name and groups.
-     * @since TODO
+     * @since 2.266
      */
     protected void authenticated2(@NonNull UserDetails details) {
         authenticated(org.acegisecurity.userdetails.UserDetails.fromSpring(details));
@@ -101,7 +101,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void loggedOut(@NonNull String username){}
 
     /**
-     * @since TODO
+     * @since 2.266
      */
     public static void fireAuthenticated2(@NonNull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {

@@ -23,15 +23,16 @@
  */
 package hudson.security;
 
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.User;
@@ -39,15 +40,40 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
+import hudson.util.FormValidation;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
-import jenkins.util.SystemProperties;
 import jenkins.security.seed.UserSeedProperty;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -58,30 +84,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -531,18 +533,22 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
+    @Override
     public String getDisplayName() {
         return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getACL();
     }
 
+    @Override
     public void checkPermission(Permission permission) {
         Jenkins.get().checkPermission(permission);
     }
 
+    @Override
     public boolean hasPermission(Permission permission) {
         return Jenkins.get().hasPermission(permission);
     }
@@ -642,7 +648,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public Collection<? extends GrantedAuthority> getAuthorities2() {
             // TODO
@@ -783,7 +789,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 String data = Protector.unprotect(pwd);
                 String data2 = Protector.unprotect(pwd2);
 
-                if ((data == null) != (data2 == null)) {
+                if (data == null != (data2 == null)) {
                     // Require that both values are protected or unprotected; do not allow user to change just one text field
                     throw new FormException("Please confirm the password by typing it twice", "user.password2");
                 }
@@ -821,6 +827,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
+            @Override
             public UserProperty newInstance(User user) {
                 return null;
             }
@@ -833,6 +840,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
+        @Override
         public String getIconFileName() {
             if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
@@ -840,10 +848,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return null;    // not applicable now
         }
 
+        @Override
         public String getUrlName() {
             return "securityRealm/";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_DisplayName();
         }
@@ -951,6 +961,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }
@@ -964,9 +975,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+        @Override
         public void init(FilterConfig config) throws ServletException {
         }
 
+        @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             HttpServletRequest req = (HttpServletRequest) request;
 
@@ -987,6 +1000,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
+        @Override
         public void destroy() {
         }
     };

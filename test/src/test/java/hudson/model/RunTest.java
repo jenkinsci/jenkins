@@ -23,11 +23,22 @@
  */
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BuildTrigger;
+import hudson.tasks.Builder;
+import hudson.tasks.Fingerprinter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
@@ -36,24 +47,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import hudson.tasks.BuildTrigger;
-import hudson.tasks.Builder;
-import hudson.tasks.Fingerprinter;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -182,7 +181,7 @@ public class RunTest  {
     static class FullNameChangingProject extends Project<FullNameChangingProject, CustomBuild> implements TopLevelItem {
         private volatile String virtualName;
 
-        public FullNameChangingProject(ItemGroup parent, String name) {
+        FullNameChangingProject(ItemGroup parent, String name) {
             super(parent, name);
         }
 
@@ -219,7 +218,7 @@ public class RunTest  {
         }
     }
     
-    private static final class Mgr extends ArtifactManager {
+    public static final class Mgr extends ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
         @Override public boolean delete() throws IOException, InterruptedException {
             return !deleted.getAndSet(true);
