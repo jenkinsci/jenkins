@@ -50,6 +50,7 @@ import jenkins.model.Jenkins;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -215,13 +216,12 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
          * or otherwise provisioned build environments without overwhelming
          * their host - and instead to permit round-robining, one by one.
          */
-        private final String conflictsWith;
+        private String conflictsWith;
 
         @DataBoundConstructor
-        public Demand(long inDemandDelay, long idleDelay, String conflictsWith) {
+        public Demand(long inDemandDelay, long idleDelay) {
             this.inDemandDelay = Math.max(0, inDemandDelay);
             this.idleDelay = Math.max(1, idleDelay);
-            this.conflictsWith = conflictsWith.trim();
         }
 
         /**
@@ -249,6 +249,14 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
          */
         public String getConflictsWith() {
             return conflictsWith;
+        }
+
+        /**
+         * Setter for optional property 'conflictsWith'.
+         */
+        @DataBoundSetter
+        public void setConflictsWith(String value) {
+            this.conflictsWith = value.trim();
         }
 
         @Override
