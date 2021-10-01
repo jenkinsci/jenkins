@@ -31,9 +31,11 @@ import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.util.DescriptorList;
+import hudson.util.FormValidation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,7 @@ import jenkins.model.Jenkins;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -255,7 +258,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 Pattern conflictsWithPattern = null;
                 String cName = c.getName(); // yes we are offline... but better safe than sorry ;)
                 if (conflictsWith != null && !conflictsWith.equals("")) {
-                    conflictsWithPattern = Pattern.compile(conflictsWith);
+                    try {
+                        // Just in case we did get an invalid regex, do not crash
+                        conflictsWithPattern = Pattern.compile(conflictsWith);
+                    } catch (java.util.regex.PatternSyntaxException ep) {
+                        logger.log(Level.SEVERE, "Invalid conflictsWith regex ~/{0}/ for computer {1}, ignored: {2}",
+                            new Object[]{conflictsWith, cName, ep.getMessage()});
+                    }
                 }
 
                 final HashMap<Computer, Integer> availableComputers = new HashMap<>();
@@ -339,6 +348,27 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }
+
+            /**
+             * Called by {@code RetentionStrategy/Demand/config.jelly} to validate regexes.
+             * @return {@link FormValidation#ok} if this item can be populated as specified, otherwise
+             * {@link FormValidation#error} with a message explaining the problem.
+             */
+            public @NonNull FormValidation doCheckConflictsWith(@QueryParameter String value) {
+                try {
+                    Pattern pattern = null;
+                    if (value != null && !value.trim().equals("")) {
+                        pattern = Pattern.compile(value);
+                        assert pattern != null; // Would have thrown Failure
+                    }
+                } catch (java.util.regex.PatternSyntaxException ep) {
+                    return FormValidation.error("Invalid regex: " + ep.getMessage());
+                } catch (Failure ef) {
+                    return FormValidation.error("Failed to validate regex: " + ef.getMessage());
+                }
+                return FormValidation.ok();
+            }
+
         }
     }
 }
