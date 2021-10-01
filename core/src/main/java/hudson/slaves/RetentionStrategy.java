@@ -336,8 +336,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds),
                                 (conflictsWithPattern == null ? "" : " and has no conflicting computers matched by regex ~/" + conflictsWith + "/")});
                         logger.log(Level.INFO, "{0}", msg);
-                        c.getListener().getLogger().println(msg);
                         c.connect(false);
+                        c.getListener().getLogger().println(msg);
                     }
                 }
             } else if (c.isIdle()) {
