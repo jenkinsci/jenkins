@@ -36,6 +36,7 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -318,8 +319,10 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     // we've been in demand for long enough
                     if (!hasConflict.isEmpty()) {
                         /* Would be nice to see this in the agent log UI as well */
-                        logger.log(Level.WARNING, "Would launch computer {0} as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
+                        String msg = MessageFormat.format("Would launch computer {0} as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds), conflictsWith, hasConflict.toString()});
+                        c.getListener().getLogger().println(msg);
+                        logger.log(Level.WARNING, "{0}", msg);
                     } else {
                         logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}{2}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds),
