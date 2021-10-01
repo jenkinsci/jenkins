@@ -36,6 +36,7 @@ THE SOFTWARE.
         checkMessage="${%Idle delay is mandatory and must be a number.}"/>
     </f:entry>
     <f:entry title="${%Conflicts with}" help="/help/system-config/master-slave/demand/conflictsWith.html">
-      <f:textbox name="retentionStrategy.conflictsWith" value="${instance.conflictsWith}"/>
+      <f:textbox name="retentionStrategy.conflictsWith" value="${instance.conflictsWith}"
+        autocomplete="on" checkUrl="checkConflictsWith" checkDependsOn="retentionStrategy.conflictsWith"/>
     </f:entry>
 </j:jelly>
