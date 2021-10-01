@@ -332,9 +332,11 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                         c.getListener().getLogger().println(msg);
                         logger.log(Level.WARNING, "{0}", msg);
                     } else {
-                        logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}{2}",
+                        String msg = MessageFormat.format("Launching computer {0} as it has been in demand for {1}{2}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds),
-                                (conflictsWithPattern == null ? "" : " and has no conflicting computers matched by regex ~/" + hasConflict.toString() + "/")});
+                                (conflictsWithPattern == null ? "" : " and has no conflicting computers matched by regex ~/" + conflictsWith + "/")});
+                        logger.log(Level.INFO, "{0}", msg);
+                        c.getListener().getLogger().println(msg);
                         c.connect(false);
                     }
                 }
@@ -342,8 +344,10 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
-                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                    String msg = MessageFormat.format("Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
+                    logger.log(Level.INFO, "{0}", msg);
+                    c.getListener().getLogger().println(msg);
                     c.disconnect(new OfflineCause.IdleOfflineCause());
                 } else {
                     // no point revisiting until we can be confident we will be idle
