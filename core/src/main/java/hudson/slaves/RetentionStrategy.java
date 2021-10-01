@@ -327,12 +327,12 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     // we've been in demand for long enough
                     if (!hasConflict.isEmpty()) {
                         /* Would be nice to see this in the agent log UI as well */
-                        String msg = MessageFormat.format("Would launch computer {0} as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
+                        String msg = MessageFormat.format("Would launch computer [{0}] as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds), conflictsWith, hasConflict.toString()});
                         c.getListener().getLogger().println(msg);
                         logger.log(Level.WARNING, "{0}", msg);
                     } else {
-                        String msg = MessageFormat.format("Launching computer {0} as it has been in demand for {1}{2}",
+                        String msg = MessageFormat.format("Launching computer [{0}] as it has been in demand for {1}{2}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds),
                                 (conflictsWithPattern == null ? "" : " and has no conflicting computers matched by regex ~/" + conflictsWith + "/")});
                         logger.log(Level.INFO, "{0}", msg);
@@ -344,7 +344,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
-                    String msg = MessageFormat.format("Disconnecting computer {0} as it has been idle for {1}",
+                    String msg = MessageFormat.format("Disconnecting computer [{0}] as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
                     logger.log(Level.INFO, "{0}", msg);
                     c.getListener().getLogger().println(msg);
