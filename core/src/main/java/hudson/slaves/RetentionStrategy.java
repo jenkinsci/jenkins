@@ -31,6 +31,8 @@ import hudson.model.*;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -39,6 +41,8 @@ import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
@@ -173,6 +177,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
     /**
      * {@link hudson.slaves.RetentionStrategy} that tries to keep the node offline when not in use.
+     * Optionally the node would not be allowed to activate if another node is running,
+     * whose name matches the conflictsWith regular expression.
      */
     public static class Demand extends RetentionStrategy<SlaveComputer> {
 
@@ -188,10 +194,25 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
          */
         private final long idleDelay;
 
+        /**
+         * Optional regex (or string in trivial case) with name(s) of node(s)
+         * whose being online blocks the current node from starting.
+         * To properly take advantage of this, be sure to set low idleDelay
+         * timeout values for other workers that no longer have work pending.
+         * Note that conflict is evaluated one way (should this node start
+         * if inDemandDelay has elapsed?) so all nodes in question should
+         * declare each other as conflicting.
+         * This allows a Jenkins deployment to co-locate various pre-defined
+         * or otherwise provisioned build environments without overwhelming
+         * their host - and instead to permit round-robining, one by one.
+         */
+        private final String conflictsWith;
+
         @DataBoundConstructor
-        public Demand(long inDemandDelay, long idleDelay) {
+        public Demand(long inDemandDelay, long idleDelay, String conflictsWith) {
             this.inDemandDelay = Math.max(0, inDemandDelay);
             this.idleDelay = Math.max(1, idleDelay);
+            this.conflictsWith = conflictsWith.trim();
         }
 
         /**
@@ -212,13 +233,38 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return idleDelay;
         }
 
+        /**
+         * Getter for property 'conflictsWith'.
+         *
+         * @return Value for property 'conflictsWith'.
+         */
+        public String getConflictsWith() {
+            return conflictsWith;
+        }
+
         @Override
         @GuardedBy("hudson.model.Queue.lock")
         public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
+                Set<String> hasConflict = new HashSet();
+                Pattern conflictsWithPattern = null;
+                String cName = c.getName(); // yes we are offline... but better safe than sorry ;)
+                if (conflictsWith != null && !conflictsWith.equals("")) {
+                    conflictsWithPattern = Pattern.compile(conflictsWith);
+                }
+
                 final HashMap<Computer, Integer> availableComputers = new HashMap<>();
                 for (Computer o : Jenkins.get().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
+                        String oName = o.getName();
+                        if (conflictsWithPattern != null && !(oName.equals(cName))) {
+                            // check if that other active computer name
+                            // blocks this current agent from starting?
+                            Matcher matcher = conflictsWithPattern.matcher(oName);
+                            if (matcher.find()) {
+                                hasConflict.add(oName);
+                            }
+                        }
                         final int idleExecutors = o.countIdle();
                         if (idleExecutors>0)
                             availableComputers.put(o, idleExecutors);
@@ -256,9 +302,14 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
                 if (needComputer) {
                     // we've been in demand for long enough
-                    logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
+                    if (hasConflict.size() > 0) {
+                        logger.log(Level.WARNING, "Would launch computer {0} as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
+                            new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds), conflictsWith, hasConflict.toString()});
+                    } else {
+                        logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
-                    c.connect(false);
+                        c.connect(false);
+                    }
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();

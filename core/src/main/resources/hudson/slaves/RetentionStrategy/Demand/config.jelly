@@ -35,4 +35,9 @@ THE SOFTWARE.
         name="retentionStrategy.idleDelay" value="${instance.idleDelay}"
         checkMessage="${%Idle delay is mandatory and must be a number.}"/>
     </f:entry>
+    <f:entry title="${%Conflicts with}" help="/help/system-config/master-slave/demand/conflictsWith.html">
+      <f:textarea
+        name="retentionStrategy.conflictsWith" value="${instance.conflictsWith}"
+        checkMessage="${%Conflicts with is optional and must be a regular expression, trivially a string.}"/>
+    </f:entry>
 </j:jelly>

@@ -1,0 +1,17 @@
+<div>
+  <p>Optional regular expression (or string in trivial case) with name(s)
+  of node(s) whose being online blocks the current node from starting.</p>
+
+  <p>To properly take advantage of this, be sure to set low <tt>idleDelay</tt>
+  timeout values for those other workers that no longer have work pending.</p>
+
+  <p>Note that conflict is evaluated one way (<i>"should this node start
+  if <tt>inDemandDelay</tt> has elapsed?"</i>), so all nodes in question
+  should declare each other as conflicting -- e.g. by copying the regular
+  expression, if such node names follow the same pattern. In any case,
+  a node would not conflict with itself even if there is a match.</p>
+
+  <p>This setting allows a Jenkins deployment to co-locate various pre-defined
+  or otherwise provisioned build environments without overwhelming
+  their host -- and instead permits round-robining, one by one.</p>
+</div>
