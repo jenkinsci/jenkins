@@ -308,11 +308,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 if (needComputer) {
                     // we've been in demand for long enough
                     if (hasConflict.size() > 0) {
+                        /* Would be nice to see this in the agent log UI as well */
                         logger.log(Level.WARNING, "Would launch computer {0} as it has been in demand for {1}, but it conflicts by regex ~/{2}/ with already active computer(s): {3}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds), conflictsWith, hasConflict.toString()});
                     } else {
-                        logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
-                            new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
+                        logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}{2}",
+                            new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds),
+                                (conflictsWithPattern == null ? "" : " and has no conflicting computers matched by regex ~/" + hasConflict.toString() + "/")});
                         c.connect(false);
                     }
                 }
