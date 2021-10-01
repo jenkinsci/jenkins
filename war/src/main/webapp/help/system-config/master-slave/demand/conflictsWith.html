@@ -11,6 +11,10 @@
   expression, if such node names follow the same pattern. In any case,
   a node would not conflict with itself even if there is a match.</p>
 
+  <p>As with other regular expressions, "negative look-ahead" can be used
+  to exclude certain results from the following matching pattern, e.g.:</p>
+  <pre>^(?!myServer$)(.*erver.*)$</pre>
+
   <p>This setting allows a Jenkins deployment to co-locate various pre-defined
   or otherwise provisioned build environments without overwhelming
   their host -- and instead permits round-robining, one by one.</p>
