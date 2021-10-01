@@ -85,7 +85,7 @@ public class SecurityRealmTest {
         }
 
         @Override
-        public void generateImage(String id, OutputStream ios) throws IOException {
+        public void generateImage(String id, OutputStream ios) {
         }
     }
 

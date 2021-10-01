@@ -39,7 +39,7 @@ public class UserIdMigratorTest {
 
     @Test
     @LocalData
-    public void migrateSimpleUser() throws InterruptedException, ReactorException, IOException {
+    public void migrateSimpleUser() {
         String userId = "fred";
         User fred = User.getById(userId, false);
         assertThat(fred.getFullName(), is("Fred Smith"));
@@ -47,7 +47,7 @@ public class UserIdMigratorTest {
 
     @Test
     @LocalData
-    public void migrateMultipleUsers() throws InterruptedException, ReactorException, IOException {
+    public void migrateMultipleUsers() {
         assertThat(User.getAll().size(), is(3));
         User fred = User.getById("fred", false);
         assertThat(fred.getFullName(), is("Fred Smith"));

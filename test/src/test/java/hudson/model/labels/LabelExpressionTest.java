@@ -78,7 +78,7 @@ public class LabelExpressionTest {
         FreeStyleProject p1 = j.createFreeStyleProject();
         p1.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 seq.phase(0); // first, make sure the w32 agent is occupied
                 seq.phase(2);
                 seq.done();
@@ -184,7 +184,7 @@ public class LabelExpressionTest {
     }
 
     @Test
-    public void parserError() throws Exception {
+    public void parserError() {
         parseShouldFail("foo bar");
         parseShouldFail("foo (bar)");
         parseShouldFail("foo(bar)");
@@ -368,7 +368,7 @@ public class LabelExpressionTest {
     }
 
     @Test
-    public void parseLabel() throws Exception {
+    public void parseLabel() {
         Set<LabelAtom> result = Label.parse("one two three");
         String[] expected = {"one", "two", "three"};
 

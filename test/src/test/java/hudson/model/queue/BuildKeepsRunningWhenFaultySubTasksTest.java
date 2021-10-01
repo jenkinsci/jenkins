@@ -47,7 +47,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                 private final SubTask outer = this;
 
                 @Override
-                public Queue.Executable createExecutable() throws IOException {
+                public Queue.Executable createExecutable() {
                     return new Queue.Executable() {
                         @Override
                         public SubTask getParent() {

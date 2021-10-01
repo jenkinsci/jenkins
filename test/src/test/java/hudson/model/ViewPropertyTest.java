@@ -100,7 +100,7 @@ public class ViewPropertyTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
             return this;
         }
 

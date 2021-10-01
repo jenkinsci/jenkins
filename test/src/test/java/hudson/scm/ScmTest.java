@@ -84,7 +84,7 @@ public class ScmTest {
             public boolean checkout(AbstractBuild<?, ?> build,
                     Launcher launcher, FilePath remoteDir,
                     BuildListener listener, File changeLogFile)
-                    throws IOException, InterruptedException {
+                    throws InterruptedException {
                 throw new InterruptedException();
             }
 

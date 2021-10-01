@@ -53,7 +53,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
             reconfigured = true;
             return this;
         }

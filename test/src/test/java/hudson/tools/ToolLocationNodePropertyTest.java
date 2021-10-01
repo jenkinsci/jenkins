@@ -107,7 +107,7 @@ public class ToolLocationNodePropertyTest {
         assertEquals("zotfoo", location.getHome());
     }
 
-    private void configureDumpEnvBuilder() throws IOException {
+    private void configureDumpEnvBuilder() {
         if(Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else

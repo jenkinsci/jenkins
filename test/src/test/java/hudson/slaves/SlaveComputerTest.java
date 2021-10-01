@@ -110,7 +110,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) throws IOException {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOException("Something happened (the listener always throws this exception)");
@@ -124,7 +124,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new RuntimeException("Something happened (the listener always throws this exception)");
@@ -158,7 +158,7 @@ public class SlaveComputerTest {
         static volatile int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOError(new Exception("Something happened (the listener always throws this exception)"));

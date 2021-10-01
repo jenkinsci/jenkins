@@ -254,7 +254,7 @@ public class LauncherTest {
     }
     @FunctionalInterface
     private interface ProcStarterCustomizer {
-        void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener) throws Exception;
+        void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener);
     }
     private void assertMultipleStdioCalls(String message, Node node, boolean emitStderr, ProcStarterCustomizer psCustomizer, boolean outputIn2) throws Exception {
         message = node.getDisplayName() + ": " + message;

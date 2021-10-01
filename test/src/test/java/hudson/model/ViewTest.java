@@ -542,7 +542,7 @@ public class ViewTest {
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
         ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -554,7 +554,7 @@ public class ViewTest {
         });
         ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -573,7 +573,7 @@ public class ViewTest {
         });
         ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
@@ -629,14 +629,14 @@ public class ViewTest {
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewCreatedIfNoPrimary() throws Exception {
+    public void testAllViewCreatedIfNoPrimary() {
         assertNotNull(j.getInstance().getView("All"));
     }
 
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewNotCreatedIfPrimary() throws Exception {
+    public void testAllViewNotCreatedIfPrimary() {
         assertNull(j.getInstance().getView("All"));
     }
 
@@ -1067,11 +1067,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) throws IOException, ServletException, Descriptor.FormException {
+        protected void submit(StaplerRequest req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
             return null;
         }
     }
