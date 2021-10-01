@@ -40,7 +40,6 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Shell;
-import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;

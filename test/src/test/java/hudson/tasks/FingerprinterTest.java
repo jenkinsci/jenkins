@@ -51,7 +51,6 @@ import hudson.model.Result;
 import hudson.util.RunList;
 import hudson.util.StreamTaskListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;

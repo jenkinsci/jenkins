@@ -9,7 +9,6 @@ import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FakeLauncher;

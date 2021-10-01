@@ -3,7 +3,6 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 
 import hudson.Launcher;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

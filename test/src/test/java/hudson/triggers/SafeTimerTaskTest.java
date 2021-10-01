@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
