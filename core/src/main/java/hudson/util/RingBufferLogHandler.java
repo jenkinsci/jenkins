@@ -67,8 +67,9 @@ public class RingBufferLogHandler extends Handler {
     @Override
     public synchronized void publish(LogRecord record) {
         int len = records.length;
-        records[(start+size.get())%len]=record;
-        if(size.get()==len) {
+        final int tempSize = size.get();
+        records[(start+ tempSize)%len]=record;
+        if(tempSize ==len) {
             start = (start+1)%len;
         } else {
             size.incrementAndGet();
