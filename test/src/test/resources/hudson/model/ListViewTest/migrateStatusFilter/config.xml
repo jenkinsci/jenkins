@@ -32,7 +32,7 @@
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
       <jobNames>
-        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <comparator class="java.lang.String$CaseInsensitiveComparator"/>
       </jobNames>
       <jobFilters/>
       <columns>
@@ -50,7 +50,7 @@
   </views>
   <primaryView>all</primaryView>
   <slaveAgentPort>0</slaveAgentPort>
-  <label></label>
+  <label/>
   <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
     <excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>
   </crumbIssuer>
