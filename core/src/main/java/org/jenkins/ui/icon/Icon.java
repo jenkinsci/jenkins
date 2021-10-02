@@ -23,7 +23,6 @@
  */
 package org.jenkins.ui.icon;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
