@@ -98,8 +98,10 @@ public class AntClassLoader extends ClassLoader implements JenkinsClassLoader, S
             Object runtimeVersionVal = null;
             try {
                 final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
-                ctorArgs = new Class[] {File.class, boolean.class, int.class, runtimeVersionClass};
+                ctorArgs = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
                 runtimeVersionVal = Runtime.class.getDeclaredMethod("version").invoke(null);
+            } catch (RuntimeException rte) {
+                throw rte;
             } catch (Exception e) {
                 // ignore - we consider this as multi-release jar unsupported
             }
