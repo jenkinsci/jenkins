@@ -44,6 +44,8 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
@@ -101,7 +103,9 @@ public class AntClassLoader extends ClassLoader implements JenkinsClassLoader, S
                 ctorArgs = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
                 runtimeVersionVal = Runtime.class.getDeclaredMethod("version").invoke(null);
             } catch (RuntimeException rte) {
-                throw rte;
+                Logger logger = Logger.getLogger(AntClassLoader.class.getName());
+                logger.log(Level.WARNING, rte.getMessage());
+                logger.log(Level.FINE, StringUtils.getStackTrace(rte));
             } catch (Exception e) {
                 // ignore - we consider this as multi-release jar unsupported
             }
