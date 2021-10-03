@@ -78,10 +78,6 @@ for(j = 0; j < jdks.size(); j++) {
 
                         echo "Recording static analysis results for '${buildType}'"
                         recordIssues enabledForFailure: true,
-                                tool: mavenConsole(),
-                                skipBlames: true,
-                                trendChartType: 'TOOLS_ONLY'
-                        recordIssues enabledForFailure: true,
                                 tools: [java(), javaDoc()],
                                 filters: [excludeFile('.*Assert.java')],
                                 sourceCodeEncoding: 'UTF-8',
