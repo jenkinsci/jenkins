@@ -30,6 +30,8 @@ import static java.util.logging.Level.WARNING;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
 
@@ -75,5 +77,6 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
 
     private static final Logger LOGGER = Logger.getLogger(CloudRetentionStrategy.class.getName());
 
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean disabled = SystemProperties.getBoolean(CloudRetentionStrategy.class.getName()+".disabled");
 }
