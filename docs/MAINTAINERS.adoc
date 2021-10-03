@@ -49,7 +49,7 @@ Anyone is welcome to start contributing (see the <<issue-triage,triage guideline
 
 **Core Pull Request Reviewers** is a team for contributors who are willing to regularly review Jenkins pull requests and to eventually become Jenkins core maintainers.
 They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
-Their main responsibility is to triage and review the incoming pull requests,
+Their main responsibility is to triage and review the incoming pull requests
 and to guide newcomer contributors who are not familiar with the project's processes.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
