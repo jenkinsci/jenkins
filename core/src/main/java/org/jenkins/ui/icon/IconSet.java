@@ -429,7 +429,6 @@ public class IconSet {
         images.add("gear");
         images.add("gear2");
         images.add("go-down");
-        images.add("go-top");
         images.add("go-up");
         images.add("graph");
         images.add("headless");
@@ -482,10 +481,10 @@ public class IconSet {
                         "svgs/" + image + ".svg", size.getValue()));
             }
 
-            for (String image : materialIcons.keySet()) {
+            for (Map.Entry<String, String> imageEntry : materialIcons.entrySet()) {
                 icons.addIcon(new Icon(
-                        "icon-" + image + " " + size.getKey(),
-                                "material-icons/" + materialIcons.get(image),
+                        "icon-" + imageEntry.getKey() + " " + size.getKey(),
+                                "material-icons/" + imageEntry.getValue(),
                                 size.getValue(),
                                 IconFormat.EXTERNAL_SVG_SPRITE
                         )

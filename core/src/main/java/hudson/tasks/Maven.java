@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -57,7 +58,6 @@ import hudson.util.VariableResolver.Union;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -236,7 +236,8 @@ public class Maven extends Builder {
         return null;
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "injectBuildVariables in readResolve is needed for data migration.")
+    private Object readResolve(){
         if (injectBuildVariables == null) {
             injectBuildVariables = true;
         }

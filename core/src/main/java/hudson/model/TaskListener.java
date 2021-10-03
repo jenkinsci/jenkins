@@ -90,7 +90,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
         out.println(msg);
 
         Charset charset = getCharset();
-        return new PrintWriter(charset != null ? new OutputStreamWriter(out, charset) : new OutputStreamWriter(out), true);
+        return new PrintWriter(new OutputStreamWriter(out, charset), true);
     }
 
     /**
