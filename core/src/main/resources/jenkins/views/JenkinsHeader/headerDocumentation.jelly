@@ -1,0 +1,28 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+	<st:documentation>
+        Generates the page header, along with its associated dynamic behaviours.
+        This tag is used by l:layout and not expected to be used by anyone else,
+        but it's written as separate tag for better readability of code.
+
+        <st:attribute name="title" required="true">
+            Page title and title attribute for the logo
+        </st:attribute>
+
+        <st:attribute name="logoAlt" required="true">
+            Alt text for the logo
+        </st:attribute>
+
+        <st:attribute name="searchPlaceholder" required="true">
+            Placeholder text for the search input
+        </st:attribute>
+
+        <st:attribute name="searchHelpUrl" required="true">
+            Link value for the help icon on the search box
+        </st:attribute>
+
+        <st:attribute name="logout" required="true">
+            Text for the logout link
+        </st:attribute>
+    </st:documentation>
+</j:jelly>
