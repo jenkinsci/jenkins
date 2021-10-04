@@ -30,6 +30,7 @@ THE SOFTWARE.
  <f:section title="${%Job Filters}">
   
   <f:entry field="recurse">
+    <st:adjunct includes="hudson.model.ListView.listView" />
     <f:checkbox title="${%Recurse in subfolders}" id="recurse" />
   </f:entry>
 
@@ -70,18 +71,5 @@ THE SOFTWARE.
       <f:repeatableHeteroProperty field="columns" hasHeader="true" addCaption="${%Add column}"/>
     </f:block>
   </f:section>
-  
-  <script>
-    (function() {
-      Behaviour.specify("#recurse", 'ListView', 0, function(e) {
-        var nestedElements = $$('SPAN.nested')
-        e.onclick = function() {
-          nestedElements.each(function(el) {
-            e.checked ? el.show() : el.hide();
-          });
-        }
-      });
-    }());	
-  </script>
 
 </j:jelly>
