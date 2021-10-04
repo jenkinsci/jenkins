@@ -23,6 +23,10 @@
  */
 package hudson.slaves;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -102,6 +106,11 @@ public class SlaveComputerTest {
         // Both listeners should fire and not cause the other not to fire.
         Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
         Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+
+        // We should get the stack trace too.
+        assertThat(nodeA.getComputer().getLog(), allOf(
+                containsString("\tat " + IOExceptionOnOnlineListener.class.getName() + ".onOnline"),
+                containsString("\tat " + RuntimeExceptionOnOnlineListener.class.getName() + ".onOnline")));
     }
 
     @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")

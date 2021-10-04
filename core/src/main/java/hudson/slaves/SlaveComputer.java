@@ -709,13 +709,12 @@ public class SlaveComputer extends Computer {
             for (ComputerListener cl : ComputerListener.all()) {
                 try {
                     cl.onOnline(this,taskListener);
+                } catch (AbortException e) {
+                    taskListener.error(e.getMessage());
                 } catch (Exception e) {
                     // Per Javadoc log exceptions but still go online.
                     // NOTE: this does not include Errors, which indicate a fatal problem
-                    taskListener.getLogger().format(
-                        "onOnline: %s reported an exception: %s%n",
-                        cl.getClass(),
-                        e.toString());
+                    Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                 } catch (Throwable e) {
                     closeChannel();
                     throw e;
