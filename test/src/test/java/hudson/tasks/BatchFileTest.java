@@ -154,6 +154,6 @@ public class BatchFileTest {
     public void canLoadUnstableReturnFromDisk() throws Exception {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("batch");
         BatchFile batchFile = (BatchFile) p.getBuildersList().get(0);
-        assertEquals("unstable return", Integer.valueOf(1), batchFile.getUnstableReturn());
+        assertEquals("unstable return", (Integer) 1, batchFile.getUnstableReturn());
     }
 }

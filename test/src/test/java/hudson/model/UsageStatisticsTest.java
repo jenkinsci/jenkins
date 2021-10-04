@@ -110,7 +110,7 @@ public class UsageStatisticsTest {
         keys.add("version");
         Set<String> reported = new TreeSet<>();
         for (JSONObject plugin: plugins) {
-            assertThat(plugin.keySet(), is((Set)keys));
+            assertThat(plugin.keySet(), is(keys));
             assertThat(plugin.get("name"), instanceOf(String.class));
             assertThat(plugin.get("version"), instanceOf(String.class));
             String name = plugin.getString("name");
