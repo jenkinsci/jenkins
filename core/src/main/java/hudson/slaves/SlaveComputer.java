@@ -23,6 +23,12 @@
  */
 package hudson.slaves;
 
+import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -54,32 +60,6 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
-import jenkins.agents.AgentComputerUtil;
-import jenkins.model.Jenkins;
-import jenkins.security.ChannelConfigurator;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
-import jenkins.slaves.JnlpAgentReceiver;
-import jenkins.slaves.RemotingVersionInfo;
-import jenkins.slaves.systemInfo.SlaveSystemInfo;
-import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,10 +77,28 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import jenkins.agents.AgentComputerUtil;
+import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
+import jenkins.slaves.JnlpAgentReceiver;
+import jenkins.slaves.RemotingVersionInfo;
+import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
-
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -246,7 +244,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@link ComputerLauncher} for this SlaveComputer.
+     * Return the {@link ComputerLauncher} for this {@code SlaveComputer}.
      * @since 1.312
      */
     public ComputerLauncher getLauncher() {
@@ -797,7 +795,7 @@ public class SlaveComputer extends Computer {
 
     public void tryReconnect() {
         numRetryAttempt++;
-        if(numRetryAttempt<6 || (numRetryAttempt%12)==0) {
+        if (numRetryAttempt < 6 || numRetryAttempt % 12 == 0) {
             // initially retry several times quickly, and after that, do it infrequently.
             logger.info("Attempting to reconnect "+nodeName);
             connect(true);
@@ -816,7 +814,7 @@ public class SlaveComputer extends Computer {
         return new Slave.JnlpJar(fileName);
     }
 
-    @WebMethod(name="slave-agent.jnlp")
+    @WebMethod(name="slave-agent.jnlp") // backward compatibility
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
         return doJenkinsAgentJnlp(req, res);
     }
@@ -832,7 +830,7 @@ public class SlaveComputer extends Computer {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
 
-        @WebMethod(name="slave-agent.jnlp")
+        @WebMethod(name="slave-agent.jnlp") // backward compatibility
         public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
@@ -1044,7 +1042,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
+            // avoid double installation of the handler. Inbound agents can reconnect to the controller multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {
@@ -1061,7 +1059,7 @@ public class SlaveComputer extends Computer {
             }
 
             try {
-                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
+                getChannelOrFail().setProperty("agent",Boolean.TRUE); // indicate that this side of the channel is the agent side.
             } catch (ChannelClosedException e) {
                 throw new IllegalStateException(e);
             }
@@ -1073,18 +1071,18 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from agent (more precisely,
+     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the controller.
+     * This method can be called from any thread on the controller, or from agent (more precisely,
      * it only works from the remoting request-handling thread in agents, which means if you've started
      * separate thread on agents, that'll fail.)
      *
-     * @return null if the calling thread doesn't have any trace of where its master is.
+     * @return null if the calling thread doesn't have any trace of where its controller is.
      * @since 1.362
-     * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
+     * @deprecated Use {@link AgentComputerUtil#getChannelToController()} instead.
      */
     @Deprecated
     public static VirtualChannel getChannelToMaster() {
-        return AgentComputerUtil.getChannelToMaster();
+        return AgentComputerUtil.getChannelToController();
     }
 
     /**

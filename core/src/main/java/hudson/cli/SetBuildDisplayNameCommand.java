@@ -3,10 +3,9 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
+import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
-
-import java.io.Serializable;
 
 @Extension
 public class SetBuildDisplayNameCommand extends CLICommand implements Serializable {

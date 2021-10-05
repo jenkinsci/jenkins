@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -33,7 +34,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.VirtualFile;
 
 /**

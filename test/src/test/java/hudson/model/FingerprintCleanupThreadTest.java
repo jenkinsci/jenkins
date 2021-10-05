@@ -23,16 +23,19 @@
  */
 package hudson.model;
 
-import hudson.Extension;
-import hudson.Util;
-import jenkins.fingerprints.FileFingerprintStorage;
-import jenkins.fingerprints.FingerprintStorage;
-import jenkins.fingerprints.FingerprintStorageDescriptor;
-import jenkins.fingerprints.GlobalFingerprintConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.io.FileMatchers.aReadableFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.Util;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -42,20 +45,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
+import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.FingerprintStorageDescriptor;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.io.FileMatchers.aReadableFile;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringContains.containsString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FingerprintCleanupThreadTest {
 

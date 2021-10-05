@@ -1,12 +1,12 @@
 package hudson.slaves;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import hudson.model.Messages;
 import hudson.model.queue.CauseOfBlockage;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class CloudProvisioningListenerTest {
     public static class CloudProvisioningListenerNoOverride extends CloudProvisioningListener {}

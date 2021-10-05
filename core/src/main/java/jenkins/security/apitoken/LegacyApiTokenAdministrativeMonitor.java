@@ -23,10 +23,18 @@
  */
 package jenkins.security.apitoken;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
 import hudson.util.HttpResponses;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.security.ApiTokenProperty;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -35,15 +43,6 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Monitor the list of users that still have legacy token
@@ -68,7 +67,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         return User.getAll().stream()
                 .anyMatch(user -> {
                     ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-                    return (apiTokenProperty != null && apiTokenProperty.hasLegacyToken());
+                    return apiTokenProperty != null && apiTokenProperty.hasLegacyToken();
                 });
     }
 
@@ -87,7 +86,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         return User.getAll().stream()
                 .filter(user -> {
                     ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-                    return (apiTokenProperty != null && apiTokenProperty.hasLegacyToken());
+                    return apiTokenProperty != null && apiTokenProperty.hasLegacyToken();
                 })
                 .collect(Collectors.toList());
     }

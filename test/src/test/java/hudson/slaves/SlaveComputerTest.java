@@ -44,7 +44,6 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
 
-
 /**
  * @author suren
  */
@@ -156,7 +155,7 @@ public class SlaveComputerTest {
     @TestExtension(value = "startupShouldFailOnErrorOnlineListener")
     public static final class ErrorOnOnlineListener extends ComputerListener {
 
-        static int onOnlineCount = 0;
+        static volatile int onOnlineCount = 0;
 
         @Override
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
@@ -170,7 +169,7 @@ public class SlaveComputerTest {
 
     /**
      * Get remote path through json api
-     * @param node slave node
+     * @param node agent node
      * @param user the user for webClient
      * @return remote path
      * @throws IOException in case of communication problem.

@@ -39,8 +39,13 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,13 +53,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class RepeatablePropertyTest {
 
@@ -109,12 +107,12 @@ public class RepeatablePropertyTest {
         List<HtmlTextInput> containerNameInputs =
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
-                        .filter((input) -> input.getNameAttribute().endsWith(".containerName"))
+                        .filter(input -> input.getNameAttribute().endsWith(".containerName"))
                         .collect(Collectors.toList());
         List<HtmlTextInput> greatPropertyInputs =
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
-                        .filter((input) -> input.getNameAttribute().endsWith(".greatProperty"))
+                        .filter(input -> input.getNameAttribute().endsWith(".greatProperty"))
                         .collect(Collectors.toList());
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());

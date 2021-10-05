@@ -4,15 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import hudson.model.DownloadService.Downloadable;
+import hudson.tasks.Ant.AntInstaller;
+import hudson.tasks.Maven;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.ToolInstallation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import hudson.tasks.Maven;
-import hudson.tools.DownloadFromUrlInstaller;
-import hudson.tools.ToolInstallation;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.jvnet.hudson.test.WithoutJenkins;
@@ -69,7 +69,7 @@ public class DownloadServiceTest {
         jsonObjectList.add(json1);
         jsonObjectList.add(json2);
         jsonObjectList.add(json3);
-        Downloadable downloadable = new hudson.tasks.Ant.AntInstaller.DescriptorImpl().createDownloadable();
+        Downloadable downloadable = new AntInstaller.DescriptorImpl().createDownloadable();
         JSONObject reducedJson = downloadable.reduce(jsonObjectList);
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstallerResult.json");
         JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));

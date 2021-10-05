@@ -8,11 +8,9 @@ import hudson.model.ListView;
 import hudson.model.Node;
 import hudson.model.User;
 import hudson.tasks.Mailer;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -27,7 +25,7 @@ public class JenkinsReloadConfigurationTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void reloadMasterConfig() throws Exception {
+    public void reloadBuiltinNodeConfig() throws Exception {
         Node node = j.jenkins;
         node.setLabelString("oldLabel");
 
@@ -37,12 +35,12 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadSlaveConfig() throws Exception {
-        Node node = j.createSlave("a_slave", "oldLabel", null);
+    public void reloadAgentConfig() throws Exception {
+        Node node = j.createSlave("an_agent", "oldLabel", null);
 
         modifyNode(node);
 
-        node = j.jenkins.getNode("a_slave");
+        node = j.jenkins.getNode("an_agent");
         assertEquals("newLabel", node.getLabelString());
     }
 

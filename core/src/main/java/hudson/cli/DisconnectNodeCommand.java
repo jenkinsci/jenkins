@@ -28,13 +28,12 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * CLI Command, which disconnects nodes.
@@ -43,7 +42,7 @@ import java.util.logging.Logger;
  */
 @Extension
 public class DisconnectNodeCommand extends CLICommand {
-    @Argument(metaVar = "NAME", usage = "Slave name, or empty string for master; comma-separated list is supported", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node; comma-separated list is supported", required = true, multiValued = true)
     private List<String> nodes;
 
     @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")

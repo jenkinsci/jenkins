@@ -23,6 +23,10 @@
  */
 package jenkins.security;
 
+import static java.time.Instant.now;
+import static java.time.Instant.ofEpochMilli;
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -39,9 +43,6 @@ import hudson.security.ACLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import static java.time.Instant.now;
-import static java.time.Instant.ofEpochMilli;
-import static java.time.temporal.ChronoUnit.MINUTES;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;

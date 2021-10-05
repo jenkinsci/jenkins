@@ -23,18 +23,17 @@
  */
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.junit.Test;
 
 /**
@@ -60,22 +59,17 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        try {
-            read(new XStream());
-            fail();
-        } catch (ConversionException e) {
-            // expected
-            assertTrue(e.getMessage().contains("z"));
-        }
+        XStream xs = new XStream();
+        xs.allowTypes(new Class[] {Point.class});
+        final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
+        assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
     @Test
     public void classOwnership() {
-        XStream xs = new XStream2(new XStream2.ClassOwnership() {
-            @Override public String ownerOf(Class<?> clazz) {
-                Owner o = clazz.getAnnotation(Owner.class);
-                return o != null ? o.value() : null;
-            }
+        XStream xs = new XStream2(clazz -> {
+            Owner o = clazz.getAnnotation(Owner.class);
+            return o != null ? o.value() : null;
         });
         String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
         String prefix2 = RobustReflectionConverterTest.class.getName() + "$";

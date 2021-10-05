@@ -27,17 +27,16 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
-import java.util.concurrent.TimeUnit;
-import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.ServletException;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 
 /**
  * Entry point to the {@link ConsoleAnnotator} extension point. This class creates a new instance

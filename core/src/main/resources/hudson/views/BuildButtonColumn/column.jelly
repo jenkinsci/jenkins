@@ -27,29 +27,22 @@ THE SOFTWARE.
       <td>
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
               <j:set var="id" value="${h.generateId()}"/>
-              <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
+              <j:set var="href" value="${jobBaseUrl}${job.shortUrl}build?delay=0sec"/>
+              <a href="${href}">
                   <j:choose>
                       <j:when test="${job.parameterized}">
                           <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                          <j:set var="onclick" value="${null}"/>
                       </j:when>
                       <j:otherwise>
+                          <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
                           <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                          <j:set var="onclick" value="return build_${id}(this)"/>
                       </j:otherwise>
                   </j:choose>
                   <j:set var="icon" value="${app.queue.contains(job) ? 'icon-clock-anime' : 'icon-clock'}"/>
                   <l:icon class="${icon} ${subIconSizeClass}"
-                         title="${title}" alt="${title}"
-                         onclick="${onclick}"/>
+                         title="${title}" alt="${title}" id="${id}" />
+                  <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
-              <script>
-                function build_${id}(img) {
-                  new Ajax.Request(img.parentNode.href);
-                  hoverNotification('${%Task_scheduled(it.taskNoun(job))}', img, -100);
-                  return false;
-                }
-              </script>
           </j:if>
       </td>
 </j:jelly>

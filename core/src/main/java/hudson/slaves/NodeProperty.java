@@ -23,32 +23,31 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.DescriptorExtensionList;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Environment;
+import hudson.model.Node;
 import hudson.model.Queue.BuildableItem;
+import hudson.model.Queue.Task;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.TaskListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
 import hudson.tools.PropertyDescriptor;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Environment;
-import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.Queue.Task;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Extensible property of {@link Node}.

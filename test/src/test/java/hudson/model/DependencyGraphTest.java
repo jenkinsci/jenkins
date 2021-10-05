@@ -28,16 +28,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import jenkins.model.DependencyDeclarer;
 import hudson.security.ACL;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
+import jenkins.model.DependencyDeclarer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -69,8 +67,8 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // First build won't trigger down1 (Unstable doesn't meet threshold)
         // but will trigger down2 (build #1 is odd).
-        Build b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
-        String log = j.getLog(b);
+        Build b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        String log = JenkinsRule.getLog(b);
         Queue.Item q = j.jenkins.getQueue().getItem(down1);
         assertNull("down1 should not be triggered: " + log, q);
         assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
@@ -85,8 +83,8 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // ..and next build will trigger down1 (Success meets threshold),
         // but not down2 (build #2 is even)
-        b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
-        log = j.getLog(b);
+        b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        log = JenkinsRule.getLog(b);
         q = j.jenkins.getQueue().getItem(down2);
         assertNull("down2 should not be triggered: " + log, q);
         assertEquals("down2 should not be triggered: " + log, 1,

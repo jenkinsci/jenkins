@@ -24,12 +24,13 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;

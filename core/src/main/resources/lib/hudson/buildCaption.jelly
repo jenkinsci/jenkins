@@ -45,7 +45,9 @@ THE SOFTWARE.
 	  </j:if>
 	  
 	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
-      <st:adjunct includes="lib.hudson.build-caption"/>
-	  <d:invokeBody />
+	  <st:adjunct includes="lib.hudson.build-caption"/>
+	  <span style="margin-left:.2em;">
+	    <d:invokeBody trim="true" />
+	  </span>
 	</h1>
 </j:jelly>

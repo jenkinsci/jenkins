@@ -24,6 +24,12 @@
 
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
 import hudson.util.ProcessTree;
@@ -31,15 +37,8 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.Charset;
-
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,7 +71,7 @@ public class LauncherTest {
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp, Charset.defaultCharset()).trim())));
 
-            // Manual version of test: set up instance w/ one slave. Now in script console
+            // Manual version of test: set up instance w/ one agent. Now in script console
             // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
             //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
             // returns immediately and pgrep sleep => nothing. But without fix

@@ -24,13 +24,8 @@
  */
 package hudson.model;
 
-import hudson.security.ACLContext;
-import jenkins.model.DependencyDeclarer;
 import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import jenkins.util.DirectedGraph;
-import jenkins.util.DirectedGraph.SCC;
-
+import hudson.security.ACLContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,9 +35,12 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.util.DirectedGraph;
+import jenkins.util.DirectedGraph.SCC;
 
 /**
  * Maintains the build dependencies between {@link AbstractProject}s
@@ -131,12 +129,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             }
         }
 
-        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
-            @Override
-            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-                return topoOrder.get(o1)-topoOrder.get(o2);
-            }
-        };
+        topologicalOrder = Comparator.comparingInt(topoOrder::get);
 
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
     }
@@ -341,7 +334,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
-        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
+        for (Map.Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             e.getValue().sort(NAME_COMPARATOR);
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }

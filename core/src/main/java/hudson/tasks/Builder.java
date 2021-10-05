@@ -23,15 +23,14 @@
  */
 package hudson.tasks;
 
-import hudson.ExtensionPoint;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-
 
 /**
  * {@link BuildStep}s that perform the actual build.

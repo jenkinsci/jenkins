@@ -25,8 +25,11 @@ package jenkins;
 
 import hudson.Functions;
 import hudson.Plugin;
-import org.kohsuke.MetaInfServices;
-
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -38,14 +41,10 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Discovers the subtype of {@link Plugin} and generates service loader index file.
@@ -69,7 +68,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
                             try {
                                 write(e);
                             } catch (IOException x) {
-                                processingEnv.getMessager().printMessage(Kind.ERROR, Functions.printThrowable(x), e);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Functions.printThrowable(x), e);
                             }
                         }
                     }

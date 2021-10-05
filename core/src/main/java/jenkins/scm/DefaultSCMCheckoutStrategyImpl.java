@@ -1,5 +1,6 @@
 package jenkins.scm;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import org.jenkinsci.Symbol;
@@ -15,6 +16,7 @@ public class DefaultSCMCheckoutStrategyImpl extends SCMCheckoutStrategy {
 
     @Extension @Symbol("standard")
     public static class DescriptorImpl extends SCMCheckoutStrategyDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Default";

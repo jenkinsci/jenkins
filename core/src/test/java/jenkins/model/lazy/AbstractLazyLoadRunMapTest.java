@@ -23,25 +23,19 @@
  */
 package jenkins.model.lazy;
 
-import java.io.File;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -49,8 +43,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.util.Timer;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -158,13 +156,7 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void firstKey() {
         assertEquals(5, a.firstKey().intValue());
-
-        try {
-            b.firstKey();
-            fail();
-        } catch (NoSuchElementException e) {
-            // as expected
-        }
+        assertThrows(NoSuchElementException.class, () -> b.firstKey());
     }
 
     @Issue("JENKINS-26690")
@@ -185,12 +177,7 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void lastKey() {
         assertEquals(1, a.lastKey().intValue());
-        try {
-            b.lastKey();
-            fail();
-        } catch (NoSuchElementException e) {
-            // as expected
-        }
+        assertThrows(NoSuchElementException.class, () -> b.lastKey());
     }
 
     @Test
@@ -329,7 +316,7 @@ public class AbstractLazyLoadRunMapTest {
     @Issue("JENKINS-18065")
     @Test
     public void entrySetIterator() {
-        Iterator<Entry<Integer, Build>> itr = a.entrySet().iterator();
+        Iterator<Map.Entry<Integer, Build>> itr = a.entrySet().iterator();
 
         // iterator, when created fresh, shouldn't force loading everything
         // this involves binary searching, so it can load several.
@@ -337,7 +324,7 @@ public class AbstractLazyLoadRunMapTest {
 
         // check if the first entry is legit
         assertTrue(itr.hasNext());
-        Entry<Integer, Build> e = itr.next();
+        Map.Entry<Integer, Build> e = itr.next();
         assertEquals((Integer)5,e.getKey());
         e.getValue().asserts(5);
 
@@ -388,7 +375,7 @@ public class AbstractLazyLoadRunMapTest {
     @Issue("JENKINS-18065")
     @Test
     public void entrySetContains() {
-        for (Entry<Integer, Build> e : a.entrySet()) {
+        for (Map.Entry<Integer, Build> e : a.entrySet()) {
             assertTrue(a.entrySet().contains(e));
         }
     }

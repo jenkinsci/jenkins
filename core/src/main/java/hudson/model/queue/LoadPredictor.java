@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
 import hudson.model.Executor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

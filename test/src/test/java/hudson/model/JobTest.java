@@ -24,13 +24,21 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.TextPage;
-
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -39,45 +47,33 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.TextFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import jenkins.model.Jenkins;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
+import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -148,7 +144,7 @@ public class JobTest {
                                 return;
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
-                            if (buildNumber != (savedBuildNumber-1)) {
+                            if (buildNumber != savedBuildNumber - 1) {
                                 this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
                                 this.passed = false;
                                 return;
@@ -176,7 +172,7 @@ public class JobTest {
             }
             catch (InterruptedException e) {}
             catch (IOException e) {
-                fail("Failed to assign build number");
+                throw new AssertionError("Failed to assign build number", e);
             }
             finally {
                 stop.countDown();
@@ -292,14 +288,11 @@ public class JobTest {
     
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
-        assertNotNull("no project created", p);
         try {
-            j.createFreeStyleProject("project");
-            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
-        } catch (Failure e) {
-            // OK, expected
-        }finally{
+            final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+            assertNotNull("no project created", p);
+            assertThrows(Failure.class, () -> j.createFreeStyleProject("project"));
+        } finally {
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
             j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }

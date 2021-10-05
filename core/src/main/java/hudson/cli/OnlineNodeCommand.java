@@ -27,11 +27,9 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
-
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
+import org.kohsuke.args4j.Argument;
 
 /**
  * CLI Command, which moves the node to the online state.
@@ -41,7 +39,7 @@ import java.util.List;
 @Extension
 public class OnlineNodeCommand extends CLICommand {
 
-    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node", required = true, multiValued = true)
     private List<String> nodes;
 
     @Override

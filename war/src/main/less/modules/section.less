@@ -1,0 +1,108 @@
+.jenkins-section {
+  border-top: 2px solid var(--panel-border-color);
+  padding: calc(2rem) 0;
+  max-width: 1800px;
+
+  &:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.jenkins-section__title {
+  margin: 0 0 calc(2rem) 0;
+  font-size: 1rem;
+}
+
+.jenkins-section__items {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 2rem;
+
+  @media screen and (min-width: 800px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media screen and (min-width: 1300px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  @media screen and (min-width: 1800px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+.jenkins-section__item a {
+  position: relative;
+  display: flex;
+  z-index: 0;
+  text-decoration: none;
+
+  // IE11 doesn't support grid-gap, so apply margin, remove it for modern browsers
+  margin: 0 2rem 2rem 0;
+  @supports (grid-gap: 2rem) {
+    margin: 0;
+  }
+
+  &::before {
+    position: absolute;
+    content: "";
+    top: -10px;
+    left: -10px;
+    bottom: -10px;
+    right: -10px;
+    z-index: -1;
+    border-radius: 6px;
+  }
+
+  &:hover,
+  &:focus {
+    &::before {
+      background-color: var(--btn-link-bg--hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    outline: none !important;
+    z-index: 1;
+
+    &::before {
+      background: var(--btn-link-bg--active);
+      box-shadow: 0 0 0 2px var(--focus-btn-primary);
+    }
+  }
+
+  dl {
+    margin: 0;
+    padding: 0;
+    min-height: 48px;
+  }
+
+  .icon, .icon-xlg {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    pointer-events: none;
+    margin: 0 1rem 0 0;
+  }
+
+  dt {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin: 0 0 2px 0;
+    color: var(--text-color);
+  }
+
+  dd {
+    color: var(--text-color);
+    opacity: 0.75;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.6;
+  }
+}

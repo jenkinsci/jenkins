@@ -1,14 +1,14 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.TimeZone;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -28,7 +28,7 @@ public class TimeZonePropertyTest {
     public void testEnsureInvalidTimeZoneDefaultsToNull() throws IOException {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
-        User user = User.get("John Smith", true, java.util.Collections.emptyMap());
+        User user = User.get("John Smith", true, Collections.emptyMap());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
 
         TimeZoneProperty tzp = new TimeZoneProperty("InvalidTimeZoneName");
@@ -42,7 +42,7 @@ public class TimeZonePropertyTest {
         String timeZone = TimeZone.getDefault().getID();
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
-        User user = User.get("John Smith", true, java.util.Collections.emptyMap());
+        User user = User.get("John Smith", true, Collections.emptyMap());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
 
         assertNull(TimeZoneProperty.forCurrentUser());

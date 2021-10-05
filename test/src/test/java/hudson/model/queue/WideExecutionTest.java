@@ -32,14 +32,14 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Collection;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -70,7 +70,7 @@ public class WideExecutionTest {
                             try {
                                 b.setDescription("I was here");
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                throw new UncheckedIOException(e);
                             }
                         }
 

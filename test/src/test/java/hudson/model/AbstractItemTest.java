@@ -1,5 +1,11 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
+
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -13,7 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import org.apache.commons.io.FileUtils;
@@ -23,12 +28,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 public class AbstractItemTest {
 
@@ -98,12 +97,8 @@ public class AbstractItemTest {
             assertThat(checkNameAndReturnError(p, "foo-exists"), equalTo(Messages.Jenkins_NotAllowedName("foo-exists")));
         }
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
-            try {
-                p.doCheckNewName("foo");
-                fail("Expecting AccessDeniedException");
-            } catch (AccessDeniedException3 e) {
-                assertThat(e.permission, equalTo(Item.CREATE));
-            }
+            AccessDeniedException3 e = assertThrows(AccessDeniedException3.class, () -> p.doCheckNewName("foo"));
+            assertThat(e.permission, equalTo(Item.CREATE));
         }
     }
 

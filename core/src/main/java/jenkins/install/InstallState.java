@@ -25,20 +25,19 @@ package jenkins.install;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.UpdateCenter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.model.UpdateCenter;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.Timer;
 import org.apache.commons.lang.StringUtils;
+
 /**
  * Jenkins install state.
  *
@@ -346,8 +345,6 @@ public class InstallState implements ExtensionPoint {
 
     /**
      * Find an install state by name
-     * @param name
-     * @return
      */
     @CheckForNull
     public static InstallState valueOf(@NonNull String name) {

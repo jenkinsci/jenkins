@@ -23,21 +23,20 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
-import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.DirectoryBrowserSupport;
 import java.io.Closeable;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.util.SystemProperties;
 
 /**
  * Used by {@link Computer} to keep track of workspaces that are actively in use.

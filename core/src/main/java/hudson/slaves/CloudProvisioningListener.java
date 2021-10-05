@@ -1,5 +1,6 @@
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -7,12 +8,9 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.Cloud.CloudState;
-import jenkins.model.Jenkins;
-
 import java.util.Collection;
 import java.util.concurrent.Future;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent

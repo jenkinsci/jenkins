@@ -27,12 +27,11 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.lifecycle.RestartNotSupportedException;
+import java.io.PrintStream;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-
-import java.io.PrintStream;
-import java.util.List;
 
 /**
  * Disable one or more installed plugins.

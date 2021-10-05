@@ -36,4 +36,12 @@ THE SOFTWARE.
     update the configuration of a node.
   </p>
 
+  <h2>Marking this node temporarily offline</h2>
+  <p>
+      You can POST to <a href="../toggleOffline?offlineMessage=some%20text">this URL</a>
+      to mark this node temporary offline, or bring it back online.
+      Or you can POST to <a href="../changeOfflineCause?offlineMessage=some%20text">this URL</a>
+      to mark this node temporary offline, or adjust the offline cause message if it is already offline.
+  </p>
+
 </j:jelly>

@@ -24,26 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Queue;
-import hudson.model.QueueTest;
-import hudson.util.OneShotEvent;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -53,6 +33,25 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
+
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Queue;
+import hudson.model.QueueTest;
+import hudson.util.OneShotEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -334,7 +333,7 @@ public class QuietDownCommandTest {
         try {
             exec_task.get(2*TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            fail("Blocking call didn't finish after timeout!");
+            throw new AssertionError("Blocking call didn't finish after timeout!", e);
         }
         assertThat(exec_task.isDone(), equalTo(true));
         finish.signal();
@@ -506,7 +505,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
@@ -516,7 +514,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is <strong>not</strong> in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)

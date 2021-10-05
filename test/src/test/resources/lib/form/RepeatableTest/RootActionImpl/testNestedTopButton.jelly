@@ -28,23 +28,23 @@ THE SOFTWARE.
   <l:main-panel>
     <f:form method="post" name="config" action="submitTest">
       <f:repeatable var="item" items="${it.list}" name="items" enableTopButton="true">
-        <table>
+        <div>
           <f:entry>
             <f:textbox name="title" value="${item.title}"/>
           </f:entry>
           <f:nested>
             <f:repeatable var="foo" items="${item.list}" add="Add Foo" enableTopButton="true">
-              <table>
+              <div>
                 <f:entry>
                   <f:textbox name="txt" value="${foo.txt}"/>
                 </f:entry>
                 <f:entry>
                   <f:checkbox name="bool" checked="${foo.bool}"/>
                 </f:entry>
-              </table>
+              </div>
             </f:repeatable>
           </f:nested>
-        </table>
+        </div>
       </f:repeatable>
       <f:entry>
         <f:submit value="submit"/>

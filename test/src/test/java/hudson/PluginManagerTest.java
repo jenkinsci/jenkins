@@ -23,6 +23,14 @@
  */
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
@@ -44,24 +52,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Future;
-
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -179,12 +177,7 @@ public class PluginManagerTest {
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);
         try {
-            try {
-                ucl.loadClass("No such class");
-                fail();
-            } catch (ClassNotFoundException e) {
-                // as expected
-            }
+            assertThrows(ClassNotFoundException.class, () -> ucl.loadClass("No such class"));
 
             ucl.loadClass(Hudson.class.getName());
         } finally {
@@ -254,9 +247,6 @@ public class PluginManagerTest {
     
     /**
      * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
-     * 
-     * @return
-     * @throws Exception
      */
     private String callDependerValue() throws Exception {
         Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
@@ -267,8 +257,6 @@ public class PluginManagerTest {
     /**
      * Load "dependee" and then load "depender".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
@@ -277,11 +265,7 @@ public class PluginManagerTest {
         }
         
         // before load depender, of course failed to call Depender.getValue()
-        try {
-            callDependerValue();
-            fail();
-        } catch (ClassNotFoundException ex) {
-        }
+        assertThrows(ClassNotFoundException.class, this::callDependerValue);
         
         // No extensions exist.
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
@@ -301,8 +285,6 @@ public class PluginManagerTest {
     /**
      * Load "depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Issue("JENKINS-19976")
     @Test public void installDependedPluginWithoutRestart() throws Exception {
@@ -315,17 +297,10 @@ public class PluginManagerTest {
         assertEquals("depender", callDependerValue());
         
         // before load dependee, of course failed to list extensions for dependee.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
         // Extension extending a dependee class can't be loaded either
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension");
-            fail();
-        } catch( NoClassDefFoundError ex ){}
-        
+        assertThrows(NoClassDefFoundError.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension"));
+
         // Load dependee.
         {
             dynamicLoad("dependee.hpi");
@@ -342,8 +317,6 @@ public class PluginManagerTest {
     /**
      * Load "optional-depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     *
-     * @throws Exception
      */
     @Issue("JENKINS-60449")
     @WithPlugin("variant.hpi")
@@ -371,12 +344,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-21486")
@@ -392,11 +360,7 @@ public class PluginManagerTest {
         }
 
         // dependee is not loaded so we cannot list any extension for it.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
     }
 
     @Issue("JENKINS-21486")
@@ -407,12 +371,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
 
@@ -424,12 +383,7 @@ public class PluginManagerTest {
         }
 
         // Load depender 0.0.2, depending optionally on dependee 0.0.2
-        try {
-            dynamicLoad("depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-12753")
@@ -441,12 +395,7 @@ public class PluginManagerTest {
         File timestamp = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher/.timestamp2");
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
-        try {
-            r.jenkins.getPluginManager().dynamicLoad(jpi);
-            fail("should not have worked");
-        } catch (RestartRequiredException x) {
-            // good
-        }
+        assertThrows(RestartRequiredException.class, () -> r.jenkins.getPluginManager().dynamicLoad(jpi));
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
@@ -545,8 +494,8 @@ public class PluginManagerTest {
                 if(job instanceof UpdateCenter.DownloadJob) {
 		    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
 		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
-                    done &= !(((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
-			(j.status instanceof UpdateCenter.DownloadJob.Installing)));
+                    done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
+			j.status instanceof UpdateCenter.DownloadJob.Installing);
                 }		
             }
         } while(!done);
@@ -631,7 +580,7 @@ public class PluginManagerTest {
         assertTrue(iconShim.isDeprecated());
         List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
         assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
 
         final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
@@ -646,7 +595,7 @@ public class PluginManagerTest {
         assertTrue(variant.isDeprecated());
         deprecations = variant.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/variant/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/variant/", deprecations.get(0).url);
         assertNull(variant.getInfo());
     }
 

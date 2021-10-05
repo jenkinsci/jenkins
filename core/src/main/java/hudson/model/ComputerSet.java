@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -37,22 +40,9 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
-import jenkins.util.Timer;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,10 +51,20 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
-
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -474,10 +474,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     private static NodeMonitor createDefaultInstance(Descriptor<NodeMonitor> d, boolean ignored) {
         try {
-            NodeMonitor nm = d.clazz.newInstance();
+            NodeMonitor nm = d.clazz.getDeclaredConstructor().newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.log(Level.SEVERE, "Failed to instantiate "+d.clazz,e);
         }
         return null;

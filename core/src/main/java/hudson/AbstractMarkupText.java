@@ -24,11 +24,10 @@
 package hudson;
 
 import hudson.MarkupText.SubText;
-
-import java.util.List;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
+import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Common part between {@link MarkupText} and {@link MarkupText.SubText}.

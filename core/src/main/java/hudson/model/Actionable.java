@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.util.ArrayList;
@@ -32,8 +34,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -319,7 +319,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /**
      * Gets the action (first instance to be found) of a specified type that contributed to this build.
      *
-     * @param type
      * @return The action or {@code null} if no such actions exist.
      * @see #getActions(Class)
      */

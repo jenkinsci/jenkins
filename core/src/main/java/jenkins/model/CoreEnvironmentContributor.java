@@ -9,11 +9,10 @@ import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins.MasterComputer;
-import org.jenkinsci.Symbol;
-
 import java.io.IOException;
 import java.util.stream.Collectors;
+import jenkins.model.Jenkins.MasterComputer;
+import org.jenkinsci.Symbol;
 
 /**
  * {@link EnvironmentContributor} that adds the basic set of environment variables that
@@ -60,7 +59,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
-                env.put("NODE_NAME", "master");
+                env.put("NODE_NAME", Jenkins.get().getSelfLabel().getName());
             } else {
                 env.put("NODE_NAME", e.getOwner().getName());
             }

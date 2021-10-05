@@ -23,20 +23,19 @@
  */
 package jenkins.fingerprints;
 
-import hudson.Util;
-import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThreadTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+
+import hudson.Util;
+import hudson.model.Fingerprint;
+import hudson.model.FingerprintCleanupThreadTest;
+import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class FingerprintStorageTest {
 

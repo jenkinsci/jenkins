@@ -1,9 +1,18 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
+import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -11,16 +20,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.GET;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.http.HttpServletResponse;
-import java.net.URL;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import org.junit.Ignore;
 
 @Issue("SECURITY-1774")
 public class SuspiciousRequestFilterTest {
@@ -41,7 +40,7 @@ public class SuspiciousRequestFilterTest {
         assertThat(Foo.getInstance().baz, is(nullValue()));
         assertThat(response.getStatusCode(), is(HttpServletResponse.SC_BAD_REQUEST));
         // Actually served by Jetty; never even gets as far as SuspiciousRequestFilter.
-        assertThat(response.getContentAsString(), containsString("Ambiguous path parameter in URI"));
+        assertThat(response.getContentAsString(), containsString("Ambiguous path parameter"));
     }
 
     @Ignore("No longer passes Jetty")

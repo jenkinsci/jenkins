@@ -23,6 +23,8 @@
  */
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -39,13 +41,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import jenkins.security.MasterToSlaveCallable;
-
 import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -54,12 +53,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
- * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
+ * the {@link ServletContext}, so properties like {@code jenkins.whatever.Clazz.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not
  * have to be changed.
  *
  * <p>This should be used to obtain hudson/jenkins "app"-level parameters
- * (e.g. {@code hudson.DNSMultiCast.disabled}), but not for system parameters
+ * (e.g. {@code jenkins.whatever.Clazz.disabled}), but not for system parameters
  * (e.g. {@code os.name}).
  *
  * <p>If you run multiple instances of Jenkins in the same virtual machine and wish

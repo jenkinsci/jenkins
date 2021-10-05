@@ -5,19 +5,9 @@
  */
 package hudson.security.csrf;
 
-import javax.servlet.ServletRequest;
-
-import hudson.init.Initializer;
-import jenkins.model.Jenkins;
-import jenkins.security.stapler.StaplerAccessibleType;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.init.Initializer;
 import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -26,10 +16,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * A CrumbIssuer represents an algorithm to generate a nonce value, known as a
@@ -70,7 +68,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
 
     /**
      * Get a crumb value based on user specific information in the request.
-     * @param request
      */
     public String getCrumb(ServletRequest request) {
         String crumb = null;
@@ -80,7 +77,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
         if (crumb == null) {
             crumb = issueCrumb(request, getDescriptor().getCrumbSalt());
             if (request != null) {
-                if ((crumb != null) && crumb.length()>0) {
+                if (crumb != null && crumb.length() > 0) {
                     request.setAttribute(CRUMB_ATTRIBUTE, crumb);
                 } else {
                     request.removeAttribute(CRUMB_ATTRIBUTE);
@@ -99,9 +96,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      *  <li>the salt value
      *  <li>an implementation specific guarded secret.
      * </ul>
-     *
-     * @param request
-     * @param salt
      */
     protected abstract String issueCrumb(ServletRequest request, String salt);
 
@@ -109,8 +103,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Get a crumb from a request parameter and validate it against other data
      * in the current request. The salt and request parameter that is used is
      * defined by the current configuration.
-     *
-     * @param request
      */
     public boolean validateCrumb(ServletRequest request) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -124,9 +116,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Get a crumb from multipart form data and validate it against other data
      * in the current request. The salt and request parameter that is used is
      * defined by the current configuration.
-     *
-     * @param request
-     * @param parser
      */
     public boolean validateCrumb(ServletRequest request, MultipartFormDataParser parser) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -139,8 +128,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     /**
      * Validate a previously created crumb against information in the current request.
      *
-     * @param request
-     * @param salt
      * @param crumb The previously generated crumb to validate against information in the current request
      */
     public abstract boolean validateCrumb(ServletRequest request, String salt, String crumb);

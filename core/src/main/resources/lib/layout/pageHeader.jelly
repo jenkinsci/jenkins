@@ -31,7 +31,7 @@
             <div class="logo">
                 <a id="jenkins-home-link" href="${rootURL}/">
                     <img id="jenkins-head-icon" src="${imagesURL}/jenkins-header-logo-v2.svg" alt="[${logoAlt}]" />
-                    <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${title}" width="139" height="34" />
+                    <img id="jenkins-name-icon" src="${imagesURL}/title.svg" alt="${title}" width="139" height="34" />
                 </a>
             </div>
 

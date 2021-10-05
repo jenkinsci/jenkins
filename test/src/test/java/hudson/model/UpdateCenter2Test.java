@@ -23,12 +23,13 @@
  */
 package hudson.model;
 
-import hudson.model.UpdateCenter.DownloadJob;
-import hudson.model.UpdateCenter.DownloadJob.Success;
-import hudson.model.UpdateCenter.DownloadJob.Failure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeNotNull;
+
+import hudson.model.UpdateCenter.DownloadJob;
+import hudson.model.UpdateCenter.DownloadJob.Failure;
+import hudson.model.UpdateCenter.DownloadJob.Success;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

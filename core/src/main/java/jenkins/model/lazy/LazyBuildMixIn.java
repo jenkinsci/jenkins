@@ -24,6 +24,10 @@
 
 package jenkins.model.lazy;
 
+import static java.util.logging.Level.FINER;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
@@ -41,13 +45,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.RunIdMigrator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-
-import static java.util.logging.Level.FINER;
-import jenkins.model.RunIdMigrator;
 
 /**
  * Makes it easier to use a lazy {@link RunMap} from a {@link Job} implementation.
@@ -165,7 +165,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
         try {
             return getBuildClass().getConstructor(asJob().getClass(), File.class).newInstance(asJob(), dir);
         } catch (InstantiationException | NoSuchMethodException | IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         } catch (InvocationTargetException e) {
             throw handleInvocationTargetException(e);
         }
@@ -187,7 +187,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
             throw handleInvocationTargetException(e);
         } catch (ReflectiveOperationException | IllegalStateException e) {
             LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 

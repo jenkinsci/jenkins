@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.View;
-
 import org.kohsuke.args4j.Argument;
 
 /**

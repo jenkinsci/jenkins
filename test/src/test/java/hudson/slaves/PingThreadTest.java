@@ -23,26 +23,25 @@
  */
 package hudson.slaves;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
-import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import jenkins.security.MasterToSlaveCallable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author ogondza.
@@ -77,12 +76,7 @@ public class PingThreadTest {
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
-            try {
-                channel.call(new GetPid());
-                fail();
-            } catch (ChannelClosedException ex) {
-                // Expected
-            }
+            assertThrows(ChannelClosedException.class, () -> channel.call(new GetPid()));
 
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());

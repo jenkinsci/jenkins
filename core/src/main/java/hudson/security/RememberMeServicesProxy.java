@@ -39,7 +39,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
  * In Jenkins, we need {@link Jenkins} instance to perform remember-me service,
  * because it relies on {@link ConfidentialStore}. However, security
  * filters can be initialized before Jenkins is initialized.
- * (See #1210 for example.)
+ * (See JENKINS-1210 for example.)
  *
  * <p>
  * So to work around the problem, we use a proxy.

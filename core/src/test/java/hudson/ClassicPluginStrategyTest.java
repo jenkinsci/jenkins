@@ -23,16 +23,15 @@
  */
 package hudson;
 
-import hudson.util.VersionNumber;
-import jenkins.plugins.DetachedPluginsUtil;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import hudson.util.VersionNumber;
+import java.util.List;
+import jenkins.plugins.DetachedPluginsUtil;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

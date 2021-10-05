@@ -5,27 +5,22 @@
  */
 package hudson.security.csrf;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
+import hudson.Util;
+import hudson.model.ModelObject;
+import hudson.model.PersistentDescriptor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
-import hudson.model.PersistentDescriptor;
-import jenkins.util.SystemProperties;
-import hudson.Util;
-import jenkins.model.Jenkins;
-import hudson.model.ModelObject;
-
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-
+import jenkins.model.Jenkins;
 import jenkins.security.HexStringConfidentialKey;
-
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -99,7 +94,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         if (request instanceof HttpServletRequest) {
             String newCrumb = issueCrumb(request, salt);
-            if ((newCrumb != null) && (crumb != null)) {
+            if (newCrumb != null && crumb != null) {
                 // String.equals() is not constant-time, but this is
                 return MessageDigest.isEqual(newCrumb.getBytes(StandardCharsets.US_ASCII),
                         crumb.getBytes(StandardCharsets.US_ASCII));

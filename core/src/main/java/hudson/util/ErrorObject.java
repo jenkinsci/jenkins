@@ -23,13 +23,13 @@
  */
 package hudson.util;
 
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+
 import hudson.Functions;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
-import java.io.IOException;
 
 /**
  * Basis for error model objects.

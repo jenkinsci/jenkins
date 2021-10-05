@@ -1,7 +1,7 @@
 com.google.common.collect.AbstractListMultimap
 com.google.common.collect.AbstractMultimap
 com.google.common.collect.AbstractSetMultimap
-# Artifactory - https://issues.jenkins-ci.org/browse/JENKINS-48991
+# Artifactory - https://issues.jenkins.io/browse/JENKINS-48991
 com.google.common.collect.ArrayListMultimap
 com.google.common.collect.EmptyImmutableList
 com.google.common.collect.EmptyImmutableSet
@@ -16,7 +16,7 @@ com.google.common.collect.ImmutableMap
 com.google.common.collect.ImmutableSet
 com.google.common.collect.ImmutableSet$SerializedForm
 com.google.common.collect.ImmutableSortedSet
-# https://issues.jenkins-ci.org/browse/JENKINS-48989
+# https://issues.jenkins.io/browse/JENKINS-48989
 com.google.common.collect.Maps$TransformedEntriesMap
 # https://github.com/jenkinsci/sonar-gerrit-plugin
 com.google.common.collect.Multimap

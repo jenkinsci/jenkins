@@ -3,7 +3,6 @@ package jenkins.security.s2m;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,12 +30,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
         COL result = create();
 
         if (dir.exists()) {
-            String[] fragments = dir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".conf");
-                }
-            });
+            String[] fragments = dir.list((dir, name) -> name.endsWith(".conf"));
             if (fragments!=null) {
                 Arrays.sort(fragments);
 

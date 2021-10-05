@@ -30,11 +30,10 @@ import hudson.Launcher;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Run;
+import java.io.Serializable;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.io.Serializable;
 
 /**
  * Environment variables filter rule that is configured globally for all jobs. <p>

@@ -24,18 +24,22 @@
  */
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -54,45 +58,6 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.ModelObjectWithContextMenu;
-import jenkins.model.item_category.Categories;
-import jenkins.model.item_category.Category;
-import jenkins.model.item_category.ItemCategory;
-import jenkins.scm.RunWithSCM;
-import jenkins.security.stapler.StaplerAccessibleType;
-import jenkins.util.ProgressiveRendering;
-import jenkins.util.xml.XMLUtils;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.filters.StringInputStream;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -117,12 +82,45 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.item_category.Categories;
+import jenkins.model.item_category.Category;
+import jenkins.model.item_category.ItemCategory;
+import jenkins.scm.RunWithSCM;
+import jenkins.security.stapler.StaplerAccessibleType;
+import jenkins.util.ProgressiveRendering;
+import jenkins.util.xml.XMLUtils;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
@@ -147,7 +145,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner {
 
     /**
      * Container of this view. Set right after the construction
@@ -757,8 +755,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
 
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
 
                                     UserInfo info = users.get(user);
@@ -799,8 +797,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     for (Run<?,?> r : runs) {
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
                                     if (user != null)
                                         return true;
@@ -922,7 +920,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
+                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/svgs/person.svg").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 Job<?,?> p = i.getJob();
@@ -960,8 +958,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for(TopLevelItem item : items) {
             
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
-                            item.getSearchUrl(), item.getDisplayName())));
+                LOGGER.fine(String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        
@@ -1308,12 +1306,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return r;
     }
 
-    public static final Comparator<View> SORTER = new Comparator<View>() {
-        @Override
-        public int compare(View lhs, View rhs) {
-            return lhs.getViewName().compareTo(rhs.getViewName());
-        }
-    };
+    public static final Comparator<View> SORTER = Comparator.comparing(View::getViewName);
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class,Messages._View_Permissions_Title());
     /**
@@ -1323,6 +1316,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE, PermissionScope.ITEM_GROUP);
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
     public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
+
+    @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    @Restricted(DoNotUse.class)
+    public static void registerPermissions() {
+        // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
+        // allowing plugins to adapt the system configuration, which may depend on these permissions
+        // having been registered. Since this method is static and since it follows the above
+        // construction of static permission objects (and therefore their calls to
+        // PermissionGroup#register), there is nothing further to do in this method.
+    }
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {

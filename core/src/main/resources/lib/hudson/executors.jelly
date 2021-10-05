@@ -122,7 +122,7 @@ THE SOFTWARE.
                 </td>
                 </st:include>
                 <td class="pane" align="center" valign="middle">
-                  <j:if test="${e.hasStopPermission()}">
+                  <j:if test="${h.hasPermission(exeparent,exeparent.READ) and e.hasStopPermission()}">
                     <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
