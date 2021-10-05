@@ -26,11 +26,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<st:adjunct includes="hudson.model.ListView.configure-entries-resources" />
 
  <f:section title="${%Job Filters}">
-  
+
   <f:entry field="recurse">
-    <st:adjunct includes="hudson.model.ListView.listView" />
     <f:checkbox title="${%Recurse in subfolders}" id="recurse" />
   </f:entry>
 
