@@ -1,3 +1,4 @@
 Behaviour.addLoadEvent(function() {
-    loadScript("https://usage.jenkins.io/usage-stats.js?${statData}");
-  });
+    loadScript(`https://usage.jenkins.io/usage-stats.js?${statData}`);
+  
+});
