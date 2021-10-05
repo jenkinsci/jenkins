@@ -44,11 +44,24 @@ THE SOFTWARE.
         <l:header>
             <!-- for screen resolution detection -->
             <l:yui module="cookie" />
-            <script>
-              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
-                path: "/"
-              });
-            </script>
+            <j:invokeStatic var="req" className="org.kohsuke.stapler.Stapler" method="getCurrentRequest"/>
+            <j:choose>
+              <j:when test="${req.isSecure()}">
+                <script>
+                  YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
+                    path: "/",
+                    secure: true
+                  });
+                </script>
+              </j:when>
+              <j:otherwise>
+                <script>
+                  YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
+                    path: "/"
+                  });
+                </script>
+              </j:otherwise>
+            </j:choose>
         </l:header>
     </l:layout>
 </st:compress>
