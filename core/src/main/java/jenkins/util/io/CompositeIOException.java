@@ -71,7 +71,7 @@ public class CompositeIOException extends IOException {
     }
 
     /**
-     * @see CompositeIOException(String, List)
+     * @see #CompositeIOException(String, List)
      */
     public CompositeIOException(String message, IOException... exceptions) {
         this(message, Arrays.asList(exceptions));
