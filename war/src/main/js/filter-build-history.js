@@ -4,8 +4,9 @@ const buildHistoryContainer = document.getElementById("buildHistory")
 const pageSearchInputContainer = document.getElementsBySelector('#buildHistory .build-search-row .jenkins-search')[0]
 const pageSearchInput = document.getElementsBySelector('#buildHistory .build-search-row input')[0]
 const buildHistoryPage = document.getElementById("buildHistoryPage")
+const properties = document.getElementById("properties")
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax")
-const nextBuild = buildHistoryPage.getAttribute("page-next-build")
+const nextBuild = properties.getAttribute("page-next-build")
 const noBuildsBanner = document.getElementById("no-builds")
 
 const sidePanel = $('side-panel');

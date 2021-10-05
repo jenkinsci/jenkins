@@ -87,14 +87,11 @@ THE SOFTWARE.
       </tr>
 
       <st:include page="entries.jelly" it="${page}" />
+
+      <!--The value for `page-next-build` is modified inside of `entries.jelly` on render, so set the attribute-->
+      <!--after that component has been rendered to get the correct value to use in `filter-build-history.js`-->
+      <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
     </l:pane>
   </div>
-
-  <script defer="true">
-    // The value for `page-next-build` is modified inside of `entries.jelly` on render, so set the attribute
-    // on element `#buildHistoryPage` after that component has been rendered to get
-    // the correct value to use in `filter-build-history.js`
-    document.getElementById("buildHistoryPage").setAttribute("page-next-build", "${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}");
-  </script>
   <script src="${resURL}/jsbundles/filter-build-history.js" type="text/javascript"/>
 </j:jelly>
