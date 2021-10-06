@@ -1,4 +1,5 @@
 Behaviour.addLoadEvent(function() {
-    loadScript(`https://usage.jenkins.io/usage-stats.js?${statData}`);
-  
+    var targetDiv = document.querySelector('#target-div');
+    var statData = targetDiv.getAttribute('data-inserted-from-java');
+    loadScript(`https://usage.jenkins.io/usage-stats.js?`+statData);
 });
