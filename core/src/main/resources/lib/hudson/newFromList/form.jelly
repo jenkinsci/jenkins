@@ -64,7 +64,7 @@ THE SOFTWARE.
     <div class="jenkins-form-item">
       <fieldset class="jenkins-fieldset">
         <legend class="jenkins-form-label">
-          View type
+          ${%View type}
         </legend>
         <j:forEach var="descriptor" items="${descriptors}">
           <div class="jenkins-radio">
