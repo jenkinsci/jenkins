@@ -63,14 +63,16 @@ THE SOFTWARE.
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
-  <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
-         name="${attrs.name ?: '_.'+attrs.field}"
-         value="${value}"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz">
-    <j:if test="${value!=null}">
-      <option value="${value}">${value}</option>
-    </j:if>
-  </m:select>
+  <div class="jenkins-select">
+    <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+              class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
+              name="${attrs.name ?: '_.'+attrs.field}"
+              value="${value}"
+              ATTRIBUTES="${attrs}" EXCEPT="field clazz">
+      <j:if test="${value!=null}">
+        <option value="${value}">${value}</option>
+      </j:if>
+    </m:select>
+  </div>
   <!-- TODO consider customizedFields -->
 </j:jelly>

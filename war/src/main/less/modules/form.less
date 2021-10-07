@@ -35,7 +35,7 @@
   border: 2px solid var(--input-border);
   padding: 8px;
   border-radius: 6px;
-  width: 350px;
+  width: 450px;
   box-shadow: 0 0 0 10px transparent;
   transition: 0.2s ease;
 
@@ -162,6 +162,53 @@
 @keyframes loading-spinner {
   to {
     transform: rotate(360deg);
+  }
+}
+
+.jenkins-select {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    right: 15px;
+    width: 8px;
+    height: 8px;
+    color: inherit;
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  &__input {
+    appearance: none;
+    display: block;
+    border: 2px solid var(--input-border);
+    padding: 8px;
+    width: 100%;
+    border-radius: 6px;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
+    min-height: 38px;
+
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: 0 0 0 5px var(--focus-input-glow);
+    }
+
+    &:disabled {
+      pointer-events: none;
+    }
   }
 }
 
