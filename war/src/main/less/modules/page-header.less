@@ -112,15 +112,18 @@ a.page-header__brand-link {
     font-weight: bold;
     color: var(--search-input-color);
     border-radius: var(--header-item-border-radius);
-    border: 3px solid var(--header-search-border);
+    border: 2px solid transparent;
     outline: none;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
 
     &::placeholder {
         font-weight: normal;
     }
 
-    &:focus {
-        border-color: var(--header-link-outline);
+    &:active, &:focus {
+        border-color: var(--focus-input-border);
+        box-shadow: 0 0 0 5px var(--focus-input-glow);
     }
 }
 
