@@ -63,7 +63,7 @@ THE SOFTWARE.
                             <f:block>
                                 <!-- @size is for other browsers, @style is for IE -->
                                 ${%File}:
-                                <input type="file" name="name" class="setting-input" style="width:80%" size='40'/>
+                                <input type="file" name="name" class="jenkins-input" style="width:80%" size='40'/>
                             </f:block>
                             <f:block>
                                 <f:submit value="${%Upload}"/>

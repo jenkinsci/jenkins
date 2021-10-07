@@ -62,7 +62,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  <input class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
+  <input class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
          id="${attrs.id}"

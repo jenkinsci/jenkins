@@ -90,7 +90,7 @@ THE SOFTWARE.
   <f:possibleReadOnlyField>
       <textarea id="${attrs.id}" style="${attrs.style}"
                 name ="${name}"
-                class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
+                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
                 checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"
