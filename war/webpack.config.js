@@ -20,6 +20,7 @@ module.exports = (env, argv) => ({
     ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
+      path.join(__dirname, "src/main/js/add-item.less"),
     ],
     "config-scrollspy": [
       path.join(__dirname, "src/main/js/config-scrollspy.js"),

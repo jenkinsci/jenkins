@@ -49,40 +49,29 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
-  <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
-    <!-- View name field -->
-    <div class="jenkins-form-item">
-      <label for="name" class="jenkins-form-label">${attrs.nameTitle}</label>
+  <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
+    <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
-                 onchange="updateOk()" onkeyup="updateOk()" />
+                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
-    </div>
+    </s:entry>
 
-    <!-- View name field -->
-    <div class="jenkins-form-item">
-      <fieldset class="jenkins-fieldset">
-        <legend class="jenkins-form-label">
-          View type
-        </legend>
-        <j:forEach var="descriptor" items="${descriptors}">
-          <div class="jenkins-radio">
-            <input class="jenkins-radio__input" type="radio" name="mode" id="${descriptor.id}" value="${descriptor.id}" onchange="updateOk()" onclick="updateOk()" />
-            <label for="${descriptor.id}" class="jenkins-radio__label">
-              ${descriptor.displayName}
-            </label>
-            <p class="jenkins-radio__description">
-              ${descriptor}
-            </p>
-          </div>
-        </j:forEach>
-      </fieldset>
-    </div>
-
+    <j:forEach var="descriptor" items="${descriptors}">
+      <s:block>
+        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
+      </s:block>
+      <s:entry>
+        <st:set var="instance" value="${descriptor}" />
+        <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
+      </s:entry>
+    </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>
-        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk()" onclick="updateOk()" />
+        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
       </s:block>
       <s:entry>
@@ -100,47 +89,32 @@ THE SOFTWARE.
       </s:entry>
     </j:if>
 
-    <div class="jenkins-form-item">
+    <s:bottomButtonBar>
       <!--
         when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
         So always force non-empty array
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <button type="submit" id="ok" class="jenkins-button">
-        ${%OK}
-      </button>
-    </div>
+      <input type="submit" name="Submit" value="${%OK}" id="ok" style="margin-left:5em" />
+    </s:bottomButtonBar>
   </s:form>
-  
   <script><![CDATA[
-    function updateOk() {
+    var okButton = makeButton($('ok'),null);
+
+    function updateOk(form) {
       function state() {
-        let form = document.getElementById("createItemForm");
-        let nameInput = document.getElementById("name");
-        let radios = form.querySelectorAll('input[type="radio"]');
-
-        if (nameInput.value.length == 0) {
-          return true;
-        }
-
-        // this means we only have dummy checkboxes
-        if (radios.length == 2) {
-          return true;
-        }
-
-        for (i = 0; i < radios.length; i++) {
-          if (radios[i].checked) {
+        if($('name').value.length==0)   return true;
+        var radio = form.elements['mode'];
+        if (radio.length==2)  return false; // this means we only have dummy checkboxes
+        for(i=0;i<radio.length;i++)
+          if(radio[i].checked)
             return false;
-          }
-        }
-
         return true;
       }
-      
-      document.getElementById("ok").disabled = state();
+
+      okButton.set('disabled',state(),false);
     }
-    
-    updateOk();
+    updateOk(okButton.getForm());
   ]]></script>
 </j:jelly>

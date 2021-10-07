@@ -45,7 +45,7 @@ $.when(getItems()).done(function(data) {
     }
 
     function isItemNameEmpty() {
-      var itemName = $('#name', '#createItem').val();
+      var itemName = $('input[name="name"]', '#createItem').val();
       return (itemName === '') ? true : false;
     }
 
@@ -135,15 +135,16 @@ $.when(getItems()).done(function(data) {
       setFieldValidationStatus('from', false);
     }
 
+
     //////////////////////////////////
     // Draw functions
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      var $items = $('<div/>');
-      var $catHeader = $('<div />');
-      var title = '<label class="jenkins-form-label">' + category.name + '</label>';
-      var description = '<p class="jenkins-form-description">' + category.description + '</p>';
+      var $items = $('<ul/>').addClass('j-item-options');
+      var $catHeader = $('<div class="header" />');
+      var title = '<h2>' + category.name + '</h2>';
+      var description = '<p>' + category.description + '</p>';
 
       // Add items
       $.each(category.items, function(i, elem) {
@@ -159,26 +160,30 @@ $.when(getItems()).done(function(data) {
     }
 
     function drawItem(elem) {
-      var item = document.createElement('div');
-      item.className = 'jenkins-radio';
+      var item = document.createElement('li');
+      item.tabIndex = 0;
+      item.className = cleanClassName(elem.class);
+      item.setAttribute('role', 'radio');
+      item.setAttribute('aria-checked', 'false');
 
-      var radio = item.appendChild(document.createElement('input'));
+      var label = item.appendChild(document.createElement('label'));
+
+      var radio = label.appendChild(document.createElement('input'));
       radio.type = 'radio';
       radio.name = 'mode';
-      radio.className= 'jenkins-radio__input';
       radio.value = elem.class;
 
-      var displayName = item.appendChild(document.createElement('span'));
-      displayName.className = 'jenkins-radio__label';
+      var displayName = label.appendChild(document.createElement('span'));
+      displayName.className = 'label';
 
       displayName.appendChild(document.createTextNode(elem.displayName));
 
       var desc = item.appendChild(document.createElement('div'));
-      desc.className = 'jenkins-radio__description';
+      desc.className = 'desc';
       desc.innerHTML = checkForLink(elem.description);
 
-      // var iconDiv = drawIcon(elem);
-      // item.appendChild(iconDiv);
+      var iconDiv = drawIcon(elem);
+      item.appendChild(iconDiv);
 
       function select(e) {
         e.preventDefault();
@@ -262,7 +267,7 @@ $.when(getItems()).done(function(data) {
     $('#add-item-panel').removeAttr('style');
 
     // Render all categories
-    var $categories = $('#items');
+    var $categories = $('div.categories');
     $.each(data.categories, function(i, elem) {
       drawCategory(elem).appendTo($categories);
     });
@@ -271,21 +276,16 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('#name', '#createItem').on("blur input", function() {
-      
+    $('input[name="name"]', '#createItem').on("blur input", function() {
       if (!isItemNameEmpty()) {
-        var itemName = $('#name', '#createItem').val();
-
-        console.log(itemName)
-
+        var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
           var message = parseResponseFromCheckJobName(data);
-
           if (message !== '') {
-            activateValidationMessage('#itemname-invalid', '#name', message);
+            activateValidationMessage('#itemname-invalid', '.add-item-name', message);
           } else {
-            cleanValidationMessages('#name');
-            showInputHelp('#name');
+            cleanValidationMessages('.add-item-name');
+            showInputHelp('.add-item-name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
               enableSubmit(true);
@@ -295,8 +295,8 @@ $.when(getItems()).done(function(data) {
       } else {
         enableSubmit(false);
         setFieldValidationStatus('name', false);
-        cleanValidationMessages('#name');
-        activateValidationMessage('#itemname-required', '#name');
+        cleanValidationMessages('.add-item-name');
+        activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
 
@@ -309,7 +309,7 @@ $.when(getItems()).done(function(data) {
         $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
         setFieldValidationStatus('from', true);
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '#name');
+          activateValidationMessage('#itemname-required', '.add-item-name');
           setTimeout(function() {
             $('input[name="name"][type="text"]', '#createItem').focus();
           }, 400);
@@ -326,11 +326,11 @@ $.when(getItems()).done(function(data) {
       if (!getFormValidationStatus()) {
         event.preventDefault();
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '#name');
+          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         } else {
           if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
-            activateValidationMessage('#itemtype-required', '#name');
+            activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
           }
         }
