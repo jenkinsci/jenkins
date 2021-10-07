@@ -213,6 +213,8 @@
   }
 
   &__input:focus + &__label:before, &__input:active + &__label:before {
+    border-width: 8px;
+    border-color: var(--focus-input-border);
     box-shadow: 0 0 0 5px var(--focus-input-glow);
   }
 
@@ -292,7 +294,7 @@
     }
 
     &::after {
-      border-bottom: 2px solid #0b6aa2;
+      border-bottom: 2px solid var(--btn-primary-bg);
       opacity: 0.1;
     }
   }
