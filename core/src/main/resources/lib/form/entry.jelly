@@ -72,7 +72,7 @@ THE SOFTWARE.
   <div class='tr form-group'>
     <j:choose>
       <j:when test="${possiblyEscapedTitle!=null}">
-        <div class="setting-name help-sibling">
+        <div class="jenkins-form-label help-sibling">
           <j:out value="${possiblyEscapedTitle}" />
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
