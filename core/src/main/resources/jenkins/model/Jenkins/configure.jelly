@@ -31,6 +31,11 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
+    <div class="jenkins-app-bar">
+      <div class="jenkins-app-bar__content">
+        <h1>Configure System</h1>
+      </div>
+    </div>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
