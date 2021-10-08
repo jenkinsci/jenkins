@@ -52,13 +52,11 @@ THE SOFTWARE.
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
   <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
-    <!-- View name field -->
-    <div class="jenkins-form-item">
-      <label for="name" class="jenkins-form-label">${attrs.nameTitle}</label>
+    <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
-                 onchange="updateOk()" onkeyup="updateOk()" />
+                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
-    </div>
+    </s:entry>
 
     <!-- View name field -->
     <div class="jenkins-form-item">
@@ -120,12 +118,12 @@ THE SOFTWARE.
         let nameInput = document.getElementById("name");
         let radios = form.querySelectorAll('input[type="radio"]');
 
-        if (nameInput.value.length == 0) {
+        if (nameInput.value.length === 0) {
           return true;
         }
 
         // this means we only have dummy checkboxes
-        if (radios.length == 2) {
+        if (radios.length === 2) {
           return true;
         }
 
