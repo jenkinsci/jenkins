@@ -23,10 +23,28 @@
 
 .jenkins-form-description {
   display: block;
-  opacity: 0.5;
   margin-top: 0;
   margin-bottom: 0.75rem;
   color: var(--text-color-secondary);
+}
+
+.jenkins-quote {
+  position: relative;
+  display: flex;
+  line-height: 38px;
+
+  &::before {
+    content: "";
+    position: relative;
+    width: 2px;
+    background: var(--input-border);
+    margin-right: 1rem;
+    border-radius: 2px;
+  }
+
+  &--monospace {
+    font-family: monospace;
+  }
 }
 
 .jenkins-input {

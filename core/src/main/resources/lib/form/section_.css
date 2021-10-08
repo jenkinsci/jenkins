@@ -1,9 +1,7 @@
 .section-header {
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1.2;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 0.75rem;
-    margin-top: 1.5rem;
-    padding-bottom: 3px;
+    font-weight: 700;
+    font-size: 1rem;
+    border-top: 2px solid var(--panel-border-color);
+    padding-top: 2rem;
+    margin: 2rem 0;
 }
