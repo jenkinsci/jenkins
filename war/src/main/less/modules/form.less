@@ -57,6 +57,7 @@
 
 .jenkins-search {
   position: relative;
+  max-width: 420px;
 
   &__input {
     appearance: none;
@@ -65,7 +66,6 @@
     border: 2px solid var(--input-border);
     border-radius: 6px;
     width: 100%;
-    max-width: 350px;
     margin: 0;
     padding: 0 4px 0 29px;
     line-height: 30px;
@@ -236,8 +236,12 @@
 
   &__children {
     position: relative;
-    margin-top: -10px;
+    margin-top: 0;
+    opacity: 0;
     padding-left: 32px;
+    transition: 0.2s ease;
+    visibility: hidden;
+    max-height: 0;
 
     &::after {
       content: "";
@@ -256,6 +260,13 @@
         background: var(--focus-input-border);
       }
     }
+  }
+
+  &__input:checked + &__label + &__children {
+    visibility: visible;
+    margin-top: 10px;
+    opacity: 1;
+    max-height: none;
   }
 }
 
