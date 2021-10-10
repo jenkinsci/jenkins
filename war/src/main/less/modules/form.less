@@ -10,6 +10,10 @@
   border: none;
   margin: 0;
   padding: 0;
+
+  .jenkins-form-item:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .jenkins-form-label {
@@ -227,6 +231,30 @@
     margin: 0 0 0 32px;
     color: var(--text-color-secondary);
     line-height: 1.66;
+  }
+
+  &__children {
+    position: relative;
+    margin-top: -10px;
+    padding-left: 32px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10px;
+      bottom: 0;
+      width: 2px;
+      background: var(--input-border);
+      border-radius: 2px;
+      transition: 0.2s ease;
+    }
+
+    &:focus-within {
+      &::after {
+        background: var(--focus-input-border);
+      }
+    }
   }
 }
 
