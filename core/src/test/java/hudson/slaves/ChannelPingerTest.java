@@ -58,7 +58,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testDefaults() throws IOException {
+    public void testDefaults() throws IOException, InterruptedException {
         ChannelPinger channelPinger = new ChannelPinger();
         channelPinger.install(mockChannel, null);
 
@@ -69,7 +69,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromSystemProperties() throws IOException {
+    public void testFromSystemProperties() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingTimeoutSeconds", "42");
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
 
@@ -81,7 +81,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromOldSystemProperty() throws IOException {
+    public void testFromOldSystemProperty() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
         ChannelPinger channelPinger = new ChannelPinger();
@@ -92,7 +92,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testNewSystemPropertyTrumpsOld() throws IOException {
+    public void testNewSystemPropertyTrumpsOld() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
