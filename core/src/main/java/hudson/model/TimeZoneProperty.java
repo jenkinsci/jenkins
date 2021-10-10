@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -76,12 +77,12 @@ public class TimeZoneProperty extends UserProperty {
             return true;
         }
 
-        public ListBoxModel doFillTimeZoneNameItems() {
-            String current = forCurrentUser();
+        public ListBoxModel doFillTimeZoneNameItems(@AncestorInPath User user) {
+            String userTimezone = user != null ? forUser(user) : forCurrentUser();
             ListBoxModel items = new ListBoxModel();
             items.add(Messages.TimeZoneProperty_DisplayDefaultTimeZone(), "");
             for (String id : TimeZone.getAvailableIDs()) {
-                if (id.equalsIgnoreCase(current)) {
+                if (id.equalsIgnoreCase(userTimezone)) {
                     items.add(new Option(id, id, true));
                 } else {
                     items.add(id);
@@ -103,15 +104,19 @@ public class TimeZoneProperty extends UserProperty {
 
     }
 
-    @Nullable
+    @CheckForNull
     public static String forCurrentUser() {
         final User current = User.current();
         if (current == null) {
             return null;
         }
+        return forUser(current);
+    }
 
-        TimeZoneProperty tzp = current.getProperty(TimeZoneProperty.class);
-        if(tzp.timeZoneName == null || tzp.timeZoneName.isEmpty()) {
+    @CheckForNull
+    private static String forUser(User user) {
+        TimeZoneProperty tzp = user.getProperty(TimeZoneProperty.class);
+        if (tzp.timeZoneName == null || tzp.timeZoneName.isEmpty()) {
             return null;
         }
 
@@ -120,7 +125,7 @@ public class TimeZoneProperty extends UserProperty {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.
-            LOGGER.log(Level.WARNING, "Invalid user time zone {0} for {1}", new Object[]{tzp.timeZoneName, current.getId()});
+            LOGGER.log(Level.WARNING, "Invalid user time zone {0} for {1}", new Object[]{tzp.timeZoneName, user.getId()});
             return null;
         }
 
