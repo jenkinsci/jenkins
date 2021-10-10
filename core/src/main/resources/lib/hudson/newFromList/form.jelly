@@ -58,7 +58,6 @@ THE SOFTWARE.
       <script>$('name').focus();</script>
     </s:entry>
 
-    <!-- View name field -->
     <div class="jenkins-form-item">
       <fieldset class="jenkins-fieldset">
         <legend class="jenkins-form-label">
