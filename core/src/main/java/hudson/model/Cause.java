@@ -30,7 +30,6 @@ import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -65,9 +64,11 @@ public abstract class Cause {
     /**
      * One-line human-readable text of the cause.
      *
-     * <p>
-     * By default, this method is used to render HTML as well.
+     * Historically, this method's return value was used to render HTML on the UI as well.
+     * Since October 2021, the return value is interpreted as text.
+     * To have rich HTML output on the UI, provide a custom {@code description.jelly} view for your subclass.
      */
+    // TODO finalize version numbers
     @Exported(visibility=3)
     public abstract String getShortDescription();
 
@@ -483,13 +484,9 @@ public abstract class Cause {
         @Override
         public String getShortDescription() {
             if(note != null) {
-                try {
-                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(Util.xmlEscape(addr), Jenkins.get().getMarkupFormatter().translate(note));
-                } catch (IOException x) {
-                    // ignore
-                }
+                return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, note);
             }
-            return Messages.Cause_RemoteCause_ShortDescription(Util.xmlEscape(addr));
+            return Messages.Cause_RemoteCause_ShortDescription(addr);
         }
         
         @Exported(visibility = 3)
