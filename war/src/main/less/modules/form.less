@@ -75,6 +75,7 @@
 
 .jenkins-search {
   position: relative;
+  max-width: 420px;
 
   &__input {
     appearance: none;
@@ -300,8 +301,12 @@
 
   &__children {
     position: relative;
-    margin-top: -10px;
+    margin-top: 0;
+    opacity: 0;
     padding-left: 32px;
+    transition: 0.2s ease;
+    visibility: hidden;
+    max-height: 0;
 
     &::after {
       content: "";
@@ -320,6 +325,13 @@
         background: var(--focus-input-border);
       }
     }
+  }
+
+  &__input:checked + &__label + &__children {
+    visibility: visible;
+    margin-top: 10px;
+    opacity: 1;
+    max-height: none;
   }
 }
 

@@ -89,11 +89,14 @@ THE SOFTWARE.
           <div class="jenkins-radio">
             <input class="jenkins-radio__input" type="radio" id="copy" name="mode" value="copy" onchange="updateOk()" onclick="updateOk()" />
             <label class="jenkins-radio__label" for="copy">${attrs.copyTitle}</label>
+            <div class="jenkins-radio__children">
+              <j:set var="descriptor" value="${it.descriptor}" />
+              <div class="jenkins-search">
+                <s:textbox placeholder="Type for suggestions" clazz="jenkins-search__input"  name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
+                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+              </div>
+            </div>
           </div>
-          <s:entry class="jenkins-radio__children">
-            <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" placeholder="Type for suggestions" name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
-          </s:entry>
         </j:if>
       </fieldset>
     </div>
