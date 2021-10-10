@@ -345,7 +345,7 @@ public class BuildTriggerTest {
         }
 
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
             FreeStyleBuild success = us.getLastSuccessfulBuild();
             FreeStyleBuild last = us.getLastBuild();
             try {

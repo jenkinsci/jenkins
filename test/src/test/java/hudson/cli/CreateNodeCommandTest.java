@@ -55,7 +55,7 @@ public class CreateNodeCommandTest {
         command = new CLICommandInvoker(j, new CreateNodeCommand());
     }
 
-    @Test public void createNodeShouldFailWithoutComputerCreatePermission() throws Exception {
+    @Test public void createNodeShouldFailWithoutComputerCreatePermission() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -68,7 +68,7 @@ public class CreateNodeCommandTest {
         assertThat(result, failedWith(6));
     }
 
-    @Test public void createNode() throws Exception {
+    @Test public void createNode() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -83,7 +83,7 @@ public class CreateNodeCommandTest {
         assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
-    @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
+    @Test public void createNodeSpecifyingNameExplicitly() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)

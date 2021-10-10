@@ -93,7 +93,7 @@ public class LoadPredictorTest {
         return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<>()));
     }
 
-    private JobOffer createMockOffer(Executor e) throws NoSuchFieldException, IllegalAccessException {
+    private JobOffer createMockOffer(Executor e) {
         JobOffer o = mock(JobOffer.class);
         when(o.getExecutor()).thenReturn(e);
         return o;

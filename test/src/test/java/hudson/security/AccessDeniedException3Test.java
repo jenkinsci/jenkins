@@ -51,7 +51,7 @@ public class AccessDeniedException3Test {
 
     @Issue("JENKINS-39402")
     @Test
-    public void youAreInGroupHeaders() throws Exception {
+    public void youAreInGroupHeaders() {
         JenkinsRule.DummySecurityRealm realm = r.createDummySecurityRealm();
         String[] groups = new String[1000];
         for (int i = 0; i < groups.length; i++) {

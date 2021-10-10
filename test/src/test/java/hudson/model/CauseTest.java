@@ -96,7 +96,7 @@ public class CauseTest {
 
 
     @Issue("JENKINS-48467")
-    @Test public void userIdCausePrintTest() throws Exception {
+    @Test public void userIdCausePrintTest() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos);
 

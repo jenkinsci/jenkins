@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -91,7 +90,7 @@ public class UpdateSiteTest {
         server.addConnector(connector);
         server.setHandler(new AbstractHandler() {
             @Override
-            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
                 if (target.startsWith(RELATIVE_BASE)) {
                     target = target.substring(RELATIVE_BASE.length());
                 }
@@ -158,7 +157,7 @@ public class UpdateSiteTest {
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
 
-    @Test public void lackOfDataDoesNotFailWarningsCode() throws Exception {
+    @Test public void lackOfDataDoesNotFailWarningsCode() {
         assertNull("plugin data is not present", j.jenkins.getUpdateCenter().getSite("default").getData());
 
         // nothing breaking?
@@ -205,7 +204,7 @@ public class UpdateSiteTest {
     }
 
     @Issue("JENKINS-31448")
-    @Test public void isLegacyDefault() throws Exception {
+    @Test public void isLegacyDefault() {
         assertFalse("isLegacyDefault should be false with null id",new UpdateSite(null,"url").isLegacyDefault());
         assertFalse("isLegacyDefault should be false when id is not default and url is http://hudson-ci.org/",new UpdateSite("dummy","http://hudson-ci.org/").isLegacyDefault());
         assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/",new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID,"http://hudson-ci.org/").isLegacyDefault());

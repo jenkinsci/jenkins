@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +28,7 @@ public class SafeTimerTaskTest {
     public LoggerRule loggerRule = new LoggerRule();
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         System.clearProperty(SafeTimerTask.LOGS_ROOT_PATH_PROPERTY);
     }
 
@@ -63,7 +62,7 @@ public class SafeTimerTaskTest {
         }
 
         @Override
-        protected void execute(TaskListener listener) throws IOException, InterruptedException {
+        protected void execute(TaskListener listener) {
             listener.getLogger().println("blah");
         }
 
