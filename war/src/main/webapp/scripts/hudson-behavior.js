@@ -355,7 +355,7 @@ function findAncestorClass(e, cssClass) {
 }
 
 function isTR(tr, nodeClass) {
-    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr');
+    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr') || tr.classList.contains('jenkins-form-item');
 }
 
 function findFollowingTR(node, className, nodeClass) {
