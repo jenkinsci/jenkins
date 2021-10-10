@@ -92,7 +92,10 @@ THE SOFTWARE.
           </div>
           <s:entry class="jenkins-radio__children">
             <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" placeholder="Type for suggestions" name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
+            <div class="jenkins-search">
+              <s:textbox id="from" placeholder="Type for suggestions" clazz="jenkins-search__input"  name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
+              <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+            </div>
           </s:entry>
         </j:if>
       </fieldset>
