@@ -6,7 +6,7 @@
 toc::[]
 
 Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain it in a good shape.
-We want to ensure the quality of the integrated changes and continuity of the project,
+We want to ensure quality of the integrated changes and continuity of the project,
 and hence the Jenkins core pull request review and merge process is more sophisticated than for the majority of plugins.
 
 == Scope of the document
