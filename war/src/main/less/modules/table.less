@@ -2,14 +2,14 @@
   --accent-color: blue;
 
   --background-color: #f5f5f5;
-  --background-color-overlay: white;
+  --background-color-overlay: #f5f5f5;
 
   --foreground-color: black;
 
   --border-color: rgba(0, 0, 0, 0.1);
 
   // Table
-  --table-even-row-background-color: #f5f5f5;
+  --table-even-row-background-color: white;
 
   // Root
   --button-background-color: rgba(0, 0, 0, 0.1);
@@ -72,54 +72,28 @@
   border-collapse: collapse;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: -5px 0 0 var(--background-color-overlay), 5px 0 0 var(--background-color-overlay), 0 2px 0 rgba(black, 0.02);
-  background-color: var(--background-color-overlay);
   color: var(--foreground-color);
   margin: 0 5px;
 
-  thead {
-    th {
+  & > thead {
+    & > tr > th {
       color: var(--foreground-color);
       text-align: left;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 12px;
-      padding: 15px 20px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      background-color: var(--background-color-overlay);
     }
   }
 
-  tbody {
-    tr {
+  & > tbody {
+    & > tr {
       color: var(--foreground-color);
-      //border-bottom: 2px solid #dddddd;
-
-      &:nth-of-type(odd) {
-        //background-color: var(--table-even-row-background-color);
-        // Set border-radius on the top-left and bottom-left of the first table data on the table row
-
-        td {
-          background: var(--table-even-row-background-color);
-        }
-        td:first-child,
-        th:first-child {
-          border-radius: 6px 0 0 6px;
-        }
-
-        // Set border-radius on the top-right and bottom-right of the last table data on the table row
-        td:last-child,
-        th:last-child {
-          border-radius: 0 6px 6px 0;
-        }
-      }
-
-      //&:last-of-type {
-      //  border-bottom: none
-      //}
+      border-bottom: 2px solid red;
     }
   }
 
-  th, td {
-    padding: 15px 20px;
+  & > thead > tr > th, & > tbody > tr > td {
+    padding: 0.75rem 0 0.75rem 0.75rem;
   }
 
   &-icon-host {

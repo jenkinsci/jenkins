@@ -71,14 +71,16 @@ THE SOFTWARE.
 
       <!-- project list -->
       <table id="projectstatus" class="jenkins-table sortable ${iconSize == '16x16' ? 'bigtable--compact' : ''}">
-        <tr class="header">
-          <j:forEach var="col" items="${columnExtensions}">
-            <st:include page="columnHeader.jelly" it="${col}" />
-          </j:forEach>
-          <th>
-            <st:nbsp/>
-          </th>
-        </tr>
+        <thead>
+          <tr>
+            <j:forEach var="col" items="${columnExtensions}">
+              <st:include page="columnHeader.jelly" it="${col}" />
+            </j:forEach>
+            <th>
+              <st:nbsp/>
+            </th>
+          </tr>
+        </thead>
 
         <j:forEach var="v" items="${attrs.views}">
           <t:projectViewNested />
