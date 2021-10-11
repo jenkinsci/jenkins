@@ -337,7 +337,7 @@ Merge process can be initiated once a pull request matches the requirements:
 * If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present
   and there is a `Proposed upgrade guidelines` section in the PR title
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
-  This is usually the case when a data migration occurs, a feature has been removed, a significant behaviour change is introduced (including when there is a way to opt-out),
+  This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt-out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
 * If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labelled as `lts-candidate` to be considered (see link:https://issues.jenkins.io/issues/?filter=12146[this Jira query]).
 
