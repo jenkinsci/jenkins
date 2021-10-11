@@ -257,7 +257,7 @@ Triage objectives:
   it is great to explicitly highlight that by unassigning the issue and inviting the reporter and other contributors to submit a fix.
 * Nice2Have: **Highlight newcomer-friendly issues**.
   Newcomer-friendly issues are instrumental for an onboarding new code contributors to the project.
-  They are linked to link:https://www.jenkins.io/participate/code/[contributing guidelines].
+  They are linked from the link:https://www.jenkins.io/participate/code/[contributing guidelines].
   If you see a simple issue but do not plan to work on it,
   put a `newbie-friendly` label on it so that somebody could pick it up.
 
