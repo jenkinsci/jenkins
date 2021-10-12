@@ -64,14 +64,17 @@ THE SOFTWARE.
   <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
   ${handler.setBuilds(attrs.builds)}
   <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
-  <table class="sortable pane bigtable" id="projectStatus">
-    <tr>
-      <th><st:nbsp/></th>
-      <th>${%Build}</th>
-      <th initialSortDir="up">${%Time Since}</th>
-      <th>${%Status}</th>
-      <th><st:nbsp/></th>
-    </tr>
+  <table class="jenkins-table sortable" id="projectStatus">
+    <thead>
+        <tr>
+            <th><st:nbsp/></th>
+            <th>${%Build}</th>
+            <th initialSortDir="up">${%Time Since}</th>
+            <th>${%Status}</th>
+            <th><st:nbsp/></th>
+        </tr>
+    </thead>
+    <tbody></tbody>
   </table>
   <t:rssBar-with-iconSize/>
 </j:jelly>

@@ -28,13 +28,16 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <t:setIconSize/>
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-user icon-xlg"/>
-        ${%People}
-        <j:set var="viewType" value="${it.parent.class.simpleName}"/>
-        <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
-        <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
-      </h1>
+      <div class="jenkins-app-bar">
+          <div class="jenkins-app-bar__content">
+              <h1>
+                  ${%People}
+                  <j:set var="viewType" value="${it.parent.class.simpleName}"/>
+                  <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
+                  <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
+              </h1>
+          </div>
+      </div>
       <p>${%blurb}</p>
       <script>
           function display(data) {
@@ -98,14 +101,17 @@ THE SOFTWARE.
           }
       </script>
       <l:progressiveRendering handler="${it}" callback="display"/>
-      <table class="sortable pane bigtable" id="people">
-        <tr>
-          <th class="minimum-width" data-sort-disable="true" />
-          <th>${%User ID}</th>
-          <th>${%Name}</th>
-          <th initialSortDir="up">${%Last Commit Activity}</th>
-          <th>${%On}</th>
-        </tr>
+      <table class="jenkins-table sortable" id="people">
+        <thead>
+            <tr>
+                <th class="minimum-width" data-sort-disable="true" />
+                <th>${%User ID}</th>
+                <th>${%Name}</th>
+                <th initialSortDir="up">${%Last Commit Activity}</th>
+                <th>${%On}</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
       </table>
       <t:iconSize>
         <j:if test="${!isAll}">

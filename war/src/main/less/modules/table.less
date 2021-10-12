@@ -19,7 +19,7 @@
 }
 
 .jenkins-table {
-  width: 100%;
+  width: calc(100% - 10px);
   background: var(--table-background);
   border-collapse: collapse;
   border-radius: 6px;
@@ -30,6 +30,10 @@
   span, svg {
     width: 26px;
     height: 26px;
+  }
+
+  .healthReport {
+    color: var(--link-foreground);
   }
 
   & > thead {
