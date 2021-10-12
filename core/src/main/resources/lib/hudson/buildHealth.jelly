@@ -53,16 +53,15 @@ THE SOFTWARE.
               </j:choose>
             </j:if>
             <j:choose>
-              <j:when  test="${!empty(healthReports)}">
-                <a class="build-health-link" href="${empty(link)?'#':link}" 
-                    style="${attrs.style}">
-                    <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%"/>
+            <j:when test="${!empty(healthReports)}">
+                <a class="build-health-link" href="${empty(link)?'#':link}" style="${attrs.style}">
+                   <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" ariaHidden="true"/>
                 </a>
-              </j:when>
-              <j:otherwise>
-                 <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%" />
-               </j:otherwise>
-             </j:choose>  
+            </j:when>
+                <j:otherwise>
+                    <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" tooltip="${buildHealth.score}%" />
+                </j:otherwise>
+            </j:choose>
         </j:if>
         <j:if test="${!empty(healthReports)}">
             <div class="jenkins-tooltip healthReportDetails">
