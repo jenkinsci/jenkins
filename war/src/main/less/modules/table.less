@@ -1,23 +1,52 @@
+:root {
+  --table-background: #f4f4f4;
+  --table-header-foreground: black;
+  --table-body-background: white;
+  --table-body-foreground: black;
+  --table-border-radius: 10px;
+  --table-body-radius: 6px;
+  --link-foreground: #024cb6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --table-background: rgb(26, 26, 28);
+    --table-header-foreground: rgb(240, 240, 245);
+    --table-body-background: rgb(32, 32, 34);
+    --table-body-foreground: rgb(240, 240, 245);
+    --link-foreground: #53c1ff;
+  }
+}
+
 .jenkins-table {
   width: 100%;
-  background: rgb(252, 252, 252);
+  background: var(--table-background);
   border-collapse: collapse;
-  --input-border: rgb(240, 240, 240);
-  border-radius: 10px;
+  border-radius: 6px;
   overflow: hidden;
-  --link-visited-color: #0a69af;
+  box-shadow: 0 0 0 5px var(--table-background);
+  margin: 5px;
+
+  span, svg {
+    width: 26px;
+    height: 26px;
+  }
 
   & > thead {
     & > tr {
-      border-bottom: 2px solid var(--input-border);
-
       & > th {
-        color: var(--foreground-color);
+        color: var(--table-header-foreground);
         text-align: left;
+        padding-top: calc(0.9rem - 5px);
+        padding-bottom: 0.9rem;
+        padding-left: 0.6rem;
 
         a {
-          color: var(--foreground-color);
+          color: var(--table-header-foreground);
           font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          font-size: 0.75rem;
         }
       }
     }
@@ -25,17 +54,50 @@
 
   & > tbody {
     & > tr {
-      color: var(--foreground-color);
-      border-bottom: 2px solid var(--input-border);
+      background: var(--table-body-background);
+      color: var(--table-body-foreground);
+      border-bottom: 2px solid var(--table-background);
 
       & > td {
         vertical-align: middle;
+        padding: 0.6rem 0 0.6rem 0.6rem;
+        font-weight: 500;
+
+        a {
+          color: var(--link-foreground);
+        }
+
+        &:first-of-type {
+          border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
+        }
+
+        &:last-of-type {
+          border-radius: 0 var(--table-body-radius) var(--table-body-radius) 0;
+        }
+      }
+
+      &:last-of-type {
+        border-bottom: none;
       }
     }
-  }
 
-  & > thead > tr > th, & > tbody > tr > td {
-    padding: 0.75rem 0 0.75rem 0.75rem;
+    & > tr:first-of-type {
+      & > td:first-of-type {
+        border-radius: var(--table-border-radius) 0 0 var(--table-body-radius);
+      }
+      & > td:last-of-type {
+        border-radius: 0 var(--table-border-radius) var(--table-body-radius) 0;
+      }
+    }
+
+    & > tr:last-of-type {
+      & > td:first-of-type {
+        border-radius: var(--table-body-radius) 0 0 var(--table-border-radius);
+      }
+      & > td:last-of-type {
+        border-radius: 0 var(--table-body-radius) var(--table-border-radius) 0;
+      }
+    }
   }
 
   &-icon-host {
