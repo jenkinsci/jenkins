@@ -1,94 +1,36 @@
-:root {
-  --accent-color: blue;
-
-  --background-color: #f5f5f5;
-  --background-color-overlay: #f5f5f5;
-
-  --foreground-color: black;
-
-  --border-color: rgba(0, 0, 0, 0.1);
-
-  // Table
-  --table-even-row-background-color: white;
-
-  // Root
-  --button-background-color: rgba(0, 0, 0, 0.1);
-  --button-background-color-hover: rgba(0, 0, 0, 0.125);
-  --button-background-color-active: rgba(0, 0, 0, 0.15);
-  --button-foreground-color: black;
-  --button-foreground-color-hover: black;
-  --button-foreground-color-active: black;
-
-  // Link
-  --link-color: #105591;
-  --link-color-hover: #083a65;
-  --link-color-active: #032746;
-
-  // Nav bar
-  --nav-background-color: #1e1e1e;
-  --nav-foreground-color: white;
-  --nav-item-hover: rgba(white, 0.075);
-  --nav-item-active: rgba(white, 0.075);
-  --nav-item-selected: rgba(white, 1.075);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent-color: blue;
-    --background-color: #252525;
-    --background-color-overlay: #373737;
-
-    --foreground-color: white;
-
-    --border-color: rgba(255, 255, 255, 0.1);
-
-    // Table
-    --table-even-row-background-color: #3a3a3a;
-
-    // Root
-    --button-background-color: rgba(255, 255, 255, 0.1);
-    --button-background-color-hover: rgba(255, 255, 255, 0.15);
-    --button-background-color-active: rgba(255, 255, 255, 0.2);
-    --button-foreground-color: white;
-    --button-foreground-color-hover: white;
-    --button-foreground-color-active: white;
-
-    // Link
-    --link-color: #3784ff;
-    --link-color-hover: #2165d2;
-    --link-color-active: #12489d;
-
-    // Nav bar
-    --nav-background-color: #1e1e1e;
-    --nav-foreground-color: white;
-    --nav-item-hover: rgba(255, 255, 255, 0.075);
-    --nav-item-active: rgba(255, 255, 255, 0.075);
-    --nav-item-selected: rgba(255, 255, 255, 0.1);
-  }
-}
-
 .jenkins-table {
-  width: calc(100% - 10px);
+  width: 100%;
+  background: rgb(252, 252, 252);
   border-collapse: collapse;
-  border-radius: 8px;
+  --input-border: rgb(240, 240, 240);
+  border-radius: 10px;
   overflow: hidden;
-  color: var(--foreground-color);
-  margin: 0 5px;
+  --link-visited-color: #0a69af;
 
   & > thead {
-    & > tr > th {
-      color: var(--foreground-color);
-      text-align: left;
-      font-size: 0.8rem;
-      font-weight: 400;
-      background-color: var(--background-color-overlay);
+    & > tr {
+      border-bottom: 2px solid var(--input-border);
+
+      & > th {
+        color: var(--foreground-color);
+        text-align: left;
+
+        a {
+          color: var(--foreground-color);
+          font-weight: 700;
+        }
+      }
     }
   }
 
   & > tbody {
     & > tr {
       color: var(--foreground-color);
-      border-bottom: 2px solid red;
+      border-bottom: 2px solid var(--input-border);
+
+      & > td {
+        vertical-align: middle;
+      }
     }
   }
 
