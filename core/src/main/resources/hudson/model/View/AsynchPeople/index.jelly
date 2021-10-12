@@ -59,17 +59,6 @@ THE SOFTWARE.
                   var d = document.createElement('td');
                   var a = document.createElement('a');
                   a.href = '${rootURL}/' + e.url;
-                  a.className = 'model-link inside';
-                  var i = document.createElement('img');
-                  i.src = e.avatar;
-                  i.className = 'icon${iconSize}';
-                  a.appendChild(i);
-                  d.appendChild(a);
-                  r.appendChild(d);
-
-                  d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
                   a.appendChild(document.createTextNode(e.id));
                   d.appendChild(a);
                   r.appendChild(d);
@@ -104,7 +93,6 @@ THE SOFTWARE.
       <table class="jenkins-table sortable" id="people">
         <thead>
             <tr>
-                <th class="minimum-width" data-sort-disable="true" />
                 <th>${%User ID}</th>
                 <th>${%Name}</th>
                 <th initialSortDir="up">${%Last Commit Activity}</th>

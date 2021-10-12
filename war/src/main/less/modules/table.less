@@ -119,11 +119,11 @@
     height: 26px;
   }
 
-  & > thead > tr:hover, & > tbody > tr:hover {
-    .jenkins-table__button::before, .sortheader::before {
-      opacity: 0.03;
-    }
-  }
+  //& > thead > tr:hover, & > tbody > tr:hover {
+  //  .jenkins-table__button::before, .sortheader::before {
+  //    opacity: 0.03;
+  //  }
+  //}
 
   &__button, .sortheader {
     appearance: none;
@@ -166,4 +166,14 @@
       }
     }
   }
+}
+
+.jenkins-table__icon {
+  width: 26px;
+  height: 26px;
+  margin-right: 0.7rem;
+}
+
+.jenkins-table__cell--tight {
+  white-space: nowrap;
 }
