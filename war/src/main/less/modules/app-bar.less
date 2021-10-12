@@ -3,8 +3,6 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid var(--panel-border-color);
 
   .jenkins-app-bar__content {
     display: flex;
@@ -20,9 +18,9 @@
     margin-left: 2rem;
   }
 
-  &--no-border {
-    border-bottom: none;
-    margin-bottom: 0;
+  &--border {
+    border-bottom: 2px solid var(--panel-border-color);
+    padding-bottom: 2rem;
   }
 
   h1 {

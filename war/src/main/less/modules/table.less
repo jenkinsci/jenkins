@@ -41,16 +41,17 @@
       & > th {
         color: var(--table-header-foreground);
         text-align: left;
-        padding-top: calc(0.9rem - 5px);
+        padding-top: calc(0.9rem);
         padding-bottom: 0.9rem;
         padding-left: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.75rem;
 
         a {
           color: var(--table-header-foreground);
           font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-          font-size: 0.75rem;
         }
       }
     }
@@ -116,5 +117,53 @@
     align-items: center;
     width: 26px;
     height: 26px;
+  }
+
+  & > thead > tr:hover, & > tbody > tr:hover {
+    .jenkins-table__button::before, .sortheader::before {
+      opacity: 0.03;
+    }
+  }
+
+  &__button, .sortheader {
+    appearance: none;
+    position: relative;
+    outline: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    z-index: 0;
+    cursor: pointer;
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    background: transparent;
+    text-decoration: none;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: -10px;
+      bottom: -7px;
+      right: -10px;
+      border-radius: 5px;
+      background: var(--text-color);
+      z-index: -1;
+      opacity: 0;
+      transition: 0.2s ease;
+    }
+
+    &:hover {
+      &::before {
+        opacity: 0.05!important;
+      }
+    }
+
+    &:focus, &:active {
+      &::before {
+        opacity: 0.1!important;
+      }
+    }
   }
 }
