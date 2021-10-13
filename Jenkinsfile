@@ -11,7 +11,10 @@ def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumbe
 def runTests = true
 def failFast = false
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3'))])
+properties([
+    buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+    disableConcurrentBuilds(abortPrevious: true)
+])
 
 // TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 def buildTypes = ['Linux']
