@@ -55,7 +55,7 @@ GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jen
 
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
 Their responsibility is to perform pull request reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
-They are also responsible to monitor the weekly release status and performing triage of critical issues.
+They are also responsible to monitor the weekly release status and to perform triage of critical issues.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
