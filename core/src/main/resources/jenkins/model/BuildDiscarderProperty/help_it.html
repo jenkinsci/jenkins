@@ -4,26 +4,26 @@
   compilazione includono l'output della console, gli artefatti archiviati e
   tutti gli altri metadati legati a una specifica compilazione.
   <p>
-  Mantenere meno compilazioni significa che verrà utilizzato meno spazio su
+  Mantenere meno compilazioni significa che verr&agrave; utilizzato meno spazio su
   disco nella <i>directory radice dei record di compilazione</i> specificata
   nella sezione <i>Configura sistema</i>.
   <p>
-  Jenkins fornisce due modalità per determinare il momento in cui rimuovere le
+  Jenkins fornisce due modalit&agrave; per determinare il momento in cui rimuovere le
   compilazioni:
   <ol>
     <li>
-      Età della compilazione: rimuove le compilazioni una volta che queste
-      hanno raggiunto una certa età; ad esempio, sette giorni.
+      Et&agrave; della compilazione: rimuove le compilazioni una volta che queste
+      hanno raggiunto una certa et&agrave;; ad esempio, sette giorni.
     <li>
       Numero compilazioni: rimuove la compilazione meno recente quando
-      esiste già un certo numero di compilazioni.
+      esiste gi&agrave; un certo numero di compilazioni.
   </ol>
   Queste due opzioni possono essere attive contemporaneamente, in modo da
   poter, ad esempio, mantenere le compilazioni per 14 giorni, ma solo fino a
   un limite massimo di 50 compilazioni. Se uno dei due limiti viene superato,
-  ogni compilazione che superi tali limiti sarà rimossa.
+  ogni compilazione che superi tali limiti sar&agrave; rimossa.
   <p>
-  È possibile inoltre assicurarsi che le compilazioni importanti siano
+  &Egrave; possibile inoltre assicurarsi che le compilazioni importanti siano
   mantenute per sempre, indipendentemente da queste impostazioni; si clicchi
   sul pulsante <i>Mantieni questa compilazione per sempre</i> nella pagina
   della compilazione.
@@ -33,21 +33,21 @@
 
   <hr>
 
-  Nella sezione <i>Avanzate</i> è possibile specificare le stesse opzioni, ma
+  Nella sezione <i>Avanzate</i> &egrave; possibile specificare le stesse opzioni, ma
   in modo specifica per gli <b>artefatti</b> di compilazione. Se tali opzioni
   sono abilitate, gli artefatti di compilazione saranno rimossi per tutte le
-  compilazioni che superano i limiti definiti. Le compilazioni in sé saranno
+  compilazioni che superano i limiti definiti. Le compilazioni in s&eacute; saranno
   mantenute; solo gli artefatti associati saranno eliminati, se presenti.
   <p>
   Ad esempio, se un progetto compila del software e produce un programma di
   installazione di grandi dimensioni che viene archiviato, si potrebbe
   desiderare di mantenere per sempre il log della console e le informazioni
-  riguardanti il commit del sistema di controllo del codice sorgente che è
+  riguardanti il commit del sistema di controllo del codice sorgente che &egrave;
   stato compilato, mentre, per mantenere lo spazio su disco occupato basso,
   si potrebbero voler mantenere solo gli ultimi tre programmi di installazione
   creati.
   <br>
-  Ciò può aver senso per i progetti per cui si possono creare nuovamente gli
+  Ci&ograve; pu&ograve; aver senso per i progetti per cui si possono creare nuovamente gli
   stessi artefatti in un secondo momento ricompilando lo stesso commit del
   sistema di controllo del codice sorgente.
 

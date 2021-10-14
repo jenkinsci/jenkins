@@ -1,19 +1,19 @@
 <div>
-  Lance un script Shell (par défaut à l'aide de <tt>sh</tt>, mais cela est configurable) pour construire le projet.
-  Le script sera lancé avec le workspace comme répertoire courant.
+  Lance un script Shell (par d&eacute;faut &agrave; l'aide de <tt>sh</tt>, mais cela est configurable) pour construire le projet.
+  Le script sera lanc&eacute; avec le workspace comme r&eacute;pertoire courant.
   Entrez le contenu de votre script shell. Si votre script n'a pas de ligne de titre du type <tt>#!/bin/sh</tt>,
-  alors le shell configuré pour l'ensemble du système sera utilisé.
+  alors le shell configur&eacute; pour l'ensemble du syst&egrave;me sera utilis&eacute;.
   Si votre script contient une telle ligne, vous pourrez utiliser un autre langage de script
-  (comme <tt>#!/bin/perl</tt>) ou contrôler les options que le shell utilise.
+  (comme <tt>#!/bin/perl</tt>) ou contr&ocirc;ler les options que le shell utilise.
 
   <p>
-  Par défaut, le shell sera invoqué avec l'option "-ex". Par conséquent, toutes les commandes seront
-  affichées avant d'être exécutées et le build sera considéré en èchec si l'une de ces commandes
-  renvoie un code de retour différent de zéro.
+  Par d&eacute;faut, le shell sera invoqu&eacute; avec l'option "-ex". Par cons&eacute;quent, toutes les commandes seront
+  affich&eacute;es avant d'&ecirc;tre ex&eacute;cut&eacute;es et le build sera consid&eacute;r&eacute; en &egrave;chec si l'une de ces commandes
+  renvoie un code de retour diff&eacute;rent de z&eacute;ro.
   Encore une fois, vous pouvez ajouter la ligne <tt>#!/bin/...</tt> pour modifier ce comportement.
 
   <p>
-  Une bonne pratique est de ne pas mettre un long script ici. A la place, pensez à ajouter le script shell
+  Une bonne pratique est de ne pas mettre un long script ici. A la place, pensez &agrave; ajouter le script shell
   dans l'outil de gestion de configuration et appelez simplement ce script depuis Jenkins.
-  Ainsi, vous garderez trace des changements apportés à votre script.
+  Ainsi, vous garderez trace des changements apport&eacute;s &agrave; votre script.
 </div>
