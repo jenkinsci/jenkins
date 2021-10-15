@@ -23,6 +23,13 @@
  */
 package lib.form;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
@@ -38,6 +45,10 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.FormValidation;
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
 import org.jenkinsci.Symbol;
 import org.junit.Rule;
@@ -45,19 +56,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class HeteroListTest {
     @Rule
@@ -70,7 +68,7 @@ public class HeteroListTest {
 
         RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
         TestItemDescribable.DynamicDisplayNameDescriptor dynamic = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
-        rootAction.descriptorList = Arrays.asList(dynamic);
+        rootAction.descriptorList = Collections.singletonList(dynamic);
 
         dynamic.displayName = "Display<strong>Name</strong>";
 
@@ -183,9 +181,10 @@ public class HeteroListTest {
         // While keeping away the installations... advanced button as it's covered in its own test
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('XSS') !== -1 && b.textContent.indexOf('...') === -1).map(b => b.innerHTML)").getJavaScriptResult();
         assertThat(result, instanceOf(List.class));
-        List resultArray = (List) result;
-        for (int i = 0; i < resultArray.size(); i++) {
-            assertThat((String) resultArray.get(i), not(containsString("<")));
+        @SuppressWarnings("unchecked")
+        List<String> resultList = (List<String>) result;
+        for (String str : resultList) {
+            assertThat(str, not(containsString("<")));
         }
         
         // "delete" then "add" makes us coming back in scenario covered by xssUsingToolInstallationRepeatableAdd

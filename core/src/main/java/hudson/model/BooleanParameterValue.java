@@ -24,12 +24,10 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.util.VariableResolver;
+import java.util.Locale;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
-
-import java.util.Locale;
-
-import hudson.util.VariableResolver;
 
 /**
  * {@link ParameterValue} created from {@link BooleanParameterDefinition}.
@@ -64,12 +62,7 @@ public class BooleanParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            @Override
-            public String resolve(String name) {
-                return BooleanParameterValue.this.name.equals(name) ? Boolean.toString(value) : null;
-            }
-        };
+        return name -> BooleanParameterValue.this.name.equals(name) ? Boolean.toString(value) : null;
     }
 
     @Override

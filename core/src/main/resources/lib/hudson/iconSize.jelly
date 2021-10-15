@@ -23,30 +23,40 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <table style="width:100%">
-    <tr>
-      <d:taglib uri="local">
-        <d:tag name="iconSizeLink">
-          <st:nbsp/>
-          <j:choose>
-            <j:when test="${sz==iconSize}">
-              ${title}
-            </j:when>
-            <j:otherwise>
-              <a href="${rootURL}/iconSize?${sz}">${title}</a>
-            </j:otherwise>
-          </j:choose>
-        </d:tag>
-      </d:taglib>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" 
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="jenkins-icon-size">
+    <d:taglib uri="local">
+      <d:tag name="iconSizeLink">
+        <st:nbsp/>
+        <j:choose>
+          <j:when test="${sz==iconSize}">
+            <li class="jenkins-icon-size__items-item">
+              ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
+            </li>
+          </j:when>
+          <j:otherwise>
+            <li>
+              <a class="yui-button link-button" href="${rootURL}/iconSize?${sz}">
+                ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
+              </a>
+            </li>
+          </j:otherwise>
+        </j:choose>
+      </d:tag>
+    </d:taglib>
 
-      <td xmlns:local="local">${%Icon}:
+    <div class="jenkins-icon-size__items jenkins-buttons-row" xmlns:local="local">
+      <span>${%Icon}:</span>
+      <ol>
         <local:iconSizeLink title="${%S}" sz="16x16" />
         <local:iconSizeLink title="${%M}" sz="24x24" />
         <local:iconSizeLink title="${%L}" sz="32x32" />
-      </td><td>
-        <d:invokeBody />
-      </td>
-    </tr>
-  </table>
+      </ol>
+    </div>
+
+    <div>
+      <d:invokeBody />
+    </div>
+  </div>
 </j:jelly>

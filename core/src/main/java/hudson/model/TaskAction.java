@@ -24,17 +24,15 @@
 package hudson.model;
 
 import hudson.console.AnnotatedLargeText;
-import org.kohsuke.stapler.framework.io.LargeText;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
+import hudson.security.ACL;
+import hudson.security.Permission;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.lang.ref.WeakReference;
-import java.io.IOException;
-
-import hudson.security.Permission;
-import hudson.security.ACL;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**

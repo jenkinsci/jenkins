@@ -24,6 +24,8 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
@@ -35,6 +37,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
+import hudson.util.io.Archiver;
+import hudson.util.io.ArchiverFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,21 +49,16 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.util.io.Archiver;
-import hudson.util.io.ArchiverFactory;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
@@ -813,7 +812,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return "";
             }
             
-            Deque<String> relativePath = new LinkedList<>();
+            Deque<String> relativePath = new ArrayDeque<>();
             File current = this.f;
             while (current != null && !current.equals(this.root)) {
                 relativePath.addFirst(current.getName());
@@ -1093,7 +1092,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return "";
             }
 
-            LinkedList<String> relativePath = new LinkedList<>();
+            Deque<String> relativePath = new ArrayDeque<>();
             FilePath current = this.f;
             while (current != null && !current.equals(this.root)) {
                 relativePath.addFirst(current.getName());

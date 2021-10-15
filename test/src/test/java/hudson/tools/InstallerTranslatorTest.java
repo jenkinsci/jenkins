@@ -24,6 +24,8 @@
 
 package hudson.tools;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -38,9 +40,8 @@ import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -128,8 +129,8 @@ public class InstallerTranslatorTest {
                 ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
                 : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
         final AbstractCommandInstaller ci2 = Functions.isWindows()
-                ? new BatchCommandInstaller("master", "echo hello", "C:\\jdk2")
-                : new CommandInstaller("master", "echo hello", "/opt/jdk2");
+                ? new BatchCommandInstaller("built-in", "echo hello", "C:\\jdk2")
+                : new CommandInstaller("built-in", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
 
         JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));

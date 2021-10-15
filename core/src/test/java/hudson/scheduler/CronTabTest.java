@@ -23,22 +23,21 @@
  */
 package hudson.scheduler;
 
+import static java.util.Calendar.MONDAY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+
 import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-
-import static java.util.Calendar.MONDAY;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -265,12 +264,8 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-15)/3 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
         compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
         compare(new GregorianCalendar(2013, 2, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 5)));
-        try {
-            compare(new GregorianCalendar(2013, 2, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
-            fail();
-        } catch (ANTLRException x) {
-            // good
-        }
+
+        assertThrows(ANTLRException.class, () -> compare(new GregorianCalendar(2013, 2, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0))));
     }
 
     @Test public void repeatedHash() throws Exception {
@@ -289,21 +284,11 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        try {
-            new CronTab("H H(12-24) * * *");
-            fail();
-        } catch (ANTLRException e) {
-            // ok
-        }
+        assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        try {
-            new CronTab("H(33-66) * * * *");
-            fail();
-        } catch (ANTLRException e) {
-            // ok
-        }
+        assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
     }
 
     @Issue("JENKINS-9283")

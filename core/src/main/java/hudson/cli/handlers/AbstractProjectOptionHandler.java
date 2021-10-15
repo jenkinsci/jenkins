@@ -24,11 +24,11 @@
 package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
+import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.Setter;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Refer to {@link AbstractProject} by its name.

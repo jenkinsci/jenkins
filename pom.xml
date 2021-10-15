@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.63</version>
+    <version>1.67</version>
     <relativePath />
   </parent>
 
@@ -39,6 +39,7 @@ THE SOFTWARE.
 
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <licenses>
     <license>
@@ -63,20 +64,13 @@ THE SOFTWARE.
     <tag>${scmTag}</tag>
   </scm>
 
-  <distributionManagement>
-    <site>
-      <id>github-pages</id>
-      <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
-    </site>
-  </distributionManagement>
-
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.294</revision>
+    <revision>2.317</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,30 +84,24 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <matrix-auth.version>2.6.6</matrix-auth.version>
-    <matrix-project.version>1.18</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
-    <changelog.url>https://jenkins.io/changelog</changelog.url>
+    <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.7</remoting.version>
+    <remoting.version>4.10</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
-    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
-    <findbugs.effort>Max</findbugs.effort>
-    <findbugs.threshold>High</findbugs.threshold>
-    <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+    <spotbugs.effort>Max</spotbugs.effort>
+    <spotbugs.threshold>Medium</spotbugs.threshold>
+    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.21</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.1</junit.jupiter.version>
-    <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.10.3</spotless.version>
+    <access-modifier.version>1.25</access-modifier.version>
+    <junit.jupiter.version>5.8.1</junit.jupiter.version>
+    <spotless.version>2.17.0</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -140,19 +128,8 @@ THE SOFTWARE.
 
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>3.9.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermock.version}</version>
+        <artifactId>mockito-inline</artifactId>
+        <version>4.0.0</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -277,7 +254,6 @@ THE SOFTWARE.
           <artifactId>maven-surefire-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -339,7 +315,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>${access-modifier-checker.version}</version>
+          <version>${access-modifier.version}</version>
         </plugin>
         <plugin>
           <groupId>com.cloudbees</groupId>
@@ -374,7 +350,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.18</version>
+          <version>1.21</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -390,11 +366,6 @@ THE SOFTWARE.
           <groupId>org.jvnet.updatecenter2</groupId>
           <artifactId>maven-makepkgs-plugin</artifactId>
           <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -447,13 +418,12 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.42</version>
+              <version>9.0</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
           <configuration>
             <consoleOutput>true</consoleOutput>
-            <failsOnError>true</failsOnError>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
@@ -524,6 +494,7 @@ THE SOFTWARE.
           <configuration>
             <java>
               <endWithNewline />
+              <importOrder />
               <removeUnusedImports />
             </java>
           </configuration>
@@ -640,14 +611,6 @@ THE SOFTWARE.
         <version>${spotless.version}</version>
       </plugin>
     </plugins>
-
-    <extensions>
-      <extension>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>wagon-gitsite</artifactId>
-        <version>0.3.5</version>
-      </extension>
-    </extensions>
   </build>
 
   <profiles>
@@ -746,7 +709,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
+        <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>
@@ -794,7 +757,7 @@ THE SOFTWARE.
     <profile>
       <id>jdk11</id>
       <properties>
-        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported

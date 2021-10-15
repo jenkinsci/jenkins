@@ -24,6 +24,15 @@
 
 package hudson.tasks;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
@@ -40,31 +49,18 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.util.RunList;
+import hudson.util.StreamTaskListener;
 import java.io.File;
-
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -101,7 +97,7 @@ public class FingerprinterTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         Fingerprinter.enableFingerprintsInDependencyGraph = true;
     }
     
@@ -125,7 +121,7 @@ public class FingerprinterTest {
 
     private static class FingerprintAddingBuilder extends Builder {
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.addAction(new Fingerprinter.FingerprintAction(build, Collections.singletonMap(singleFiles2[0], "fakefingerprint")));
             return true;
         }
@@ -383,7 +379,7 @@ public class FingerprinterTest {
     }
 
     
-    private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws IOException, Exception {
+    private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
         addFingerprinterToProject(project, contents, files);
@@ -391,7 +387,7 @@ public class FingerprinterTest {
         return project;
     }
     
-    private void addFingerprinterToProject(AbstractProject<?, ?> project, String[] contents, String[] files) throws Exception {
+    private void addFingerprinterToProject(AbstractProject<?, ?> project, String[] contents, String[] files) {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
             if (project instanceof MatrixProject) {

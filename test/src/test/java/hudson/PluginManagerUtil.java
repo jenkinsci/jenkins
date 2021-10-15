@@ -23,16 +23,15 @@
  */
 package hudson;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.Description;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

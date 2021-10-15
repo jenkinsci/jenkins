@@ -32,6 +32,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <t:setIconSize/>
+  <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
   <script>
       function displayBuilds(data) {
           var p = $$('projectStatus');
@@ -40,7 +41,7 @@ THE SOFTWARE.
               var tr = new Element('tr');
               tr.insert(new Element('td', {data: e.iconColorOrdinal}).
                   insert(new Element('a', {href: '${rootURL}/' + e.url}).
-                      insert(new Element('img', {src: '${imagesURL}/${iconSize}/' + e.buildStatusUrl, alt: e.iconColorDescription, 'class': 'icon${iconSize}'}))));
+                      insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
                   insert(new Element('a', {href: '${rootURL}/' + e.parentUrl, 'class': 'model-link'}).
                       update(e.parentFullDisplayName)).
@@ -53,7 +54,7 @@ THE SOFTWARE.
                   update(e.buildStatusSummaryMessage.escapeHTML()));
               tr.insert(new Element('td').
                   insert(new Element('a', {href: '${rootURL}/' + e.url + 'console'}).
-                      insert(new Element('img', {src: '${imagesURL}/${subIconSize}/terminal.png', alt: '${%Console output}', border: 0}))));
+                      insert(new Element('img', {src: '${imagesURL}/svgs/terminal.svg', alt: '${%Console output}', class: '${subIconSizeClass}'}))));
               p.insert(tr);
               Behaviour.applySubtree(tr);
           }

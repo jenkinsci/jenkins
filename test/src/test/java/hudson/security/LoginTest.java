@@ -7,12 +7,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-
 import hudson.model.User;
+import java.io.IOException;
+import java.net.URL;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
@@ -22,11 +23,8 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.net.URL;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi

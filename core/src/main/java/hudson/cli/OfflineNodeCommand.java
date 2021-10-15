@@ -29,13 +29,11 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
-import jenkins.model.Jenkins;
-
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
 import java.util.HashSet;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * CLI Command, which puts the Jenkins node offline.
@@ -45,7 +43,7 @@ import java.util.List;
 @Extension
 public class OfflineNodeCommand extends CLICommand {
 
-    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node", required = true, multiValued = true)
     private List<String> nodes;
 
     @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")

@@ -25,10 +25,9 @@ package hudson.tools;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.slaves.NodeSpecific;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-
+import hudson.slaves.NodeSpecific;
 import java.io.File;
 import java.io.IOException;
 

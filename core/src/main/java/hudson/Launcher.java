@@ -23,32 +23,25 @@
  */
 package hudson;
 
+import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Proc.LocalProc;
+import hudson.Proc.ProcWithJenkins23271Patch;
 import hudson.model.Computer;
-import jenkins.util.MemoryReductionUtil;
-import hudson.model.Run;
-import hudson.util.QuotedStringTokenizer;
-import jenkins.model.Jenkins;
-import hudson.model.TaskListener;
 import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
-import jenkins.tasks.filters.EnvVarsFilterLocalRule;
-import jenkins.tasks.filters.EnvVarsFilterableBuilder;
-import org.apache.commons.io.input.NullInputStream;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.util.QuotedStringTokenizer;
+import hudson.util.StreamCopyThread;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -56,16 +49,22 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
-import hudson.Proc.ProcWithJenkins23271Patch;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.tasks.filters.EnvVarsFilterLocalRule;
+import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
+import jenkins.tasks.filters.EnvVarsFilterableBuilder;
+import jenkins.util.MemoryReductionUtil;
+import org.apache.commons.io.input.NullInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Starts a process.
@@ -136,7 +135,7 @@ public abstract class Launcher {
      * @return
      *      {@code null} if the target node is not configured to support this.
      *      this is a transitional measure.
-     *      Note that a launcher for the master is always non-null.
+     *      Note that a launcher for the built-in node is always non-null.
      */
     @CheckForNull
     public VirtualChannel getChannel() {
@@ -813,7 +812,7 @@ public abstract class Launcher {
             } else
                 buf.append(c);
         }
-        listener.getLogger().println(buf.toString());
+        listener.getLogger().println(buf);
         listener.getLogger().flush();
     }
 
@@ -1110,7 +1109,7 @@ public abstract class Launcher {
         public Proc launch(ProcStarter ps) throws IOException {
             final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
-            final InputStream  in  = (ps.stdin==null || ps.stdin==NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin,false);
+            final InputStream in = ps.stdin == null || ps.stdin == NULL_INPUT_STREAM ? null : new RemoteInputStream(ps.stdin, false);
             
             final FilePath psPwd = ps.pwd;
             final String workDir = psPwd==null ? null : psPwd.getRemote();

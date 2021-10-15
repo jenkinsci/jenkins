@@ -15,7 +15,6 @@
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import javax.servlet.http.HttpSession;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -60,11 +59,11 @@ public class NonSerializableSecurityContext implements SecurityContext {
         if (obj instanceof SecurityContext) {
             SecurityContext test = (SecurityContext) obj;
 
-            if ((this.getAuthentication() == null) && (test.getAuthentication() == null)) {
+            if (this.getAuthentication() == null && test.getAuthentication() == null) {
                 return true;
             }
 
-            if ((this.getAuthentication() != null) && (test.getAuthentication() != null)
+            if (this.getAuthentication() != null && test.getAuthentication() != null
                 && this.getAuthentication().equals(test.getAuthentication())) {
                 return true;
             }

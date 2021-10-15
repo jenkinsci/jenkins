@@ -24,6 +24,8 @@
 package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -32,17 +34,6 @@ import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.FingerprintFacet;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
@@ -53,6 +44,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jenkins.model.FingerprintFacet;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Default file system storage implementation for fingerprints.
@@ -136,7 +134,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             save(fp, file);
         }
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
-        //  https://issues.jenkins-ci.org/browse/JENKINS-62543
+        //  https://issues.jenkins.io/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
@@ -164,7 +162,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.println("</number>");
                     w.println("  </original>");
                 }
-                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins-ci.org/browse/JENKINS-25808
+                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins.io/browse/JENKINS-25808
                 w.print("  <md5sum>");
                 w.print(fp.getHashString());
                 w.println("</md5sum>");

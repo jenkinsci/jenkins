@@ -1,7 +1,6 @@
 package jenkins.security;
 
 import hudson.Util;
-
 import java.io.IOException;
 
 /**

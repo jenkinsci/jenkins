@@ -31,7 +31,6 @@ import static org.junit.Assert.assertSame;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import hudson.model.Descriptor.FormException;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,7 +99,7 @@ public class ViewPropertyTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
             return this;
         }
 

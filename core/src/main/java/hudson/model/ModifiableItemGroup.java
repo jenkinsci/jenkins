@@ -23,11 +23,10 @@
  */
 package hudson.model;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * {@link ItemGroup} that is a general purpose container, which allows users and the rest of the program

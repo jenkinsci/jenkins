@@ -24,6 +24,13 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.console.AnnotatedLargeText;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,14 +46,6 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.console.AnnotatedLargeText;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.XMLOutput;
 import org.junit.Rule;
@@ -56,7 +55,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.mockito.Mockito;
-
 
 public class RunTest {
     private static final String SAMPLE_BUILD_OUTPUT = "Sample build output abc123.\n";
@@ -235,10 +233,11 @@ public class RunTest {
     @Test
     public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final Jenkins group = Mockito.mock(Jenkins.class);
+        Mockito.when(group.getFullName()).thenReturn("j");
         final Job j = Mockito.mock(Job.class);
 
         Mockito.when(j.getParent()).thenReturn(group);
-        Mockito.when(group.getFullName()).thenReturn("j");
+        Mockito.when(j.getFullName()).thenReturn("Mock job");
         Mockito.when(j.assignBuildNumber()).thenReturn(1, 2);
 
         Run r1 = new Run(j) {};
@@ -260,7 +259,9 @@ public class RunTest {
         final Job j1 = Mockito.mock(Job.class);
         final Job j2 = Mockito.mock(Job.class);
         Mockito.when(j1.getParent()).thenReturn(group1);
+        Mockito.when(j1.getFullName()).thenReturn("Mock job");
         Mockito.when(j2.getParent()).thenReturn(group2);
+        Mockito.when(j2.getFullName()).thenReturn("Mock job2");
         Mockito.when(group1.getFullName()).thenReturn("g1");
         Mockito.when(group2.getFullName()).thenReturn("g2");
         Mockito.when(j1.assignBuildNumber()).thenReturn(1);

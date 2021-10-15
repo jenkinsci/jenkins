@@ -23,14 +23,16 @@
  */
 package hudson.model;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import jenkins.scm.RunWithSCM;
-import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -41,14 +43,13 @@ import hudson.remoting.ChannelClosedException;
 import hudson.remoting.RequestAbortedException;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -60,15 +61,6 @@ import hudson.util.AdaptedIterator;
 import hudson.util.HttpResponses;
 import hudson.util.Iterators;
 import hudson.util.VariableResolver;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.xml.sax.SAXException;
-
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -87,14 +79,19 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import static java.util.logging.Level.WARNING;
-
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.scm.RunWithSCM;
+import jenkins.util.SystemProperties;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.SAXException;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -113,7 +110,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Name of the agent this project was built on.
-     * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
+     * Null or "" if built by the built-in node. (null happens when we read old record that didn't have this information.)
      */
     private String builtOn;
 
@@ -136,7 +133,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Changes in this build.
      */
-    private transient volatile WeakReference<ChangeLogSet<? extends Entry>> changeSet;
+    private transient volatile WeakReference<ChangeLogSet<? extends ChangeLogSet.Entry>> changeSet;
 
     /**
      * Cumulative list of people who contributed to the build problem.
@@ -217,7 +214,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Returns the name of the agent it was built on; null or "" if built by the master.
+     * Returns the name of the agent it was built on; null or "" if built by the built-in node.
      * (null happens when we read old record that didn't have this information.)
      */
     @Exported(name="builtOn")
@@ -890,14 +887,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return never null.
      */
     @Exported
-    @NonNull public ChangeLogSet<? extends Entry> getChangeSet() {
+    @NonNull public ChangeLogSet<? extends ChangeLogSet.Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
                 scm = NullChangeLogParser.INSTANCE;                
             }
         }
 
-        ChangeLogSet<? extends Entry> cs = null;
+        ChangeLogSet<? extends ChangeLogSet.Entry> cs = null;
         if (changeSet!=null)
             cs = changeSet.get();
 
@@ -916,7 +913,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override
     @NonNull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
-        ChangeLogSet<? extends Entry> cs = getChangeSet();
+        ChangeLogSet<? extends ChangeLogSet.Entry> cs = getChangeSet();
         return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
     }
 
@@ -928,7 +925,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return changelogFile.exists();
     }
 
-    private ChangeLogSet<? extends Entry> calcChangeSet() {
+    private ChangeLogSet<? extends ChangeLogSet.Entry> calcChangeSet() {
         File changelogFile = new File(getRootDir(), "changelog.xml");
         if (!changelogFile.exists())
             return ChangeLogSet.createEmpty(this);

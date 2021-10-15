@@ -24,12 +24,6 @@
 
 package jenkins.security.s2m;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
-import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +32,12 @@ import static org.junit.Assert.fail;
 import hudson.FilePath;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
+import javax.inject.Inject;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
@@ -180,7 +180,7 @@ public class AdminFilePathFilterTest {
     private void checkSlave_can_readFile(Slave s, FilePath target) throws Exception {
         // The agent can read file from userContent
         String content = s.getChannel().call(new ReadFileS2MCallable(target));
-        // and the master can directly reach it
+        // and the controller can directly reach it
         assertEquals(target.readToString(), content);
     }
     

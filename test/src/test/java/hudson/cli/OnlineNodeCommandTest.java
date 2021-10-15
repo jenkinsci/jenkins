@@ -24,6 +24,15 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -36,24 +45,14 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
+import java.io.IOException;
+import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.IOException;
-import java.util.concurrent.Future;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author pjanouse
@@ -79,7 +78,7 @@ public class OnlineNodeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
     }
 
-    @Test public void onlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void onlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -285,7 +284,7 @@ public class OnlineNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnMaster() throws Exception {
+    @Test public void onlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command

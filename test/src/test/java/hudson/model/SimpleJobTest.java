@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -69,7 +68,7 @@ public class SimpleJobTest {
     }
     
     @Test
-    public void testGetEstimatedDurationWithNoRuns() throws IOException {
+    public void testGetEstimatedDurationWithNoRuns() {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
@@ -163,7 +162,7 @@ public class SimpleJobTest {
         }
 
         @Override
-        public int assignBuildNumber() throws IOException {
+        public int assignBuildNumber() {
             return i++;
         }
 

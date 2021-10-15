@@ -27,28 +27,27 @@ package hudson.tasks;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
+import hudson.Extension;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.util.RunList;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import hudson.util.RunList;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import com.google.common.collect.HashMultimap;
-
-import hudson.Extension;
-import hudson.model.Job;
-import hudson.model.Run;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderDescriptor;
 import jenkins.util.io.CompositeIOException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -79,7 +78,7 @@ public class LogRotator extends BuildDiscarder {
 
         public CollatedLogRotatorException(String msg, Collection<Exception> values) {
             super(msg);
-            this.collated = (values != null) ? values : Collections.emptyList();
+            this.collated = values != null ? values : Collections.emptyList();
         }
     }
     
@@ -143,7 +142,7 @@ public class LogRotator extends BuildDiscarder {
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported
-        HashMultimap<Run<?,?>, IOException> exceptionMap = HashMultimap.create();
+        Map<Run<?,?>, Set<IOException>> exceptionMap = new HashMap<>();
         
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
@@ -164,7 +163,7 @@ public class LogRotator extends BuildDiscarder {
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
                 try { r.delete(); }
-                catch (IOException ex) { exceptionMap.put(r, ex); }
+                catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
             }
         }
 
@@ -179,7 +178,7 @@ public class LogRotator extends BuildDiscarder {
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be removed", r);
                     try { r.delete(); }
-                    catch (IOException ex) { exceptionMap.put(r, ex); }
+                    catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
                 }
                 r = r.getNextBuild();
             }
@@ -193,7 +192,7 @@ public class LogRotator extends BuildDiscarder {
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
                 try { r.deleteArtifacts(); }
-                catch (IOException ex) { exceptionMap.put(r, ex); }
+                catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
             }
         }
 
@@ -208,7 +207,7 @@ public class LogRotator extends BuildDiscarder {
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
                     try { r.deleteArtifacts(); }
-                    catch (IOException ex) { exceptionMap.put(r, ex); }
+                    catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
                 }
                 r = r.getNextBuild();
             }
@@ -220,7 +219,7 @@ public class LogRotator extends BuildDiscarder {
                     "Failed to rotate logs for [%s]",
                     exceptionMap.keySet().stream().map(Object::toString).collect(Collectors.joining(", "))
             );
-            throw new CompositeIOException(msg, new ArrayList<>(exceptionMap.values()));
+            throw new CompositeIOException(msg, exceptionMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
         }
     }
 

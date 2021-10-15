@@ -1,17 +1,16 @@
 package jenkins.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import groovy.lang.GroovyClassLoader;
 import hudson.triggers.SafeTimerTask;
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.Issue;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 public class TimerTest {
 
@@ -78,7 +77,7 @@ public class TimerTest {
                                 startLatch.countDown();
                                 contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
                             } catch (Exception ex) {
-                                throw  new RuntimeException(ex);
+                                throw new RuntimeException(ex);
                             }
                         }
                     }, 0, TimeUnit.SECONDS);

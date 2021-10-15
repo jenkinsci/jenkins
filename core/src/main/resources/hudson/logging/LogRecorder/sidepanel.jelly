@@ -33,7 +33,7 @@ THE SOFTWARE.
       <l:task href=".." icon="icon-up icon-md" title="${%Back to Loggers}"/>
       <l:task href="." icon="icon-notepad icon-md" title="${%Log records}"/>
       <l:isAdmin>
-        <l:task href="configure" icon="icon-gear2 icon-md" title="${%Configure}"/>
+        <l:task href="configure" icon="icon-gear icon-md" title="${%Configure}"/>
         <l:task href="delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
       </l:isAdmin>
     </l:tasks>

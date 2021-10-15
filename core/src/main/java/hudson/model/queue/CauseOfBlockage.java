@@ -1,14 +1,14 @@
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Computer;
-import hudson.model.Queue.Task;
-import hudson.model.Node;
-import hudson.model.Messages;
 import hudson.model.Label;
+import hudson.model.Messages;
+import hudson.model.Node;
+import hudson.model.Queue.Task;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -98,7 +98,7 @@ public abstract class CauseOfBlockage {
 
         @Override
         public String getShortDescription() {
-            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_NodeOffline(name);
         }
         
@@ -178,7 +178,7 @@ public abstract class CauseOfBlockage {
 
         @Override
         public String getShortDescription() {
-            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
         

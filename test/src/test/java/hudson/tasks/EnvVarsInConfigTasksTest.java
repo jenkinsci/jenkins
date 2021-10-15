@@ -1,35 +1,34 @@
 package hudson.tasks;
 
+import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
 import static org.junit.Assert.assertFalse;
 
 import hudson.EnvVars;
-import hudson.model.labels.LabelAtom;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Result;
+import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
-
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.ExtractResourceSCM;
-import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
-import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
 
 public class EnvVarsInConfigTasksTest {
 	public static final String DUMMY_LOCATION_VARNAME = "TOOLS_DUMMY_LOCATION";
 
-	private DumbSlave slaveEnv = null;
-	private DumbSlave slaveRegular = null;
+	private DumbSlave agentEnv = null;
+	private DumbSlave agentRegular = null;
 
 	@ClassRule
 	public static BuildWatcher buildWatcher = new BuildWatcher();
@@ -59,10 +58,10 @@ public class EnvVarsInConfigTasksTest {
                 withVariable(ant.getHome()),JenkinsRule.NO_PROPERTIES);
         j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 
-		// create slaves
+		// create agents
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
-		slaveEnv = j.createSlave(new LabelAtom("slaveEnv"), additionalEnv);
-		slaveRegular = j.createSlave(new LabelAtom("slaveRegular"));
+		agentEnv = j.createSlave(new LabelAtom("agentEnv"), additionalEnv);
+		agentRegular = j.createSlave(new LabelAtom("agentRegular"));
 	}
 
 	private String withVariable(String s) {
@@ -70,7 +69,7 @@ public class EnvVarsInConfigTasksTest {
 	}
 
 	@Test
-	public void testFreeStyleShellOnSlave() throws Exception {
+	public void testFreeStyleShellOnAgent() throws Exception {
 		FreeStyleProject project = j.createFreeStyleProject();
 		if (Os.isFamily("dos")) {
 			project.getBuildersList().add(new BatchFile("echo %JAVA_HOME%"));
@@ -84,7 +83,7 @@ public class EnvVarsInConfigTasksTest {
 				"/simple-projects.zip")));
 
 		// test the regular agent - variable not expanded
-		project.setAssignedLabel(slaveRegular.getSelfLabel());
+		project.setAssignedLabel(agentRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatusSuccess(build);
@@ -92,7 +91,7 @@ public class EnvVarsInConfigTasksTest {
 		j.assertLogContains(DUMMY_LOCATION_VARNAME, build);
 
 		// test the agent with prepared environment
-		project.setAssignedLabel(slaveEnv.getSelfLabel());
+		project.setAssignedLabel(agentEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatusSuccess(build);
@@ -102,9 +101,9 @@ public class EnvVarsInConfigTasksTest {
 	}
 
 	@Test
-	public void testFreeStyleAntOnSlave() throws Exception {
+	public void testFreeStyleAntOnAgent() throws Exception {
 		Assume.assumeFalse(
-				"Cannot do testFreeStyleAntOnSlave without ANT_HOME",
+				"Cannot do testFreeStyleAntOnAgent without ANT_HOME",
 				j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0
 		);
 
@@ -120,7 +119,7 @@ public class EnvVarsInConfigTasksTest {
 						+ "}rect", "varAnt", "", buildFile, ""));
 
 		// test the regular agent - variable not expanded
-		project.setAssignedLabel(slaveRegular.getSelfLabel());
+		project.setAssignedLabel(agentRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatus(Result.FAILURE, build);
@@ -128,7 +127,7 @@ public class EnvVarsInConfigTasksTest {
 		j.assertLogContains(Ant_ExecutableNotFound("varAnt"), build);
 
 		// test the agent with prepared environment
-		project.setAssignedLabel(slaveEnv.getSelfLabel());
+		project.setAssignedLabel(agentEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatusSuccess(build);
@@ -136,14 +135,14 @@ public class EnvVarsInConfigTasksTest {
 		// Check variable was expanded
 		j.assertLogContains("Ant home: ", build);
 		j.assertLogContains("Test property: correct", build);
-		assertFalse(j.getLog(build).matches("(?s)^.*Ant home: [^\\n\\r]*"
+		assertFalse(JenkinsRule.getLog(build).matches("(?s)^.*Ant home: [^\\n\\r]*"
 				+ DUMMY_LOCATION_VARNAME + ".*$"));
-		assertFalse(j.getLog(build).matches("(?s)^.*Test property: [^\\n\\r]*"
+		assertFalse(JenkinsRule.getLog(build).matches("(?s)^.*Test property: [^\\n\\r]*"
 				+ DUMMY_LOCATION_VARNAME + ".*$"));
 	}
 
 	@Test
-	public void testFreeStyleMavenOnSlave() throws Exception {
+	public void testFreeStyleMavenOnAgent() throws Exception {
 		FreeStyleProject project = j.createFreeStyleProject();
 		project.setJDK(j.jenkins.getJDK("varJDK"));
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -155,7 +154,7 @@ public class EnvVarsInConfigTasksTest {
 							false));
 
 		// test the regular agent - variable not expanded
-		project.setAssignedLabel(slaveRegular.getSelfLabel());
+		project.setAssignedLabel(agentRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatus(Result.FAILURE, build);
@@ -163,7 +162,7 @@ public class EnvVarsInConfigTasksTest {
 		j.assertLogContains(DUMMY_LOCATION_VARNAME, build);
 
 		// test the agent with prepared environment
-		project.setAssignedLabel(slaveEnv.getSelfLabel());
+		project.setAssignedLabel(agentEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 
 		j.assertBuildStatusSuccess(build);

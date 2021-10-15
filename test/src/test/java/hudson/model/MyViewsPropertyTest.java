@@ -23,23 +23,25 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Descriptor.FormException;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 /**
  *
  * @author Lucie Votypkova
@@ -234,7 +236,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         for(Permission p : Permission.getAll()){
-            assertEquals("Property should have the same ACL as its user", property.getACL().hasPermission(p), user.getACL().hasPermission(p));
+            assertEquals("Property should have the same ACL as its user", property.hasPermission(p), user.hasPermission(p));
         }
     }
 

@@ -1,9 +1,9 @@
 package jenkins.util;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-
-import static org.junit.Assert.assertEquals;
 
 @Issue("JENKINS-44052")
 public class TimeDurationTest {

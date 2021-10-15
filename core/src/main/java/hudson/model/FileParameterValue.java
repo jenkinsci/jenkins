@@ -29,7 +29,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.regex.Pattern;
-
+import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -74,8 +73,8 @@ public class FileParameterValue extends ParameterValue {
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
-            Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
+    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE =
+            SystemProperties.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
     private final transient FileItem file;
 
@@ -132,12 +131,7 @@ public class FileParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            @Override
-            public String resolve(String name) {
-                return FileParameterValue.this.name.equals(name) ? originalFileName : null;
-            }
-        };
+        return name -> FileParameterValue.this.name.equals(name) ? originalFileName : null;
     }
 
     /**
@@ -192,13 +186,13 @@ public class FileParameterValue extends ParameterValue {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((location == null) ? 0 : location.hashCode());
+				+ (location == null ? 0 : location.hashCode());
 		return result;
 	}
 
 	/**
 	 * Compares file parameters (existing files will be considered as different).
-	 * @since 1.586 Function has been modified in order to avoid <a href="https://jenkins-ci.org/issue/19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
+	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins.io/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -229,9 +223,6 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Serve this file parameter in response to a {@link StaplerRequest}.
-     *
-     * @param request
-     * @param response
      */
     public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
         AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();

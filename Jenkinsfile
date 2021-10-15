@@ -36,14 +36,14 @@ for(j = 0; j < jdks.size(); j++) {
 
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
-                    timeout(time: 180, unit: 'MINUTES') {
+                    timeout(time: 300, unit: 'MINUTES') {
                         // See below for what this method does - we're passing an arbitrary environment
                         // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
                         withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -e"
+                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
 
                             if(isUnix()) {
                                 sh mvnCmd
@@ -60,8 +60,43 @@ for(j = 0; j < jdks.size(); j++) {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+                        if (! fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
+                            error 'junit 4 tests are no longer being run for the core package'
+                        }
+                        if (! fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
+                            error 'junit 4 tests are no longer being run for the test package'
+                        } // cli has been migrated to junit 5
+                        if (failFast && currentBuild.result == 'UNSTABLE') {
+                            error 'There were test failures; halting early'
+                        }
                     }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
+                        def folders = env.JOB_NAME.split('/')
+                        if (folders.length > 1) {
+                            discoverGitReferenceBuild(scm: folders[1])
+                        }
+
+                        echo "Recording static analysis results for '${buildType}'"
+                        recordIssues enabledForFailure: true,
+                                tools: [java(), javaDoc()],
+                                filters: [excludeFile('.*Assert.java')],
+                                sourceCodeEncoding: 'UTF-8',
+                                skipBlames: true,
+                                trendChartType: 'TOOLS_ONLY'
+                        recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
+                                                 sourceCodeEncoding: 'UTF-8',
+                                                 skipBlames: true,
+                                                 trendChartType: 'TOOLS_ONLY',
+                                                 qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
+                        recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+                                                   sourceCodeEncoding: 'UTF-8',
+                                                   skipBlames: true,
+                                                   trendChartType: 'TOOLS_ONLY',
+                                                   qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+                        if (failFast && currentBuild.result == 'UNSTABLE') {
+                            error 'Static analysis quality gates not passed; halting early'
+                        }
+
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",

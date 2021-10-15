@@ -24,6 +24,9 @@
 
 package hudson.tools;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -39,15 +42,10 @@ import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
-
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.io.IOException;
 import java.util.List;
-
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -66,7 +64,7 @@ import org.dom4j.io.SAXReader;
  *
  * <ul>
  * <li>Hudson allows admins to specify different locations for tools on some agents.
- *     For example, JDK on the master might be on /usr/local/java but on a Windows agent
+ *     For example, JDK on the controller might be on /usr/local/java but on a Windows agent
  *     it could be at c:\Program Files\Java
  * <li>Hudson can verify the existence of tools and provide warnings and diagnostics for
  *     admins. (TBD)
@@ -141,7 +139,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * 
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
-     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on controller)
      */
     public @CheckForNull String getHome() {
         return home;

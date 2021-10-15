@@ -5,15 +5,14 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
-import net.sf.json.JSONObject;
-
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.net.URL;
+import net.sf.json.JSONObject;
 
 /**
  * Partial convenience implementation of {@link ToolInstaller} that just downloads
@@ -177,7 +176,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return the merged ToolInstallerList wrapped in a JSONObject
          */
         private JSONObject reduce(List<JSONObject> jsonList) {
-            List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
+            List<ToolInstallerEntry> reducedToolEntries = new ArrayList<>();
 
             HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {

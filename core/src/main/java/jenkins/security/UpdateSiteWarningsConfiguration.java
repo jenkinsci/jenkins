@@ -24,10 +24,15 @@
 
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.model.PersistentDescriptor;
 import hudson.model.UpdateSite;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -35,12 +40,6 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Configuration for update site-provided warnings.

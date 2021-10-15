@@ -24,7 +24,7 @@
 package jenkins.security;
 
 import com.google.common.cache.Cache;
-import static com.google.common.cache.CacheBuilder.newBuilder;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -70,8 +70,8 @@ public final class UserDetailsCache {
                 EXPIRE_AFTER_WRITE_SEC = (int)TimeUnit.MINUTES.toSeconds(2);
             }
         }
-        detailsCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
-        existenceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
+        detailsCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
+        existenceCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
     }
 
     /**
@@ -122,7 +122,7 @@ public final class UserDetailsCache {
                 return detailsCache.get(idOrFullName, new Retriever(idOrFullName));
             } catch (ExecutionException | UncheckedExecutionException e) {
                 if (e.getCause() instanceof UsernameNotFoundException) {
-                    throw ((UsernameNotFoundException)e.getCause());
+                    throw (UsernameNotFoundException) e.getCause();
                 } else {
                     throw e;
                 }

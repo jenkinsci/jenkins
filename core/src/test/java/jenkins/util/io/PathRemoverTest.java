@@ -24,13 +24,22 @@
 
 package jenkins.util.io;
 
-import hudson.Functions;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.Timeout;
-import org.jvnet.hudson.test.Issue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
+import hudson.Functions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,22 +58,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.arrayWithSize;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
+import org.jvnet.hudson.test.Issue;
 
 public class PathRemoverTest {
 
@@ -104,14 +102,9 @@ public class PathRemoverTest {
         given(attributes.isDirectory()).willReturn(false);
 
         PathRemover remover = PathRemover.newSimpleRemover();
-        try {
-            remover.forceRemoveFile(file.toPath());
-            fail("Should not have been deleted: " + file);
-        } catch (IOException e) {
-            assertThat(calcExceptionHierarchy(e), hasItem(FileSystemException.class));
-            assertThat(e.getMessage(), containsString(filename));
-        }
-
+        final IOException e = assertThrows(IOException.class, () -> remover.forceRemoveFile(file.toPath()));
+        assertThat(calcExceptionHierarchy(e), hasItem(FileSystemException.class));
+        assertThat(e.getMessage(), containsString(filename));
     }
 
     private static List<Class<?>> calcExceptionHierarchy(Throwable t) {
@@ -437,13 +430,12 @@ public class PathRemoverTest {
         for (int i = 0; i < lockedFiles; i++) {
             locker.acquireLock(files[i]);
         }
-        try {
-            PathRemover.newSimpleRemover().forceRemoveRecursive(dir.toPath());
-            fail("Deletion should have failed");
-        } catch (CompositeIOException e) {
-            assertThat(e.getSuppressed(), arrayWithSize(maxExceptions));
-            assertThat(e.getMessage(), endsWith("(Discarded " + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
-        }
+
+        final CompositeIOException e = assertThrows(CompositeIOException.class,
+                () -> PathRemover.newSimpleRemover().forceRemoveRecursive(dir.toPath()));
+        assertThat(e.getSuppressed(), arrayWithSize(maxExceptions));
+        assertThat(e.getMessage(), endsWith("(Discarded " + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
+
         assertTrue(dir.exists());
         assertThat(dir.listFiles().length, equalTo(lockedFiles));
     }

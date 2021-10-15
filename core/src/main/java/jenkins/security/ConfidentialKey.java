@@ -1,12 +1,10 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.IOException;
-
 import jenkins.slaves.JnlpAgentReceiver;
 
 /**

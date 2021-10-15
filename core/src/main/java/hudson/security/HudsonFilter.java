@@ -23,8 +23,9 @@
  */
 package hudson.security;
 
-import java.io.IOException;
 import static java.util.logging.Level.SEVERE;
+
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -104,7 +105,7 @@ public class HudsonFilter implements Filter {
         try {
             Jenkins hudson = Jenkins.getInstanceOrNull();
             if (hudson != null) {
-                // looks like we are initialized after Hudson came into being. initialize it now. See #3069
+                // looks like we are initialized after Hudson came into being. initialize it now. See JENKINS-3069
                 LOGGER.fine("Security wasn't initialized; Initializing it...");
                 SecurityRealm securityRealm = hudson.getSecurityRealm();
                 reset(securityRealm);

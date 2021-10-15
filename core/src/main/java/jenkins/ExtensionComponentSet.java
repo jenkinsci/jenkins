@@ -28,7 +28,6 @@ import hudson.ExtensionFinder;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

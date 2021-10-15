@@ -4,21 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.FakeLauncher;
-import org.jvnet.hudson.test.PretendSlave;
 import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
-import hudson.model.Result;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.FakeLauncher;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PretendSlave;
 import org.jvnet.hudson.test.recipes.LocalData;
-
 
 /**
  * Tests for the BatchFile tasks class.
@@ -32,13 +29,13 @@ public class BatchFileTest {
 
     @Issue("JENKINS-7478")
     @Test
-    public void validateBatchFileCommandEOL() throws Exception {
+    public void validateBatchFileCommandEOL() {
         BatchFile obj = new BatchFile("echo A\necho B\recho C");
         rule.assertStringContains(obj.getCommand(), "echo A\r\necho B\r\necho C");
     }
 
     @Test
-    public void validateBatchFileContents() throws Exception {
+    public void validateBatchFileContents() {
         BatchFile obj = new BatchFile("echo A\necho B\recho C");
         rule.assertStringContains(obj.getContents(), "echo A\r\necho B\r\necho C\r\nexit %ERRORLEVEL%");
     }
@@ -53,7 +50,7 @@ public class BatchFileTest {
         }
 
         @Override
-        public Proc onLaunch(ProcStarter p) throws IOException {
+        public Proc onLaunch(ProcStarter p) {
             return new FinishedProc(this.code);
         }
     }
@@ -143,7 +140,7 @@ public class BatchFileTest {
 
     @Issue("JENKINS-23786")
     @Test
-    public void windowsUnstableCodeZeroIsSameAsUnset() throws Exception {
+    public void windowsUnstableCodeZeroIsSameAsUnset() {
         assumeTrue(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
@@ -153,9 +150,9 @@ public class BatchFileTest {
     @Issue("JENKINS-40894")
     @Test
     @LocalData
-    public void canLoadUnstableReturnFromDisk() throws Exception {
+    public void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("batch");
         BatchFile batchFile = (BatchFile) p.getBuildersList().get(0);
-        assertEquals("unstable return", Integer.valueOf(1), batchFile.getUnstableReturn());
+        assertEquals("unstable return", (Integer) 1, batchFile.getUnstableReturn());
     }
 }

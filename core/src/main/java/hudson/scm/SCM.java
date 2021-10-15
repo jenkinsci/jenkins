@@ -23,6 +23,9 @@
  */
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -56,9 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
@@ -185,7 +185,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * The default implementation returns true.
      *
      * <p>
-     * See issue #1348 for more discussion of this feature.
+     * See issue JENKINS-1348 for more discussion of this feature.
      *
      * @since 1.196
      */

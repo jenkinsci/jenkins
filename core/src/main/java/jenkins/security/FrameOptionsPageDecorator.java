@@ -1,8 +1,8 @@
 package jenkins.security;
 
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.model.PageDecorator;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

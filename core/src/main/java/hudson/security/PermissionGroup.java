@@ -23,6 +23,8 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Hudson;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,9 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import org.jvnet.localizer.Localizable;
 
 /**

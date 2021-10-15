@@ -23,13 +23,19 @@
  */
 package hudson.model;
 
+import static hudson.util.QuotedStringTokenizer.quote;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
+import hudson.ExtensionList;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
-import hudson.XmlFile;
-import hudson.BulkChange;
-import hudson.ExtensionList;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.Permission;
 import hudson.util.FormApply;
@@ -37,6 +43,33 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import java.beans.Introspector;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -44,6 +77,8 @@ import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.IOUtils;
+import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Facet;
@@ -56,41 +91,6 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
 import org.springframework.util.StringUtils;
-import org.jvnet.tiger_types.Types;
-import org.apache.commons.io.IOUtils;
-
-import static hudson.util.QuotedStringTokenizer.quote;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
-import javax.servlet.ServletException;
-import javax.servlet.RequestDispatcher;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.beans.Introspector;
-import java.util.IdentityHashMap;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Metadata about a configurable instance.
@@ -215,11 +215,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         public Descriptor getItemTypeDescriptorOrDie() {
             Class it = getItemType();
             if (it == null) {
-                throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
+                throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://www.jenkins.io/redirect/developer/class-is-missing-descriptor");
             }
             Descriptor d = Jenkins.get().getDescriptor(it);
             if (d==null)
-                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
+                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://www.jenkins.io/redirect/developer/class-is-missing-descriptor");
             return d;
         }
 
@@ -589,7 +589,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             } else {
                 if (req==null) {
                     // yes, req is supposed to be always non-null, but see the note above
-                    return verifyNewInstance(clazz.newInstance());
+                    return verifyNewInstance(clazz.getDeclaredConstructor().newInstance());
                 }
 
                 // new behavior as of 1.206
@@ -608,10 +608,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                     req.setBindInterceptor(oldInterceptor);
                 }
             }
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e); // impossible
-        } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
+            throw new LinkageError("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
         }
     }
 
@@ -626,7 +624,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private static class NewInstanceBindInterceptor extends BindInterceptor {
 
         private final BindInterceptor oldInterceptor;
-        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
+        private final IdentityHashMap<JSONObject,Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
             LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);

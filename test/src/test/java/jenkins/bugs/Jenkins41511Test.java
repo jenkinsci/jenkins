@@ -1,12 +1,11 @@
 package jenkins.bugs;
 
+import hudson.security.HudsonPrivateSecurityRealm;
+import jenkins.model.Jenkins;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import hudson.security.HudsonPrivateSecurityRealm;
-import jenkins.model.Jenkins;
 
 public class Jenkins41511Test {
 

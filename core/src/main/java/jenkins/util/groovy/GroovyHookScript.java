@@ -1,18 +1,18 @@
 package jenkins.util.groovy;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -100,12 +100,7 @@ public class GroovyHookScript {
 
         File scriptD = new File(rootDir, hookGroovyD);
         if (scriptD.isDirectory()) {
-            File[] scripts = scriptD.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.getName().endsWith(".groovy");
-                }
-            });
+            File[] scripts = scriptD.listFiles(f -> f.getName().endsWith(".groovy"));
             if (scripts!=null) {
                 // sort to run them in a deterministic order
                 Arrays.sort(scripts);
