@@ -37,3 +37,5 @@
 *.png           binary
 *.war           binary
 *.zip           binary
+/war/.yarn/releases/** binary
+/war/.yarn/plugins/** binary
