@@ -364,7 +364,7 @@ public class FunctionsTest {
     }
 
     @Issue("JDK-6507809")
-    @Test public void printThrowable() throws Exception {
+    @Test public void printThrowable() {
         // Basics: a single exception. No change.
         assertPrintThrowable(new Stack("java.lang.NullPointerException: oops", "p.C.method1:17", "m.Main.main:1"),
             "java.lang.NullPointerException: oops\n" +

@@ -58,7 +58,7 @@ public class XStreamDOMTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         xs = new XStream2();
         xs.alias("foo", Foo.class);
     }

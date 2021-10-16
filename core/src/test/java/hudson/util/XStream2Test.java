@@ -530,7 +530,7 @@ public class XStream2Test {
     }
 
     @Test
-    public void annotations() throws Exception {
+    public void annotations() {
         assertEquals("not registered, so sorry", "<hudson.util.XStream2Test_-C1/>", Jenkins.XSTREAM2.toXML(new C1()));
         assertEquals("manually registered", "<C-2/>", Jenkins.XSTREAM2.toXML(new C2()));
         assertEquals("manually processed", "<C-3/>", Jenkins.XSTREAM2.toXML(new C3()));
