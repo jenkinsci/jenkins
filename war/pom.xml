@@ -43,8 +43,8 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>14.16.0</node.version>
-    <yarn.version>1.22.10</yarn.version>
+    <node.version>14.18.1</node.version>
+    <yarn.version>3.0.2</yarn.version>
   </properties>
 
   <dependencyManagement>
@@ -588,9 +588,6 @@ THE SOFTWARE.
                   <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <!-- ensure only one concurrent 'yarn install' -->
-                  <!-- when yarn cache is empty, multiple yarns performing network fetches frequently results in opaque errors -->
-                  <arguments>--mutex network</arguments>
                 </configuration>
               </execution>
 
