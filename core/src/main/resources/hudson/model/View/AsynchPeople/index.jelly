@@ -38,7 +38,7 @@ THE SOFTWARE.
               </h1>
           </div>
       </div>
-      <p>${%blurb}</p>
+      <p class="jenkins-description">${%blurb}</p>
       <script>
           function display(data) {
               var p = document.getElementById('people');

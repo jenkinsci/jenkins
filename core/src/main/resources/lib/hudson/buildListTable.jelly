@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:u="jelly:org.jenkins.ui.icon.IconTagLibrary" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:documentation>
     Creates a table of builds.
     <st:attribute name="builds" use="required">
@@ -43,19 +43,18 @@ THE SOFTWARE.
                   insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url}).
                       insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
-                  insert(new Element('a', {class: 'jenkins-table__button model-link', href: '${rootURL}/' + e.parentUrl}).
+                  insert(new Element('a', {class: 'jenkins-table__link model-link', href: '${rootURL}/' + e.parentUrl}).
                       update(e.parentFullDisplayName)).
-                  insert('\u00A0').
-                  insert(new Element('a', {class: 'jenkins-table__button model-link inside', href: '${rootURL}/' + e.url}).
+                  insert(new Element('a', {class: 'jenkins-table__link jenkins-table__badge model-link inside', href: '${rootURL}/' + e.url}).
                       update(e.displayName.escapeHTML())));
               tr.insert(new Element('td', {data: e.timestampString2}).
-                  insert(new Element('button', {class: 'jenkins-table__button', tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString3 + '"))'}).
+                  insert(new Element('button', {class: 'jenkins-table__link', tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString3 + '"))'}).
                     update(e.timestampString.escapeHTML())));
-              tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: red' : ''}).
+              tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: var(--red)' : ''}).
                   update(e.buildStatusSummaryMessage.escapeHTML()));
               tr.insert(new Element('td').
                   insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url + 'console'}).
-                      insert(new Element('img', {src: '${imagesURL}/svgs/terminal.svg', alt: '${%Console output}', class: '${subIconSizeClass}'}))));
+                      insert(`<u:ionicon name="terminal-outline" />`)));
               p.insert(tr);
               Behaviour.applySubtree(tr);
           }

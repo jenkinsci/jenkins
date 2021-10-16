@@ -23,12 +23,16 @@
  */
 package org.jenkins.ui.icon;
 
+import org.apache.commons.jelly.JellyContext;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.jelly.JellyContext;
 
 /**
  * An icon set.
@@ -43,6 +47,7 @@ public class IconSet {
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
     private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
+    private Map<String, String> ionicons = new ConcurrentHashMap<>();
 
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
@@ -55,6 +60,28 @@ public class IconSet {
 
     public static void initPageVariables(JellyContext context) {
         context.setVariable("icons", icons);
+    }
+
+    public String getIonicon(String name) {
+        if (ionicons.containsKey(name)) {
+            return ionicons.get(name);
+        }
+
+        // Load icon if it exists
+        try {
+            String ionicon = new String(
+                    Files.readAllBytes(Paths.get("war/src/main/webapp/images/ionicons/" + name + ".svg")));
+
+            ionicon = ionicon.replace("<title>ionicons-v5-b</title>", "");
+            ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+
+            ionicons.put(name, ionicon);
+
+            return ionicon;
+        } catch (IOException e) {
+            // Return a placeholder icon if it doesn't
+            return getIonicon("ellipse-outline");
+        }
     }
 
     public IconSet addIcon(Icon icon) {
