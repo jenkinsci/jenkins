@@ -65,10 +65,10 @@ public abstract class Cause {
      * One-line human-readable text of the cause.
      *
      * Historically, this method's return value was used to render HTML on the UI as well.
-     * Since October 2021, the return value is interpreted as text.
+     * Since Jenkins 2.315 and 2.303.2, the return value is interpreted as text.
      * To have rich HTML output on the UI, provide a custom {@code description.jelly} view for your subclass.
+     * See <a href="https://www.jenkins.io/doc/developer/security/xss-prevention/Cause-getShortDescription/">the documentation</a>.
      */
-    // TODO finalize version numbers
     @Exported(visibility=3)
     public abstract String getShortDescription();
 
