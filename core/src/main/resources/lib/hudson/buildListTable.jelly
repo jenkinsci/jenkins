@@ -36,14 +36,15 @@ THE SOFTWARE.
   <script>
       function displayBuilds(data) {
           var p = $$('projectStatus');
+          p.show();
           for (var x = 0; data.length > x; x++) {
               var e = data[x];
               var tr = new Element('tr');
-              tr.insert(new Element('td', {data: e.iconColorOrdinal}).
+              tr.insert(new Element('td', {data: e.iconColorOrdinal, class: 'jenkins-table__cell--tight'}).
                   insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url}).
                       insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
-                  insert(new Element('a', {class: 'jenkins-table__link model-link', href: '${rootURL}/' + e.parentUrl}).
+                  insert(new Element('a', {class: 'jenkins-table__link model-link inside', href: '${rootURL}/' + e.parentUrl}).
                       update(e.parentFullDisplayName)).
                   insert(new Element('a', {class: 'jenkins-table__link jenkins-table__badge model-link inside', href: '${rootURL}/' + e.url}).
                       update(e.displayName.escapeHTML())));
@@ -52,9 +53,10 @@ THE SOFTWARE.
                     update(e.timestampString.escapeHTML())));
               tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: var(--red)' : ''}).
                   update(e.buildStatusSummaryMessage.escapeHTML()));
-              tr.insert(new Element('td').
-                  insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url + 'console'}).
-                      insert(`<u:ionicon name="terminal-outline" />`)));
+              tr.insert(new Element('td', {class: 'jenkins-table__cell--tight'}).
+                    insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
+                        insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url + 'console'}).
+                            insert(`<u:ionicon name="terminal-outline" />`))));
               p.insert(tr);
               Behaviour.applySubtree(tr);
           }
@@ -64,14 +66,14 @@ THE SOFTWARE.
   <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
   ${handler.setBuilds(attrs.builds)}
   <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
-  <table class="jenkins-table sortable" id="projectStatus">
+  <table class="jenkins-table sortable" id="projectStatus" style="display: none;">
     <thead>
         <tr>
-            <th>${%S}</th>
+            <th class="jenkins-table__cell--tight">${%S}</th>
             <th>${%Build}</th>
             <th initialSortDir="up">${%Time Since}</th>
             <th>${%Status}</th>
-            <th><st:nbsp/></th>
+            <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
         </tr>
     </thead>
     <tbody></tbody>
