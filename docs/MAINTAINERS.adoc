@@ -39,7 +39,7 @@ Remoting updates in the core are subject to the process though.
 * Release Team Member
 
 **Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
-There is no special preconditions to do so.
+There are no special preconditions to do so.
 Anyone is welcome to contribute.
 
 **Issues Triage Team Members** review the incoming issues submitted in Jenkins Jira:
@@ -47,7 +47,7 @@ bug reports, requests for enhancement, etc.
 Special permissions are not required to take this role or to contribute.
 Anyone is welcome to start contributing (see the <<issue-triage,triage guidelines below>>).
 
-**Core Pull Request Reviewers** is a team for contributors who are willing to regularly review Jenkins pull requests and to eventually become Jenkins core maintainers.
+**Core Pull Request Reviewers** is a team for contributors who are willing to regularly review Jenkins pull requests and eventually become Jenkins core maintainers.
 They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
 Their main responsibility is to triage and review the incoming pull requests
 and to guide newcomer contributors who are not familiar with the project's processes.
@@ -65,12 +65,12 @@ Team members get `Write` permissions in the Jenkins core repository, and they al
 === Ladder
 
 * **Contributors**. Anyone can participate.
-  There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
+  There is no precondition except having a GitHub account, just submit pull requests or comment on existing ones!
 * **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
 Self-nomination is fine.
-Decision is made by a consensus in the mailing list or via voting at the link:https://www.jenkins.io/project/governance-meeting/[governance meeting].
+The Decision is made by a consensus in the mailing list or via voting at the link:https://www.jenkins.io/project/governance-meeting/[governance meeting].
 * **Core Maintainers** - same process as for Core PR reviewers.
-  All nominees must also sign an link:https://github.com/jenkinsci/infra-cla/[Individual Contributor License Agreement] before getting the permission in GitHub repositories.
+  All nominees must also sign an link:https://github.com/jenkinsci/infra-cla/[Individual Contributor License Agreement] before getting permission in GitHub repositories.
 * **Release Team Members** are assigned by the Jenkins Release officer
 
 == Pull request review process
@@ -84,15 +84,15 @@ At the same time, we are interested to make the review process as simple as poss
 
 Pull requests review in Jenkins is not just about reviewing code and accepting them if the code is OK.
 Core maintainers are expected to ensure feasibility and compatibility of changes,
-to maintain good quality of the codebase and documentation,
+to maintain a good quality of the codebase and documentation,
 and to ensure there is a consensus between contributors.
 
 ==== Verifying Feasibility
 
 Reviewers are expected to look at changes critically from a "product management" point of view.
-It's not just about the code, but also whether the change makes sense in a global / holistic way, considering existing popular plugins and the way users experience Jenkins overall.
+It's not just about the code, but also whether the change makes sense in a global/holistic way, considering existing popular plugins and the way users experience Jenkins overall.
 Also, not every change needs to be merged into the core.
-Many features would be better introduced as plugins which have separate release cycles and allow delivering changes faster.
+Many features would be better introduced as plugins that have separate release cycles and allow delivering changes faster.
 We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
 but we try to keep the core as minimal as possible in terms of dependencies.
 
@@ -119,16 +119,16 @@ We're aware that there are existing inconsistencies in the code,
 and we do not enforce a single code style across the codebase at the moment.
 
 * New code should follow the (majority) style guide.
-  In Jenkins core we use the link:https://www.oracle.com/java/technologies/javase/codeconventions-contents.html[these Code Conventions for the Java TM Programming Language] as a default code style
+  In Jenkins core, we use link:https://www.oracle.com/java/technologies/javase/codeconventions-contents.html[these Code Conventions for the Java TM Programming Language] as a default code style
 * Updates to existing code should only fix formatting on the lines affected anyway to keep the diff minimal.
   It helps reviewers focus their attention on the specifics of the change and reduces the risk of a change from one pull request creating a conflict in another pull request.
 
 ==== Maintaining documentation
 
 * Jenkins documentation is hosted on https://www.jenkins.io/doc/.
-  When a new user-facing change is added, we should encourage contributors to update documentation in downstream pull requests.
-* Same applies to Jenkins changelogs (link:https://www.jenkins.io/changelog[weekly], link:https://www.jenkins.io/changelog-stable/[stable]) and link:https://www.jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
-  We have a semi-automated process which is based on pull request summaries and labels.
+  When a new user-facing change is added, we should encourage contributors to update the documentation in downstream pull requests.
+* The Same applies to Jenkins changelogs (link:https://www.jenkins.io/changelog[weekly], link:https://www.jenkins.io/changelog-stable/[stable]) and link:https://www.jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
+  We have a semi-automated process that is based on pull request summaries and labels.
   Core maintainers are expected to validate the entries as a part of the pull request review/merge process.
   See the checklist below in the _Merge process_ section.
 
@@ -141,7 +141,7 @@ And we are fine with that, especially for small patches.
 Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
 We are fine with that as well.
 If there is no consensus about the feasibility and implementation,
-code reviewers are expected to suggest proper channels for contributors to discuss their contribution.
+code reviewers are expected to suggest proper channels for contributors to discuss their contributions.
 
 * A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is the default way to go
 * If no consensus can be reached on the mailing list,
@@ -164,7 +164,7 @@ Code reviews do NOT pursue the following goals:
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
 ** Core maintainers can squash PRs during the merge.
    If you feel this is important, add the link:https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me[squash-merge-me] label
-** We want to keep pull requests focused when possible (one feature / fix per pull request),
+** We want to keep pull requests focused when possible (one feature/fix per pull request),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
 == Issue triage
@@ -173,7 +173,7 @@ Jenkins core and most of its components use link:https://issues.jenkins.io/[Jenk
 This issue tracker is open to all Jenkins users.
 They report defects and requests for enhancements,
 and then component maintainers triage issues and provide feedback to users.
-In the case of the Jenkins core, *Issue Triage Team* and *Core Maintainers* are roles who are expected to process the incoming issues.
+In the case of the Jenkins core, the *Issue Triage Team* and *Core Maintainers* are roles that are expected to process the incoming issues.
 These contributors perform initial triage of incoming issues and periodically scrub the issue tracker.
 
 This section provides some tips and tricks about triaging issues submitted to the Jenkins core.
@@ -229,17 +229,17 @@ Initial issue triage has the following objectives:
   If you see such issues, move them to the `SECURITY` project so that the security team takes care of their triage.
   Note that the required fields are different between projects, so some manual updates might be required when moving them.
 * **Label regressions and CC stakeholders** if an issue is reported as a regression with a clear root cause,
-  please set a `regression` label and, if applicable, CC contributors of a change which led to the regression.
+  please set a `regression` label and, if applicable, CC contributors of a change that led to the regression.
 * **Resolve invalid issues and support requests**.
   Sometimes Jenkins Jira is used as a support portal.
   We do not want to encourage that.
   Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
-  For support requests users are expected to use link:https://www.jenkins.io/mailing-lists[mailing lists],
+  For support requests, users are expected to use link:https://www.jenkins.io/mailing-lists[mailing lists],
   link:https://www.jenkins.io/chat/[chats] and other resources (e.g. Stackoverflow).
   It is fine to link users to link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[this page]. 
 * **Resolve duplicates**.
   It is often that the same issue is already reported in the Jenkins database.
-  Newly reported duplicates can be just resolved with a `Duplicate` resolution, and linked to the original issue.
+  Newly reported duplicates can be just resolved with a `Duplicate` resolution and linked to the original issue.
 
 === HOWTO: Triage by maintainers
 
@@ -251,26 +251,26 @@ Triage objectives:
 
 * **Confirm reported defects**. Try to reproduce the issue or analyze the codebase.
   If the issue is legitimate, it is great to explicitly confirm it in a comment.
-* Nice2Have: **Define next steps**.
+* Nice2Have: **Define the next steps**.
   If possible, define a potential resolution for the issue.
   If you do not plan to work on the issue in foreseeable future,
   it is great to explicitly highlight that by unassigning the issue and inviting the reporter and other contributors to submit a fix.
 * Nice2Have: **Highlight newcomer-friendly issues**.
   Newcomer-friendly issues are instrumental for an onboarding new code contributors to the project.
-  They are linked from link:https://www.jenkins.io/participate/code/[contributing guidelines].
+  They are linked from the link:https://www.jenkins.io/participate/code/[contributing guidelines].
   If you see a simple issue but do not plan to work on it,
   put a `newbie-friendly` label on it so that somebody could pick it up.
 
 === How to scrub issues?
 
-In addition to the initial triage, it is a good practice to sometimes review previously reported issues so that we could minimize backlog of issues and simplify search by users.
+In addition to the initial triage, it is a good practice to sometimes review previously reported issues so that we could minimize the backlog of issues and simplify search by users.
 
 * **Triage reopened issues**.
   Same as for newly reported issues, it is great to process reopened issues if they are not acted on by the issue assignees.
   Often such issues can be resolved with a request to report a new issue if an issue is reopened due to another issue.
 * **Resolve stale untriaged issues**.
   Issue reporters may become unresponsive before their issue can be fully triaged.
-  If there is a reported issue which does not contain data for reproducing the issue,
+  If there is a reported issue that does not contain data for reproducing the issue,
   it is fine to resolve them after a 2-week timeout with the `Incomplete` or `Cannot reproduce` resolution.
 * **Resolve/update obsolete issues**.
   Sometimes issues become obsolete due to other changes in the Jenkins core (e.g. feature removal),
@@ -284,13 +284,13 @@ Requests for enhancement (RFEs) include the `New Feature` and `Improvement` type
 The process to triage them might be different from bug reports.
 because it is not always possible to say whether a request should be implemented in the Jenkins core,
 an existing or a new plugin.
-In the case of doubt, it is fine to just skip an issue or CC subject matter experts who could advice.
+In the case of doubt, it is fine to just skip an issue or CC subject matter experts who could advise.
 
 For RFEs which are not related to the Jenkins core or plugins,
 it is possible to set the `plugin-proposals` component.
 Note that this component is not regularly scrubbed,
 and it can be considered only as a pool of ideas somebody could implement.
-It is a good practice to set expectation in a comment when updating the RFE.
+It is a good practice to set expectations in a comment when updating the RFE.
 
 === Responding to pings in triaged issues
 
@@ -333,13 +333,13 @@ Merge process can be initiated once a pull request matches the requirements:
 * Conversations in the pull request are over OR it is explicit that a reviewer does not block the change (often indicated by line comments attached to an approving PR review, or by using the term "nit", from "nit-picking")
 * Changelog entries in the PR title and/or _Proposed changelog entries_ are correct and reflect the current, final state of the PR
 * Proper changelog labels are set so that the changelog can be generated automatically.
- List of labels we use for changelog generation is available link:https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.yml[here].
+ A List of labels we use for changelog generation is available link:https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.yml[here].
 * If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present
   and there is a `Proposed upgrade guidelines` section in the PR title
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
-  This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
+  This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt-out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see link:https://issues.jenkins.io/issues/?filter=12146[this Jira query]).
+* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labelled as `lts-candidate` to be considered (see link:https://issues.jenkins.io/issues/?filter=12146[this Jira query]).
 
 ==== Step 2: Is it a good time to merge?
 
@@ -350,7 +350,7 @@ For these reasons, the following changes should not be merged during the week be
 * Changes that could be considered risky (relatively high risk of introducing regressions), as they could make users of Jenkins weekly releases choose between getting security fixes, and having a functioning Jenkins
 * Very large changes (in terms of lines changed), because the Jenkins security team needs to prepare security fixes for the weekly release line in a very short period of time.
 
-If the change is ready, but it is not a good time, consider labeling the pull request with the `on-hold` label.
+If the change is ready, but it is not a good time, consider labelling the pull request with the `on-hold` label.
 Make sure to add a comment explaining why it was put on hold.
 
 ==== Step 3: Marking for merge
@@ -364,7 +364,7 @@ Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pu
 ==== Step 4: Merge!
 
 A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
-After that the change will be landed in the next weekly release.
+After that, the change will be landed in the next weekly release.
 LTS backporting, if needed, will be handled separately by the release team.
 
 === Exceptions
@@ -377,7 +377,7 @@ LTS backporting, if needed, will be handled separately by the release team.
 * 24 hours waiting period after adding the `ready-for-merge` label is not required for:
 //TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
 ** changes that do not result in changes to the primary functionality, such as typo fixes in documentation or localization files
-** changes which do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
+** changes that do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
 ** broken master build
 
 === Squashing pull requests OR not?
@@ -397,7 +397,7 @@ When do we merge pull requests as is?
 *** **Commit 1**: `[JENKINS-1234] - Reproduce the issue in tests`
 *** **Commit 2**: `[JENKINS-1234] - Fix the issue by updating Foo` 
 * There are multiple commit authors who expressed the desire to keep commit history as is.
-  By default we do not consider multiple authors as a blocker for squash, because GitHub now 
+  By default, we do not consider multiple authors as a blocker for squash, because GitHub now 
   link:https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors[supports co-authors]
 
 When do we squash commits?
@@ -425,7 +425,7 @@ Any Jenkins contributors are welcome to participate in backporting and release c
 
 * Backporting discussions happen through the developer mailing list.
 * Backports are submitted as pull requests with the link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts] label.
-* Release candidate testing is announced in the developer mailing list.
+* Release candidate testing is announced on the developer mailing list.
   Discovered issues should be submitted to Jenkins Jira and then referenced in the release candidate testing thread.
 
 == Tools
