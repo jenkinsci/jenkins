@@ -37,7 +37,7 @@ THE SOFTWARE.
       Additional CSS styles to apply.
     </st:attribute>
   </st:documentation>
-  <td data="${it.ordinal()}">
+  <td class="jenkins-table__cell--tight" data="${it.ordinal()}">
     <j:if test="${attrs.it!=null}">
       <j:set var="iconClassName" value="${it.iconClassName}"/>
       <j:if test="${iconClassName == null}">

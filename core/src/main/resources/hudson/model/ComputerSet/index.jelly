@@ -77,9 +77,11 @@ THE SOFTWARE.
 
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
-              <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
-                <u:ionicon name="settings-outline" />
-              </a>
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
+                  <u:ionicon name="settings-outline" />
+                </a>
+              </div>
             </j:if>
           </td>
         </tr>

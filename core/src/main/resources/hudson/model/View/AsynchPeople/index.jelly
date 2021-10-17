@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:u="jelly:org.jenkins.ui.icon.IconTagLibrary" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%People} - ${it.parent.viewName}">
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <t:setIconSize/>
@@ -40,59 +40,68 @@ THE SOFTWARE.
       </div>
       <p class="jenkins-description">${%blurb}</p>
       <script>
-          function display(data) {
-              var p = document.getElementById('people');
-              for (var x = 0; data.length > x; x++) {
-                  var e = data[x];
-                  var id = 'person-' + e.id;
-                  var r = document.getElementById(id);
-                  if (r == null) {
-                      r = document.createElement('tr');
-                      r.id = id;
-                      p.appendChild(r);
-                  } else {
-                      while (r.firstChild) {
-                          r.removeChild(r.firstChild);
-                      }
-                  }
+            function display(data) {
+                var p = document.getElementById('people');
+                for (var x = 0; data.length > x; x++) {
+                    var e = data[x];
+                    var id = 'person-' + e.id;
+                    var r = document.getElementById(id);
+                    if (r == null) {
+                        r = document.createElement('tr');
+                        r.id = id;
+                        p.appendChild(r);
+                    } else {
+                        while (r.firstChild) {
+                            r.removeChild(r.firstChild);
+                        }
+                    }
 
-                  var d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
-                  a.appendChild(document.createTextNode(e.id));
-                  d.appendChild(a);
-                  r.appendChild(d);
+                    var d = document.createElement('td');
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'jenkins-table__cell__button-wrapper';
+                    d.className = 'jenkins-table__cell--tight jenkins-table__icon';
+                    wrapper.innerHTML += `<u:ionicon name="person-circle-outline" />`;
+                    d.appendChild(wrapper);
+                    r.appendChild(d);
 
-                  d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
-                  a.appendChild(document.createTextNode(e.fullName));
-                  d.appendChild(a);
-                  r.appendChild(d);
+                    d = document.createElement('td');
+                    var a = document.createElement('a');
+                    a.className = "jenkins-table__link";
+                    a.href = '${rootURL}/' + e.url;
+                    a.appendChild(document.createTextNode(e.id));
+                    d.appendChild(a);
+                    r.appendChild(d);
 
-                  d = document.createElement('td');
-                  d.setAttribute('data', e.timeSortKey);
-                  d.appendChild(document.createTextNode(e.lastChangeTimeString));
-                  r.appendChild(d);
+                    d = document.createElement('td');
+                    var span = document.createElement('span');
+                    span.appendChild(document.createTextNode(e.fullName));
+                    d.appendChild(span);
+                    r.appendChild(d);
 
-                  d = document.createElement('td');
-                  if (e.projectUrl != null) {
-                      a = document.createElement('a');
-                      a.href = '${rootURL}/' + e.projectUrl;
-                      a.className = 'model-link inside';
-                      a.appendChild(document.createTextNode(e.projectFullDisplayName));
-                      d.appendChild(a);
-                  }
-                  r.appendChild(d);
+                    d = document.createElement('td');
+                    d.setAttribute('data', e.timeSortKey);
+                    d.appendChild(document.createTextNode(e.lastChangeTimeString));
+                    r.appendChild(d);
 
-                  ts_refresh(p);
-              }
-          }
-      </script>
+                    d = document.createElement('td');
+                    if (e.projectUrl != null) {
+                        a = document.createElement('a');
+                        a.href = '${rootURL}/' + e.projectUrl;
+                        a.className = 'model-link inside';
+                        a.appendChild(document.createTextNode(e.projectFullDisplayName));
+                        d.appendChild(a);
+                    }
+                    r.appendChild(d);
+
+                    ts_refresh(p);
+                }
+            }
+        </script>
       <l:progressiveRendering handler="${it}" callback="display"/>
       <table class="jenkins-table sortable" id="people">
         <thead>
             <tr>
+                <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>
                 <th>${%User ID}</th>
                 <th>${%Name}</th>
                 <th initialSortDir="up">${%Last Commit Activity}</th>
