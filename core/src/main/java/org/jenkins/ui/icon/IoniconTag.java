@@ -12,11 +12,17 @@ public class IoniconTag extends TagSupport {
         this.name = name;
     }
 
+    private String title;
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     @Override
     public void doTag(XMLOutput output) throws JellyTagException {
         try {
             IconSet iconSet = new IconSet();
-            output.writeCDATA(iconSet.getIonicon(name));
+            output.writeCDATA(iconSet.getIonicon(name, title));
         } catch (SAXException e) {
             // ignore
         }

@@ -40,7 +40,7 @@ THE SOFTWARE.
                       </j:otherwise>
                   </j:choose>
                   <j:set var="icon" value="${app.queue.contains(job) ? 'icon-clock-anime' : 'icon-clock'}"/>
-                  <u:ionicon name="play-outline" />
+                  <u:ionicon name="play-outline" title="${title}" />
                   <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
             </div>

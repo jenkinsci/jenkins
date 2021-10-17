@@ -24,6 +24,7 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,7 +63,7 @@ public class IconSet {
         context.setVariable("icons", icons);
     }
 
-    public String getIonicon(String name) {
+    public String getIonicon(String name, String title) {
         if (ionicons.containsKey(name)) {
             return ionicons.get(name);
         }
@@ -72,15 +73,20 @@ public class IconSet {
             String ionicon = new String(
                     Files.readAllBytes(Paths.get("war/src/main/webapp/images/ionicons/" + name + ".svg")));
 
-            ionicon = ionicon.replace("<title>ionicons-v5-b</title>", "");
+            ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+            ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
             ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
 
             ionicons.put(name, ionicon);
 
+            if (StringUtils.isNotBlank(title)) {
+                return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + ionicon;
+            }
+
             return ionicon;
         } catch (IOException e) {
             // Return a placeholder icon if it doesn't
-            return getIonicon("ellipse-outline");
+            return getIonicon("ellipse-outline", "Placeholder");
         }
     }
 
