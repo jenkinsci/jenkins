@@ -719,7 +719,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <forkCount>0.5C</forkCount>
-          <reuseForks>true</reuseForks>
+          <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
