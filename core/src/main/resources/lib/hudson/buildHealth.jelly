@@ -81,7 +81,7 @@ THE SOFTWARE.
                                 <td align="left">
                                     <l:icon class="${rpt.iconClassName} icon-sm" />
                                 </td>
-                                <td>${rpt.localizableDescription}</td>
+                                <td align="left">${rpt.localizableDescription}</td>
                                 <td align="right">${rpt.score}</td>
                             </tr>
                         </j:forEach>
