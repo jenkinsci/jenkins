@@ -1,17 +1,37 @@
+:root {
+  --tabs-background: #f4f4f4;
+  --tabs-header-foreground: black;
+  --tabs-body-background: white;
+  --tabs-body-foreground: black;
+  --tabs-border-radius: 10px;
+  --tabs-body-radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tabs-background: rgb(26, 26, 28);
+    --tabs-header-foreground: rgb(240, 240, 245);
+    --tabs-body-background: rgb(32, 32, 34);
+    --tabs-body-foreground: rgb(240, 240, 245);
+  }
+}
+
 .tabBarFrame {
   position: relative;
 }
 
 .tabBar {
   overflow: auto;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
+  background: var(--tabs-background);
+  border-radius: calc((10px + 2rem) / 2);
+  padding: 0.2rem;
+  margin-bottom: 2rem;
 }
 
 .tabBar .tab {
-  float: left;
-
   &:not(:first-child) {
     margin-left: 0.2rem;
   }
@@ -21,15 +41,17 @@
   position: relative;
   display: block;
   min-width: 3rem;
-  border: solid var(--tab-link-border-width) var(--tab-link-border-color);
   text-decoration: none;
-  padding: var(--tab-link-padding-y) var(--tab-link-padding-x);
-  border-top-left-radius: var(--tab-link-border-radius);
-  border-top-right-radius: var(--tab-link-border-radius);
-  font-weight: var(--tab-link-font-weight);
-  color: var(--tab-link-text-color);
+  margin: 0.2rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 100px;
+  color: white;
   background: var(--tab-link-bg);
   border-color: var(--tab-link-border-color);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.75rem;
 
   &:hover,
   &:focus {
@@ -50,25 +72,6 @@
   }
 }
 
-.tabBar .tab a.addTab {
-  color: var(--link-color);
-  border: none;
-  padding: 0.25rem;
-  border-radius: var(--tab-link-border-radius);
-  min-width: 0;
-
-  &:hover,
-  &:focus {
-    color: var(--link-color--hover);
-    background: var(--tab-link-bg--hover);
-  }
-
-  &:active {
-    color: var(--link-color--active);
-    background: var(--tab-link-bg--active);
-  }
-}
-
 .tabBar .tab .addTab .svg-icon {
   width: 1.25rem;
   height: 1.25rem;
@@ -79,8 +82,7 @@
 }
 
 .tabBar .tab.active a {
-  border: var(--tab-link-border-width) solid var(--tab-link-checked-border-color);
-  background: var(--tab-link-checked-bg);
+  background: var(--table-body-background);
   color: var(--tab-link-checked-text-color);
   z-index: 2;
 }

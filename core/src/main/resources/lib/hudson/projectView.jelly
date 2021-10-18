@@ -56,7 +56,6 @@ THE SOFTWARE.
 
   <t:setIconSize/>
   <div class="dashboard">
-
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
@@ -66,8 +65,6 @@ THE SOFTWARE.
       <div id="projectstatus-tabBar">
         <d:invokeBody/>
       </div>
-
-      <br></br><br></br>
 
       <!-- project list -->
       <table id="projectstatus" class="jenkins-table sortable ${iconSize == '16x16' ? 'bigtable--compact' : ''}">
