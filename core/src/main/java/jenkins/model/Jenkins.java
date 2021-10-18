@@ -5106,6 +5106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();

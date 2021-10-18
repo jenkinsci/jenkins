@@ -239,7 +239,7 @@ public class AbstractLazyLoadRunMapTest {
     }
 
     @Test
-    public void fastSubMap() throws Exception {
+    public void fastSubMap() {
         SortedMap<Integer,Build> m = a.subMap(99, 2);
         assertEquals(2, m.size());
 

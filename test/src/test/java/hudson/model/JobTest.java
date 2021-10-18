@@ -39,6 +39,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -556,6 +557,7 @@ public class JobTest {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getNodeName() {
             if (virtualName != null) {
