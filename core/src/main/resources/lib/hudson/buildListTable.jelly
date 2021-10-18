@@ -40,8 +40,8 @@ THE SOFTWARE.
           for (var x = 0; data.length > x; x++) {
               var e = data[x];
               var tr = new Element('tr');
-              tr.insert(new Element('td', {data: e.iconColorOrdinal, class: 'jenkins-table__cell--tight'}).
-                  insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url}).
+              tr.insert(new Element('td', {data: e.iconColorOrdinal, class: 'jenkins-table__cell--tight jenkins-table__icon'}).
+                  insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
                       insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
                   insert(new Element('a', {class: 'jenkins-table__link model-link inside', href: '${rootURL}/' + e.parentUrl}).
@@ -66,7 +66,7 @@ THE SOFTWARE.
   <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
   ${handler.setBuilds(attrs.builds)}
   <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
-  <table class="jenkins-table sortable" id="projectStatus" style="display: none;">
+  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;">
     <thead>
         <tr>
             <th class="jenkins-table__cell--tight">${%S}</th>

@@ -67,7 +67,7 @@ THE SOFTWARE.
       </div>
 
       <!-- project list -->
-      <table id="projectstatus" class="jenkins-table sortable ${iconSize == '16x16' ? 'bigtable--compact' : ''}">
+      <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
         <thead>
           <tr>
             <j:forEach var="col" items="${columnExtensions}">

@@ -44,6 +44,7 @@
   overflow: hidden;
   box-shadow: 0 0 0 5px var(--table-background);
   margin: 5px;
+  --table-padding: 0.6rem;
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -57,7 +58,7 @@
         text-align: left;
         padding-top: calc(1.1rem - 5px);
         padding-bottom: 1.1rem;
-        padding-left: 0.6rem;
+        padding-left: var(--table-padding);
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 2px;
@@ -72,7 +73,7 @@
         }
 
         &:last-of-type {
-          padding-right: 0.6rem;
+          padding-right: var(--table-padding);
         }
 
         a {
@@ -91,7 +92,7 @@
 
       & > td {
         vertical-align: middle;
-        padding: 0.6rem 0 0.6rem 0.6rem;
+        padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
         font-weight: 500;
         height: 50px;
 
@@ -101,7 +102,7 @@
 
         &:last-of-type {
           border-radius: 0 var(--table-body-radius) var(--table-body-radius) 0;
-          padding-right: 0.6rem;
+          padding-right: var(--table-padding);
         }
       }
 
@@ -129,7 +130,6 @@
     }
   }
 
-  // TODO
   &__cell__button-wrapper {
     display: flex;
     align-items: center;
@@ -152,9 +152,39 @@
   }
 
   &__button, &__link, &__icon {
-    svg {
-      width: 22px;
-      height: 22px;
+    svg, .build-status-icon__wrapper {
+      width: 24px!important;
+      height: 24px!important;
+    }
+  }
+
+  &--medium {
+    --table-padding: 0.4rem!important;
+
+    tbody > tr > td {
+      height: 40px;
+    }
+
+    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
+      svg, .build-status-icon__wrapper {
+        width: 20px!important;
+        height: 20px!important;
+      }
+    }
+  }
+
+  &--small {
+    --table-padding: 0.2rem;
+
+    tbody > tr > td {
+      height: 34px;
+    }
+
+    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
+      svg, .build-status-icon__wrapper {
+        width: 16px!important;
+        height: 16px!important;
+      }
     }
   }
 

@@ -98,7 +98,7 @@ THE SOFTWARE.
             }
         </script>
       <l:progressiveRendering handler="${it}" callback="display"/>
-      <table class="jenkins-table sortable" id="people">
+      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people">
         <thead>
             <tr>
                 <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>
@@ -110,13 +110,13 @@ THE SOFTWARE.
         </thead>
         <tbody></tbody>
       </table>
-<!--      <t:iconSize>-->
-<!--        <j:if test="${!isAll}">-->
-<!--          <div style="float:right">-->
-<!--            <a href="${rootURL}/asynchPeople/">${%All People}</a><st:nbsp/>-->
-<!--          </div>-->
-<!--        </j:if>-->
-<!--      </t:iconSize>-->
+      <t:iconSize>
+        <j:if test="${!isAll}">
+          <div style="float:right">
+            <a href="${rootURL}/asynchPeople/">${%All People}</a><st:nbsp/>
+          </div>
+        </j:if>
+      </t:iconSize>
     </l:main-panel>
   </l:layout>
 </j:jelly>
