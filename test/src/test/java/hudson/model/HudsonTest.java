@@ -191,7 +191,7 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
-    public void legacyDescriptorLookup() throws Exception {
+    public void legacyDescriptorLookup() {
         Descriptor dummy = new Descriptor(HudsonTest.class) {};
 
         BuildStep.PUBLISHERS.addRecorder(dummy);

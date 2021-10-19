@@ -25,12 +25,14 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -238,5 +240,54 @@ public class FreeStyleProjectTest {
         } finally {
             JellyFacet.TRACE = currentValue;
         }
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
+        assertThat(j.jenkins.getItems(), hasSize(0));
+        try {
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            fail("Adding the job should have thrown an exception during checkGoodName");
+        }
+        catch (Failure e) {
+            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
+        }
+        assertThat(j.jenkins.getItems(), hasSize(0));
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateJobWithTrailingDot_withExistingJob() throws Exception {
+        assertThat(j.jenkins.getItems(), hasSize(0));
+        j.createFreeStyleProject("jobA");
+        assertThat(j.jenkins.getItems(), hasSize(1));
+        try {
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            fail("Adding the job should have thrown an exception during checkGoodName");
+        }
+        catch (Failure e) {
+            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
+        }
+        assertThat(j.jenkins.getItems(), hasSize(1));
+    }
+
+    @Issue("SECURITY-2424")
+    @Test public void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            assertThat(j.jenkins.getItems(), hasSize(0));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+        }
+        finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
+        }
+        assertThat(j.jenkins.getItems(), hasSize(1));
     }
 }

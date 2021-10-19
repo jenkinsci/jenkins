@@ -96,7 +96,7 @@ public class BuildCommandTest {
         OneShotEvent completed = new OneShotEvent();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 started.signal();
                 completed.block();
                 return true;

@@ -137,7 +137,7 @@ public class HelpCommandTest {
         }
 
         @Override
-        protected int run() throws Exception {
+        protected int run() {
             throw new UnsupportedOperationException();
         }
     }

@@ -33,12 +33,12 @@ public class ConsoleLogFilterTest {
     @TestExtension
     public static class Impl extends ConsoleLogFilter {
         @Override
-        public OutputStream decorateLogger(Run build, OutputStream logger) throws IOException, InterruptedException {
+        public OutputStream decorateLogger(Run build, OutputStream logger) {
             return logger;
         }
 
         @Override
-        public OutputStream decorateLogger(final Computer c, OutputStream out) throws IOException, InterruptedException {
+        public OutputStream decorateLogger(final Computer c, OutputStream out) {
             return new LineTransformationOutputStream.Delegating(out) {
                 @Override
                 protected void eol(byte[] b, int len) throws IOException {

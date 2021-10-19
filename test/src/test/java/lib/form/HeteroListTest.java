@@ -46,7 +46,6 @@ import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.FormValidation;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -69,7 +68,7 @@ public class HeteroListTest {
 
         RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
         TestItemDescribable.DynamicDisplayNameDescriptor dynamic = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
-        rootAction.descriptorList = Arrays.asList(dynamic);
+        rootAction.descriptorList = Collections.singletonList(dynamic);
 
         dynamic.displayName = "Display<strong>Name</strong>";
 

@@ -10,6 +10,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -19,6 +21,8 @@ public class SuspiciousRequestFilter implements Filter {
 
     /** System property name set to true or false to indicate whether or not semicolons should be allowed in URL paths. */
     public static final String ALLOW_SEMICOLONS_IN_PATH = SuspiciousRequestFilter.class.getName() + ".allowSemicolonsInPath";
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean allowSemicolonsInPath = SystemProperties.getBoolean(ALLOW_SEMICOLONS_IN_PATH, false);
     private static final Logger LOGGER = Logger.getLogger(SuspiciousRequestFilter.class.getName());
 

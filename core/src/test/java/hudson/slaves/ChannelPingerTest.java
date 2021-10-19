@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import hudson.remoting.Channel;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +30,19 @@ public class ChannelPingerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
     @Before
-    public void preserveSystemProperties() throws Exception {
+    public void preserveSystemProperties() {
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingInterval");
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds");
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingTimeoutSeconds");
     }
 
     @After
-    public void restoreSystemProperties() throws Exception {
+    public void restoreSystemProperties() {
         for (Map.Entry<String, String> entry : savedSystemProperties.entrySet()) {
             if (entry.getValue() != null) {
                 System.setProperty(entry.getKey(), entry.getValue());
@@ -57,7 +58,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testDefaults() throws Exception {
+    public void testDefaults() throws IOException, InterruptedException {
         ChannelPinger channelPinger = new ChannelPinger();
         channelPinger.install(mockChannel, null);
 
@@ -68,7 +69,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromSystemProperties() throws Exception {
+    public void testFromSystemProperties() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingTimeoutSeconds", "42");
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
 
@@ -80,7 +81,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromOldSystemProperty() throws Exception {
+    public void testFromOldSystemProperty() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
         ChannelPinger channelPinger = new ChannelPinger();
@@ -91,7 +92,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testNewSystemPropertyTrumpsOld() throws Exception {
+    public void testNewSystemPropertyTrumpsOld() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 

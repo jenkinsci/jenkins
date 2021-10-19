@@ -113,21 +113,16 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                StreamTaskListener l = createListener();
+                AsyncPeriodicWork.LazyTaskListener l = new AsyncPeriodicWork.LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    l.getLogger().printf("Started at %tc%n", new Date(startTime));
-                        execute(l);
+                    execute(l);
                 } catch (IOException e) {
                     Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                 } catch (InterruptedException e) {
                     Functions.printStackTrace(e, l.fatalError("aborted"));
                 } finally {
                     stopTime = System.currentTimeMillis();
-                    try {
-                        l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
-                    } finally {
-                        l.closeQuietly();
-                    }
+                    l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
                 logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",

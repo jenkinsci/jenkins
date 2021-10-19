@@ -39,6 +39,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -265,7 +266,7 @@ public class JobTest {
     }
 
     @LocalData @Issue("JENKINS-6371")
-    @Test public void getArtifactsUpTo() throws Exception {
+    @Test public void getArtifactsUpTo() {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
         Run r = j.jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
@@ -313,7 +314,7 @@ public class JobTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
-            @Override public Integer call() throws Exception {
+            @Override public Integer call() {
                 return p.getLastFailedBuild().getNumber();
             }
         }).intValue());
@@ -373,7 +374,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = new String(out.toByteArray());
+        final String oldB2Log = out.toString();
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -390,7 +391,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = new String(out.toByteArray());
+        final String newB2Log = out.toString();
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 
@@ -556,6 +557,7 @@ public class JobTest {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getNodeName() {
             if (virtualName != null) {

@@ -120,7 +120,7 @@ public class ProcStarterTest {
     public static class DecoratedWrapper extends BuildWrapper {
 
         @Override
-        public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
+        public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws Run.RunnerAbortedException {
             final BuildListener l = listener;
             return new DecoratedLauncher(launcher) {
                 @Override
@@ -133,7 +133,7 @@ public class ProcStarterTest {
         }
 
         @Override
-        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) {
             return new Environment() {
             };
         }

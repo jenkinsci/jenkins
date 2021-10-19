@@ -67,7 +67,7 @@ public class RobustReflectionConverterTest {
 
     @Issue("JENKINS-21024")
     @LocalData
-    @Test public void randomExceptionsReported() throws Exception {
+    @Test public void randomExceptionsReported() {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);
         assertNotNull(p);
         assertTrue("There should be no triggers", p.getTriggers().isEmpty());
