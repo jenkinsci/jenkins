@@ -1443,13 +1443,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         // http://www.javadrive.jp/java2d/shape/index9.html
                         Result r = run.getResult();
                         if (r == Result.FAILURE)
-                            return ColorPalette.RED;
+                            return ColorPalette.MODERN_RED;
                         else if (r == Result.UNSTABLE)
-                            return ColorPalette.YELLOW;
+                            return ColorPalette.MODERN_YELLOW;
                         else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                            return ColorPalette.GREY;
+                            return ColorPalette.MODERN_DARK_GREY;
                         else
-                            return ColorPalette.BLUE;
+                            return ColorPalette.MODERN_GREEN;
                     }
 
                     @Override

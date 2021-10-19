@@ -42,7 +42,11 @@ public class ColorPalette {
     public static final Color GREY = new Color(0xAB,0xAB,0xAB);
     public static final Color DARK_GREY = new Color(0x77,0x77,0x77);
     public static final Color LIGHT_GREY = new Color(0xcc,0xcc,0xcc);
-    
+    public static final Color MODERN_RED = new Color(204, 0, 3);
+    public static final Color MODERN_YELLOW = new Color(255, 152, 0);
+    public static final Color MODERN_GREEN = new Color(19, 131, 71);
+    public static final Color MODERN_DARK_GREY = new Color(51, 51, 51);
+
     /**
      * Color list usable for generating line charts.
      */
