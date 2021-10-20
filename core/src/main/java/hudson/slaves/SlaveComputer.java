@@ -338,6 +338,18 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
+    public void taskStarted(Executor executor, Queue.Task task) {
+        super.taskStarted(executor, task);
+        if (launcher instanceof ExecutorListener) {
+            ((ExecutorListener)launcher).taskStarted(executor, task);
+        }
+        RetentionStrategy r = getRetentionStrategy();
+        if (r instanceof ExecutorListener) {
+            ((ExecutorListener) r).taskStarted(executor, task);
+        }
+    }
+
+    @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         super.taskCompleted(executor, task, durationMS);
         if (launcher instanceof ExecutorListener) {
