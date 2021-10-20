@@ -40,7 +40,15 @@ public interface ExecutorListener extends ExtensionPoint {
      * @param executor The executor.
      * @param task The task.
      */
-    void taskAccepted(Executor executor, Queue.Task task);
+    default void taskAccepted(Executor executor, Queue.Task task) {}
+
+    /**
+     * Called whenever a task is started by an executor.
+     * @param executor The executor.
+     * @param task The task.
+     * @param executable the executable.
+     */
+    default void taskStarted(Executor e, Queue.Task task, Queue.Executable executable) {}
 
     /**
      * Called whenever a task is completed without any problems by an executor.
@@ -48,7 +56,7 @@ public interface ExecutorListener extends ExtensionPoint {
      * @param task The task.
      * @param durationMS The number of milliseconds that the task took to complete.
      */
-    void taskCompleted(Executor executor, Queue.Task task, long durationMS);
+    default void taskCompleted(Executor executor, Queue.Task task, long durationMS) {}
 
     /**
      * Called whenever a task is completed with some problems by an executor.
@@ -57,5 +65,5 @@ public interface ExecutorListener extends ExtensionPoint {
      * @param durationMS The number of milliseconds that the task took to complete.
      * @param problems The exception that was thrown.
      */
-    void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems);
+    default void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {}
 }

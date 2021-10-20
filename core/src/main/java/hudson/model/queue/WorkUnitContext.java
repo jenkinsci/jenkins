@@ -124,7 +124,11 @@ public final class WorkUnitContext {
             Executor e = Executor.currentExecutor();
             WorkUnit wu = e.getCurrentWorkUnit();
             if (wu.isMainWork()) {
-                future.start.set(e.getCurrentExecutable());
+                Queue.Executable executable = e.getCurrentExecutable();
+                future.start.set(executable);
+                for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                    listener.taskStarted(e, task, executable);
+                }
             }
         }
     }
