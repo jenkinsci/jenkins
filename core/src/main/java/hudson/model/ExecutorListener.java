@@ -23,15 +23,17 @@
  */
 package hudson.model;
 
+import hudson.ExtensionPoint;
 import hudson.slaves.SlaveComputer;
 
 /**
  * A listener for task related events from executors.
  * A {@link Computer#getRetentionStrategy} or {@link SlaveComputer#getLauncher} may implement this interface.
+ * Or you may create an implementation as an extension.
 * @author Stephen Connolly
 * @since 1.312
 */
-public interface ExecutorListener {
+public interface ExecutorListener extends ExtensionPoint {
 
     /**
      * Called whenever a task is accepted by an executor.

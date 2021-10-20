@@ -23,8 +23,10 @@
  */
 package hudson.model.queue;
 
+import hudson.ExtensionList;
 import hudson.model.Action;
 import hudson.model.Executor;
+import hudson.model.ExecutorListener;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
@@ -81,6 +83,9 @@ public final class WorkUnitContext {
                 Executor e = Executor.currentExecutor();
                 if (e.getCurrentWorkUnit().isMainWork()) {
                     e.getOwner().taskAccepted(e,task);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        listener.taskAccepted(e, task);
+                    }
                 }
             }
         };
@@ -149,9 +154,15 @@ public final class WorkUnitContext {
                 if (problems == null) {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        listener.taskCompleted(e, task, duration);
+                    }
                 } else {
                     future.set(problems);
                     e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        listener.taskCompletedWithProblems(e, task, duration, problems);
+                    }
                 }
             }
         }
