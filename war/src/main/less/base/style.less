@@ -740,7 +740,7 @@ img.icon-help {
   border-bottom: 1px solid var(--bigtable-header-border-color);
 }
 
-#projectstatus th {
+#projectstatus > thead > th {
   text-align: left;
   // padding: 7px 0px;
 }
@@ -780,7 +780,15 @@ table.parameters > tbody:hover {
 }
 
 .healthReport div.healthReportDetails {
-    display: none;
+  display: none;
+  margin-left: 20px;
+  padding: 0;
+
+  table * {
+    font-size: 0.8rem;
+    border-top: none!important;
+    border-bottom: none!important;
+  }
 }
 
 .healthReport:hover,
@@ -790,12 +798,7 @@ table.parameters > tbody:hover {
 
 .healthReport:hover div.healthReportDetails,
 .healthReport.hover div.healthReportDetails {
-    display: block;
-    position: absolute;
-    background-color: #ffe;
-    border: 1px solid #bbb;
-    margin-left: 32px; /* move it across a bit */
-    z-index: 26;
+  display: block;
 }
 
 .healthReport div.healthReportDetails table {
@@ -1268,15 +1271,6 @@ div.textarea-handle {
 
 textarea.rich-editor {
   visibility: hidden;
-}
-
-/* ========================= hover notification ========================= */
-
-#hoverNotification {
-    visibility: hidden;
-    background-color: white;
-    border: 1px solid black;
-    padding: 0.5em;
 }
 
 /* ========================= D&D support in heterogenous/repeatable lists = */
