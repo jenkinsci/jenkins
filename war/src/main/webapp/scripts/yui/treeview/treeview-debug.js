@@ -1588,7 +1588,7 @@ YAHOO.widget.Node.prototype = {
     nowrap: false,
 
  /**
-     * If true, the node will alway be rendered as a leaf node.  This can be
+     * If true, the node will always be rendered as a leaf node.  This can be
      * used to override the presentation when dynamically loading the entire
      * tree.  Setting this to true also disables the dynamic load call for the
      * node.

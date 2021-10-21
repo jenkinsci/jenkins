@@ -156,7 +156,7 @@ public class UserTest {
         j.assertAllImageLoadSuccessfully(page);
     }
 
-    @Test public void getAuthorities() throws Exception {
+    @Test public void getAuthorities() {
         JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
         realm.addGroups("administrator", "admins");
         realm.addGroups("alice", "users");
@@ -585,7 +585,7 @@ public class UserTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void resolveByUnloadedIdThenName() throws Exception {
+    public void resolveByUnloadedIdThenName() {
         j.jenkins.setSecurityRealm(new ExternalSecurityRealm());
         // do *not* call this here: User.get("victim");
         User attacker1 = User.get("attacker1");

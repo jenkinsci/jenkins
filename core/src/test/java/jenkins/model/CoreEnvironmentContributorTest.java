@@ -36,7 +36,7 @@ public class CoreEnvironmentContributorTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
         instance = new CoreEnvironmentContributor();
     }

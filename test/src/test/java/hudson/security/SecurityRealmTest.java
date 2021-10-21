@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class SecurityRealmTest {
         }
 
         @Override
-        public void generateImage(String id, OutputStream ios) throws IOException {
+        public void generateImage(String id, OutputStream ios) {
         }
     }
 

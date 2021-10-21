@@ -41,7 +41,7 @@ public class UpdateCenterCustomTest {
     public final JenkinsRule j = new CustomUpdateCenterRule(CustomUpdateCenter.class);
     
     @Test
-    public void shouldStartupWithCustomUpdateCenter() throws Exception {
+    public void shouldStartupWithCustomUpdateCenter() {
         UpdateCenter uc = j.jenkins.getUpdateCenter();
         assertThat("Update Center must be a custom instance", uc, instanceOf(CustomUpdateCenter.class));
     }
@@ -65,7 +65,7 @@ public class UpdateCenterCustomTest {
         }
 
         @Override
-        public void after() throws Exception {
+        public void after() {
             if (_oldValue != null) {
                 System.setProperty(PROPERTY_NAME, _oldValue);
             }

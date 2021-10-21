@@ -12,7 +12,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -55,7 +54,7 @@ public class ShellTest {
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
             @Override
-            public Proc onLaunch(ProcStarter p) throws IOException {
+            public Proc onLaunch(ProcStarter p) {
                 // test the command line argument.
                 List<String> cmds = p.cmds();
                 rule.assertStringContains("/bin/sh",cmds.get(0));

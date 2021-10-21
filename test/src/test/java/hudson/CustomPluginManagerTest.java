@@ -58,7 +58,7 @@ public class CustomPluginManagerTest {
             private String oldValue;
 
             @Override
-            public void setup(JenkinsRule jenkinsRule, WithCustomLocalPluginManager recipe) throws Exception {
+            public void setup(JenkinsRule jenkinsRule, WithCustomLocalPluginManager recipe) {
                 jenkinsRule.useLocalPluginManager = true;
                 oldValue = System.getProperty(PluginManager.CUSTOM_PLUGIN_MANAGER);
                 System.setProperty(PluginManager.CUSTOM_PLUGIN_MANAGER, recipe.value().getName());

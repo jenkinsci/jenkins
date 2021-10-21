@@ -68,7 +68,7 @@ public class SimpleJobTest {
     }
     
     @Test
-    public void testGetEstimatedDurationWithNoRuns() throws IOException {
+    public void testGetEstimatedDurationWithNoRuns() {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
         
@@ -162,7 +162,7 @@ public class SimpleJobTest {
         }
 
         @Override
-        public int assignBuildNumber() throws IOException {
+        public int assignBuildNumber() {
             return i++;
         }
 

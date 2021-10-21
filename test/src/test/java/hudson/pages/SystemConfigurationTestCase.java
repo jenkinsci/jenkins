@@ -69,7 +69,7 @@ public class SystemConfigurationTestCase {
         private String decoratorId;
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest req, JSONObject json) {
             decoratorId = json.getString("decoratorId");
             return true;
         }

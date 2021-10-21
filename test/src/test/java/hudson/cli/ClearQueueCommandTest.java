@@ -54,7 +54,7 @@ public class ClearQueueCommandTest {
         command = new CLICommandInvoker(j, "clear-queue");
     }
 
-    @Test public void clearQueueShouldFailWithoutAdministerPermission() throws Exception {
+    @Test public void clearQueueShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ).invoke();
 
@@ -64,7 +64,7 @@ public class ClearQueueCommandTest {
     }
 
     @Test
-    public void clearQueueShouldSucceedOnEmptyQueue() throws Exception {
+    public void clearQueueShouldSucceedOnEmptyQueue() {
         assertThat(j.jenkins.getQueue().isEmpty(), equalTo(true));
 
         final CLICommandInvoker.Result result = command

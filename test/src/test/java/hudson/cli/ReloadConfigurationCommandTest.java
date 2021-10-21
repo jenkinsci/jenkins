@@ -69,7 +69,7 @@ public class ReloadConfigurationCommandTest {
     }
 
     @Test
-    public void reloadConfigurationShouldFailWithoutAdministerPermission() throws Exception {
+    public void reloadConfigurationShouldFailWithoutAdministerPermission() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command.invoke();
 
@@ -175,7 +175,7 @@ public class ReloadConfigurationCommandTest {
         assertThat(desc.getDefaultSuffix(), equalTo("@newSuffix"));
     }
 
-    private void reloadJenkinsConfigurationViaCliAndWait() throws Exception {
+    private void reloadJenkinsConfigurationViaCliAndWait() {
         final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, succeededSilently());

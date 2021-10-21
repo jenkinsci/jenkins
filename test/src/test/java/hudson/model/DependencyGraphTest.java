@@ -123,7 +123,7 @@ public class DependencyGraphTest {
      */
     @LocalData @Issue("JENKINS-5265")
     @Test
-    public void testItemReadPermission() throws Exception {
+    public void testItemReadPermission() {
         // Rebuild dependency graph as anonymous user:
         j.jenkins.rebuildDependencyGraph();
         try {

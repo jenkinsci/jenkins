@@ -56,7 +56,7 @@ public class WideExecutionTest {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
                 @Override
-                public Executable createExecutable() throws IOException {
+                public Executable createExecutable() {
                     return new Executable() {
                         @Override
                         public SubTask getParent() {

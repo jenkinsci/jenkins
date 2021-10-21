@@ -27,6 +27,7 @@ package hudson.cli;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +35,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
 import jenkins.model.Jenkins;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -105,4 +107,40 @@ public class CopyJobCommandTest {
         assertTrue(p2.isBuildable());
     }
 
+    @Issue("SECURITY-2424")
+    @Test public void cannotCopyJobWithTrailingDot_regular() throws Exception {
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(0));
+        j.createFreeStyleProject("job1");
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+
+        CLICommandInvoker.Result result = command.invokeWithArgs("job1", "job1.");
+        assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
+        assertThat(result, failedWith(1));
+
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+    }
+
+    @Issue("SECURITY-2424")
+    @Test public void cannotCopyJobWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(0));
+            j.createFreeStyleProject("job1");
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("job1", "job1.");
+            assertThat(result, succeededSilently());
+
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(2));
+        }
+        finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
+        }
+    }
 }
