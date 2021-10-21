@@ -33,6 +33,8 @@ import hudson.model.Queue.Task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -42,6 +44,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 public final class WorkUnitContext {
+
+    private static final Logger LOGGER = Logger.getLogger(WorkUnitContext.class.getName());
 
     public final BuildableItem item;
 
@@ -84,7 +88,11 @@ public final class WorkUnitContext {
                 if (e.getCurrentWorkUnit().isMainWork()) {
                     e.getOwner().taskAccepted(e,task);
                     for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
-                        listener.taskAccepted(e, task);
+                        try {
+                            listener.taskAccepted(e, task);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
                     }
                 }
             }
@@ -126,7 +134,11 @@ public final class WorkUnitContext {
             if (wu.isMainWork()) {
                 future.start.set(e.getCurrentExecutable());
                 for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
-                    listener.taskStarted(e, task);
+                    try {
+                        listener.taskStarted(e, task);
+                    } catch (RuntimeException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
                 }
             }
         }
@@ -158,13 +170,21 @@ public final class WorkUnitContext {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);
                     for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
-                        listener.taskCompleted(e, task, duration);
+                        try {
+                            listener.taskCompleted(e, task, duration);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
                     }
                 } else {
                     future.set(problems);
                     e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
                     for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
-                        listener.taskCompletedWithProblems(e, task, duration, problems);
+                        try {
+                            listener.taskCompletedWithProblems(e, task, duration, problems);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
                     }
                 }
             }
