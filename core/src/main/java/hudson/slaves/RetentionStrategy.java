@@ -273,6 +273,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     } catch (java.util.regex.PatternSyntaxException ep) {
                         logger.log(Level.SEVERE, "Invalid conflictsWith regex ~/{0}/ for computer {1}, ignored: {2}",
                             new Object[]{conflictsWith, cName, ep.getMessage()});
+                        conflictsWithPattern = null;
                     }
                 }
 
