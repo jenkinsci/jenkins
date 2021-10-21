@@ -513,7 +513,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void createAccountWithHashedPasswordRequiresPrefix() throws Exception {
+    public void createAccountWithHashedPasswordRequiresPrefix() {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         assertThrows(IllegalArgumentException.class, () -> securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt())));

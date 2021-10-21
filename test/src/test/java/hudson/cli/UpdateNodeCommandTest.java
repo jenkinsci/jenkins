@@ -88,7 +88,7 @@ public class UpdateNodeCommandTest {
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
 
-    @Test public void updateNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void updateNodeShouldFailIfNodeDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
@@ -103,7 +103,7 @@ public class UpdateNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void updateNodeShouldFailForMaster() throws Exception {
+    public void updateNodeShouldFailForMaster() {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));

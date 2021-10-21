@@ -25,7 +25,7 @@ public class NewViewLinkTest {
     private final String viewGroupURL = "abc/";
 
     @Before
-    public void initTests() throws Exception {
+    public void initTests() {
         when(view.getOwner()).thenReturn(group);
         when(group.getUrl()).thenReturn(viewGroupURL);
 
@@ -33,7 +33,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsHasPermission() throws Exception {
+    public void getActionsHasPermission() {
         when(group.hasPermission(any())).thenReturn(true);
 
         final List<Action> actions = newViewLink.createFor(view);
@@ -46,7 +46,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsNoPermission() throws Exception {
+    public void getActionsNoPermission() {
         when(group.hasPermission(any())).thenReturn(false);
 
         final List<Action> actions = newViewLink.createFor(view);
@@ -58,7 +58,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsNotModifiableOwner() throws Exception {
+    public void getActionsNotModifiableOwner() {
         ViewGroup vg = mock(ViewGroup.class);
         when(view.getOwner()).thenReturn(vg);
         when(vg.hasPermission(any())).thenReturn(true);

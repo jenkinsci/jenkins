@@ -210,7 +210,7 @@ public class WorkspaceCleanupThreadTest {
         @Override
         public boolean processWorkspaceBeforeDeletion(
                 Job<?, ?> project, FilePath workspace, Node node
-        ) throws IOException, InterruptedException {
+        ) {
             return answer;
         }
     }
@@ -223,7 +223,7 @@ public class WorkspaceCleanupThreadTest {
             this.time = time;
         }
 
-        @Override public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        @Override public Void invoke(File f, VirtualChannel channel) {
             Assume.assumeTrue("failed to reset lastModified on " + f, f.setLastModified(time));
             return null;
         }

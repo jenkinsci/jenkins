@@ -97,7 +97,7 @@ public class LoadStatisticsTest {
     }
 
     @Test
-    public void isModernWorks() throws Exception {
+    public void isModernWorks() {
         assertThat(LoadStatistics.isModern(Modern.class), is(true));
         assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
     }

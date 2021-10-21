@@ -77,7 +77,7 @@ public class CyclicGraphDetectorTest {
     }
 
     @Test
-    public void cycle2() throws Exception {
+    public void cycle2() {
         new Graph().e("A","B").e("B","C").e("C","C").mustContainCycle("C");
     }
 

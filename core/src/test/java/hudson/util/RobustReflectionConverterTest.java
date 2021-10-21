@@ -32,8 +32,10 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /**
@@ -98,6 +100,23 @@ public class RobustReflectionConverterTest {
                 xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
+    }
+
+    @Test
+    public void implicitCollection() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        xs.addImplicitCollection(Hold.class,"items", "item", String.class);
+        Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
+        assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
+        assertEquals("<hold>\n" +
+                "  <item>a</item>\n" +
+                "  <item>b</item>\n" +
+                "</hold>", xs.toXML(h));
+    }
+
+    public static class Hold {
+        List<String> items;
     }
 
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}

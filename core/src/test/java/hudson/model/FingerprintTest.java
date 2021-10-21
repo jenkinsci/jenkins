@@ -233,7 +233,7 @@ public class FingerprintTest {
         assertNotNull(fp.getUsages());
     }
 
-    @Test public void fromString() throws Exception {
+    @Test public void fromString() {
         //
         // Single
         //

@@ -25,6 +25,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -284,6 +285,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return parametersAction;
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "parameters in readResolve is needed for data migration.")
     private Object readResolve() {
         if (parameters == null) { // JENKINS-39495
             parameters = Collections.emptyList();

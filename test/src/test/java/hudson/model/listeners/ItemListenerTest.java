@@ -47,7 +47,7 @@ public class ItemListenerTest {
     private StringBuffer events = new StringBuffer();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ItemListener listener = new ItemListener() {
             @Override public void onCreated(Item item) {
                 events.append('C');
@@ -60,7 +60,7 @@ public class ItemListenerTest {
     }
 
     @Test
-    public void onCreatedViaCLI() throws Exception {
+    public void onCreatedViaCLI() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
                 withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes())).
                 invokeWithArgs("testJob");

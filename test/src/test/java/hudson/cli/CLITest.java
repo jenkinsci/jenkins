@@ -236,7 +236,7 @@ public class CLITest {
             // Custom written redirect so no traces of Jenkins are present in headers
             return new HttpResponses.HttpResponseException() {
                 @Override
-                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
                     rsp.setHeader("Location", url);
                     rsp.setContentType("text/html");
                     rsp.setStatus(HttpURLConnection.HTTP_MOVED_TEMP);

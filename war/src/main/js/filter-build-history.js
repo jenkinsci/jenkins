@@ -4,8 +4,9 @@ const buildHistoryContainer = document.getElementById("buildHistory")
 const pageSearchInputContainer = document.getElementsBySelector('#buildHistory .build-search-row .jenkins-search')[0]
 const pageSearchInput = document.getElementsBySelector('#buildHistory .build-search-row input')[0]
 const buildHistoryPage = document.getElementById("buildHistoryPage")
+const properties = document.getElementById("properties")
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax")
-const nextBuild = buildHistoryPage.getAttribute("page-next-build")
+const nextBuild = properties.getAttribute("page-next-build")
 const noBuildsBanner = document.getElementById("no-builds")
 
 const sidePanel = $('side-panel');
@@ -59,7 +60,7 @@ function updateBuilds() {
                 }
 
                 // next update
-                buildHistoryContainer.headers = ["n",rsp.getResponseHeader("n")];
+                buildHistoryContainer.headers = ["n", rsp.getResponseHeader("n")];
                 checkAllRowCellOverflows();
                 createRefreshTimeout();
             }
@@ -399,9 +400,6 @@ function loadPage(params, focusOnSearch) {
         onSuccess: function(rsp) {
             pageSearchInputContainer.classList.remove("jenkins-search--loading");
             buildHistoryContainer.classList.remove("jenkins-pane--loading");
-
-            console.log(rsp.responseText)
-            console.log(rsp.responseText === "<table class=\"pane\"></table>")
 
             if (rsp.responseText === "<table class=\"pane\"></table>") {
                 noBuildsBanner.style.display = "block"

@@ -110,7 +110,7 @@ public class SetBuildDescriptionCommandTest {
         assertThat(build.getDescription(), equalTo(" "));
     }
 
-    @Test public void setBuildDescriptionShouldFailIfJobDoesNotExist() throws Exception {
+    @Test public void setBuildDescriptionShouldFailIfJobDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("never_created");
