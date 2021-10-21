@@ -279,19 +279,30 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
                 final HashMap<Computer, Integer> availableComputers = new HashMap<>();
                 for (Computer o : Jenkins.get().getComputers()) {
-                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
+                    // For conflictsWith feature, the currently evaluated 'c'
+                    // agent should not start if certain other 'o' is alive.
+                    // *Otherwise*, we also care whether the other agent has
+                    // capacity to process tasks or if 'c' should be added to
+                    // the pool of workers.
+                    if (o.isOnline() || o.isConnecting()) {
                         String oName = o.getName();
                         if (conflictsWithPattern != null && !(oName.equals(cName))) {
-                            // check if that other active computer name
+                            // Check if that other active computer name
                             // blocks this current agent from starting?
+                            // We want this checked always, regardless of
+                            // other aspects of that other agent's state.
                             Matcher matcher = conflictsWithPattern.matcher(oName);
                             if (matcher.find()) {
                                 hasConflict.add(oName);
                             }
                         }
-                        final int idleExecutors = o.countIdle();
-                        if (idleExecutors>0)
-                            availableComputers.put(o, idleExecutors);
+                        if ((!hasConflict.contains(oName)) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
+                            // If 'c' has no problem co-existing with 'o',
+                            // how available is that other machine now?
+                            final int idleExecutors = o.countIdle();
+                            if (idleExecutors > 0)
+                                availableComputers.put(o, idleExecutors);
+                        }
                     }
                 }
 
