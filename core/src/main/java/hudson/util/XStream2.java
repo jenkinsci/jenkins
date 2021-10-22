@@ -123,6 +123,9 @@ public class XStream2 extends XStream {
         classOwnership = null;
     }
 
+    /**
+     * @since TODO
+     */
     public XStream2(ReflectionProvider reflectionProvider, HierarchicalStreamDriver driver,
                     ClassLoaderReference classLoaderReference, Mapper mapper, ConverterLookup converterLookup,
                     ConverterRegistry converterRegistry) {
