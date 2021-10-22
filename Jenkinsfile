@@ -10,6 +10,8 @@ def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumbe
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
 def failFast = false
+// Same memory sizing for both builds and ATH
+def javaOpts = ["JAVA_OPTS=-Xmx1536m -Xms512m","MAVEN_OPTS=-Xmx1536m -Xms512m"]
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -40,20 +42,13 @@ for(j = 0; j < jdks.size(); j++) {
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 300, unit: 'MINUTES') {
-                        // See below for what this method does - we're passing an arbitrary environment
-                        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
-                            // Actually run Maven!
-                            // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
+                        // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
+                        // -ntp requires Maven >= 3.6.1
+                        def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
+                        infra.runWithMaven(mvnCmd, jdk.toString(), javaOpts, true)
 
-                            if(isUnix()) {
-                                sh mvnCmd
-                                sh 'git add . && git diff --exit-code HEAD'
-                            } else {
-                                bat mvnCmd
-                            }
+                        if(isUnix()) {
+                            sh 'git add . && git diff --exit-code HEAD'
                         }
                     }
                 }
@@ -124,10 +119,8 @@ builds.ath = {
         def metadataPath
         dir("sources") {
             checkout scm
-            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                          "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
-                sh "mvn --batch-mode --show-version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo"
-            }
+            def mvnCmd = 'mvn --batch-mode --show-version -ntp -Pquick-build -am -pl war package -Dmaven.repo.local=$WORKSPACE_TMP/m2repo'
+            infra.runWithMaven(mvnCmd, "8", javaOpts, true)
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"
             }
@@ -142,34 +135,3 @@ builds.ath = {
 builds.failFast = failFast
 parallel builds
 infra.maybePublishIncrementals()
-
-// This method sets up the Maven and JDK tools, puts them in the environment along
-// with whatever other arbitrary environment variables we passed in, and runs the
-// body we passed in within that environment.
-void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
-    if (buildType == 'Linux') {
-        // I.e., a Maven container using ACI. No need to install tools.
-        return withEnv(envVars) {
-            body.call()
-        }
-    }
-    
-    // The names here are currently hardcoded for my test environment. This needs
-    // to be made more flexible.
-    // Using the "tool" Workflow call automatically installs those tools on the
-    // node.
-    String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
-
-    // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
-    // using.
-    List mvnEnv = ["PATH+MVN=${mvntool}/bin", "PATH+JDK=${jdktool}/bin", "JAVA_HOME=${jdktool}", "MAVEN_HOME=${mvntool}"]
-
-    // Add any additional environment variables.
-    mvnEnv.addAll(envVars)
-
-    // Invoke the body closure we're passed within the environment we've created.
-    withEnv(mvnEnv) {
-        body.call()
-    }
-}
