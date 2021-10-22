@@ -257,6 +257,7 @@ public abstract class Slave extends Node implements Serializable {
         return remoteFS;
     }
 
+    @NonNull
     @Override
     public String getNodeName() {
         return name;

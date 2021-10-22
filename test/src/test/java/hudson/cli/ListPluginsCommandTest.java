@@ -41,7 +41,7 @@ public class ListPluginsCommandTest {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
-    public void listPluginsExpectedUsage() throws Exception {
+    public void listPluginsExpectedUsage() {
         assertNull(j.jenkins.getPluginManager().getPlugin("token-macro"));
         CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
                 .invoke();
@@ -64,7 +64,7 @@ public class ListPluginsCommandTest {
     
     @Test
     @Issue("SECURITY-771")
-    public void onlyAccessibleForAdmin() throws Exception {
+    public void onlyAccessibleForAdmin() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
                 .authorizedTo(Jenkins.READ)
                 .invoke();

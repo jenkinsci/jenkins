@@ -31,7 +31,6 @@ import hudson.Launcher;
 import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -57,7 +56,7 @@ public class BuildExecutionTest {
         @Override public boolean needsToRunAfterFinalized() {
             throw new IllegalStateException("oops");
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
             return true;
         }
         @Override public BuildStepMonitor getRequiredMonitorService() {

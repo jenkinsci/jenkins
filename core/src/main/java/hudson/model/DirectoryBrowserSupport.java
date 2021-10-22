@@ -26,6 +26,8 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
@@ -81,6 +84,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     // escape hatch for SECURITY-904 to keep legacy behavior
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean ALLOW_SYMLINK_ESCAPE = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
+
+    /**
+     * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed. 
+     */
+    static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
 
     public final ModelObject owner;
     
@@ -243,7 +251,20 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String rest = _rest.toString();
 
         // this is the base file/directory
-        VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
+        VirtualFile baseFile;
+        if (base.isEmpty()) {
+            baseFile = root;
+        } else {
+            if (!SystemProperties.getBoolean(ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, false)) {
+                boolean isAbsolute = root.run(new IsAbsolute(base));
+                if (isAbsolute) {
+                    LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
+                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+            }
+            baseFile = root.child(base);
+        }
 
         if (baseFile.hasSymlink(getNoFollowLinks())) {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -394,6 +415,19 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
                 rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
             }
+        }
+    }
+
+    private static final class IsAbsolute extends MasterToSlaveCallable<Boolean, IOException> {
+        private final String fragment;
+
+        IsAbsolute(String fragment) {
+            this.fragment = fragment;
+        }
+
+        @Override 
+        public Boolean call() throws IOException {
+            return new File(fragment).isAbsolute();
         }
     }
 

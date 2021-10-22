@@ -51,7 +51,6 @@ import hudson.model.Result;
 import hudson.util.RunList;
 import hudson.util.StreamTaskListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -98,7 +97,7 @@ public class FingerprinterTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         Fingerprinter.enableFingerprintsInDependencyGraph = true;
     }
     
@@ -122,7 +121,7 @@ public class FingerprinterTest {
 
     private static class FingerprintAddingBuilder extends Builder {
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.addAction(new Fingerprinter.FingerprintAction(build, Collections.singletonMap(singleFiles2[0], "fakefingerprint")));
             return true;
         }

@@ -61,7 +61,7 @@ public class BulkChangeTest {
         }
 
         @Override
-        public void save() throws IOException {
+        public void save() {
             if(BulkChange.contains(this))   return;
             saveCount++;
         }

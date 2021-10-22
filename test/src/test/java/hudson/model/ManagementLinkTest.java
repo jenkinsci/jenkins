@@ -63,7 +63,7 @@ public class ManagementLinkTest {
     }
 
     @Test @Issue("JENKINS-33683")
-    public void invisibleLinks() throws Exception {
+    public void invisibleLinks() {
         assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 

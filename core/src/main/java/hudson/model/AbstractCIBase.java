@@ -28,6 +28,7 @@ package hudson.model;
 
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
@@ -57,6 +58,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * @deprecated
      *      Maybe you were trying to call {@link #getDisplayName()}.
      */
+    @NonNull
     @Deprecated @Override
     public String getNodeName() {
         return "";

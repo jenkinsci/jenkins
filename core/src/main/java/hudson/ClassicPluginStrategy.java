@@ -712,5 +712,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static /* not final */ boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName() + ".useAntClassLoader", true);
 }

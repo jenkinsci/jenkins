@@ -86,7 +86,7 @@ public class PingThreadTest {
     }
 
     private static final class GetPid extends MasterToSlaveCallable<String, IOException> {
-        @Override public String call() throws IOException {
+        @Override public String call() {
             return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
         }
     }

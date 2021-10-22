@@ -128,7 +128,7 @@ public abstract class CauseOfInterruption implements Serializable {
             final User userInstance = getUser();
             listener.getLogger().println(
                 Messages.CauseOfInterruption_ShortDescription(
-                        userInstance != null ? ModelHyperlinkNote.encodeTo(userInstance) : user));
+                        ModelHyperlinkNote.encodeTo(userInstance)));
         }
 
         @Override

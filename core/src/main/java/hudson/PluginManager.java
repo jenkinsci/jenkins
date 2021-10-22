@@ -34,6 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -481,7 +482,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                                 LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root=" + q + ", deactivating all involved) " + cycle.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
                                                 for (PluginWrapper pluginWrapper : cycle) {
                                                     pluginWrapper.setHasCycleDependency(true);
-                                                    failedPlugins.add(new FailedPlugin(pluginWrapper.getShortName(), new CycleDetectedException(cycle)));
+                                                    failedPlugins.add(new FailedPlugin(pluginWrapper, new CycleDetectedException(cycle)));
                                                 }
                                             }
 
@@ -534,12 +535,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     p.resolvePluginDependencies();
                                     strategy.load(p);
                                 } catch (MissingDependencyException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -559,7 +560,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 try {
                                     p.getPluginOrFail().postInitialize();
                                 } catch (Exception e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -2210,10 +2211,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static final class FailedPlugin {
         public final String name;
         public final Exception cause;
+        @Nullable
+        public final PluginWrapper pluginWrapper;
 
+        /**
+         * Constructor for FailedPlugin when we do not have an associated PluginWrapper
+         */
         public FailedPlugin(String name, Exception cause) {
             this.name = name;
             this.cause = cause;
+            this.pluginWrapper = null;
+        }
+
+        /**
+         * Constructor for FailedPlugin when we know which PluginWrapper failed
+         */
+        public FailedPlugin(PluginWrapper pluginWrapper, Exception cause) {
+            this.name = pluginWrapper.getShortName();
+            this.cause = cause;
+            this.pluginWrapper = pluginWrapper;
         }
 
         public String getExceptionString() {

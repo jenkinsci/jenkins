@@ -191,7 +191,7 @@ public class FilePathTest {
                     }
 
                     @Override
-                    public void close() throws IOException {
+                    public void close() {
                         closed = new Exception();
                     }
                 }
@@ -687,7 +687,7 @@ public class FilePathTest {
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {
-            @Override protected URLConnection openConnection(URL u) throws IOException {
+            @Override protected URLConnection openConnection(URL u) {
                 return con;
             }
         };
