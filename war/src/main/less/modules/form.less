@@ -402,7 +402,10 @@
     }
   }
 
-  &:active {
+  &:active, &:focus {
+    outline: none;
+    text-decoration: none;
+
     &::before {
       opacity: 0.3;
     }
@@ -410,10 +413,5 @@
     &::after {
       box-shadow: 0 0 0 5px var(--text-color);
     }
-  }
-
-  &:active, &:focus {
-    outline: none;
-    text-decoration: none;
   }
 }
