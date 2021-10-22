@@ -1,9 +1,17 @@
 .jenkins-form {
-  max-width: 80ch;
 }
 
 .jenkins-form-item {
-  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-bottom: 1.75rem;
+
+  &--small {
+    max-width: 300px;
+  }
+
+  &--medium {
+    max-width: 450px;
+  }
 }
 
 .jenkins-fieldset {
@@ -17,7 +25,8 @@
 }
 
 .jenkins-form-label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-weight: bold;
   margin-top: 0;
   margin-bottom: 0.75rem;
@@ -38,7 +47,7 @@
   border: 2px solid var(--input-border);
   padding: 8px;
   border-radius: 6px;
-  width: 350px;
+  width: 100%;
   box-shadow: 0 0 0 10px transparent;
   transition: 0.2s ease;
 
@@ -170,7 +179,6 @@
 }
 
 .jenkins-radio {
-  max-width: 60ch;
   margin-top: 2px;
 
   &:not(:last-of-type) {

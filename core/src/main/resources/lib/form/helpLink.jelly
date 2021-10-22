@@ -54,12 +54,9 @@ THE SOFTWARE.
   <j:choose>
     <j:when test="${attrs.url!=null}">
       <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + attrs.featureName : '%[Help]'}" />
-      <span class="setting-help">
-        <a href="#" class="help-button" helpURL="${rootURL}${attrs.url}"><l:helpIcon class="icon-help" tooltip="${altText}"/></a>
-      </span>
+      <a href="#" class="help-button" helpURL="${rootURL}${attrs.url}">
+        ?
+      </a>
     </j:when>
-    <j:otherwise>
-      <span class="setting-no-help"></span>
-    </j:otherwise>
   </j:choose>
 </j:jelly>
