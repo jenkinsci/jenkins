@@ -633,11 +633,19 @@ label.attach-previous {
 
 .help {
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
   background-color: var(--help-area-bg-color);
-  padding: 1em;
-  margin-bottom: 1em;
+  padding: 1rem;
+  margin: 1rem 0;
   word-break: break-word;
+  border-radius: 6px;
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .help a {
@@ -651,72 +659,6 @@ label.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
-}
-
-.help-button {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  margin-left: 1ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--text-color)!important;
-  line-height: 18px;
-  border-radius: 100%;
-
-  &::before {
-    content: "?";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: var(--text-color);
-    opacity: 0.1;
-    border-radius: inherit;
-    transition: 0.2s ease;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    box-shadow: 0 0 0 10px transparent;
-    border-radius: inherit;
-    opacity: 0.1;
-    transition: 0.2s ease;
-  }
-
-  &:hover {
-    text-decoration: none;
-
-    &::before {
-      opacity: 0.2;
-    }
-  }
-
-  &:active {
-    &::before {
-      opacity: 0.3;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
-  }
-
-  &:active, &:focus {
-    outline: none;
-    text-decoration: none;
-  }
-}
-
-.setting-help .help-button {
-  margin: 0;
 }
 
 .icon-help,
