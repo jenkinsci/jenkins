@@ -2300,12 +2300,11 @@ var hoverNotification = (function() {
 
         var div = document.createElement("DIV");
         document.body.appendChild(div);
-        div.innerHTML = "<div id=hoverNotification><div class=bd></div></div>";
+        div.innerHTML = "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
         body = $('hoverNotification');
         
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
-          width:"10em",
           zIndex:1000,
           effect:{
             effect:effect,

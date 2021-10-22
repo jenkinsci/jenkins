@@ -623,12 +623,34 @@ label.attach-previous {
 /* ====================== help ===================================== */
 
 .help {
+  position: relative;
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: var(--help-area-bg-color);
-  padding: 1em;
-  margin-bottom: 1em;
+  padding: 1rem;
+  margin: 1rem 0;
   word-break: break-word;
+  border-radius: 6px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.05;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .help a {
@@ -642,18 +664,6 @@ label.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
-}
-
-.help-button {
-  margin-left: 2px;
-  margin-right: 2ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.setting-help .help-button {
-  margin: 0;
 }
 
 .icon-help,
@@ -731,7 +741,7 @@ img.icon-help {
   border-bottom: 1px solid var(--bigtable-header-border-color);
 }
 
-#projectstatus th {
+#projectstatus > thead > th {
   text-align: left;
   // padding: 7px 0px;
 }
@@ -771,7 +781,15 @@ table.parameters > tbody:hover {
 }
 
 .healthReport div.healthReportDetails {
-    display: none;
+  display: none;
+  margin-left: 20px;
+  padding: 0;
+
+  table * {
+    font-size: 0.8rem;
+    border-top: none!important;
+    border-bottom: none!important;
+  }
 }
 
 .healthReport:hover,
@@ -781,12 +799,7 @@ table.parameters > tbody:hover {
 
 .healthReport:hover div.healthReportDetails,
 .healthReport.hover div.healthReportDetails {
-    display: block;
-    position: absolute;
-    background-color: #ffe;
-    border: 1px solid #bbb;
-    margin-left: 32px; /* move it across a bit */
-    z-index: 26;
+  display: block;
 }
 
 .healthReport div.healthReportDetails table {
@@ -1268,20 +1281,7 @@ textarea.rich-editor {
   visibility: hidden;
 }
 
-/* ========================= hover notification ========================= */
-
-#hoverNotification {
-    visibility: hidden;
-    background-color: white;
-    border: 1px solid black;
-    padding: 0.5em;
-}
-
 /* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container .has-help {
-    display: flex;
-}
 
 .hetero-list-container .has-help .dd-handle {
     flex: 1;
