@@ -36,15 +36,15 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <st:adjunct includes="lib.form.section_" />
-  <f:rowSet name="${attrs.name}">
+<!--  Restore-->
+<!--  <st:adjunct includes="lib.form.section_" />-->
+
+  <div class="jenkins-section">
     <j:if test="${attrs.title!=null}">
-      <f:block>
-        <div class="section-header">
-          ${title}
-        </div>
-      </f:block>
+      <div class="jenkins-section__title">
+        ${title}
+      </div>
     </j:if>
     <d:invokeBody />
-  </f:rowSet>
+  </div>
 </j:jelly>

@@ -29,5 +29,5 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.breadcrumb-config-outline.init"/>
-  <l:breadcrumb title="${%configuration}" id="inpage-nav" />
+  <l:breadcrumb title="${%Configure System}" id="inpage-nav" />
 </j:jelly>

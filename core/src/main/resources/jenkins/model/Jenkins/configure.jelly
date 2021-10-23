@@ -33,7 +33,7 @@ THE SOFTWARE.
   <l:main-panel>
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
-        <h1>Configure System</h1>
+        <h1>${%Configure System}</h1>
       </div>
     </div>
     <div class="behavior-loading">${%LOADING}</div>

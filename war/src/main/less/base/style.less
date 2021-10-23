@@ -453,71 +453,34 @@ div.behavior-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
   z-index: 1;
-  background-color: var(--text-color-secondary);
+  background-color: var(--background);
   text-align: center;
-  font-size: 3rem;
-  opacity: 0.5;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  padding-top: 2rem;
 
-  &::before {
+  &::before, &::after {
     content: "";
-    display: block;
-    min-width: 100px;
-    min-height: 100px;
-    margin: 0;
-    background-color: rgba(0, 0, 0, 0.15);
-    border: 5px solid rgba(0, 0, 0, 0.33);
-    position: relative;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--text-color);
     z-index: 2;
     border-radius: 100%;
-    animation: sk-scaleout 1s infinite ease-in-out;
-    box-shadow: #fff 0 0 0 10px;
+    margin-top: -2rem;
+    opacity: 0.4;
   }
-}
 
-.config div.behavior-loading {
-    background: rgba(255, 255, 255, 0.85);
-    left: 0;
-    width: 100%;
-    right: 0;
-    top: 15px;
-    bottom: 0;
-    height: 100%;
-    width: auto;
-    min-height: 100%;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-    filter: alpha(opacity=100);
-    font-size: 1.5em;
-    z-index: 99;
+  &::after {
+    animation: loading-spinner 0.5s infinite linear;
+    clip-path: inset(0 0 10px 10px);
     opacity: 1;
-    color: #999;
-    text-shadow: #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px;
-}
-
-@-webkit-keyframes sk-scaleout {
-  0% { -webkit-transform: scale(0); }
-
-  100% {
-    -webkit-transform: scale(1);
-    opacity: 0;
-  }
-}
-
-@keyframes sk-scaleout {
-  0% {
-    -webkit-transform: scale(0);
-    transform: scale(0);
-  }
-
- 100% {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-    opacity: 0;
   }
 }
 
