@@ -10,8 +10,6 @@ def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumbe
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
 def failFast = false
-// Same memory sizing for both builds and ATH
-def javaOpts = ["JAVA_OPTS=-Xmx1536m -Xms512m","MAVEN_OPTS=-Xmx1536m -Xms512m"]
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -42,6 +40,8 @@ for(j = 0; j < jdks.size(); j++) {
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 300, unit: 'MINUTES') {
+                        // Target of 1/4 of a 8G instance
+                        def javaOpts = ["JAVA_OPTS=-Xmx1536m -Xms512m -XshowSettings:vm","MAVEN_OPTS=-Xmx1536m -Xms512m -XshowSettings:vm"]
                         // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                         // -ntp requires Maven >= 3.6.1
                         def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
@@ -120,6 +120,8 @@ builds.ath = {
         dir("sources") {
             checkout scm
             def mvnCmd = 'mvn --batch-mode --show-version -ntp -Pquick-build -am -pl war package -Dmaven.repo.local=$WORKSPACE_TMP/m2repo'
+            // Target of 1/4 of a 64G instance
+            def javaOpts = ["JAVA_OPTS=-Xmx12288m -Xms4096m -XshowSettings:vm","MAVEN_OPTS=-Xmx12288m -Xms4096m -XshowSettings:vm"]
             infra.runWithMaven(mvnCmd, "8", javaOpts, true)
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"
