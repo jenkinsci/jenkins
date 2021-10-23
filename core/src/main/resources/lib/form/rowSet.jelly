@@ -37,7 +37,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <div class="rowSet-container">
+  <div class="rowSet-container jenkins-form-item">
     <j:choose>
       <j:when test="${attrs.ref==null and attrs.name==null}">
         <!-- noop -->
