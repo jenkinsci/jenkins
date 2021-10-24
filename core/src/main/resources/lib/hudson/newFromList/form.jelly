@@ -96,7 +96,7 @@ THE SOFTWARE.
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <input type="submit" name="Submit" value="${%OK}" id="ok" style="margin-left:5em" />
+      <button type="submit" name="Submit" id="ok" class="jenkins-button jenkins-button--primary">${%Create}</button>
     </s:bottomButtonBar>
   </s:form>
   <script><![CDATA[

@@ -42,8 +42,10 @@ THE SOFTWARE.
   </s:documentation>
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
-  <input type="button"
-         value="${attrs.value ?: '%Apply'}"
-         class="apply-button applyButton ${attrs.large ? 'large-button' : ''}"
-         name="Apply"/><!-- applyButton is legacy -->
+
+  <button class="jenkins-button apply-button applyButton" name="Apply">
+    ${attrs.value ?: '%Apply'}
+  </button>
+
+  <!-- applyButton is legacy -->
 </j:jelly>

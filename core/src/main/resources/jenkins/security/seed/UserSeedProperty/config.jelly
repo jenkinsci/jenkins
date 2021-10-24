@@ -9,7 +9,7 @@
         <div class="user-seed-panel" name="OK">
             <j:choose>
                 <j:when test="${descriptor.isCurrentUser(it)}">
-                    <span class="yui-button">
+                    <span class="jenkins-button">
                         <button type="button" name="reset-seed"
                                 onclick="return resetSeed(this)"
                                 data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
@@ -20,7 +20,7 @@
                     </span>
                 </j:when>
                 <j:otherwise>
-                    <span class="yui-button">
+                    <span class="jenkins-button">
                         <button type="button" name="reset-seed"
                                 onclick="return resetSeed(this)"
                                 data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"

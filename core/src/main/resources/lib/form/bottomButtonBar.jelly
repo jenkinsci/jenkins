@@ -32,7 +32,7 @@ THE SOFTWARE.
 
   <f:block>
     <div id="bottom-sticker" >
-      <div class="bottom-sticker-inner">
+      <div class="bottom-sticker-inner jenkins-buttons-row">
         <d:invokeBody />
       </div>
     </div>

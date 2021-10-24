@@ -26,21 +26,21 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <div align="right">
-        <a href="rss" class="yui-button link-button">
+        <a href="rss" class="jenkins-button jenkins-button--transparent">
             <span class="leading-icon">
                 <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                            href="${imagesURL}/material-icons/feed.svg#feed"/>
             </span>
             <span>${%All}</span>
         </a>
-        <a href="rss?level=SEVERE" class="yui-button link-button">
+        <a href="rss?level=SEVERE" class="jenkins-button jenkins-button--transparent">
             <span class="leading-icon">
                 <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                            href="${imagesURL}/material-icons/feed.svg#feed"/>
             </span>
             <span>${%SEVERE}</span>
         </a>
-        <a href="rss?level=WARNING" class="yui-button link-button">
+        <a href="rss?level=WARNING" class="jenkins-button jenkins-button--transparent">
             <span class="leading-icon">
                 <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
                            href="${imagesURL}/material-icons/feed.svg#feed"/>

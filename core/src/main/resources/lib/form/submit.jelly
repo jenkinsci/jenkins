@@ -25,8 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <s:documentation>
-    Submit button themed by YUI. This should be always
-    used instead of the plain &lt;input tag.
+    Submit button
 
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
@@ -36,14 +35,9 @@ THE SOFTWARE.
     <s:attribute name="value" use="required">
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
-
-    <s:attribute name="large">
-      Set to "true" to enable the large variant of the button
-    </s:attribute>
   </s:documentation>
 
-  <input type="submit"
-         name="${attrs.name ?: 'Submit'}"
-         value="${attrs.value ?: '%Submit'}"
-         class="submit-button primary ${attrs.large ? 'large-button' : ''}" />
+  <button class="jenkins-button jenkins-button--primary" type="submit" name="${attrs.name ?: 'Submit'}">
+    ${attrs.value ?: '%Submit'}
+  </button>
 </j:jelly>

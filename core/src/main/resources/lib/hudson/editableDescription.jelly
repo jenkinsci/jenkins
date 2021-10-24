@@ -41,10 +41,8 @@ THE SOFTWARE.
 
     <l:hasPermission permission="${permission}">
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
-        <a class="yui-button link-button" id="description-link" href="editDescription" onclick="return replaceDescription();">
-          <span class="leading-icon">
-            <l:svgIcon viewBox="0 0 16 16" class="icon-small" href="${imagesURL}/material-icons/edit.svg#edit"/>
-          </span>
+        <a class="jenkins-button jenkins-button--transparent" id="description-link" href="editDescription" onclick="return replaceDescription();">
+          <l:svgIcon viewBox="0 0 16 16" class="icon-small" href="${imagesURL}/material-icons/edit.svg#edit"/>
           <j:choose>
             <j:when test="${empty(it.description)}">
               ${%add description}
