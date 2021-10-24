@@ -57,7 +57,9 @@ THE SOFTWARE.
           <div>
             <st:adjunct includes="lib.form.advanced.advanced"/>
             <div class="advancedLink" style="text-align:left">
-              <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
+              <button type="button" class="jenkins-button advanced-button advancedButton">
+                ${%title(descriptor.displayName)}...
+              </button>
             </div>
             <div class="advancedBody">
               <div class="tbody">

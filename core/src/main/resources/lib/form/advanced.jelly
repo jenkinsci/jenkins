@@ -49,7 +49,11 @@ THE SOFTWARE.
                 <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
               </span>
               <st:nbsp />
-	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
+
+            <!-- advancedButton is legacy -->
+            <button type="button" class="jenkins-button advanced-button advancedButton">
+                ${attrs.title?:'%Advanced'}...
+            </button>
 	    </div>
             <j:new var="customizedFields" className="java.util.TreeSet"/>
 	    <div class="advancedBody"><div class="tbody">

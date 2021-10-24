@@ -32,5 +32,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
-  <input type="button" value="${attrs.value ?: '%Delete'}" title="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" />
+
+  <button type="button" class="jenkins-button jenkins-button--red">
+    ${attrs.value ?: '%Delete'}
+  </button>
 </j:jelly>

@@ -49,7 +49,7 @@ THE SOFTWARE.
 
   <span class="copy-button ${attrs.clazz}" title="${attrs.tooltip}" text="${attrs.text}"
     message="${attrs.message}" style="${attrs.style}">
-    <input type="button"/>
+    <button type="button" class="jenkins-button"/>
   </span>
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>
 </j:jelly>

@@ -43,7 +43,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
 
-  <button class="jenkins-button apply-button applyButton" name="Apply">
+  <button type="button" class="jenkins-button apply-button applyButton" name="Apply">
     ${attrs.value ?: '%Apply'}
   </button>
 

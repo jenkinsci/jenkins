@@ -139,7 +139,9 @@ THE SOFTWARE.
       </j:scope>
     </div>
     <j:if test="${!empty(items) and !attrs.noAddButton and attrs.enableTopButton}">
-      <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add repeatable-add-top" />
+      <button type="button" class="jenkins-button repeatable-add repeatable-add-top">
+        ${attrs.add?:'%Add'}
+      </button>
     </j:if>
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
@@ -163,7 +165,9 @@ THE SOFTWARE.
 
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
-      <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add" />
+      <button type="button" class="jenkins-button repeatable-add">
+        ${attrs.add?:'%Add'}
+      </button>
     </j:if>
   </div>
 </j:jelly>
