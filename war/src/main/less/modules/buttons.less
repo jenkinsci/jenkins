@@ -9,7 +9,7 @@
   margin: 0;
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none!important;
   background: transparent;
   color: var(--text-color)!important;
@@ -63,10 +63,11 @@
 }
 
 .jenkins-button--primary {
-  color: white!important;
+  color: var(--button-foreground--primary)!important;
+  font-weight: 600;
 
   &::before, &::after {
-    color: #074aaa;
+    color: var(--primary);
   }
 
   &::before {
