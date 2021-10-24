@@ -71,7 +71,7 @@ THE SOFTWARE.
               ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
-                  <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
+                  <l:confirmationLink class="jenkins-button jenkins-button--transparent" href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
                     <j:choose>
                       <j:when test="${iconMetadata != null}">
                         <l:icon class="${iconMetadata.classSpec}"/>
@@ -110,7 +110,7 @@ THE SOFTWARE.
                   </f:link>
                 </j:when>
                 <j:otherwise>
-                  <a href="${m.urlName}">
+                  <a href="${m.urlName}" class="jenkins-button jenkins-button--transparent">
                     <j:choose>
                       <j:when test="${iconMetadata != null}">
                         <l:icon class="${iconMetadata.classSpec}"
@@ -125,7 +125,9 @@ THE SOFTWARE.
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
-                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                      <j:if test="${m.hasUpdates()}">
+                        <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                      </j:if>
                     </dl>
                   </a>
                 </j:otherwise>
