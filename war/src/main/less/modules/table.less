@@ -6,7 +6,7 @@
   overflow: hidden;
   box-shadow: 0 0 0 5px var(--table-background);
   margin: 5px;
-  --table-padding: 0.6rem;
+  --table-padding: 0.55rem;
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -18,8 +18,8 @@
       & > th {
         color: var(--table-header-foreground);
         text-align: left;
-        padding-top: calc(1.1rem - 5px);
-        padding-bottom: 1.1rem;
+        padding-top: calc((var(--table-padding) * 2) - 5px);
+        padding-bottom: calc(var(--table-padding) * 2);
         padding-left: var(--table-padding);
         font-weight: 700;
         text-transform: uppercase;
