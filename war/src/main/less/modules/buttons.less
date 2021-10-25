@@ -17,6 +17,7 @@
   border-radius: 6px;
   cursor: pointer;
   min-height: 35px;
+  text-shadow: 0 1px 0 var(--background);
 
   &::before, &::after {
     content: "";
@@ -36,6 +37,7 @@
   }
 
   &::after {
+    border-bottom: 2px solid currentColor;
     box-shadow: 0 0 0 10px transparent;
   }
 
@@ -65,6 +67,7 @@
 .jenkins-button--primary {
   color: var(--button-foreground--primary)!important;
   font-weight: 600;
+  text-shadow: none;
 
   &::before, &::after {
     color: var(--primary);
@@ -94,6 +97,14 @@
 .jenkins-button--transparent {
   &::before {
     opacity: 0;
+  }
+  &::after {
+    color: transparent;
+  }
+  &:hover, &:active, &:focus {
+    &::after {
+      color: currentColor;
+    }
   }
 }
 

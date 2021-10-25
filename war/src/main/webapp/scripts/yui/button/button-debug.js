@@ -129,7 +129,7 @@ version: 2.9.0
                     at once.
                 */
             
-                sInput = "<input type=\"" + p_sType + "\" name=\"" + 
+                sInput = "<button type=\"" + p_sType + "\" name=\"" +
                     p_sName + "\"";
         
                 if (p_bChecked) {
@@ -650,7 +650,7 @@ version: 2.9.0
         * @final
         * @type String
         */
-        CLASS_NAME_PREFIX: "yui-",
+        CLASS_NAME_PREFIX: "jenkins-",
         
         
         /**

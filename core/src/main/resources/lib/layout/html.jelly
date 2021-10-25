@@ -124,6 +124,7 @@ THE SOFTWARE.
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
     <l:yui module="element" />
+    <l:yui module="button" />
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 

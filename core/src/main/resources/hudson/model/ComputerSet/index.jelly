@@ -30,6 +30,20 @@ THE SOFTWARE.
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
+    <div class="jenkins-app-bar jenkins-app-bar--no-border">
+      <div class="jenkins-app-bar__content">
+        <h1>${%Nodes}</h1>
+      </div>
+      <div class="jenkins-app-bar__controls">
+        <l:hasAdministerOrManage>
+          <form method="post" action="updateNow">
+            <button class="jenkins-button">
+              ${%Refresh}
+            </button>
+          </form>
+        </l:hasAdministerOrManage>
+      </div>
+    </div>
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <table id="computers" class="sortable pane bigtable">
@@ -87,13 +101,6 @@ THE SOFTWARE.
       </tr>
 
     </table>
-    <l:hasAdministerOrManage>
-      <div align="right" style="margin-top:0.5em">
-        <form method="post" action="updateNow">
-          <s:submit value="${%Refresh status}"/>
-        </form>
-      </div>
-    </l:hasAdministerOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>
