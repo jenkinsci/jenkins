@@ -650,7 +650,7 @@ version: 2.9.0
         * @final
         * @type String
         */
-        CLASS_NAME_PREFIX: "jenkins-",
+        CLASS_NAME_PREFIX: "jenkins-yui-compat-",
         
         
         /**
@@ -4049,7 +4049,7 @@ version: 2.9.0
         * @final
         * @type String
         */
-        CLASS_NAME_PREFIX: "yui-",
+        CLASS_NAME_PREFIX: "",
         
         
         /**
