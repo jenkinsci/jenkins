@@ -33,6 +33,8 @@ public class CallableDirectionChecker extends RoleChecker {
 
     private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
 
+    private static final String ALLOW_ANY_ROLE_PROP = CallableDirectionChecker.class.getName()+".allowAnyRole";
+
     /**
      * Switch to disable all the defense mechanism completely.
      *
@@ -53,6 +55,12 @@ public class CallableDirectionChecker extends RoleChecker {
         if (expected.contains(Roles.MASTER)) {
             LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the controller role", name);
             return;    // known to be safe
+        }
+
+        if (expected.isEmpty() && SystemProperties.getBoolean(ALLOW_ANY_ROLE_PROP, true)) {
+            // TODO Is this even something we want to support, or should all infrastructure callables be exempted from the required role check?
+            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for any role", name);
+            return;
         }
 
         if (isWhitelisted(subject,expected)) {
