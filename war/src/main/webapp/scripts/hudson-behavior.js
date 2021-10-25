@@ -684,6 +684,8 @@ function preventInputEe(event) {
 /**
  * DEPRECATED: Wraps a <button> into YUI button.
  *
+ * @deprecated Add the event listener to the button rather than call this method
+ *
  * @param e
  *      button element
  * @param onclickEvent
@@ -789,15 +791,6 @@ function sequencer(fs) {
 function progressBarOnClick() {
     var href = this.getAttribute("href");
     if(href!=null)      window.location = href;
-}
-
-function expandButton(e) {
-    var link = e.target;
-    while(!Element.hasClassName(link,"advancedLink"))
-        link = link.parentNode;
-    link.style.display = "none";
-    $(link).next().style.display="block";
-    layoutUpdateCallback.call();
 }
 
 function labelAttachPreviousOnClick() {
@@ -917,10 +910,6 @@ function rowvgStartEachRow(recursive,f) {
 
     Behaviour.specify("TABLE.progress-bar", "table-progress-bar", ++p, function(e) { // progressBar.jelly
         e.onclick = progressBarOnClick;
-    });
-
-    Behaviour.specify("BUTTON.expand-button", "input-expand-button", ++p, function(e) {
-        makeButton(e, expandButton);
     });
 
     // <label> that doesn't use ID, so that it can be copied in <repeatable>
@@ -1154,14 +1143,6 @@ function rowvgStartEachRow(recursive,f) {
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
     Behaviour.specify("[tooltip]", "-tooltip-", ++p, function(e) {
         applyTooltip(e,e.getAttribute("tooltip"));
-    });
-
-    Behaviour.specify("BUTTON.submit-button", "input-submit-button", ++p, function(e) {
-        makeButton(e);
-    });
-
-    Behaviour.specify("BUTTON.jenkins-button", "input-yui-button", ++p, function(e) {
-        makeButton(e);
     });
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly

@@ -164,7 +164,7 @@ Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
 
     // button to add a new repeatable block
 Behaviour.specify("BUTTON.repeatable-add", 'repeatable', 0, function(e) {
-        makeButton(e,function(e) {
+        e.addEventListener('click', function(e) {
             repeatableSupport.onAdd(e.target);
         });
         e = null; // avoid memory leak

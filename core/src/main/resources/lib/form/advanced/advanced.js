@@ -1,5 +1,5 @@
 Behaviour.specify("BUTTON.advanced-button", 'advanced', 0, function(e) {
-        makeButton(e,function(e) {
+        e.addEventListener('click', function(e) {
             var link = $(e.target).up(".advancedLink");
             var tr;
             link.style.display = "none"; // hide the button

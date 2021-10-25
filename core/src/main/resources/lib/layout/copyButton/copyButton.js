@@ -3,7 +3,7 @@ Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
     var id = "copy-button"+(iota++);
     btn.id = id;
 
-    makeButton(btn, function() {
+    btn.addEventListener('click', function() {
         //make an invisible textarea element containing the text
         var el = document.createElement('textarea');
         el.value = e.getAttribute("text");
