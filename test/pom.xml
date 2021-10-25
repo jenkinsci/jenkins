@@ -117,7 +117,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.3</version>
+      <version>2.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion> <!-- TODO it seems to want Guava 27.1; apparently it manages to run against 11.0.1 -->
