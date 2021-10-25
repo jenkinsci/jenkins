@@ -48,7 +48,9 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         if (line.isEmpty())     return null;
 
         // TODO This does not support custom build dir configuration (Jenkins#getRawBuildsDir() etc.)
-        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/<BUILDID>");
+        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/[0-9]+");
+
+        // Kept only for compatibility with custom user-provided rules:
         line = line.replace("<BUILDID>","(?:[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]|[0-9]+)");
         line = line.replace("<JOBDIR>","<JENKINS_HOME>/jobs/.+");
         final File jenkinsHome = Jenkins.get().getRootDir();
