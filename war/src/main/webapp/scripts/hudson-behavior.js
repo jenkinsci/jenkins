@@ -2336,8 +2336,7 @@ function loadScript(href,callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-    var button = yuiButton._button;
+function safeValidateButton(button) {
     var descriptorUrl = button.getAttribute('data-validate-button-descriptor-url');
     var method = button.getAttribute('data-validate-button-method');
     var checkUrl = descriptorUrl + "/" + method;
@@ -2345,14 +2344,12 @@ function safeValidateButton(yuiButton) {
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
     
-    validateButton(checkUrl, paramList, yuiButton);
+    validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl,paramList,button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(',').each(function(name) {
