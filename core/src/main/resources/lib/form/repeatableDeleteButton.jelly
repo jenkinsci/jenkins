@@ -33,7 +33,7 @@ THE SOFTWARE.
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
 
-  <button type="button" class="jenkins-button jenkins-button--red">
+  <button type="button" class="jenkins-button jenkins-button--red repeatable-delete">
     ${attrs.value ?: '%Delete'}
   </button>
 </j:jelly>

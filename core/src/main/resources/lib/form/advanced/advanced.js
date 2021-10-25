@@ -1,4 +1,4 @@
-Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
+Behaviour.specify("BUTTON.advanced-button", 'advanced', 0, function(e) {
         makeButton(e,function(e) {
             var link = $(e.target).up(".advancedLink");
             var tr;

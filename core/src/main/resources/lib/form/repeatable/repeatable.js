@@ -92,10 +92,10 @@ var repeatableSupport = {
                 if (addButtonElements.length == 1 && this.enableTopButton) {
                     var buttonElement = addButtonElements[0];
                     var parentOfButton = buttonElement.parentNode;
-                    var addTopButton = document.createElement('input');
+                    var addTopButton = document.createElement('button');
                     addTopButton.type = 'button';
-                    addTopButton.value = buttonElement.textContent || buttonElement.innerText;
-                    addTopButton.className = 'repeatable-add repeatable-add-top';
+                    addTopButton.textContent = buttonElement.textContent || buttonElement.innerText;
+                    addTopButton.className = 'jenkins-button repeatable-add repeatable-add-top';
                     parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
                     Behaviour.applySubtree(addTopButton, true);
                 }
@@ -163,27 +163,18 @@ Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
 });
 
     // button to add a new repeatable block
-Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
+Behaviour.specify("BUTTON.repeatable-add", 'repeatable', 0, function(e) {
         makeButton(e,function(e) {
             repeatableSupport.onAdd(e.target);
         });
         e = null; // avoid memory leak
     });
 
-Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
-        var b = makeButton(e,function(e) {
-            repeatableSupport.onDelete(e.target);
-        });
-        var be = $(b.get("element"));
-        be.on("mouseover",function() {
-            $(this).up(".repeated-chunk").addClassName("hover");
-        });
-        be.on("mouseout",function() {
-            $(this).up(".repeated-chunk").removeClassName("hover");
-        });
-
-        e = be = null; // avoid memory leak
+Behaviour.specify("BUTTON.repeatable-delete", 'repeatable', 0, function(e) {
+    e.addEventListener('click', function(e) {
+        repeatableSupport.onDelete(e.target);
     });
+});
 
     // radio buttons in repeatable content
 // Needs to run before the radioBlock behavior so that names are already unique.

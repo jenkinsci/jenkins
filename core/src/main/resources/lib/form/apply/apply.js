@@ -1,4 +1,4 @@
-Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
+Behaviour.specify("BUTTON.apply-button", 'apply', 0, function (e) {
         var id;
         var containerId = "container"+(iota++);
 
