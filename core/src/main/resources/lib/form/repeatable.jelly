@@ -133,9 +133,7 @@ THE SOFTWARE.
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <div class="repeated-chunk__header">
-        <div class="${readOnlyMode ? '' : 'dd-handle'}">
-          Drag me
-        </div>
+        <div class="${readOnlyMode ? '' : 'dd-handle'}"/>
         ${header}
       </div>
       <j:scope>

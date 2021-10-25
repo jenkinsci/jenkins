@@ -84,9 +84,7 @@ THE SOFTWARE.
         <j:set var="help" value="${descriptor.helpFile}" />
 
         <div class="repeated-chunk__header">
-          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
-            Drag me
-          </div>
+          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
 
           ${descriptor.displayName}
 
