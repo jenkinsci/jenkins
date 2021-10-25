@@ -17,6 +17,7 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
@@ -44,6 +45,7 @@ import org.jvnet.hudson.test.FlagRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 @SuppressWarnings("ThrowableNotThrown")
@@ -719,6 +721,94 @@ public class Security2455Test {
 
     // --------
 
+    @Issue("SECURITY-2455") // general issue -- Maven Projects would no longer be allowed to perform some actions
+    @Test
+    public void testMavenReportersAllowListForTopLevelJob() throws Exception {
+        final FreeStyleProject project = j.createFreeStyleProject();
+        final File topLevelProjectDir = project.getRootDir();
+
+        // similar but wrong names:
+        assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "not-site"))));
+        assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "not-javadoc"))));
+
+        // project-level archived stuff:
+        invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "javadoc")));
+        invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "test-javadoc")));
+        invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "site")));
+        assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "cobertura"))));
+
+        // cannot mkdirs this from agent:
+        assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(topLevelProjectDir, "modules"))));
+
+        final File mavenModuleDir = new File(topLevelProjectDir, "modules/pretend-maven-module");
+        assertTrue(mavenModuleDir.mkdirs());
+
+        // module-level archived stuff:
+        invokeOnAgent(new MkDirsWriter(new File(mavenModuleDir, "javadoc")));
+        invokeOnAgent(new MkDirsWriter(new File(mavenModuleDir, "test-javadoc")));
+        assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(mavenModuleDir, "site"))));
+        invokeOnAgent(new MkDirsWriter(new File(mavenModuleDir, "cobertura")));
+    }
+
+    @Issue("SECURITY-2455") // general issue -- Maven Projects would no longer be allowed to perform some actions
+    @Test
+    public void testMavenReportersAllowListForJobInFolder() throws Exception {
+        final MockFolder theFolder = j.createFolder("theFolder");
+        {
+            // basic child job
+            final FreeStyleProject childProject = theFolder.createProject(FreeStyleProject.class, "child");
+            final File childProjectRootDir = childProject.getRootDir();
+
+            // project-level archived stuff for child project inside folder:
+            invokeOnAgent(new MkDirsWriter(new File(childProjectRootDir, "javadoc")));
+            invokeOnAgent(new MkDirsWriter(new File(childProjectRootDir, "test-javadoc")));
+            invokeOnAgent(new MkDirsWriter(new File(childProjectRootDir, "site")));
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(childProjectRootDir, "cobertura"))));
+        }
+
+        { // misleadingly named child job (like one of the approved folders):
+            final FreeStyleProject siteChildProject = theFolder.createProject(FreeStyleProject.class, "site");
+            final File siteChildProjectRootDir = siteChildProject.getRootDir();
+
+            // cannot mkdirs this from agent despite 'site' in the path (but on wrong level):
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(siteChildProjectRootDir)));
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "foo"))));
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "modules"))));
+
+            // project-level archived stuff for another child inside folder:
+            invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "javadoc")));
+            invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "test-javadoc")));
+            invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "site")));
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(siteChildProjectRootDir, "cobertura"))));
+
+            final File childProjectMavenModuleDir = new File(siteChildProjectRootDir, "modules/pretend-maven-module");
+            assertTrue(childProjectMavenModuleDir.mkdirs());
+
+            // module-level archived stuff:
+            invokeOnAgent(new MkDirsWriter(new File(childProjectMavenModuleDir, "javadoc")));
+            invokeOnAgent(new MkDirsWriter(new File(childProjectMavenModuleDir, "test-javadoc")));
+            assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkDirsWriter(new File(childProjectMavenModuleDir, "site"))));
+            invokeOnAgent(new MkDirsWriter(new File(childProjectMavenModuleDir, "cobertura")));
+        }
+    }
+
+    private static class MkDirsWriter extends MasterToSlaveCallable<Object, Exception> {
+        private final File root;
+
+        private MkDirsWriter(File root) {
+            this.root = root;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            toFilePathOnController(root).mkdirs();
+            toFilePathOnController(new File(root, "file.txt")).write("text", "UTF-8");
+            return null;
+        }
+    }
+
+    // --------
+
     // Utility functions
 
     protected static FilePath toFilePathOnController(File file) {
@@ -730,8 +820,12 @@ public class Security2455Test {
         return new FilePath(channel, path);
     }
 
+    protected Node agent;
+
     protected  <T, X extends Throwable> T invokeOnAgent(MasterToSlaveCallable<T, X> callable) throws Exception, X {
-        final Node agent = j.createOnlineSlave();
+        if (agent == null) {
+            agent = j.createOnlineSlave();
+        }
         return Objects.requireNonNull(agent.getChannel()).call(callable);
     }
 
