@@ -30,14 +30,27 @@
     }
     
     .jenkins-icon-size__items-item {
+      position: relative;
       height: 35px;
       width: 35px;
       border-radius: 6px;
       line-height: 35px;
       background: var(--btn-link-bg--hover);
       text-align: center;
-      font-weight: var(--btn-link-font-weight);
+      font-weight: 500;
       font-size: var(--btn-font-size);
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        border-bottom: 2px solid var(--text-color);
+        border-radius: inherit;
+        opacity: 0.1;
+      }
     }
     
     & > * {
