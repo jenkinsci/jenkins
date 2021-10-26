@@ -46,10 +46,9 @@ public interface ExecutorListener extends ExtensionPoint {
      * Called whenever a task is started by an executor.
      * @param executor The executor.
      * @param task The task.
-     * @param executable the executable.
      * @since TODO
      */
-    default void taskStarted(Executor e, Queue.Task task) {}
+    default void taskStarted(Executor executor, Queue.Task task) {}
 
     /**
      * Called whenever a task is completed without any problems by an executor.
