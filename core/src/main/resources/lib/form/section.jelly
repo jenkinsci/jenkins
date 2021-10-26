@@ -36,8 +36,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-<!--  Restore-->
-<!--  <st:adjunct includes="lib.form.section_" />-->
+  <st:adjunct includes="lib.form.section_" />
 
   <div class="jenkins-section">
     <j:if test="${attrs.title!=null}">
