@@ -329,7 +329,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         "User {2} has {3} permission, but no {4} for existing job with the same name",
                         new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name} );
             }
-            throw new Failure(Messages.AbstractItem_NewNameInUse(newName), ex);
+            throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
         }
     }
 
