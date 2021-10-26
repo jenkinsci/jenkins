@@ -1486,6 +1486,7 @@ function rowvgStartEachRow(recursive,f) {
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
         var labelParent = label.parentElement;
+
         if (!labelParent.classList.contains('setting-main')) return;
 
         function findSettingName(formGroup) {
@@ -1497,13 +1498,7 @@ function rowvgStartEachRow(recursive,f) {
 
         var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
-        var helpLink = settingName.querySelector('.setting-help');
-
-        // Copy setting-name text and append it to the checkbox label
-        var labelText = settingName.innerText;
-        var spanTag = document.createElement('span')
-        spanTag.innerHTML = labelText
-        label.appendChild(spanTag)
+        var helpLink = settingName.querySelector('.jenkins-help-button');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
@@ -1511,6 +1506,13 @@ function rowvgStartEachRow(recursive,f) {
         }
 
         labelParent.parentNode.removeChild(settingName);
+
+        // Copy setting-name text and append it to the checkbox label
+        var labelText = settingName.innerText;
+
+        var spanTag = document.createElement('span')
+        spanTag.innerHTML = labelText
+        label.appendChild(spanTag)
     });
 })();
 
