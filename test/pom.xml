@@ -222,6 +222,7 @@ THE SOFTWARE.
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
+          <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>
