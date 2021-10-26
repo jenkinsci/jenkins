@@ -71,7 +71,7 @@
     border: 2px solid currentColor;
     border-radius: 100%;
     animation: loading-spinner 0.5s infinite linear;
-    clip-path: inset(0 0 8px 8px);
+    clip-path: inset(0 0 50% 50%);
     opacity: 0;
     transition: 0.2s ease;
   }
@@ -103,11 +103,5 @@
     .jenkins-search__icon {
       fill: var(--focus-input-border);
     }
-  }
-}
-
-@keyframes loading-spinner {
-  to {
-    transform: rotate(360deg);
   }
 }

@@ -1,0 +1,38 @@
+.jenkins-spinner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &::before, &::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    border: 2px solid currentColor;
+  }
+
+  &::before {
+    position: relative;
+    margin-right: 0.75rem;
+    opacity: 0.2;
+  }
+
+  &::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    clip-path: inset(0 0 50% 50%);
+    animation: loading-spinner 0.5s infinite linear;
+  }
+}
+
+@keyframes loading-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
