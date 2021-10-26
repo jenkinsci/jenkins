@@ -59,7 +59,7 @@ THE SOFTWARE.
              onclick="safeValidateButton(this)" />
     </div>
     <div style="display:none;">
-      <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}
+      <l:spinner text="${attrs.progress}" />
     </div>
     <div><!-- this is where the error message goes --></div>
   </f:entry>
