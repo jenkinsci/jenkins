@@ -720,6 +720,7 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>false</reuseForks>
+          <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin><!-- set main class -->

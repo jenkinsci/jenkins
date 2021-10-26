@@ -20,7 +20,7 @@ properties([
 
 // TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 def buildTypes = ['Linux']
-def jdks = [8, 11]
+def jdks = [8]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
@@ -41,21 +41,31 @@ for(j = 0; j < jdks.size(); j++) {
 
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
-                    timeout(time: 300, unit: 'MINUTES') {
+                    timeout(time: 400, unit: 'MINUTES') {
+                      def attempt = 0
+                      def failed = false
+                      while (!failed) {
+                        echo 'Attempt ' + ++attempt
                         // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                         // -ntp requires Maven >= 3.6.1
                         def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
+                        mvnCmd += ' -Daccess-modifier-checker.skip -Danimal.sniffer.skip -Dcheckstyle.skip -Denforcer.skip -Dinvoker.skip -Dspotbugs.skip -Dspotless.check.skip'
                         infra.runWithMaven(mvnCmd, jdk.toString(), javaOpts, true)
 
                         if(isUnix()) {
                             sh 'git add . && git diff --exit-code HEAD'
                         }
+                        def results = junit '**/target/surefire-reports/**.xml,war/junit.xml'
+                        if (results.failCount > 0) {
+                            failed = true
+                        }
+                      }
                     }
                 }
 
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
-                    if (runTests) {
+                    if (false) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                         if (! fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
@@ -68,7 +78,7 @@ for(j = 0; j < jdks.size(); j++) {
                             error 'There were test failures; halting early'
                         }
                     }
-                    if (buildType == 'Linux' && jdk == jdks[0]) {
+                    if (false) {
                         def folders = env.JOB_NAME.split('/')
                         if (folders.length > 1) {
                             discoverGitReferenceBuild(scm: folders[1])
@@ -133,5 +143,6 @@ builds.ath = {
 }
 
 builds.failFast = failFast
+builds.remove('ath')
 parallel builds
 infra.maybePublishIncrementals()
