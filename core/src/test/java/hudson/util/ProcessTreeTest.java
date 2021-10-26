@@ -48,7 +48,7 @@ public class ProcessTreeTest {
 
     private static class MyCallable extends MasterToSlaveCallable<Tag, IOException> implements Serializable {
         @Override
-        public Tag call() throws IOException {
+        public Tag call() {
             Tag t = new Tag();
             t.tree = ProcessTree.get();
             t.p = t.tree.iterator().next();
@@ -61,7 +61,7 @@ public class ProcessTreeTest {
 
     private static class ProcessCallableImpl implements ProcessCallable<Void> {
         @Override
-        public Void invoke(OSProcess process, VirtualChannel channel) throws IOException {
+        public Void invoke(OSProcess process, VirtualChannel channel) {
             assertNotNull(process);
             assertNotNull(channel);
             return null;

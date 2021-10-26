@@ -26,7 +26,7 @@ package hudson.slaves;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
@@ -76,12 +76,7 @@ public class PingThreadTest {
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
-            try {
-                channel.call(new GetPid());
-                fail();
-            } catch (ChannelClosedException ex) {
-                // Expected
-            }
+            assertThrows(ChannelClosedException.class, () -> channel.call(new GetPid()));
 
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
@@ -91,7 +86,7 @@ public class PingThreadTest {
     }
 
     private static final class GetPid extends MasterToSlaveCallable<String, IOException> {
-        @Override public String call() throws IOException {
+        @Override public String call() {
             return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
         }
     }

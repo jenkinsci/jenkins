@@ -37,6 +37,7 @@ import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.core.util.Primitives;
 import com.thoughtworks.xstream.core.util.SerializationMembers;
+import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -244,7 +245,7 @@ public class RobustReflectionConverter implements Converter {
                     if (!mapper.shouldSerializeMember(definedIn, aliasName)) {
                         return;
                     }
-                    com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
+                    ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
 
                     Class actualType = newObj.getClass();
 
@@ -505,9 +506,9 @@ public class RobustReflectionConverter implements Converter {
 
     private Class determineType(HierarchicalStreamReader reader, boolean validField, Object result, String fieldName, Class definedInCls) {
         String classAttribute = reader.getAttribute(mapper.aliasForAttribute("class"));
-        Class fieldType = reflectionProvider.getFieldType(result, fieldName, definedInCls);
         if (classAttribute != null) {
             Class specifiedType = mapper.realClass(classAttribute);
+            Class fieldType = reflectionProvider.getFieldType(result, fieldName, definedInCls);
             if(fieldType.isAssignableFrom(specifiedType))
                 // make sure that the specified type in XML is compatible with the field type.
                 // this allows the code to evolve in more flexible way.
@@ -521,6 +522,7 @@ public class RobustReflectionConverter implements Converter {
                 return mapper.realClass(reader.getNodeName());
             }
         } else {
+            Class fieldType = reflectionProvider.getFieldType(result, fieldName, definedInCls);
             return mapper.defaultImplementationOf(fieldType);
         }
     }

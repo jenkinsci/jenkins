@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -512,7 +513,7 @@ public class ProjectTest {
         upstream.getPublishersList().add(new ArtifactArchiver("change.log"));
         downstream.getPublishersList().add(new Fingerprinter("change.log", false));
         downstream.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a: upstream.getLastBuild().getArtifacts()) {
                     Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
                 }
@@ -548,14 +549,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doCancelQueue(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doCancelQueue(null, null));
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
     }
     
     @Test
@@ -567,14 +562,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            project.doDoDelete(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Jenkins.READ, user.getId());
         auth.add(Item.READ, user.getId());
         auth.add(Item.DELETE, user.getId());
@@ -604,14 +593,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDoWipeOutWorkspace();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDoWipeOutWorkspace);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.BUILD, user.getId());
         auth.add(Item.WIPEOUT, user.getId());
@@ -642,14 +625,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDisable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDisable);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
@@ -680,14 +657,8 @@ public class ProjectTest {
             project.disable();
         }
         try (ACLContext as = ACL.as(user)) {
-            project.doEnable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doEnable);
         }
-        catch(Exception e){
-            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Item.READ, user.getId());
         auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
@@ -857,7 +828,7 @@ public class ProjectTest {
         }
         
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return hasChange;
         }
                        
@@ -870,7 +841,7 @@ public class ProjectTest {
         }
         
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {            
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             if(!hasChange) {
                 return PollingResult.NO_CHANGES;
             }
@@ -882,7 +853,7 @@ public class ProjectTest {
     public static class AlwaysChangedSCM extends NullSCM {
 
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return true;
         }
         
@@ -892,7 +863,7 @@ public class ProjectTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             return PollingResult.SIGNIFICANT;
         }
         

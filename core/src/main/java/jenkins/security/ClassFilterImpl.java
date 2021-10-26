@@ -101,7 +101,7 @@ public class ClassFilterImpl extends ClassFilter {
     }
 
     private static void mockOff() {
-        LOGGER.warning("Disabling class filtering since we appear to be in a special test environment, perhaps Mockito/PowerMock");
+        LOGGER.warning("Disabling class filtering since we appear to be in a special test environment, perhaps Mockito");
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 

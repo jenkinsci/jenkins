@@ -26,7 +26,7 @@ package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -66,20 +66,15 @@ public class NodeCanTakeTaskTest {
         // Add the build-blocker property and try again
         slave.getNodeProperties().add(new RejectAllTasksProperty());
 
-        build = project.scheduleBuild2(0);
-        try {
-            build.get(10, TimeUnit.SECONDS);
-            fail("Expected timeout exception");
-        } catch (TimeoutException e) {
-            List<BuildableItem> buildables = r.jenkins.getQueue().getBuildableItems();
-            assertNotNull(buildables);
-            assertEquals(1, buildables.size());
+        assertThrows(TimeoutException.class, () -> project.scheduleBuild2(0).get(10, TimeUnit.SECONDS));
+        List<BuildableItem> buildables = r.jenkins.getQueue().getBuildableItems();
+        assertNotNull(buildables);
+        assertEquals(1, buildables.size());
 
-            BuildableItem item = buildables.get(0);
-            assertEquals(project, item.task);
-            assertNotNull(item.getCauseOfBlockage());
-            assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
-        }
+        BuildableItem item = buildables.get(0);
+        assertEquals(project, item.task);
+        assertNotNull(item.getCauseOfBlockage());
+        assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
     }
 
     private static class RejectAllTasksProperty extends NodeProperty<Node> {

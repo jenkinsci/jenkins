@@ -23,4 +23,11 @@
     <!--Jenkins handles this issue differently or doesn't care about it.-->
     <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
   </Match>
+  <Match>
+    <Bug pattern="NM_METHOD_NAMING_CONVENTION"/>
+    <Or>
+      <Class name="hudson.tasks.Messages"/>
+      <Class name="hudson.tools.Messages"/>
+    </Or>
+  </Match>
 </FindBugsFilter>

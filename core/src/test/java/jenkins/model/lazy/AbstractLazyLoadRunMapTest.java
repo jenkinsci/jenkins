@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -178,12 +177,7 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void lastKey() {
         assertEquals(1, a.lastKey().intValue());
-        try {
-            b.lastKey();
-            fail();
-        } catch (NoSuchElementException e) {
-            // as expected
-        }
+        assertThrows(NoSuchElementException.class, () -> b.lastKey());
     }
 
     @Test
@@ -245,7 +239,7 @@ public class AbstractLazyLoadRunMapTest {
     }
 
     @Test
-    public void fastSubMap() throws Exception {
+    public void fastSubMap() {
         SortedMap<Integer,Build> m = a.subMap(99, 2);
         assertEquals(2, m.size());
 

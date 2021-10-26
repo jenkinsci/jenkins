@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -331,7 +332,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     @SuppressWarnings("MS_SHOULD_BE_FINAL")
     @Deprecated
-    public static @CheckForNull java.util.Timer timer;
+    public static @CheckForNull Timer timer;
 
     /**
      * Returns all the registered {@link Trigger} descriptors.

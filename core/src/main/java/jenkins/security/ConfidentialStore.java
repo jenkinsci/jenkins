@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Lookup;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.util.Secret;
 import java.io.IOException;
@@ -129,14 +130,14 @@ public abstract class ConfidentialStore {
 
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
-            LOGGER.fine(() -> "storing " + key.getId() + " " + hudson.Util.getDigestOf(hudson.Util.toHexString(payload)));
+            LOGGER.fine(() -> "storing " + key.getId() + " " + Util.getDigestOf(Util.toHexString(payload)));
             data.put(key.getId(), payload);
         }
 
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
             byte[] payload = data.get(key.getId());
-            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? hudson.Util.getDigestOf(hudson.Util.toHexString(payload)) : "null"));
+            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? Util.getDigestOf(Util.toHexString(payload)) : "null"));
             return payload;
         }
 

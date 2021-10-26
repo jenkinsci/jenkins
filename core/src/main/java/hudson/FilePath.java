@@ -2303,9 +2303,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * I/O operations also happens asynchronously from the {@link Channel#call(Callable)} operations, so if
      * you write to a remote file and then execute {@link Channel#call(Callable)} and try to access the newly copied
      * file, it might not be fully written yet.
-     *
-     * <p>
-     *
      */
     public OutputStream write() throws IOException, InterruptedException {
         if(channel==null) {

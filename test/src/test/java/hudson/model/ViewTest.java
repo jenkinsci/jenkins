@@ -37,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
@@ -83,7 +84,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -463,12 +463,7 @@ public class ViewTest {
         view.rename("renamed");
         assertEquals("View should have name foo.", "renamed", view.getDisplayName());
         ListView view2 = listView("foo");
-        try{
-            view2.rename("renamed");
-            fail("Attempt to rename job with a name used by another view with the same owner should throw exception");
-        }
-        catch(Exception Exception){
-        }
+        assertThrows("Attempt to rename job with a name used by another view with the same owner should throw exception", Descriptor.FormException.class, () -> view2.rename("renamed"));
         assertEquals("View should not be renamed if required name has another view with the same owner", "foo", view2.getDisplayName());
     }
 
@@ -546,7 +541,7 @@ public class ViewTest {
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
         ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -558,7 +553,7 @@ public class ViewTest {
         });
         ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -577,7 +572,7 @@ public class ViewTest {
         });
         ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
@@ -633,14 +628,14 @@ public class ViewTest {
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewCreatedIfNoPrimary() throws Exception {
+    public void testAllViewCreatedIfNoPrimary() {
         assertNotNull(j.getInstance().getView("All"));
     }
 
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewNotCreatedIfPrimary() throws Exception {
+    public void testAllViewNotCreatedIfPrimary() {
         assertNull(j.getInstance().getView("All"));
     }
 
@@ -699,16 +694,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(ORIGINAL_BAD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -747,16 +738,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -791,13 +778,9 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -1083,11 +1066,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) throws IOException, ServletException, Descriptor.FormException {
+        protected void submit(StaplerRequest req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
             return null;
         }
     }

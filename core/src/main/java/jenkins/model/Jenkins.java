@@ -197,6 +197,7 @@ import hudson.util.LogTaskListener;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PluginServletFilter;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
@@ -887,7 +888,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      If non-null, use existing plugin manager.  create a new one.
      */
     @SuppressFBWarnings({
-        "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
         "DM_EXIT" // Exit is wanted here
     })
@@ -1916,7 +1916,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    public void addView(View v) throws IOException {
+    public void addView(@NonNull View v) throws IOException {
         viewGroupMixIn.addView(v);
     }
 
@@ -2047,7 +2047,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Label getLabel(String expr) {
         if(expr==null)  return null;
-        expr = hudson.util.QuotedStringTokenizer.unquote(expr);
+        expr = QuotedStringTokenizer.unquote(expr);
         while(true) {
             Label l = labels.get(expr);
             if(l!=null)
@@ -2832,6 +2832,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @see AuthorizationStrategy#getRootACL()
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
@@ -3203,6 +3204,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
+    @NonNull
     @Override
     public LabelAtom getSelfLabel() {
         if (nodeNameAndSelfLabelOverride != null) {
@@ -3376,7 +3378,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         g.requires(loadJobs.toArray(new Handle[0])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             @Override
-            public void run(Reactor reactor) throws Exception {
+            public void run(Reactor reactor) {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
                 // to inspect what already existed in memory (in case of reloading)
@@ -4160,6 +4162,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
+        if (SystemProperties.getBoolean(NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP, true)) {
+            // SECURITY-2424 on Windows the trailing dot can be used to create ambiguity
+            if (name.trim().endsWith(".")) {
+                throw new Failure(Messages.Hudson_TrailingDot());
+            }
+        }
+        
         // looks good
     }
 
@@ -5097,6 +5106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();
@@ -5411,6 +5421,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Switch to enable people to use a shorter workspace name.
      */
     private static final String WORKSPACE_DIRNAME = SystemProperties.getString(Jenkins.class.getName() + "." + "workspaceDirName", "workspace");
+
+    /**
+     * Name of the system property escape hatch for SECURITY-2424. It allows to have back the legacy (and vulnerable)
+     * behavior allowing a "good name" to end with a dot. This could be used to exploit two names colliding in the file
+     * system to extract information. The files ending with a dot are only a problem on Windows.
+     * 
+     * The default value is true.
+     * 
+     * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
+     * @see #checkGoodName(String)
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP = Jenkins.class.getName() + "." + "nameValidationRejectsTrailingDot";
 
     /**
      * Default value of job's builds dir.

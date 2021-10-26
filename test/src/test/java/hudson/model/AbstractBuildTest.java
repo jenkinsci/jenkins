@@ -101,7 +101,7 @@ public class AbstractBuildTest {
         public static final String ERROR_MESSAGE = "This publisher fails by design";
         
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
             throw new IOException(ERROR_MESSAGE);
         }
         
@@ -132,7 +132,7 @@ public class AbstractBuildTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println(out);
                 return true;
             }
@@ -276,7 +276,7 @@ public class AbstractBuildTest {
     }
 
     private static class ThrowBuilder extends Builder {
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
             throw new NullPointerException();
         }
         @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
@@ -299,7 +299,7 @@ public class AbstractBuildTest {
             }
 
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 if (build.number == 1) {
                     e1.signal();  // signal that build #1 is in publisher
                 } else if (build.number == 2) {

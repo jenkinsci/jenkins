@@ -34,6 +34,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
+import org.apache.commons.codec.Encoder;
+import org.apache.commons.codec.EncoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
@@ -286,18 +289,18 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
     // full package name just to be explicit
     @TestExtension
     public static class TestWithReturnThirdPartyObject extends AbstractUnprotectedRootAction {
-        public org.apache.commons.codec.binary.Base64 getBase64() {
-            return new org.apache.commons.codec.binary.Base64();
+        public Base64 getBase64() {
+            return new Base64();
         }
         
-        public org.apache.commons.codec.Encoder getEncoder() {
-            return new org.apache.commons.codec.binary.Base64();
+        public Encoder getEncoder() {
+            return new Base64();
         }
         
-        public org.apache.commons.codec.Encoder getEncoderCustomChild() {
-            return new org.apache.commons.codec.Encoder() {
+        public Encoder getEncoderCustomChild() {
+            return new Encoder() {
                 @Override
-                public Object encode(Object source) throws org.apache.commons.codec.EncoderException {
+                public Object encode(Object source) throws EncoderException {
                     // it's not about implementation...
                     return null;
                 }

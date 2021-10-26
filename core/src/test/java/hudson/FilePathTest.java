@@ -191,7 +191,7 @@ public class FilePathTest {
                     }
 
                     @Override
-                    public void close() throws IOException {
+                    public void close() {
                         closed = new Exception();
                     }
                 }
@@ -478,7 +478,7 @@ public class FilePathTest {
     }
 
     @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        assumeFalse("Test uses POSIX-specific features", Functions.isWindows() || Platform.isDarwin());
         File tmp = temp.getRoot();
         File original = new File(tmp,"original");
         FilePath originalP = new FilePath(channels.french, original.getPath());
@@ -687,7 +687,7 @@ public class FilePathTest {
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {
-            @Override protected URLConnection openConnection(URL u) throws IOException {
+            @Override protected URLConnection openConnection(URL u) {
                 return con;
             }
         };

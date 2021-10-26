@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
+import netx.jnlp.runtime.JNLPRuntime;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -134,7 +135,7 @@ public class JNLPLauncherTest {
     @Test
     @LocalData
     @Issue("JENKINS-44112")
-    public void testNoWorkDirMigration() throws Exception {
+    public void testNoWorkDirMigration() {
         Computer computer = j.jenkins.getComputer("Foo");
         assertThat(computer, instanceOf(SlaveComputer.class));
         
@@ -151,7 +152,7 @@ public class JNLPLauncherTest {
     @Test
     @Issue("JENKINS-44112")
     @SuppressWarnings("deprecation")
-    public void testDefaults() throws Exception {
+    public void testDefaults() {
         assertTrue("Work directory should be disabled for agents created via old API", new JNLPLauncher().getWorkDirSettings().isDisabled());
     }
 
@@ -207,7 +208,7 @@ public class JNLPLauncherTest {
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
-        args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
+        args.add(Which.jarFile(JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
         args.add(j.createTmpDir());
         args.add("-nosecurity","-jnlp", j.getURL() + "computer/"+c.getName()+"/jenkins-agent.jnlp");

@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
@@ -104,12 +104,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             } // else perhaps running as root
 
             for (String badValue : badValues) {
-                try {
-                    Jenkins.checkRawBuildsDir(badValue);
-                    fail(badValue + " should have been rejected");
-                } catch (InvalidBuildsDir invalidBuildsDir) {
-                    // expected failure
-                }
+                assertThrows(badValue + " should have been rejected", InvalidBuildsDir.class, () -> Jenkins.checkRawBuildsDir(badValue));
             }
         });
     }

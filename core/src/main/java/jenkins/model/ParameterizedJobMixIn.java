@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Action;
+import hudson.model.BuildAuthorizationToken;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
@@ -206,7 +207,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return;
         }
 
-        hudson.model.BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
+        BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
 
         if (pp != null) {
             pp._doBuild(req, rsp, delay);
@@ -227,7 +228,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      */
     @SuppressWarnings("deprecation")
     public final void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        hudson.model.BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
+        BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
         if (!asJob().isBuildable()) {
@@ -269,7 +270,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     public static CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
         Cause cause;
         @SuppressWarnings("deprecation")
-        hudson.model.BuildAuthorizationToken authToken = job.getAuthToken();
+        BuildAuthorizationToken authToken = job.getAuthToken();
         if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
             // Optional additional cause text when starting via token
             String causeText = req.getParameter("cause");
@@ -351,7 +352,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         @SuppressWarnings("deprecation")
-        @CheckForNull hudson.model.BuildAuthorizationToken getAuthToken();
+        @CheckForNull BuildAuthorizationToken getAuthToken();
 
         /**
          * Quiet period for the job.
@@ -435,7 +436,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 rsp.sendError(404);
                 return;
             }
-            hudson.model.BuildAuthorizationToken.checkPermission((Job) this, getAuthToken(), req, rsp);
+            BuildAuthorizationToken.checkPermission((Job) this, getAuthToken(), req, rsp);
             ((SCMTriggerItem) this).schedulePolling();
             rsp.sendRedirect(".");
         }

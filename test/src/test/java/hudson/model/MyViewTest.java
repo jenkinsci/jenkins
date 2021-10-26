@@ -97,7 +97,7 @@ public class MyViewTest {
     }
     
     @Test
-    public void testGetItems() throws IOException, InterruptedException{
+    public void testGetItems() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User1");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);   

@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -346,7 +347,7 @@ public class Executor extends Thread implements ModelObject {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
-            task = Queue.withLock(new java.util.concurrent.Callable<SubTask>() {
+            task = Queue.withLock(new Callable<SubTask>() {
                 @Override
                 public SubTask call() throws Exception {
                     if (!owner.isOnline()) {

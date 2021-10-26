@@ -65,8 +65,8 @@ THE SOFTWARE.
              </j:choose>  
         </j:if>
         <j:if test="${!empty(healthReports)}">
-            <div class="healthReportDetails">
-                <table border="0">
+            <div class="jenkins-tooltip healthReportDetails">
+                <table class="bigtable stripped-odd">
                     <thead>
                         <tr>
                             <th align="left">W</th>

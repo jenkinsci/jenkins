@@ -1,5 +1,6 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
@@ -14,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
@@ -64,7 +66,7 @@ public class StandardOutputSwapper extends ComputerListener {
             }
         }
 
-        private void swap(StandardOutputStream stdout) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, UnsatisfiedLinkError {
+        private void swap(StandardOutputStream stdout) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, UnsatisfiedLinkError {
             // duplicate the OS file descriptor and create FileOutputStream around it
             int out = GNUCLibrary.LIBC.dup(1);
             if (out<0)      throw new IOException("Failed to dup(1)");
@@ -82,5 +84,6 @@ public class StandardOutputSwapper extends ComputerListener {
     }
 
     private static final Logger LOGGER = Logger.getLogger(StandardOutputSwapper.class.getName());
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean disabled = SystemProperties.getBoolean(StandardOutputSwapper.class.getName()+".disabled");
 }

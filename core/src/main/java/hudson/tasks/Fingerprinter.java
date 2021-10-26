@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -82,6 +83,8 @@ import org.springframework.security.access.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer, SimpleBuildStep {
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
     
     /**
@@ -123,6 +126,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         this.caseSensitive = caseSensitive;
     }
 
+    /**
+     * @deprecated use {@link #Fingerprinter(String)} and {@link ArtifactArchiver#setFingerprint}
+     */
     @Deprecated
     public Fingerprinter(String targets, boolean recordBuildArtifacts) {
         this(targets);
@@ -159,6 +165,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return this;
     }
 
+    /**
+     * @deprecated use {@link ArtifactArchiver#isFingerprint}
+     */
     @Deprecated
     public boolean getRecordBuildArtifacts() {
         return recordBuildArtifacts != null && recordBuildArtifacts;

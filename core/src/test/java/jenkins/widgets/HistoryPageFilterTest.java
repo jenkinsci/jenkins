@@ -491,7 +491,7 @@ public class HistoryPageFilterTest {
             return this;
         }
 
-        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) throws IOException {
+        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) {
             addAction(new ParametersAction(buildPropertiesMapToParameterValues(buildParametersAsMap), buildParametersAsMap.keySet()));
             return this;
         }

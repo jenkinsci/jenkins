@@ -3,7 +3,7 @@ package hudson.model;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -59,14 +59,11 @@ public class BuildAuthorizationTokenTest {
     public void triggerJobsWithoutTokenShouldFail() throws Exception {
         FreeStyleProject project = jr.createFreeStyleProject();
         JenkinsRule.WebClient wc = jr.createWebClient();
-        try {
-            HtmlPage page = wc.getPage(wc.addCrumb(
-                    new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST)));
-            fail("should not reach here as anonymous does not have Item.BUILD and token is not set");
-        }
-        catch (FailingHttpStatusCodeException fex) {
-            assertThat("Should fail with access denied", fex.getStatusCode(), is(403));
-        }
+        FailingHttpStatusCodeException fex = assertThrows(
+                "should not reach here as anonymous does not have Item.BUILD and token is not set",
+                FailingHttpStatusCodeException.class,
+                () -> wc.getPage(wc.addCrumb(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
+        assertThat("Should fail with access denied", fex.getStatusCode(), is(403));
     }
 
     private FreeStyleProject createFreestyleProjectWithToken() throws Exception {

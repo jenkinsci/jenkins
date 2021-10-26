@@ -94,7 +94,7 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 1"));	
     }
 
-    @Test public void consoleShouldFailWhenProjectDoesNotExist() throws Exception {
+    @Test public void consoleShouldFailWhenProjectDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)

@@ -27,6 +27,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 import org.jfree.chart.axis.AxisState;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPosition;
@@ -62,7 +63,7 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
         }
 
         if (isTickLabelsVisible()) {
-            java.util.List ticks = refreshTicks(g2, state, plotArea, edge);
+            List ticks = refreshTicks(g2, state, plotArea, edge);
             state.setTicks(ticks);
 
             // remember the last drawn label so that we can avoid drawing overlapping labels.
