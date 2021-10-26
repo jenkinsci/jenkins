@@ -5,6 +5,16 @@
   max-width: var(--form-item-max-width);
   margin-bottom: 1.75rem;
 
+  // Workaround for float:right button controls
+  // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
+  &::after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+  }
+
   &--small {
     max-width: var(--form-item-max-width--small);
   }
