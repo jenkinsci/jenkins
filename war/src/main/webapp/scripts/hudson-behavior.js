@@ -1491,7 +1491,7 @@ function rowvgStartEachRow(recursive,f) {
         function findSettingName(formGroup) {
             for (var i=0; i<formGroup.childNodes.length; i++) {
                 var child = formGroup.childNodes[i];
-                if (child.classList.contains('setting-name')) return child;
+                if (child.classList.contains('jenkins-form-label')) return child;
             }
         }
 
