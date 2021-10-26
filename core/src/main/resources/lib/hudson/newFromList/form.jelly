@@ -108,9 +108,7 @@ THE SOFTWARE.
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <button type="submit" id="ok" class="jenkins-button jenkins-button--primary jenkins-button--large">
-        ${%Create}
-      </button>
+      <input type="submit" name="Submit" value="${%Create}" id="ok" />
     </div>
 
     <st:adjunct includes="lib.hudson.newFromList.validation" />
