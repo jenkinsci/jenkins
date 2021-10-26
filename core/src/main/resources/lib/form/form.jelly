@@ -45,7 +45,7 @@ THE SOFTWARE.
       @enctype of the &lt;form> HTML element.
     </st:attribute>
     <st:attribute name="id">
-      ID of the HTML element.
+      ID of the form.
     </st:attribute>
     <st:attribute name="target">
       @target of the &lt;form> HTML element. Works like &lt;a target="...">
