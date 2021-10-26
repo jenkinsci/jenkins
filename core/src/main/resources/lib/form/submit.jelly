@@ -26,18 +26,23 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <s:documentation>
     Submit button
-
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
       When you have more than one submit button on the form, this can be used to determine
       which button is pressed, as the server will get a parameter by this name.
+    </s:attribute>
+    <s:attribute name="secondary" type="boolean">
+      If true, removes the "jenkins-button--primary" class from the button.
+    </s:attribute>
+    <s:attribute name="class">
+      A CSS class to style the button.
     </s:attribute>
     <s:attribute name="value" use="required">
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
   </s:documentation>
 
-  <button class="jenkins-button jenkins-button--primary" type="submit" name="${attrs.name ?: 'Submit'}">
+  <button class="jenkins-button ${primary ? 'jenkins-button--primary' : ''} ${class}" type="submit" name="${attrs.name ?: 'Submit'}">
     ${attrs.value ?: '%Submit'}
   </button>
 </j:jelly>
