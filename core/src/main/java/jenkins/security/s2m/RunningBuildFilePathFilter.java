@@ -78,11 +78,6 @@ public class RunningBuildFilePathFilter extends ReflectiveFilePathFilter {
             LOGGER.log(Level.FINE, () -> "Skipping check for '" + name + "' on '" + path + "'");
             return false;
         }
-        if (!(context instanceof Computer)) {
-            LOGGER.log(Level.FINE, "No context provided for path access: " + path);
-            return false;
-        }
-        Computer c = (Computer) context;
 
         final Jenkins jenkins = Jenkins.get();
 
@@ -108,6 +103,11 @@ public class RunningBuildFilePathFilter extends ReflectiveFilePathFilter {
             return false;
         }
 
+        if (!(context instanceof Computer)) {
+            LOGGER.warning(() -> "Unrecognized context " + context + " rejected for " + name + " on " + path);
+            throw new SecurityException("Failed to discover context of access to build directory"); // Minimal details
+        }
+        Computer c = (Computer) context;
         final Path thePath = path.getAbsoluteFile().toPath();
         for (Executor executor : c.getExecutors()) {
             Run<?, ?> build = findRun(executor.getCurrentExecutable());
