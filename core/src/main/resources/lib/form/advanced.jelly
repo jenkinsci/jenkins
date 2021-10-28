@@ -40,7 +40,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-	<div class='tr'>
+	<div class='jenkins-form-item'>
           <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
