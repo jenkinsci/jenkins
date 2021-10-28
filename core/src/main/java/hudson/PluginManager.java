@@ -1790,15 +1790,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             String fileName = "";
             PluginCopier copier = null;
+            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            List<FileItem> items = upload.parseRequest(req);
 
             if(req.hasParameter("url") && StringUtils.isNotBlank(req.getParameter("url"))) {
                 fileName = req.getParameter("url");
-                copier = new UrlPluginCopier(req.getParameter("url"));
+                copier = new UrlPluginCopier(fileName);
             } else {
-                ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-
-                // Parse the request
-                final FileItem fileItem = upload.parseRequest(req).get(0);
+                FileItem fileItem = items.get(0);
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
             }
