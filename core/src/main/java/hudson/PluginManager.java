@@ -76,6 +76,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1734,6 +1735,51 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return new HttpRedirect("advanced");
     }
 
+    interface PluginCopier {
+        void copy(File target) throws Exception;
+        void cleanup();
+    }
+
+    class FileUploadPluginCopier implements PluginCopier {
+        private FileItem fileItem;
+
+        FileUploadPluginCopier(FileItem fileItem) {
+            this.fileItem = fileItem;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            fileItem.write(target);
+        }
+
+        @Override
+        public void cleanup() {
+            fileItem.delete();
+        }
+    }
+
+    class UrlPluginCopier implements PluginCopier {
+        private String url;
+
+        UrlPluginCopier(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            try(InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
+                Files.copy(input, target.toPath());
+            } catch(Exception e) {
+                throw e;
+            }
+        }
+
+        @Override
+        public void cleanup() {
+
+        }
+    }
+
     /**
      * Uploads a plugin.
      */
@@ -1742,11 +1788,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            String fileName = "";
+            PluginCopier copier = null;
 
-            // Parse the request
-            FileItem fileItem = upload.parseRequest(req).get(0);
-            String fileName = Util.getFileName(fileItem.getName());
+            if(req.hasParameter("url") && StringUtils.isNotBlank(req.getParameter("url"))) {
+                fileName = req.getParameter("url");
+                copier = new UrlPluginCopier(req.getParameter("url"));
+            } else {
+                ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+
+                // Parse the request
+                final FileItem fileItem = upload.parseRequest(req).get(0);
+                fileName = Util.getFileName(fileItem.getName());
+                copier = new FileUploadPluginCopier(fileItem);
+            }
+
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
             }
@@ -1762,12 +1818,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
                 t.delete();
 
-                fileItem.write(t);
+                copier.copy(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
                 throw new ServletException(e);
             }
-            fileItem.delete();
+            copier.cleanup();
 
             final String baseName = identifyPluginShortName(t);
 
