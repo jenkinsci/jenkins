@@ -66,11 +66,25 @@ THE SOFTWARE.
                                 <input type="file" name="name" class="setting-input" style="width:80%" size='40' accept=".hpi,.jpi"/>
                             </f:block>
                             <f:block>
-                                ${%Url}:
-                                <input type="text" name="url" class="setting-input" style="width:80%" size='40'/>
+                                <f:submit value="${%Upload}"/>
+                            </f:block>
+                        </f:form>
+                    </section>
+                    <section>
+                        <h2>${%Deploy from URL}</h2>
+                        <f:form method="post" action="uploadPlugin" name="deployPlugin">
+                            <f:block>
+                                <div style="margin-bottom: 1em;">
+                                    ${%deploytext}
+                                </div>
                             </f:block>
                             <f:block>
-                                <f:submit value="${%Upload}"/>
+                                <!-- @size is for other browsers, @style is for IE -->
+                                ${%URL}:
+                                <input type="text" name="name" class="setting-input" style="width:80%" size='40'/>
+                            </f:block>
+                            <f:block>
+                                <f:submit value="${%Deploy}"/>
                             </f:block>
                         </f:form>
                     </section>

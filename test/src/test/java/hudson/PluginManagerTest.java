@@ -117,8 +117,8 @@ public class PluginManagerTest {
 
     @Test public void uploadJpiFromUrl() throws Exception {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
-        HtmlForm f = page.getFormByName("uploadPlugin");
-        f.getInputByName("url").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        HtmlForm f = page.getFormByName("deployPlugin");
+        f.getInputByName("name").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
         r.submit(f);
 
         assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
