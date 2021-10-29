@@ -55,37 +55,26 @@ THE SOFTWARE.
                     <section>
                         <h2>${%Upload Plugin}</h2>
                         <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
-                            <f:block>
-                                <div style="margin-bottom: 1em;">
-                                    ${%uploadtext}
-                                </div>
-                            </f:block>
-                            <f:block>
-                                <!-- @size is for other browsers, @style is for IE -->
-                                ${%File}:
-                                <input type="file" name="name" class="setting-input" style="width:80%" size='40' accept=".hpi,.jpi"/>
-                            </f:block>
-                            <f:block>
-                                <f:submit value="${%Upload}"/>
-                            </f:block>
+                            <div style="margin-bottom: 1em;">
+                                ${%uploadtext}
+                            </div>
+                            <f:entry>
+                                <input type="file" name="name" class="setting-input" accept=".hpi,.jpi"/>
+                            </f:entry>
+                            <f:submit value="${%Upload}"/>
                         </f:form>
                     </section>
                     <section>
                         <h2>${%Deploy from URL}</h2>
                         <f:form method="post" action="uploadPlugin" name="deployPlugin">
-                            <f:block>
-                                <div style="margin-bottom: 1em;">
-                                    ${%deploytext}
-                                </div>
-                            </f:block>
-                            <f:block>
-                                <!-- @size is for other browsers, @style is for IE -->
-                                ${%URL}:
-                                <input type="text" name="name" class="setting-input" style="width:80%" size='40'/>
-                            </f:block>
-                            <f:block>
-                                <f:submit value="${%Deploy}"/>
-                            </f:block>
+                            <div style="margin-bottom: 1em;">
+                                ${%deploytext}
+                            </div>
+                            <f:entry>
+                                 <f:textbox name="name"
+                                    class="setting-input validated" checkUrl="'checkPluginUrl?value='+this.value" />
+                            </f:entry>
+                            <f:submit value="${%Deploy}"/>
                         </f:form>
                     </section>
                   </l:isAdmin>

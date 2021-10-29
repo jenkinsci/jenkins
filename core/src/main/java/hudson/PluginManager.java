@@ -1868,6 +1868,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
+    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
+        if(StringUtils.isNotBlank(value) && !value.startsWith("https://")) {
+            return FormValidation.warning(Messages.PluginManager_insecureUrl());
+        }
+        return FormValidation.ok();
+    }
+
+    @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
 
