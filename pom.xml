@@ -260,6 +260,7 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
             <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
+            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
