@@ -69,7 +69,7 @@ public class ItemGroupMixInTest {
 
     @Issue("JENKINS-20951")
     @LocalData
-    @Test public void xmlFileReadCannotResolveClassException() throws Exception {
+    @Test public void xmlFileReadCannotResolveClassException() {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
         assertNotNull(d);
         Collection<TopLevelItem> items = d.getItems();
@@ -121,7 +121,7 @@ public class ItemGroupMixInTest {
   @LocalData
   @Issue("JENKINS-22811")
   @Test
-  public void xmlFileReadExceptionOnLoad() throws Exception {
+  public void xmlFileReadExceptionOnLoad() {
     MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
@@ -230,7 +230,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProject_checkGoodName() throws Failure, IOException {
+  public void createProject_checkGoodName() throws Failure {
     final String badName = "calvin@jenkins";
 
     Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
@@ -239,7 +239,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProjectFromXML_checkGoodName() throws Failure, IOException {
+  public void createProjectFromXML_checkGoodName() throws Failure {
     final String badName = "calvin@jenkins";
 
     final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +

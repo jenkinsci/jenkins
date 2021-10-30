@@ -44,6 +44,7 @@ THE SOFTWARE.
         <l:header>
             <!-- for screen resolution detection -->
             <l:yui module="cookie" />
+            <script id="screenResolution-script" data-use-secure-cookie="${request.secure}"/>
             <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
     </l:layout>

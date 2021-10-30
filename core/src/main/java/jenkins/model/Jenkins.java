@@ -4162,6 +4162,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
+        if (SystemProperties.getBoolean(NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP, true)) {
+            // SECURITY-2424 on Windows the trailing dot can be used to create ambiguity
+            if (name.trim().endsWith(".")) {
+                throw new Failure(Messages.Hudson_TrailingDot());
+            }
+        }
+        
         // looks good
     }
 
@@ -5099,6 +5106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();
@@ -5413,6 +5421,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Switch to enable people to use a shorter workspace name.
      */
     private static final String WORKSPACE_DIRNAME = SystemProperties.getString(Jenkins.class.getName() + "." + "workspaceDirName", "workspace");
+
+    /**
+     * Name of the system property escape hatch for SECURITY-2424. It allows to have back the legacy (and vulnerable)
+     * behavior allowing a "good name" to end with a dot. This could be used to exploit two names colliding in the file
+     * system to extract information. The files ending with a dot are only a problem on Windows.
+     * 
+     * The default value is true.
+     * 
+     * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
+     * @see #checkGoodName(String)
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP = Jenkins.class.getName() + "." + "nameValidationRejectsTrailingDot";
 
     /**
      * Default value of job's builds dir.

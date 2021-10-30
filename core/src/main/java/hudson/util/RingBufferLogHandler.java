@@ -25,6 +25,7 @@ package hudson.util;
 
 import java.util.AbstractList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
@@ -39,7 +40,7 @@ public class RingBufferLogHandler extends Handler {
 
     private int start = 0;
     private final LogRecord[] records;
-    private volatile int size = 0;
+    private AtomicInteger size = new AtomicInteger(0);
 
     /**
      * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
@@ -66,16 +67,17 @@ public class RingBufferLogHandler extends Handler {
     @Override
     public synchronized void publish(LogRecord record) {
         int len = records.length;
-        records[(start+size)%len]=record;
-        if(size==len) {
+        final int tempSize = size.get();
+        records[(start+ tempSize)%len]=record;
+        if(tempSize ==len) {
             start = (start+1)%len;
         } else {
-            size++;
+            size.incrementAndGet();
         }
     }
 
     public synchronized void clear() {
-        size = 0;
+        size.set(0);
         start = 0;
     }
 
@@ -91,13 +93,13 @@ public class RingBufferLogHandler extends Handler {
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    return records[(start+(size-(index+1)))%records.length];
+                    return records[(start+(size.get()-(index+1)))%records.length];
                 }
             }
 
             @Override
             public int size() {
-                return size;
+                return size.get();
             }
         };
     }

@@ -95,7 +95,7 @@ THE SOFTWARE.
                          original="${p.active?'true':'false'}"/>
                 </td>
                 <td class="pane details">
-                  <div>
+                  <div class="plugin-name success-plugin">
                     <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="display-name">
                       ${p.updateInfo.displayName?:p.displayName}
                     </a>
@@ -208,9 +208,18 @@ THE SOFTWARE.
                   <input type="checkbox" disabled="disabled"/>
                 </td>
                 <td class="pane">
-                  <div>
+                  <j:if test="${p.pluginWrapper != null}">
+                    <div class="plugin-name failed-plugin with-plugin-wrapper">
+                      <a href="${p.pluginWrapper.url}" target="_blank" rel="noopener noreferrer" class="display-name">
+                        ${p.pluginWrapper.updateInfo.displayName?:p.pluginWrapper.displayName}
+                      </a>
+                    </div>
+                  </j:if>
+                  <j:if test="${p.pluginWrapper == null}">
+                    <div class="plugin-name failed-plugin no-plugin-wrapper">
                       ${p.name}
-                  </div>
+                    </div>
+                  </j:if>
                   <div class="alert alert-danger">
                     <pre>${p.cause.message}</pre>
                   </div>

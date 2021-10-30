@@ -2116,7 +2116,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
-         * @deprecated use {@link InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
+         * @deprecated use {@link #InstallationJob(UpdateSite.Plugin, UpdateSite, Authentication, boolean)}
          */
         @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth, boolean dynamicLoad) {
@@ -2342,7 +2342,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final PluginManager pm = Jenkins.get().getPluginManager();
 
         /**
-         * @deprecated use {@link PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
+         * @deprecated use {@link #PluginDowngradeJob(UpdateSite.Plugin, UpdateSite, Authentication)}
          */
         @Deprecated
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2439,7 +2439,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonUpgradeJob extends DownloadJob {
 
         /**
-          * @deprecated use {@link HudsonUpgradeJob(UpdateSite site, Authentication auth)}
+          * @deprecated use {@link #HudsonUpgradeJob(UpdateSite, Authentication)}
          */
         @Deprecated
         public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2486,7 +2486,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonDowngradeJob extends DownloadJob {
 
         /**
-         * @deprecated use {@link HudsonDowngradeJob(UpdateSite site, Authentication auth)}
+         * @deprecated use {@link #HudsonDowngradeJob(UpdateSite, Authentication)}
          */
         @Deprecated
         public HudsonDowngradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {

@@ -34,8 +34,7 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Environment;
 import hudson.model.Node;
-import hudson.model.Queue.BuildableItem;
-import hudson.model.Queue.Task;
+import hudson.model.Queue;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.TaskListener;
 import hudson.model.queue.CauseOfBlockage;
@@ -95,10 +94,10 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.360
      * @deprecated as of 1.413
-     *      Use {@link #canTake(BuildableItem)}
+     *      Use {@link #canTake(Queue.BuildableItem)}
      */
     @Deprecated
-    public CauseOfBlockage canTake(Task task) {
+    public CauseOfBlockage canTake(Queue.Task task) {
         return null;
     }
 
@@ -110,7 +109,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.413
      */
-    public CauseOfBlockage canTake(BuildableItem item) {
+    public CauseOfBlockage canTake(Queue.BuildableItem item) {
         return canTake(item.task);  // backward compatible behaviour
     }
 

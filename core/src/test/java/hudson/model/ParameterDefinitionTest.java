@@ -9,7 +9,7 @@ import org.junit.Test;
 public class ParameterDefinitionTest {
 
     @Test
-    public void compareStringParameterDefinition() throws Exception {
+    public void compareStringParameterDefinition() {
         StringParameterDefinition spd = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdSame = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdOther = new StringParameterDefinition("spdOther", "default");

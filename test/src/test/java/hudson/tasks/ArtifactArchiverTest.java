@@ -444,7 +444,7 @@ public class ArtifactArchiverTest {
 
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
-        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        public Object invoke(File f, VirtualChannel channel) throws IOException {
             assertTrue(f.createNewFile());
             assertTrue(f.setReadable(false));
             return null;

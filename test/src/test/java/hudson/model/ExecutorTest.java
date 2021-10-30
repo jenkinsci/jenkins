@@ -43,7 +43,7 @@ public class ExecutorTest {
 
         j.jenkins.getQueue().schedule(new QueueTest.TestTask(new AtomicInteger()) {
             @Override
-            public Queue.Executable createExecutable() throws IOException {
+            public Queue.Executable createExecutable() {
                 throw new IllegalStateException("oops");
             }
         }, 0);

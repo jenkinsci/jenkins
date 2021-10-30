@@ -59,7 +59,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldFailWithoutAdministerPermission() throws Exception {
+    public void cancelQuietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
@@ -69,7 +69,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() throws Exception {
+    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
@@ -78,7 +78,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnQuietDownedJenkins() throws Exception {
+    public void cancelQuietDownShouldSuccessOnQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
         final CLICommandInvoker.Result result = command

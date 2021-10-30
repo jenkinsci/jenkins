@@ -163,11 +163,11 @@ public class VirtualFileTest {
             return new Ram(paths, path.replaceFirst("/[^/]+$", ""));
         }
         @Override
-        public boolean isDirectory() throws IOException {
+        public boolean isDirectory() {
             return paths.stream().anyMatch(p -> p.startsWith(path + "/"));
         }
         @Override
-        public boolean isFile() throws IOException {
+        public boolean isFile() {
             return paths.contains(path);
         }
         @Override
@@ -175,7 +175,7 @@ public class VirtualFileTest {
             return isFile() || isDirectory();
         }
         @Override
-        public VirtualFile[] list() throws IOException {
+        public VirtualFile[] list() {
             return paths.stream().filter(p -> p.startsWith(path + "/")).map(p -> new Ram(paths, p.replaceFirst("(\\Q" + path + "\\E/[^/]+)/.+", "$1"))).toArray(VirtualFile[]::new);
         }
         @Override
@@ -183,11 +183,11 @@ public class VirtualFileTest {
             return new Ram(paths, path + "/" + name);
         }
         @Override
-        public long length() throws IOException {
+        public long length() {
             return 0;
         }
         @Override
-        public long lastModified() throws IOException {
+        public long lastModified() {
             return 0;
         }
         @Override
@@ -195,7 +195,7 @@ public class VirtualFileTest {
             return isFile();
         }
         @Override
-        public InputStream open() throws IOException {
+        public InputStream open() {
             return new NullInputStream(0);
         }
     }

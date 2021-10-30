@@ -512,7 +512,7 @@ public class PluginManagerTest {
     @Issue("JENKINS-44898")
     @WithPlugin("plugin-first.hpi")
     @Test
-    public void findResourceForPluginFirstClassLoader() throws Exception {
+    public void findResourceForPluginFirstClassLoader() {
         PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
         assertNotNull(w);
 

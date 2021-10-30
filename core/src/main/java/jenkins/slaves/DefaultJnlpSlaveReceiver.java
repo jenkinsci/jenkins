@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
@@ -51,6 +52,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      * @since 2.28
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean disableStrictVerification =
             SystemProperties.getBoolean(DefaultJnlpSlaveReceiver.class.getName() + ".disableStrictVerification");
 

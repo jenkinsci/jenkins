@@ -16,7 +16,7 @@ import org.kohsuke.stapler.lang.FieldRef;
 
 public class StaplerSignaturesTest {
     @Test
-    public void testSignaturesSimple() throws Exception {
+    public void testSignaturesSimple() {
         Set<String> methodSignatures = Arrays.stream(SomeClass.class.getMethods()).map(it -> new Function.InstanceFunction(it).getSignature()).collect(Collectors.toSet());
         Assert.assertEquals(SomeClass.METHOD_SIGNATURES, methodSignatures);
 
@@ -25,7 +25,7 @@ public class StaplerSignaturesTest {
     }
 
     @Test
-    public void testSignaturesInheritance() throws Exception {
+    public void testSignaturesInheritance() {
         Set<String> methodSignatures = Arrays.stream(SomeSubclass.class.getMethods()).map(it -> new Function.InstanceFunction(it).getSignature()).collect(Collectors.toSet());
         Assert.assertEquals(SomeSubclass.METHOD_SIGNATURES, methodSignatures);
 
