@@ -1869,8 +1869,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
-        if(StringUtils.isNotBlank(value) && !value.startsWith("https://")) {
-            return FormValidation.warning(Messages.PluginManager_insecureUrl());
+        if(StringUtils.isNotBlank(value)) {
+            try {
+                URL url = new URL(value);
+                if(!url.getProtocol().startsWith("http")) {
+                    return FormValidation.error(Messages.PluginManager_invalidUrl());
+                }
+
+                if(!url.getProtocol().equals("https")) {
+                    return FormValidation.warning(Messages.PluginManager_insecureUrl());
+                }
+            } catch(MalformedURLException e) {
+                return FormValidation.error(e.getMessage());
+            }
         }
         return FormValidation.ok();
     }
