@@ -34,6 +34,10 @@
           text-align: right;
         }
 
+        &:first-of-type {
+          padding-left: calc(var(--table-padding) * 2);
+        }
+
         &:last-of-type {
           padding-right: var(--table-padding);
         }
@@ -60,6 +64,7 @@
 
         &:first-of-type {
           border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
+          padding-left: calc(var(--table-padding) * 2);
         }
 
         &:last-of-type {
