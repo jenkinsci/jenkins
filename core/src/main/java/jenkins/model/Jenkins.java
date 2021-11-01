@@ -1477,7 +1477,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>
      * This form of identifier is weak in that it can be impersonated by others. See
-     * https://wiki.jenkins-ci.org/display/JENKINS/Instance+Identity for more modern form of instance ID
+     * https://github.com/jenkinsci/instance-identity-plugin for more modern form of instance ID
      * that can be challenged and verified.
      *
      * @since 1.498
@@ -2454,7 +2454,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>Please note that this will not work in all cases if Jenkins is running behind a
      * reverse proxy which has not been fully configured.
      * Specifically the {@code Host} and {@code X-Forwarded-Proto} headers must be set.
-     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache">Running Jenkins behind Apache</a>
+     * <a href="https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/">Reverse proxy - Apache</a>
      * shows some examples of configuration.
      * @since 1.263
      */
