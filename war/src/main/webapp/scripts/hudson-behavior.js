@@ -1040,6 +1040,13 @@ function rowvgStartEachRow(recursive,f) {
         e.parentNode.parentNode.addClassName('has-help');
     });
 
+    // legacy class name
+    Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
+        e.onclick = helpButtonOnClick;
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
+        e.parentNode.parentNode.addClassName('has-help');
+    });
+
     // Script Console : settings and shortcut key
     Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
@@ -1492,13 +1499,14 @@ function rowvgStartEachRow(recursive,f) {
         function findSettingName(formGroup) {
             for (var i=0; i<formGroup.childNodes.length; i++) {
                 var child = formGroup.childNodes[i];
-                if (child.classList.contains('jenkins-form-label')) return child;
+                if (child.classList.contains('jenkins-form-label') || child.classList.contains('setting-name')) return child;
             }
         }
 
         var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
-        var helpLink = settingName.querySelector('.jenkins-help-button');
+        var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
+        var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
