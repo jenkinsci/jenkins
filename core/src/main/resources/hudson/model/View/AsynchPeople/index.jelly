@@ -54,7 +54,6 @@ THE SOFTWARE.
           </div>
         </j:if>
       </t:iconSize>
-      <p id="asynch-people-description" data-iconsize="${iconSize}">${%blurb}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>
