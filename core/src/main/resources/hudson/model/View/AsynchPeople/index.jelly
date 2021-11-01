@@ -35,7 +35,7 @@ THE SOFTWARE.
         <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
         <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
       </h1>
-      <p>${%blurb}</p>
+      <p id="asynch-people-description" data-iconsize="${iconSize}">${%blurb}</p>
       <st:adjunct includes="hudson.model.View.AsynchPeople.people-resources" />
       <l:progressiveRendering handler="${it}" callback="display"/>
       <table class="sortable pane bigtable" id="people">
