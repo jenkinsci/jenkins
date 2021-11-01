@@ -224,7 +224,19 @@
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
-  // TabBar links
+  // Tab bar
+  --tabs-background: #f4f4f4;
+  --tabs-item-background: transparent;
+  --tabs-item-foreground: var(--text-color);
+  --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
+  --tabs-item-foreground--hover: var(--text-color);
+  --tabs-item-background--active: rgba(0, 0, 0, 0.1);
+  --tabs-item-foreground--active: var(--text-color);
+  --tabs-item-background--selected: white;
+  --tabs-item-foreground--selected: var(--link-color);
+  --tabs-border-radius: calc((10px + 2rem) / 2);
+
+  // Deprecated
   --tab-link-border-radius: 10px;
   --tab-link-border-width: 2px;
   --tab-link-padding-x: 0.75rem;
