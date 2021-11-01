@@ -1788,20 +1788,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-            String contentType = req.getContentType();
             String fileName = "";
             PluginCopier copier;
-
-            if(contentType.startsWith("multipart/form-data")) {
+            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            List<FileItem> items = upload.parseRequest(req);
+            if(StringUtils.isNotBlank(items.get(1).getString())) {
+                // this is a URL deployment
+                fileName = items.get(1).getString();
+                copier = new UrlPluginCopier(fileName);
+            } else {
                 // this is a file upload
-                ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-                FileItem fileItem = upload.parseRequest(req).get(0);
+                FileItem fileItem = items.get(0);
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
-            } else {
-                // this is a URL deployment
-                fileName = req.getParameter("name");
-                copier = new UrlPluginCopier(fileName);
             }
 
             if("".equals(fileName)){

@@ -115,16 +115,16 @@ public class PluginManagerTest {
         assertTrue( new File(r.jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
     }
 
-    @Test public void uploadJpiFromUrl() throws Exception {
+    @Test public void deployJpiFromUrl() throws Exception {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
-        HtmlForm f = page.getFormByName("deployPlugin");
-        f.getInputByName("name").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        f.getInputByName("pluginUrl").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
         r.submit(f);
 
         assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
     }
 
-    @TestExtension("uploadJpiFromUrl")
+    @TestExtension("deployJpiFromUrl")
     public static final class ReturnPluginJpiAction implements RootAction {
 
         @Override

@@ -53,26 +53,18 @@ THE SOFTWARE.
 
                   <l:isAdmin>
                     <section>
-                        <h2>${%Upload Plugin}</h2>
+                        <h2>${%Deploy Plugin}</h2>
                         <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
-                            <div style="margin-bottom: 1em;">
-                                ${%uploadtext}
-                            </div>
-                            <f:entry>
-                                <input type="file" name="name" class="setting-input" accept=".hpi,.jpi"/>
-                            </f:entry>
-                            <f:submit value="${%Upload}"/>
-                        </f:form>
-                    </section>
-                    <section>
-                        <h2>${%Deploy from URL}</h2>
-                        <f:form method="post" action="uploadPlugin" name="deployPlugin">
                             <div style="margin-bottom: 1em;">
                                 ${%deploytext}
                             </div>
-                            <f:entry>
-                                 <f:textbox name="name"
-                                    class="setting-input validated" checkUrl="'checkPluginUrl?value='+this.value" />
+                            <f:entry title="${%File}">
+                                <input type="file" name="name" class="setting-input" accept=".hpi,.jpi"/>
+                            </f:entry>
+                            <p>${%Or}</p>
+                            <f:entry title="${%URL}">
+                                <f:textbox name="pluginUrl"
+                                   class="setting-input validated" checkUrl="'checkPluginUrl?value='+this.value" />
                             </f:entry>
                             <f:submit value="${%Deploy}"/>
                         </f:form>
