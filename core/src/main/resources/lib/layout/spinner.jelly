@@ -26,11 +26,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Customizable spinner component
-    <st:attribute name="text">
+    <st:attribute name="text" use="optional">
       Text to use alongside the spinner
     </st:attribute>
   </st:documentation>
   <p class="jenkins-spinner">
-    ${text != null ? text : ''}
+    ${text}
   </p>
 </j:jelly>
