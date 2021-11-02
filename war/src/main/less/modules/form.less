@@ -70,10 +70,14 @@
     color: inherit;
     border: 2px solid currentColor;
     border-radius: 100%;
-    animation: loading-spinner 0.5s infinite linear;
     clip-path: inset(0 0 50% 50%);
     opacity: 0;
     transition: 0.2s ease;
+    animation: loading-spinner 0.65s infinite linear;
+
+    @media (prefers-reduced-motion) {
+      animation-duration: 1.2s;
+    }
   }
 
   &--loading {
