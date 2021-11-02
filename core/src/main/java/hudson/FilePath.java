@@ -217,11 +217,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static final int MAX_REDIRECTS = 20;
 
     /**
-     * Escape hatch for some additional protections against sending callables intended to be locally used only
-     */
-    private static /* non-final for Groovy */ boolean REJECT_LOCAL_CALLABLE_DESERIALIZATION = SystemProperties.getBoolean(FilePath.class.getName() + ".rejectLocalCallableDeserialization", true);
-
-    /**
      * When this {@link FilePath} represents the remote path,
      * this field is always non-null on the controller (the field represents
      * the channel to the remote agent.) When transferred to a agent via remoting,
@@ -602,13 +597,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return null;
         }
         private static final long serialVersionUID = 1L;
-
-        protected Object readResolve() {
-            if (REJECT_LOCAL_CALLABLE_DESERIALIZATION) {
-                throw new IllegalStateException("This callable is not intended to be sent through a channel");
-            }
-            return this;
-        }
     }
 
     /**
@@ -661,13 +649,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return null;
         }
         private static final long serialVersionUID = 1L;
-
-        protected Object readResolve() {
-            if (REJECT_LOCAL_CALLABLE_DESERIALIZATION) {
-                throw new IllegalStateException("This callable is not intended to be sent through a channel");
-            }
-            return this;
-        }
     }
 
     /**

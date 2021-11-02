@@ -21,6 +21,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -805,6 +806,22 @@ public class Security2455Test {
             toFilePathOnController(new File(root, "file.txt")).write("text", "UTF-8");
             return null;
         }
+    }
+
+    // --------
+
+    // Misc tests
+
+    @LocalData
+    @Test
+    public void testRemoteLocalUnzip() throws Exception {
+        final DumbSlave onlineSlave = j.createOnlineSlave();
+        final File zipFile = new File(j.jenkins.getRootDir(), "file.zip");
+        assertTrue(zipFile.isFile());
+        final FilePath agentRootPath = onlineSlave.getRootPath();
+        final FilePath agentZipPath = agentRootPath.child("file.zip");
+        new FilePath(zipFile).copyTo(agentZipPath);
+        agentZipPath.unzip(agentRootPath);
     }
 
     // --------
