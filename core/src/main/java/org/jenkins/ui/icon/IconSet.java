@@ -25,9 +25,6 @@ package org.jenkins.ui.icon;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
@@ -89,13 +86,6 @@ public class IconSet {
         try {
             if (inputStream != null) {
                 ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            } else {
-                // this path is used in jetty:run
-                Path path = Paths.get("war/src/main/webapp/images/ionicons/" + name + ".svg");
-                boolean exists = Files.exists(path);
-                // try working directory in war folder
-                path = exists ? path : Paths.get("src/main/webapp/images/ionicons/" + name + ".svg");
-                ionicon = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             // ignored
