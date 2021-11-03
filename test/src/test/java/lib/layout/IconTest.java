@@ -93,14 +93,14 @@ public class IconTest  {
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
         List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToSvgOkay(ballIcons.get(0), "icon-aborted icon-lg");
+        assertIconToSvgOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-lg");
 
         DomElement statusIcons = p.getElementById("statusIcons");
         List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(statusIconsList.get(0), "/images/svgs/user.svg", "icon-user icon-xlg");
+        assertIconToImageOkay(statusIconsList.get(0).getFirstElementChild(), "/images/svgs/user.svg", "icon-user icon-xlg");
 
-        assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
+        assertIconToImageOkay(statusIconsList.get(1).getFirstElementChild(), "/plugin/12345/icons/s2.png");
     }
 
     @TestExtension("testBallColorTd")
@@ -164,7 +164,7 @@ public class IconTest  {
     }
 
     private void assertIconToImageOkay(DomElement icon, String imgPath, String classSpec) {
-        assertThat("img", is(icon.getTagName()));
+        assertThat(icon.getTagName(), is("img"));
         assertThat(icon.getAttribute("src"), endsWith(imgPath));
         if (classSpec != null) {
             assertThat(icon.getAttribute("class"), is(classSpec));
