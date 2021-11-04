@@ -38,8 +38,14 @@ THE SOFTWARE.
       but in Hudson you should have it for testing and page scraping,
       so this attribute is marked required.
     </st:attribute>
+    <st:attribute name="class">
+      Classes to apply to the form
+    </st:attribute>
     <st:attribute name="enctype">
       @enctype of the &lt;form> HTML element.
+    </st:attribute>
+    <st:attribute name="id">
+      ID of the form.
     </st:attribute>
     <st:attribute name="target">
       @target of the &lt;form> HTML element. Works like &lt;a target="...">
@@ -53,7 +59,7 @@ THE SOFTWARE.
       Default: false
     </st:attribute>
   </st:documentation>
-  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
+  <form id="${id}" class="${class}" action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
     <div width="100%" class="${attrs.tableClass}">
       <d:invokeBody/>
     </div>

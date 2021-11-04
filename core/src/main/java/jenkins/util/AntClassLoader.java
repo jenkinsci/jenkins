@@ -18,10 +18,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class AntClassLoader extends org.apache.tools.ant.AntClassLoader implements JenkinsClassLoader {
 
-    static {
-        registerAsParallelCapable();
-    }
-
     public AntClassLoader(final ClassLoader parent, final Project project, final Path classpath) {
         super(parent, project, classpath);
     }

@@ -273,7 +273,6 @@ pre.console {
 }
 
 .setting-main {
-  margin-top: 0.25rem;
   width: 100%; /* try to make this column as big as possible. */
 }
 
@@ -577,9 +576,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/error.png");
-    background-position: left center;
+    background-image: url("../../images/svgs/error.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .error-inline {
@@ -593,10 +593,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/warning.png");
-    background-size: 16px 16px;
-    background-position: left center;
+    background-image: url("../../images/svgs/warning.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .warning-inline {
@@ -632,12 +632,34 @@ label.attach-previous {
 /* ====================== help ===================================== */
 
 .help {
+  position: relative;
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: var(--help-area-bg-color);
-  padding: 1em;
-  margin-bottom: 1em;
+  padding: 1rem;
+  margin: 1rem 0;
   word-break: break-word;
+  border-radius: 6px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.05;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .help a {
@@ -651,18 +673,6 @@ label.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
-}
-
-.help-button {
-  margin-left: 2px;
-  margin-right: 2ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.setting-help .help-button {
-  margin: 0;
 }
 
 .icon-help,
@@ -1275,10 +1285,6 @@ textarea.rich-editor {
 
 /* ========================= D&D support in heterogenous/repeatable lists = */
 
-.hetero-list-container .has-help {
-    display: flex;
-}
-
 .hetero-list-container .has-help .dd-handle {
     flex: 1;
 }
@@ -1722,12 +1728,6 @@ svg.icon-xlg {
   /* default fill fallback */
   fill: var(--text-color);
   fill: currentColor;
-}
-
-/* -------------------------------------- */
-
-.tr {
-  margin-top: 0.4em;
 }
 
 /* -------------- Unclassified ---------- */
