@@ -95,10 +95,6 @@ THE SOFTWARE.
           <groupId>aopalliance</groupId>
           <artifactId>aopalliance</artifactId>
         </exclusion>
-        <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 
@@ -538,9 +534,17 @@ THE SOFTWARE.
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <exclusions>
-        <exclusion> <!-- pick up from SpotBugs Annotations -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.j2objc</groupId>
+          <artifactId>j2objc-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

@@ -101,7 +101,7 @@ THE SOFTWARE.
 
     <access-modifier.version>1.25</access-modifier.version>
     <junit.jupiter.version>5.8.1</junit.jupiter.version>
-    <spotless.version>2.17.2</spotless.version>
+    <spotless.version>2.17.3</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -418,7 +418,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.0.1</version>
+              <version>9.1</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
