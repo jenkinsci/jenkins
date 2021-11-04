@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:u="jelly:org.jenkins.ui.icon.IconTagLibrary" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
       <td class="jenkins-table__cell--tight">
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
             <j:set var="id" value="${h.generateId()}"/>
@@ -39,7 +39,7 @@ THE SOFTWARE.
                           <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
                       </j:otherwise>
                   </j:choose>
-                  <u:ionicon name="play-outline" title="${title}" />
+                  <l:ionicon name="play-outline" title="${title}" />
                   <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
             </div>

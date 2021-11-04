@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:u="jelly:org.jenkins.ui.icon.IconTagLibrary" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%People} - ${it.parent.viewName}">
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <t:setIconSize/>
@@ -60,7 +60,7 @@ THE SOFTWARE.
                     var wrapper = document.createElement('div');
                     wrapper.className = 'jenkins-table__cell__button-wrapper';
                     d.className = 'jenkins-table__cell--tight jenkins-table__icon';
-                    wrapper.innerHTML += `<u:ionicon name="person-circle-outline" />`;
+                    wrapper.innerHTML += `<l:ionicon name="person-circle-outline" />`;
                     d.appendChild(wrapper);
                     r.appendChild(d);
 

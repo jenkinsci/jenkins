@@ -26,7 +26,7 @@ THE SOFTWARE.
   Entrance to the configuration page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:u="jelly:org.jenkins.ui.icon.IconTagLibrary" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
@@ -85,7 +85,7 @@ THE SOFTWARE.
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
-                  <u:ionicon name="settings-outline" />
+                  <l:ionicon name="settings-outline" />
                 </a>
               </div>
             </j:if>

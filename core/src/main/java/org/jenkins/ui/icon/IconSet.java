@@ -66,21 +66,21 @@ public class IconSet {
         context.setVariable("icons", icons);
     }
 
-    private String prependTitleIfRequired(String icon, String title) {
+    private static String prependTitleIfRequired(String icon, String title) {
         if (StringUtils.isNotBlank(title)) {
             return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
         }
         return icon;
     }
 
-    public String getIonicon(String name, String title) {
+    public static String getIonicon(String name, String title) {
         if (IONICONS.containsKey(name)) {
             String icon = IONICONS.get(name);
             return prependTitleIfRequired(icon, title);
         }
 
         // Load icon if it exists
-        InputStream inputStream = getClass().getResourceAsStream("/images/ionicons/" + name + ".svg");
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
         String ionicon = null;
 
         try {
