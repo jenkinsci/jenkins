@@ -2252,6 +2252,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param nodes the nodes taken as reference to update labels
+     */
+    void trimLabels(Node... nodes) {
+        Set<LabelAtom> includedLabels = new HashSet<>();
+        for (Node n : nodes) {
+            includedLabels.addAll(n.getAssignedLabels());
+        }
+        Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
+        this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
+        for (Iterator<Label> itr = this.labels.values().stream().filter(l -> includedLabels.contains(l)).iterator(); itr.hasNext();) {
+            Label l = itr.next();
+            if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
+                resetLabel(l);
+            } else {
+                itr.remove();
+            }
+        }
+    }
+
+    /**
      * Binds {@link AdministrativeMonitor}s to URL.
      * @param id Monitor ID
      * @return The requested monitor or {@code null} if it does not exist

@@ -32,6 +32,7 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
@@ -112,10 +113,12 @@ public class Nodes implements Saveable {
             @Override
             public void run() {
                 Set<String> toRemove = new HashSet<>(Nodes.this.nodes.keySet());
+                Set<LabelAtom> labels = new HashSet<>();
                 for (Node n : nodes) {
                     final String name = n.getNodeName();
                     toRemove.remove(name);
                     Nodes.this.nodes.put(name, n);
+                    labels.addAll(n.getAssignedLabels());
                 }
                 Nodes.this.nodes.keySet().removeAll(toRemove); // directory clean up will be handled by save
                 jenkins.updateComputerList();
@@ -141,7 +144,7 @@ public class Nodes implements Saveable {
             AtomicReference<Node> old = new AtomicReference<>();
             old.set(nodes.put(node.getNodeName(), node));
             jenkins.updateNewComputer(node);
-            jenkins.trimLabels();
+            jenkins.trimLabels(node, oldNode);
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);
@@ -153,7 +156,7 @@ public class Nodes implements Saveable {
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> oldNode);
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node, oldNode);
                     }
                 });
                 throw e;
@@ -201,7 +204,7 @@ public class Nodes implements Saveable {
                 @Override
                 public Boolean call() throws Exception {
                     if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                         return true;
                     }
                     return false;
@@ -242,7 +245,7 @@ public class Nodes implements Saveable {
                     Nodes.this.nodes.remove(oldOne.getNodeName());
                     Nodes.this.nodes.put(newOne.getNodeName(), newOne);
                     jenkins.updateComputerList();
-                    jenkins.trimLabels();
+                    jenkins.trimLabels(oldOne, newOne);
                 }
             });
             updateNode(newOne);
@@ -276,7 +279,7 @@ public class Nodes implements Saveable {
                     }
                     if (node == nodes.remove(node.getNodeName())) {
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                     }
                 }
             });
