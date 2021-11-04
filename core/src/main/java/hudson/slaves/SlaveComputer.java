@@ -325,7 +325,6 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
-        super.taskAccepted(executor, task);
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskAccepted(executor, task);
         }
@@ -338,8 +337,18 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
+    public void taskStarted(Executor executor, Queue.Task task) {
+        if (launcher instanceof ExecutorListener) {
+            ((ExecutorListener)launcher).taskStarted(executor, task);
+        }
+        RetentionStrategy r = getRetentionStrategy();
+        if (r instanceof ExecutorListener) {
+            ((ExecutorListener) r).taskStarted(executor, task);
+        }
+    }
+
+    @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
-        super.taskCompleted(executor, task, durationMS);
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskCompleted(executor, task, durationMS);
         }
@@ -351,7 +360,6 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
-        super.taskCompletedWithProblems(executor, task, durationMS, problems);
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskCompletedWithProblems(executor, task, durationMS, problems);
         }

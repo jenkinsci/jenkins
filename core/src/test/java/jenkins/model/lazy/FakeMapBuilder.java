@@ -57,7 +57,7 @@ public class FakeMapBuilder implements TestRule {
      * Adds a build record under the given ID but make it unloadable,
      * which will cause a failure when a load is attempted on this build ID.
      */
-    public FakeMapBuilder addUnloadable(int n) throws IOException {
+    public FakeMapBuilder addUnloadable(int n) {
         File build = new File(dir, Integer.toString(n));
         build.mkdir();
         return this;

@@ -81,7 +81,7 @@ public class DeleteBuildsCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the Run/Delete permission"));
     }
 
-    @Test public void deleteBuildsShouldFailIfJobDoesNotExist() throws Exception {
+    @Test public void deleteBuildsShouldFailIfJobDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("never_created", "1");

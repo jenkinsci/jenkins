@@ -59,7 +59,7 @@ public class WaitNodeOfflineCommandTest {
     }
 
     @Test
-    public void waitNodeOfflineShouldFailIfNodeDoesNotExist() throws Exception {
+    public void waitNodeOfflineShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("never_created");

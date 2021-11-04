@@ -40,7 +40,7 @@ public class InstallPluginCommandTest {
 
     @Issue("JENKINS-41745")
     @Test
-    public void fromStdin() throws Exception {
+    public void fromStdin() {
         assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
         assertThat(new CLICommandInvoker(r, "install-plugin").
                 withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).

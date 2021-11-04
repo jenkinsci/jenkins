@@ -55,7 +55,7 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
         private RobustReflectionConverter ref;
 
         public ConverterImpl(Mapper m) {
-            ref = new RobustReflectionConverter(m,new JVM().bestReflectionProvider()) {
+            ref = new RobustReflectionConverter(m, JVM.newReflectionProvider()) {
                 @Override
                 protected Object instantiateNewInstance(HierarchicalStreamReader reader, UnmarshallingContext context) {
                     return reflectionProvider.newInstance(LogRotator.class);

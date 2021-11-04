@@ -21,18 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Link to a build. Used by fingerprint/index.jsp
-
-  Attributes:
-    jobName    name of the job. Can be omitted if you don't want to show a name.
-    job        A 'job' object. Can be omitted if you don't want to link.
-    number     build number to link to.
-    href       Link target. If missing, the top page of the build.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Generates a link to a build.
+    <st:attribute name="job" type="hudson.model.Job">
+      Job object to be displayed. Can be omitted if you don't want to link.
+    </st:attribute>
+    <st:attribute name="jobName" type="String">
+      Name of the job. Can be omitted if you don't want to show a name.
+    </st:attribute>
+    <st:attribute name="number" type="int" use="required">
+      Build number to link to.
+    </st:attribute>
+    <st:attribute name="href" type="String">
+      Link target. If missing, the top page of the build.
+    </st:attribute>
+  </st:documentation>
   <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
   <j:choose>
 	  <j:when test="${job==null}">

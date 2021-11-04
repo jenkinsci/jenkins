@@ -86,7 +86,7 @@ public class FingerprintCleanupThreadTest {
     }
 
     @Test
-    public void testGetRecurrencePeriod() throws IOException {
+    public void testGetRecurrencePeriod() {
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         assertEquals("Wrong recurrence period.", PeriodicWork.DAY, cleanupThread.getRecurrencePeriod());
     }
@@ -248,7 +248,7 @@ public class FingerprintCleanupThreadTest {
         }
 
         @Override
-        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+        protected Fingerprint loadFingerprint(File fingerprintFile) {
             return fingerprintToLoad;
         }
 
@@ -288,11 +288,11 @@ public class FingerprintCleanupThreadTest {
 
         private boolean isAlive = true;
 
-        TestFingerprint() throws IOException {
+        TestFingerprint() {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
 
-        TestFingerprint(boolean isAlive) throws IOException {
+        TestFingerprint(boolean isAlive) {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
             this.isAlive = isAlive;
         }
@@ -335,7 +335,7 @@ public class FingerprintCleanupThreadTest {
         }
 
         @Override
-        protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        protected Fingerprint getFingerprint(Fingerprint fp) {
             return new Fingerprint(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
 

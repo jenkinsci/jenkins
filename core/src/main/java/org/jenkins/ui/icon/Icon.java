@@ -269,7 +269,7 @@ public class Icon {
         classNameTokL.toArray(classNameTokA);
 
         // Sort classNameTokA
-        Arrays.sort(classNameTokA, new StringComparator());
+        Arrays.sort(classNameTokA, Comparator.comparing(String::toString));
 
         // Build the compound name
         StringBuilder stringBuilder = new StringBuilder();
@@ -304,13 +304,5 @@ public class Icon {
         }
 
         return originalUrl;
-    }
-
-    private static class StringComparator implements Comparator<String> {
-
-        @Override
-        public int compare(String s1, String s2) {
-            return s1.compareTo(s2);
-        }
     }
 }

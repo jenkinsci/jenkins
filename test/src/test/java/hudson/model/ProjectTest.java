@@ -513,7 +513,7 @@ public class ProjectTest {
         upstream.getPublishersList().add(new ArtifactArchiver("change.log"));
         downstream.getPublishersList().add(new Fingerprinter("change.log", false));
         downstream.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a: upstream.getLastBuild().getArtifacts()) {
                     Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
                 }
@@ -828,7 +828,7 @@ public class ProjectTest {
         }
         
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return hasChange;
         }
                        
@@ -841,7 +841,7 @@ public class ProjectTest {
         }
         
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {            
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             if(!hasChange) {
                 return PollingResult.NO_CHANGES;
             }
@@ -853,7 +853,7 @@ public class ProjectTest {
     public static class AlwaysChangedSCM extends NullSCM {
 
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return true;
         }
         
@@ -863,7 +863,7 @@ public class ProjectTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             return PollingResult.SIGNIFICANT;
         }
         

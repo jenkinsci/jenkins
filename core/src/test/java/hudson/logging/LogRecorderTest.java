@@ -143,7 +143,7 @@ public class LogRecorderTest {
     }
 
     @Test
-    public void autocompletionTest() throws Exception {
+    public void autocompletionTest() {
         List<String> loggers = Arrays.asList(
                 "com.company.whatever.Foo", "com.foo.Bar", "com.foo.Baz",
                 "org.example.app.Main", "org.example.app.impl.xml.Parser", "org.example.app.impl.xml.Validator");
