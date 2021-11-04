@@ -26,7 +26,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
     }
 
     @Override
-    public synchronized void load() {
+    public synchronized void load2() {
         COL result = create();
 
         if (dir.exists()) {
