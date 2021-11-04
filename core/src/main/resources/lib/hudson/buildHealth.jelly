@@ -38,9 +38,6 @@ THE SOFTWARE.
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
         <x:attribute name="class">jenkins-table__cell--tight jenkins-table__icon healthReport</x:attribute>
-        <x:attribute name="onmouseover">this.className='jenkins-table__cell--tight jenkins-table__icon healthReport hover';return true;
-        </x:attribute>
-        <x:attribute name="onmouseout">this.className='jenkins-table__cell--tight jenkins-table__icon healthReport';return true;</x:attribute>
         <j:if test="${buildHealth!=null}">
             <div class="jenkins-table__cell__button-wrapper">
                 <j:if test="${iconSizeClass == null}">

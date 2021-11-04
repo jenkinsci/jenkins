@@ -92,7 +92,6 @@ public class AntClassLoader extends ClassLoader implements JenkinsClassLoader, S
     private static final Object MR_JARFILE_CTOR_RUNTIME_VERSION_VAL;
 
     static {
-        registerAsParallelCapable();
         if (IS_ATLEAST_JAVA9) {
             Class[] ctorArgs = null;
             Object runtimeVersionVal = null;
