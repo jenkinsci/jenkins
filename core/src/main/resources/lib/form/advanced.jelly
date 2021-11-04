@@ -40,8 +40,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-	<div class='tr'>
-          <st:adjunct includes="lib.form.advanced.advanced"/>
+	<div class='jenkins-form-item tr'>
+        <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
