@@ -19,7 +19,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Inspects {@link Callable}s that run on the master.
+ * Inspects {@link Callable}s that run on the controller.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.587 / 1.580.1
@@ -63,24 +63,7 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        if (isWhitelisted(subject,expected)) {
-            // this subject is dubious, but we are letting it through as per whitelisting
-            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to controller", name);
-            return;
-        }
-
         throw new SecurityException("Sending " + name + " from agent to controller is prohibited.\nSee https://www.jenkins.io/redirect/security-144 for more details");
-    }
-
-    /**
-     * Is this subject class name whitelisted?
-     */
-    private boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected) {
-        for (CallableWhitelist w : CallableWhitelist.all()) {
-            if (w.isWhitelisted(subject, expected, context))
-                return true;
-        }
-        return false;
     }
 
     /**
@@ -98,19 +81,6 @@ public class CallableDirectionChecker extends RoleChecker {
             }
             // In either of the above cases, the check method will return normally, but may log things.
             builder.withRoleChecker(new CallableDirectionChecker(context));
-        }
-    }
-
-    /**
-     * Whitelist rule based on system properties.
-     *
-     * For the bypass "kill" switch to be effective, it needs to have a high enough priority
-     */
-    @Extension(ordinal=100)
-    public static class DefaultWhitelist extends CallableWhitelist {
-        @Override
-        public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
-            return BYPASS;
         }
     }
 
