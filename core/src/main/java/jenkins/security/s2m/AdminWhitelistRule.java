@@ -29,10 +29,10 @@ public class AdminWhitelistRule {
     public void setMasterKillSwitch(boolean state) {
         if (state) {
             // an attempt to disable protections should warn
-            LOGGER.log(WARNING, "Setting AdminWhitelistRule no longer has any effect. See https://www.jenkins.io/redirect/AdminWhitelistRule to learn more.");
+            LOGGER.log(WARNING, "Setting AdminWhitelistRule no longer has any effect. See https://www.jenkins.io/redirect/AdminWhitelistRule to learn more.", new Exception());
         } else {
             // This is basically no-op
-            LOGGER.log(INFO, "Setting AdminWhitelistRule no longer has any effect. See https://www.jenkins.io/redirect/AdminWhitelistRule to learn more.");
+            LOGGER.log(INFO, "Setting AdminWhitelistRule no longer has any effect. See https://www.jenkins.io/redirect/AdminWhitelistRule to learn more.", new Exception());
         }
     }
 
