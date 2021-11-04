@@ -81,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1640.vf14ba9a1eb71</version>
+      <version>1645.vf98fc478f846</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -119,12 +119,6 @@ THE SOFTWARE.
       <artifactId>antisamy-markup-formatter</artifactId>
       <version>2.4</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion> <!-- TODO it seems to want Guava 27.1; apparently it manages to run against 11.0.1 -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -165,7 +159,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.1.0</version>
+      <version>4.1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

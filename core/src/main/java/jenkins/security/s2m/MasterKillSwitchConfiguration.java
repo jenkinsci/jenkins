@@ -54,10 +54,17 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * Returns true if the configuration of this subsystem becomes relevant.
-     * Unless this option is relevant, we don't let users choose this.
+     * Returns true if the configuration of this subsystem is relevant.
+     *
+     * <p>Historically, this was only shown when "security" (authn/authz) was enabled.
+     * That missed the use case of trusted local networks and Jenkins building public (untrusted) pull requests.
+     * To be sure we're not missing another case where this option is useful, just show it always.</p>
      */
     public boolean isRelevant() {
-        return jenkins.hasPermission(Jenkins.ADMINISTER) && jenkins.isUseSecurity();
+        /*
+         * TODO Consider restricting this again to something like:
+         * return !jenkins.clouds.isEmpty() || !jenkins.getNodes().isEmpty();
+         */
+        return true;
     }
 }

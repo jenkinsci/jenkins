@@ -355,7 +355,7 @@ function findAncestorClass(e, cssClass) {
 }
 
 function isTR(tr, nodeClass) {
-    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr');
+    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr') || tr.classList.contains('jenkins-form-item');
 }
 
 function findFollowingTR(node, className, nodeClass) {
@@ -1034,6 +1034,13 @@ function rowvgStartEachRow(recursive,f) {
     });
 
 
+    Behaviour.specify("A.jenkins-help-button", "a-jenkins-help-button", ++p, function(e) {
+        e.onclick = helpButtonOnClick;
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
+        e.parentNode.parentNode.addClassName('has-help');
+    });
+
+    // legacy class name
     Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
         e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
@@ -1486,24 +1493,20 @@ function rowvgStartEachRow(recursive,f) {
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
         var labelParent = label.parentElement;
+
         if (!labelParent.classList.contains('setting-main')) return;
 
         function findSettingName(formGroup) {
             for (var i=0; i<formGroup.childNodes.length; i++) {
                 var child = formGroup.childNodes[i];
-                if (child.classList.contains('setting-name')) return child;
+                if (child.classList.contains('jenkins-form-label') || child.classList.contains('setting-name')) return child;
             }
         }
 
         var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
-        var helpLink = settingName.querySelector('.setting-help');
-
-        // Copy setting-name text and append it to the checkbox label
-        var labelText = settingName.innerText;
-        var spanTag = document.createElement('span')
-        spanTag.innerHTML = labelText
-        label.appendChild(spanTag)
+        var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
+        var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
@@ -1511,6 +1514,13 @@ function rowvgStartEachRow(recursive,f) {
         }
 
         labelParent.parentNode.removeChild(settingName);
+
+        // Copy setting-name text and append it to the checkbox label
+        var labelText = settingName.innerText;
+
+        var spanTag = document.createElement('span')
+        spanTag.innerHTML = labelText
+        label.appendChild(spanTag)
     });
 })();
 

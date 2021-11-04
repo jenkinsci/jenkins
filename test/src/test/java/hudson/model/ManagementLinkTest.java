@@ -54,7 +54,7 @@ public class ManagementLinkTest {
 
         for (int i=0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(@onclick)]");
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(contains(@class,'confirmation-link'))]");
             assertTrue(anchors.size()>=8);
             if (i==anchors.size())  return; // done
 

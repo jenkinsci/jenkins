@@ -80,7 +80,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <p>
  * If you are interested in writing a subclass in a plugin,
- * also take a look at <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+an+SCM+plugin">
+ * also take a look at <a href="https://www.jenkins.io/doc/developer/plugin-development/writing-an-scm-plugin/">
  * "Writing an SCM plugin"</a> wiki article.
  *
  * @author Kohsuke Kawaguchi
