@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     See
-    http://wiki.jenkins-ci.org/display/JENKINS/Jelly+form+controls
+    https://www.jenkins.io/doc/developer/forms/jelly-form-controls/
     for the reference.
 
     <st:attribute name="method" use="required">
