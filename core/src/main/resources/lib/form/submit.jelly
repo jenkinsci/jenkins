@@ -42,7 +42,7 @@ THE SOFTWARE.
     </s:attribute>
   </s:documentation>
 
-  <button class="jenkins-button ${primary ? 'jenkins-button--primary' : ''} ${class}" type="submit" name="${attrs.name ?: 'Submit'}">
+  <button class="jenkins-button ${secondary ? '' : 'jenkins-button--primary'} ${class}" type="submit" name="${attrs.name ?: 'Submit'}">
     ${attrs.value ?: '%Submit'}
   </button>
 </j:jelly>
