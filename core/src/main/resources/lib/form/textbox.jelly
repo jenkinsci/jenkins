@@ -55,6 +55,9 @@ THE SOFTWARE.
       Additional CSS class(es) to add (such as client-side validation clazz="required",
       "number" or "positive-number"; these may be combined, as clazz="required number").
     </st:attribute>
+    <st:attribute name="placeholder">
+      Placeholder text for the text box
+    </st:attribute>
     <st:attribute name="checkMessage">
       Override the default error message when client-side validation fails,
       as with clazz="required", etc.
@@ -88,10 +91,11 @@ THE SOFTWARE.
 
   <f:possibleReadOnlyField>
       <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-               class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+               class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
                name="${name}"
                value="${value}"
                type="text"
+               placeholder="${placeholder}"
                ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
   </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">

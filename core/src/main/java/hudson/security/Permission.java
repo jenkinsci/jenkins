@@ -44,7 +44,7 @@ import org.jvnet.localizer.Localizable;
  * Each permission is represented by a specific instance of {@link Permission}.
  *
  * @author Kohsuke Kawaguchi
- * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins">Plugins in secured Jenkins</a>
+ * @see <a href="https://www.jenkins.io/doc/developer/security/">Security</a>
  */
 public final class Permission {
 

@@ -91,7 +91,7 @@ public abstract class DirectedGraph<N> {
      * Performs the Tarjan's algorithm and computes strongly-connected components from the
      * sink to source order.
      *
-     * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
+     * See https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     public List<SCC<N>> getStronglyConnectedComponents() {
         final Map<N, Node> nodes = new HashMap<>();

@@ -5,12 +5,16 @@ import static hudson.Functions.isWindows;
 import hudson.Functions;
 import hudson.model.Failure;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
@@ -21,6 +25,9 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  */
 class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>> {
+
+    private static final Logger LOGGER = Logger.getLogger(FilePathRuleConfig.class.getName());
+
     FilePathRuleConfig(File file) {
         super(file);
     }
@@ -40,10 +47,19 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.trim();
         if (line.isEmpty())     return null;
 
-        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/<BUILDID>");
+        // TODO This does not support custom build dir configuration (Jenkins#getRawBuildsDir() etc.)
+        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/[0-9]+");
+
+        // Kept only for compatibility with custom user-provided rules:
         line = line.replace("<BUILDID>","(?:[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]|[0-9]+)");
         line = line.replace("<JOBDIR>","<JENKINS_HOME>/jobs/.+");
-        line = line.replace("<JENKINS_HOME>","\\Q"+Jenkins.get().getRootDir().getPath()+"\\E");
+        final File jenkinsHome = Jenkins.get().getRootDir();
+        try {
+            line = line.replace("<JENKINS_HOME>","\\Q" + jenkinsHome.getCanonicalPath() + "\\E");
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e, () -> "Failed to determine canonical path to Jenkins home directory, falling back to configured value: " + jenkinsHome.getPath());
+            line = line.replace("<JENKINS_HOME>","\\Q" + jenkinsHome.getPath() + "\\E");
+        }
 
         // config file is always /-separated even on Windows, so bring it back to \-separation.
         // This is done in the context of regex, so it has to be \\, which means in the source code it is \\\\
@@ -77,9 +93,11 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         for (FilePathRule rule : get()) {
             if (rule.op.matches(op)) {
                 if (pathStr==null) {
-                    // do not canonicalize, so that JENKINS_HOME that spans across
-                    // multiple volumes via symlinks can look logically like one unit.
-                    pathStr = path.getPath();
+                    try {
+                        pathStr = path.getCanonicalPath();
+                    } catch (IOException ex) {
+                        throw new UncheckedIOException(ex);
+                    }
                     if (isWindows())    // Windows accepts '/' as separator, but for rule matching we want to normalize for consistent comparison
                         pathStr = pathStr.replace('/','\\');
                 }
