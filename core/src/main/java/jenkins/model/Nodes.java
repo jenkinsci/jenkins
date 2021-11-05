@@ -113,12 +113,10 @@ public class Nodes implements Saveable {
             @Override
             public void run() {
                 Set<String> toRemove = new HashSet<>(Nodes.this.nodes.keySet());
-                Set<LabelAtom> labels = new HashSet<>();
                 for (Node n : nodes) {
                     final String name = n.getNodeName();
                     toRemove.remove(name);
                     Nodes.this.nodes.put(name, n);
-                    labels.addAll(n.getAssignedLabels());
                 }
                 Nodes.this.nodes.keySet().removeAll(toRemove); // directory clean up will be handled by save
                 jenkins.updateComputerList();
