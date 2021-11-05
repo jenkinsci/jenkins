@@ -1180,6 +1180,7 @@ div.to-be-removed { display: none; }
   position: relative;
   margin-top: 10px;
   padding-left: 32px;
+  transition: var(--standard-transition);
 
   &::after {
     content: "";
@@ -1192,6 +1193,13 @@ div.to-be-removed { display: none; }
     border-radius: 2px;
     transition: var(--standard-transition);
   }
+}
+
+.form-container--hidden {
+  visibility: hidden!important;
+  margin-top: 0!important;
+  opacity: 0!important;
+  max-height: 0!important;
 }
 
 .row-set-end { display: none; }

@@ -916,13 +916,17 @@ function makeInnerVisible(b) {
 }
 
 function updateVisibility() {
-    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    var display = (this.outerVisible && this.innerVisible);
     for (var e=this.start; e!=this.end; e=$(e).next()) {
         if (e.rowVisibilityGroup && e!=this.start) {
             e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
             e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
         } else {
-            e.style.display = display;
+            if (display) {
+                e.classList.remove("form-container--hidden")
+            } else {
+                e.classList.add("form-container--hidden")
+            }
         }
     }
     layoutUpdateCallback.call();
