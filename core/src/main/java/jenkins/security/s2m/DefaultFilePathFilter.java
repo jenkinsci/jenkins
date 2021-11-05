@@ -27,7 +27,10 @@ package jenkins.security.s2m;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.Command;
+import hudson.remoting.Request;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.ReflectiveFilePathFilter;
@@ -59,6 +62,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
                     LOGGER.log(Level.FINE, "agent allowed to {0} {1}", new Object[] {op, f});
                     return true;
                 } else {
+                    try {
+                        Field current = Request.class.getDeclaredField("CURRENT");
+                        current.setAccessible(true);
+                        Field createdAt = Command.class.getDeclaredField("createdAt");
+                        createdAt.setAccessible(true);
+                        LOGGER.log(Level.WARNING, "Permitting agent-to-controller " + op + " on " + f, (Throwable) createdAt.get(((ThreadLocal) current.get(null)).get()));
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
                     return false;
                 }
             }
