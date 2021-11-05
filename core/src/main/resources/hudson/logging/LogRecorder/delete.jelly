@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:main-panel>
       <form method="post" action="doDelete">
         ${%delete.logrecorder(it.displayName)}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" secondary="true" class="jenkins-button--red" />
       </form>
     </l:main-panel>
   </l:layout>
