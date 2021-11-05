@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <pre id="out" />
       <div id="spinner">
-        <img src="${imagesURL}/spinner.gif" alt=""/>
+        <l:spinner />
       </div>
       <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" />
       <!-- TODO dubious value: INFO+ shown in logText anyway; FINE- configured in /log/*/ maybe better viewed there
