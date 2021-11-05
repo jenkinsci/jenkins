@@ -1492,13 +1492,14 @@ function rowvgStartEachRow(recursive,f) {
         function findSettingName(formGroup) {
             for (var i=0; i<formGroup.childNodes.length; i++) {
                 var child = formGroup.childNodes[i];
-                if (child.classList.contains('jenkins-form-label')) return child;
+                if (child.classList.contains('jenkins-form-label') || child.classList.contains('setting-name')) return child;
             }
         }
 
         var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
-        var helpLink = settingName.querySelector('.jenkins-help-button');
+        var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
+        var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
@@ -1579,7 +1580,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
     new Ajax.Request(
         "./descriptionForm",
         {

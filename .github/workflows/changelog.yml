@@ -44,7 +44,7 @@ jobs:
           private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
           repository: jenkins-infra/jenkins.io
       - name: Check out
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

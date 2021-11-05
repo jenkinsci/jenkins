@@ -47,6 +47,9 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
+import com.thoughtworks.xstream.converters.ConverterLookup;
+import com.thoughtworks.xstream.converters.ConverterRegistry;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.PluginManager;
@@ -116,6 +119,17 @@ public class XStream2 extends XStream {
 
     public XStream2(HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(hierarchicalStreamDriver);
+        init();
+        classOwnership = null;
+    }
+
+    /**
+     * @since TODO
+     */
+    public XStream2(ReflectionProvider reflectionProvider, HierarchicalStreamDriver driver,
+                    ClassLoaderReference classLoaderReference, Mapper mapper, ConverterLookup converterLookup,
+                    ConverterRegistry converterRegistry) {
+        super(reflectionProvider, driver, classLoaderReference, mapper, converterLookup, converterRegistry);
         init();
         classOwnership = null;
     }

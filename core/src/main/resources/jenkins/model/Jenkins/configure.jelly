@@ -36,7 +36,7 @@ THE SOFTWARE.
         <h1>${%Configure System}</h1>
       </div>
     </div>
-    <div class="behavior-loading">${%LOADING}</div>
+    <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />

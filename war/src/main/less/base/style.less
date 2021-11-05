@@ -407,24 +407,6 @@ pre.console {
   color: gray;
 }
 
-.spinner {
-  padding-left: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: left;
-}
-
-.spinner-right {
-  padding-right: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: right;
-}
-
 #login-field {
     vertical-align: middle;
     padding-right: 1em;
@@ -451,32 +433,19 @@ div.behavior-loading {
   justify-content: center;
   top: 0;
   left: 0;
-  bottom: 0;
   right: 0;
-  z-index: 1;
-  background-color: var(--background);
-  text-align: center;
-  font-size: 0.7rem;
-  letter-spacing: 2px;
-  font-weight: 700;
-  padding-top: 2rem;
+  bottom: 0;
+  z-index: 10;
 
-  &::before, &::after {
+  &::before {
     content: "";
     position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--text-color);
-    z-index: 2;
-    border-radius: 100%;
-    margin-top: -2rem;
-    opacity: 0.4;
-  }
-
-  &::after {
-    animation: loading-spinner 0.5s infinite linear;
-    clip-path: inset(0 0 10px 10px);
-    opacity: 1;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--background);
+    opacity: 0.95;
   }
 }
 
@@ -1679,6 +1648,10 @@ svg.icon-xlg {
   /* default fill fallback */
   fill: var(--text-color);
   fill: currentColor;
+}
+
+.jenkins-icon-adjacent {
+  margin-left: 0.2rem;
 }
 
 /* -------------- Unclassified ---------- */

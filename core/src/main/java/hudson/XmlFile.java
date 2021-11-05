@@ -114,7 +114,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * There's a few other possibilities, such as implementing a custom
  * {@link Converter} for XStream, or {@link XStream#alias(String, Class) registering an alias}.
  *
- * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Architecture#Architecture-Persistence">Architecture » Persistence</a>
+ * @see <a href="https://www.jenkins.io/doc/developer/persistence/">Architecture » Persistence</a>
  * @author Kohsuke Kawaguchi
  */
 public final class XmlFile {

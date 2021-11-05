@@ -26,7 +26,7 @@ function closestTR(node) {
 
 function fromConfigTable(configTable) {
     var $ = getJQuery();
-    var sectionHeaders = $('.section-header', configTable);
+    var sectionHeaders = $('.jenkins-section__header', configTable);
     var configForm = markConfigTableParentForm(configTable);
 
     // Mark the ancestor <tr>s of the section headers and add a title

@@ -18,8 +18,6 @@ updates:
       # will require source code changes to replace javax.mail with jakarta.mail 
       # and some handling for plugins that depend on javax.mail being provided by Jenkins core.
       - dependency-name: "com.sun.mail:jakarta.mail"
-      # needs updates in a number of plugins, see https://github.com/jenkinsci/jenkins/pull/5059 and https://github.com/jenkinsci/bom/pull/392
-      - dependency-name: "com.google.guava:*"
       # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
       - dependency-name: "javax.servlet.servlet-api"
       # needs a jakarta upgrade project, imports changed
