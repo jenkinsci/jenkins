@@ -52,7 +52,7 @@ THE SOFTWARE.
   </st:documentation>
   <f:entry>
     <div style="float:right">
-      <button type="button" class="jenkins-button validate-button ${attrs.clazz}"
+      <button type="button" class="jenkins-button validate-button ${attrs.clazz} Behaviour-validateButton"
               data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
               data-validate-button-method="${method}"
               data-validate-button-with="${with}">
