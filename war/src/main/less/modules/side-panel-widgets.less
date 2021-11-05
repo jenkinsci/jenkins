@@ -11,7 +11,6 @@
 #side-panel .pane-header {
   font-size: var(--font-size-sm);
   display: inline-flex;
-  font-weight: bold;
 }
 
 #side-panel .pane-footer {
@@ -30,6 +29,11 @@
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
+  font-weight: bold;
+
+  & > div {
+    font-weight: normal;
+  }
 }
 
 #side-panel .pane-header .expand,

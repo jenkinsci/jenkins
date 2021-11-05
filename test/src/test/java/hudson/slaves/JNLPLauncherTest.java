@@ -135,7 +135,7 @@ public class JNLPLauncherTest {
     @Test
     @LocalData
     @Issue("JENKINS-44112")
-    public void testNoWorkDirMigration() throws Exception {
+    public void testNoWorkDirMigration() {
         Computer computer = j.jenkins.getComputer("Foo");
         assertThat(computer, instanceOf(SlaveComputer.class));
         
@@ -152,7 +152,7 @@ public class JNLPLauncherTest {
     @Test
     @Issue("JENKINS-44112")
     @SuppressWarnings("deprecation")
-    public void testDefaults() throws Exception {
+    public void testDefaults() {
         assertTrue("Work directory should be disabled for agents created via old API", new JNLPLauncher().getWorkDirSettings().isDisabled());
     }
 

@@ -27,6 +27,7 @@ import static java.util.concurrent.TimeUnit.DAYS;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
@@ -487,11 +488,13 @@ public class DownloadService {
     }
 
     // TODO this was previously referenced in the browser-based download, but should probably be checked for the server-based download
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
      * Useful when upstream signatures are broken, such as due to expired certificates.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }

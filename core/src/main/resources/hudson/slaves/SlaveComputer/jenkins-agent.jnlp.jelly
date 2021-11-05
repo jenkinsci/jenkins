@@ -28,7 +28,7 @@ THE SOFTWARE.
   <j:invokeStatic var="rootURL" className="hudson.slaves.JNLPLauncher" method="getInboundAgentUrl" />
 
   <!--
-    See http://www.dallaway.com/acad/webstart/ for obtaining the certificate.
+    See https://www.dallaway.com/acad/webstart/ for obtaining the certificate.
   -->
 
     <!-- See https://docs.oracle.com/javase/8/docs/technotes/guides/javaws/developersguide/syntax.html for the syntax -->

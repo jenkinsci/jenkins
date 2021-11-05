@@ -113,7 +113,7 @@ public class ReloadJobCommandTest {
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
     }
 
-    @Test public void reloadJobShouldFailIfJobDoesNotExist() throws Exception {
+    @Test public void reloadJobShouldFailIfJobDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)

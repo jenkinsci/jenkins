@@ -84,7 +84,7 @@ public class ParametersDefinitionPropertyTest {
         public static class DescriptorImpl extends ParameterDescriptor {
 
             @Override
-            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) {
                 return new KrazyParameterDefinition(formData.getString("name"), formData.getString("description"), formData.getString("field").toLowerCase(Locale.ENGLISH));
             }
 

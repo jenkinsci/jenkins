@@ -530,7 +530,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testPermissionsToMode() throws Exception {
+    public void testPermissionsToMode() {
         assertEquals(0777, Util.permissionsToMode(PosixFilePermissions.fromString("rwxrwxrwx")));
         assertEquals(0757, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-xrwx")));
         assertEquals(0750, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-x---")));

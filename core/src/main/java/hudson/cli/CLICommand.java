@@ -82,7 +82,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
- * Start with <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+CLI+commands">this document</a>
+ * Start with <a href="https://www.jenkins.io/doc/developer/cli/writing-cli-commands/">this document</a>
  * to get the general idea of CLI.
  *
  * <ul>

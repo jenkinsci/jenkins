@@ -124,5 +124,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    GNUCLibrary LIBC = Native.loadLibrary("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = Native.load("c",GNUCLibrary.class);
 }

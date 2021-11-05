@@ -10,7 +10,6 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.ResourceList;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +46,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                 private final SubTask outer = this;
 
                 @Override
-                public Queue.Executable createExecutable() throws IOException {
+                public Queue.Executable createExecutable() {
                     return new Queue.Executable() {
                         @Override
                         public SubTask getParent() {

@@ -42,7 +42,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -108,7 +107,7 @@ public class AbstractScmTagActionTest {
         }
 
         @Override
-        public void checkout(@NonNull Run<?, ?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
+        public void checkout(@NonNull Run<?, ?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) {
             build.addAction(new TooltipTagAction(build, desiredTooltip));
         }
     }

@@ -72,7 +72,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithoutAdministerPermission() throws Exception {
+    public void quietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
@@ -82,7 +82,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccess() throws Exception {
+    public void quietDownShouldSuccess() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
@@ -91,7 +91,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlock() throws Exception {
+    public void quietDownShouldSuccessWithBlock() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block");
@@ -100,7 +100,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithTimeout() throws Exception {
+    public void quietDownShouldSuccessWithTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout", "0");
@@ -109,7 +109,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithReason() throws Exception {
+    public void quietDownShouldSuccessWithReason() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-reason", TEST_REASON);
@@ -119,7 +119,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeout() throws Exception {
+    public void quietDownShouldSuccessWithBlockAndTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block", "-timeout", "0");
@@ -128,7 +128,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() throws Exception {
+    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block", "-timeout", "0", "-reason", TEST_REASON);
@@ -138,7 +138,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithEmptyTimeout() throws Exception {
+    public void quietDownShouldFailWithEmptyTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout");
@@ -148,7 +148,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() throws Exception {
+    public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command

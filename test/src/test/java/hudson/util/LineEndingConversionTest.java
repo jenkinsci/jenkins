@@ -17,12 +17,12 @@ public class LineEndingConversionTest {
 
     @Issue("JENKINS-7478")
     @Test
-    public void validateWindowsEOL() throws Exception {
+    public void validateWindowsEOL() {
         rule.assertStringContains(LineEndingConversion.convertEOL("echo A\necho B\recho C", LineEndingConversion.EOLType.Windows), "echo A\r\necho B\r\necho C");
     }
 
     @Test
-    public void validateUnixEOL() throws Exception {
+    public void validateUnixEOL() {
         rule.assertStringContains(LineEndingConversion.convertEOL("echo A\r\necho B\recho C", LineEndingConversion.EOLType.Unix), "echo A\necho B\necho C");
     }
 }

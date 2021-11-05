@@ -40,7 +40,6 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Shell;
-import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,7 +106,7 @@ public class ToolLocationNodePropertyTest {
         assertEquals("zotfoo", location.getHome());
     }
 
-    private void configureDumpEnvBuilder() throws IOException {
+    private void configureDumpEnvBuilder() {
         if(Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else

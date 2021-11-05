@@ -33,7 +33,7 @@ l.layout {
         if (my.isFixingActive()) {
             pre(id: "out")
             div(id: "spinner") {
-                img(src: "${imagesURL}/spinner.gif", alt: "")
+                l.spinner()
             }
             t.progressiveText(spinner: "spinner", href: "logText/progressiveHtml", idref: "out")
         } else {

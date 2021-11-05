@@ -63,7 +63,7 @@ public class ApiTokenStatsTest {
     public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
-    public void prepareConfig() throws Exception {
+    public void prepareConfig() {
         // to separate completely the class under test from its environment
         ApiTokenPropertyConfiguration mockConfig = Mockito.mock(ApiTokenPropertyConfiguration.class);
 

@@ -123,7 +123,7 @@ public class AbstractItemTest {
 
     @Test
     @Issue("JENKINS-58571")
-    public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() throws IOException {
+    public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() {
 
         //GIVEN
         NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
