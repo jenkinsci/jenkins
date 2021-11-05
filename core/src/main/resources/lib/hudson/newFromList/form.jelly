@@ -101,7 +101,7 @@ THE SOFTWARE.
       </fieldset>
     </div>
 
-    <div class="jenkins-form-item">
+    <s:bottomButtonBar>
       <!--
         when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
         So always force non-empty array
@@ -109,7 +109,7 @@ THE SOFTWARE.
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
       <button type="submit" name="Submit" id="ok" class="jenkins-button jenkins-button--primary">${%Create}</button>
-    </div>
+    </s:bottomButtonBar>
 
     <st:adjunct includes="lib.hudson.newFromList.validation" />
   </s:form>
