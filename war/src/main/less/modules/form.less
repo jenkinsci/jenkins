@@ -150,10 +150,14 @@
     color: inherit;
     border: 2px solid currentColor;
     border-radius: 100%;
-    animation: loading-spinner 0.5s infinite linear;
-    clip-path: inset(0 0 8px 8px);
+    clip-path: inset(0 0 50% 50%);
     opacity: 0;
     transition: var(--standard-transition);
+    animation: loading-spinner 1s infinite linear;
+
+    @media (prefers-reduced-motion) {
+      animation-duration: 2s;
+    }
   }
 
   &--loading {

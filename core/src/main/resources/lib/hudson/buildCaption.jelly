@@ -71,7 +71,7 @@ THE SOFTWARE.
 
           })();
         </script>
-        <span style="margin-left:.2em;">
+        <span class="jenkins-icon-adjacent">
           <d:invokeBody trim="true"/>
         </span>
     </h1>

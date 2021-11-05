@@ -32,7 +32,7 @@ THE SOFTWARE.
     <j:when test="${it.workerThread.running}">
       <pre id="out" />
       <div id="spinner">
-        <img src="${imagesURL}/spinner.gif" alt=""/>
+        <l:spinner />
       </div>
       <t:progressiveText href="progressiveHtml" idref="out" spinner="spinner" />
     </j:when>

@@ -1587,7 +1587,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
     new Ajax.Request(
         "./descriptionForm",
         {
