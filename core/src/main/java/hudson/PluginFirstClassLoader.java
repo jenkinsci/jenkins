@@ -42,10 +42,6 @@ import jenkins.util.AntClassLoader;
 public class PluginFirstClassLoader
     extends AntClassLoader
 {
-    static {
-        registerAsParallelCapable();
-    }
-
     public PluginFirstClassLoader() {
         super(null, false);
     }

@@ -28,7 +28,7 @@
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
   --focus-btn-danger: fade(#cc0003, 50%);
-  --focus-input-border: fade(#093853, 100%);
+  --focus-input-border: #063F61;
   --focus-input-glow: fade(#0b6aa2, 25%);
 
   // State colors
@@ -140,9 +140,9 @@
   --btn-large-font-size: var(--font-size-sm);
   --btn-large-line-height: 1.25rem;
   // Button primary
-  --btn-primary-bg: var(--primary);
-  --btn-primary-bg-hover: var(--primary-hover);
-  --btn-primary-bg-active: var(--primary-active);
+  --btn-primary-bg: #063F61;
+  --btn-primary-bg-hover: lighten(#063F61, 7.5%);
+  --btn-primary-bg-active: lighten(#063F61, 12%);
   // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
@@ -248,9 +248,20 @@
 
   // Form
   --input-color: var(--white);
-  --input-border: #ccc;
-  --input-border-hover: #888;
+  --input-border: #C3CCD1;
+  --input-border-hover: #5C7889;
   --input-hidden-password-bg-color: #f9f9f9;
+  --form-item-max-width: 650px;
+  --form-item-max-width--small: 300px;
+  --form-item-max-width--medium: 450px;
+  --form-label-font-weight: bold;
+  --form-input-padding: 8px;
+  --form-input-border-radius: 6px;
+  --form-input-glow: 0 0 0 10px transparent;
+  --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
+
+  // Animations
+  --standard-transition: 0.2s ease;
 
   // Pop out menus
   --menu-text-color: black;

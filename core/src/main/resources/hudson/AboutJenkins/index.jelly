@@ -48,7 +48,7 @@ THE SOFTWARE.
           </j:choose>
           <h3>${%static.dependencies}</h3>
           <ul>
-            <li><a href="http://fontawesome.io">Font Awesome</a>, created by <a href="https://twitter.com/davegandy">Dave Gandy</a>. <a href="http://scripts.sil.org/OFL">SIL OFL 1.1 License</a> and <a href="https://opensource.org/licenses/MIT">MIT License</a></li>
+            <li><a href="https://fontawesome.com">Font Awesome</a>, created by <a href="https://twitter.com/davegandy">Dave Gandy</a>. <a href="https://scripts.sil.org/OFL">SIL OFL 1.1 License</a> and <a href="https://opensource.org/licenses/MIT">MIT License</a></li>
             <li><a href="https://www.google.com/fonts/specimen/Roboto">Google Fonts: Roboto</a>, created by <a href="https://plus.google.com/110879635926653430880/about">Christian Robertson</a>. <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License, version 2.0</a></li>
             <li><a href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">Jenkins Contrib Themes</a>, created by <a href="https://github.com/afonsof">Afonso Franca</a>. <a href="https://opensource.org/licenses/MIT">MIT License</a></li>
           </ul>

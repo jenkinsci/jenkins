@@ -1,18 +1,98 @@
+.jenkins-form {
+}
+
+.jenkins-form-item {
+  max-width: var(--form-item-max-width);
+  margin-bottom: 1.75rem;
+
+  // Workaround for float:right button controls
+  // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
+  &::after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+  }
+
+  &--small {
+    max-width: var(--form-item-max-width--small);
+  }
+
+  &--medium {
+    max-width: var(--form-item-max-width--medium);
+  }
+
+  &--full-width {
+    max-width: none;
+  }
+}
+
+.jenkins-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+
+  .jenkins-form-item:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.jenkins-form-label {
+  display: flex;
+  align-items: center;
+  font-weight: var(--form-label-font-weight);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+}
+
+.jenkins-form-description {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text-color-secondary);
+}
+
+.jenkins-input {
+  display: block;
+  background: var(--input-color);
+  border: 2px solid var(--input-border);
+  padding: var(--form-input-padding);
+  border-radius: var(--form-input-border-radius);
+  width: 100%;
+  box-shadow: var(--form-input-glow);
+  transition: var(--standard-transition);
+
+  &:hover {
+    border-color: var(--input-border-hover);
+  }
+
+  &:active,
+  &:focus {
+    outline: none;
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+}
+
 .jenkins-search {
   position: relative;
+  max-width: 420px;
 
   &__input {
     appearance: none;
     display: block;
     background: var(--input-color);
     border: 2px solid var(--input-border);
-    border-radius: 6px;
+    border-radius: var(--form-input-border-radius);
     width: 100%;
     margin: 0;
     padding: 0 4px 0 29px;
     line-height: 30px;
-    box-shadow: 0 0 0 10px transparent;
-    transition: 0.2s ease;
+    box-shadow: var(--form-input-glow);
+    transition: var(--standard-transition);
 
     // Safari adds unwanted padding - let's remove it
     &::-webkit-search-decoration {
@@ -32,7 +112,7 @@
     &:focus {
       outline: none;
       border-color: var(--focus-input-border);
-      box-shadow: 0 0 0 5px var(--focus-input-glow);
+      box-shadow: var(--form-input-glow--focus);
     }
   }
 
@@ -43,7 +123,7 @@
     width: 16px;
     height: 16px;
     fill: var(--input-border-hover);
-    transition: 0.2s ease;
+    transition: var(--standard-transition);
   }
 
   &::before {
@@ -57,7 +137,7 @@
     border: 2px solid currentColor;
     border-radius: 100%;
     opacity: 0;
-    transition: 0.2s ease;
+    transition: var(--standard-transition);
   }
 
   &::after {
@@ -73,7 +153,7 @@
     animation: loading-spinner 0.5s infinite linear;
     clip-path: inset(0 0 8px 8px);
     opacity: 0;
-    transition: 0.2s ease;
+    transition: var(--standard-transition);
   }
 
   &--loading {
@@ -109,5 +189,166 @@
 @keyframes loading-spinner {
   to {
     transform: rotate(360deg);
+  }
+}
+
+.jenkins-radio {
+  margin-top: 2px;
+
+  &:not(:last-of-type) {
+    margin-bottom: 20px;
+  }
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  &__label {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 0 32px 5px;
+    cursor: pointer;
+    font-weight: 600;
+    // remove 300ms pause on mobile
+    touch-action: manipulation;
+
+    &::before {
+      content: "";
+      box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      width: 22px;
+      height: 22px;
+
+      border: 2px solid var(--input-border);
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: var(--form-input-glow);
+
+      transition: var(--standard-transition);
+    }
+
+    &:hover::before {
+      border-width: 5px;
+      border-color: var(--input-border-hover);
+    }
+  }
+
+  &__input:focus + &__label:before, &__input:active + &__label:before {
+    border-width: 8px;
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+
+  &__input:checked + &__label:before {
+    border-width: 8px;
+    border-color: var(--focus-input-border);
+  }
+
+  &__description {
+    margin: 0 0 0 32px;
+    color: var(--text-color-secondary);
+    line-height: 1.66;
+  }
+
+  &__children {
+    position: relative;
+    margin-top: 0;
+    opacity: 0;
+    padding-left: 32px;
+    transition: var(--standard-transition);
+    visibility: hidden;
+    max-height: 0;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10px;
+      bottom: 0;
+      width: 2px;
+      background: var(--input-border);
+      border-radius: 2px;
+      transition: var(--standard-transition);
+    }
+
+    &:focus-within {
+      &::after {
+        background: var(--focus-input-border);
+      }
+    }
+  }
+
+  &__input:checked + &__label + &__children {
+    visibility: visible;
+    margin-top: 10px;
+    opacity: 1;
+    max-height: none;
+  }
+}
+
+.jenkins-help-button {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-left: 1ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-color)!important;
+  line-height: 18px;
+  border-radius: 100%;
+
+  &::before {
+    content: "?";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.1;
+    border-radius: inherit;
+    transition: var(--standard-transition);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    box-shadow: var(--form-input-glow);
+    border-radius: inherit;
+    opacity: 0.1;
+    transition: var(--standard-transition);
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    &::before {
+      opacity: 0.2;
+    }
+  }
+
+  &:active, &:focus {
+    outline: none;
+    text-decoration: none;
+
+    &::before {
+      opacity: 0.3;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 5px var(--text-color);
+    }
   }
 }

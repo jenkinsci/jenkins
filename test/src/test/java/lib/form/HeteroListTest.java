@@ -92,7 +92,7 @@ public class HeteroListTest {
 
         // check the displayName
         Object resultDN = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.setting-name');" +
+                "var settingFields = document.querySelectorAll('.jenkins-form-label');" +
                         "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" + 
                         "Array.from(children).filter(c => c.tagName === 'IMG')"
         ).getJavaScriptResult();

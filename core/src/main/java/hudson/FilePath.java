@@ -34,7 +34,6 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -238,18 +237,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * The field could not be final since it's modified in {@link #readResolve()}
      */
     private /*final*/ String remote;
-
-    /**
-     * If this {@link FilePath} is deserialized to handle file access request from a remote computer,
-     * this field is set to the filter that performs access control.
-     *
-     * <p>
-     * If null, no access control is needed.
-     *
-     * @see #filterNonNull()
-     */
-    private transient @Nullable
-    SoloFilePathFilter filter;
 
     /**
      * Creates a {@link FilePath} that represents a path on the given node.
@@ -527,7 +514,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
         return act(new Archive(factory, out, scanner, verificationRoot, noFollowLinks));
     }
-    private class Archive extends SecureFileCallable<Integer> {
+    private static class Archive extends SecureFileCallable<Integer> {
         private final ArchiverFactory factory;
         private final OutputStream out;
         private final DirScanner scanner;
@@ -573,14 +560,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
-        if (this.channel!=target.channel) {// local -> remote or remote->local
+        if (channel != target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
             target.act(new UnzipRemote(in));
         } else {// local -> local or remote->remote
-            target.act(new UnzipLocal());
+            target.act(new UnzipLocal(this));
         }
     }
-    private class UnzipRemote extends SecureFileCallable<Void> {
+    private static class UnzipRemote extends SecureFileCallable<Void> {
         private final RemoteInputStream in;
         UnzipRemote(RemoteInputStream in) {
             this.in = in;
@@ -592,11 +579,20 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         private static final long serialVersionUID = 1L;
     }
-    private class UnzipLocal extends SecureFileCallable<Void> {
+    private static class UnzipLocal extends SecureFileCallable<Void> {
+
+        private final FilePath filePath;
+
+        private UnzipLocal(FilePath filePath) {
+            this.filePath = filePath;
+        }
+
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            assert !FilePath.this.isRemote();       // this.channel==target.channel above
-            unzip(dir, reading(new File(FilePath.this.getRemote()))); // shortcut to local file
+            if (this.filePath.isRemote()) {
+                throw new IllegalStateException("Expected local path for file: " + filePath); // this.channel==target.channel above
+            }
+            unzip(dir, reading(new File(this.filePath.getRemote()))); // shortcut to local file
             return null;
         }
         private static final long serialVersionUID = 1L;
@@ -613,36 +609,42 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+        final FilePath source = FilePath.this;
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
-        if (this.channel!=target.channel) {// local -> remote or remote->local
-            final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
-            target.act(new UntarRemote(compression, in));
+        if (source.channel != target.channel) {// local -> remote or remote->local
+            final RemoteInputStream in = new RemoteInputStream(source.read(), Flag.GREEDY);
+            target.act(new UntarRemote(source.getName(), compression, in));
         } else {// local -> local or remote->remote
-            target.act(new UntarLocal(compression));
+            target.act(new UntarLocal(source, compression));
         }
     }
-    private class UntarRemote extends SecureFileCallable<Void> {
+    private static class UntarRemote extends SecureFileCallable<Void> {
         private final TarCompression compression;
         private final RemoteInputStream in;
-        UntarRemote(TarCompression compression, RemoteInputStream in) {
+        private final String name;
+        UntarRemote(String name, TarCompression compression, RemoteInputStream in) {
             this.compression = compression;
             this.in = in;
+            this.name = name;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(in));
+            readFromTar(name, dir, compression.extract(in));
             return null;
         }
         private static final long serialVersionUID = 1L;
     }
-    private class UntarLocal extends SecureFileCallable<Void> {
+    private static class UntarLocal extends SecureFileCallable<Void> {
         private final TarCompression compression;
-        UntarLocal(TarCompression compression) {
+        private final FilePath filePath;
+
+        UntarLocal(FilePath source, TarCompression compression) {
+            this.filePath = source;
             this.compression = compression;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()));
+            readFromTar(this.filePath.getName(), dir, compression.extract(this.filePath.read()));
             return null;
         }
         private static final long serialVersionUID = 1L;
@@ -660,7 +662,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
         act(new UnzipFrom(in));
     }
-    private class UnzipFrom extends SecureFileCallable<Void> {
+    private static class UnzipFrom extends SecureFileCallable<Void> {
         private final InputStream in;
         UnzipFrom(InputStream in) {
             this.in = in;
@@ -673,7 +675,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
     }
 
-    private void unzip(File dir, InputStream in) throws IOException {
+    private static void unzip(File dir, InputStream in) throws IOException {
         File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
         try {
             // TODO why does this not simply use ZipInputStream?
@@ -685,7 +687,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private void unzip(File dir, File zipFile) throws IOException {
+    private static void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
         Enumeration<ZipEntry> entries = zip.getEntries();
@@ -734,7 +736,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException {
-            return f.getAbsolutePath();
+            return stating(f).getAbsolutePath();
         }
     }
 
@@ -754,7 +756,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException {
-            return isSymlink(f, verificationRoot, noFollowLinks);
+            return isSymlink(stating(f), verificationRoot, noFollowLinks);
         }
     }
 
@@ -792,7 +794,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void symlinkTo(final String target, final TaskListener listener) throws IOException, InterruptedException {
         act(new SymlinkTo(target, listener));
     }
-    private class SymlinkTo extends SecureFileCallable<Void> {
+    private static class SymlinkTo extends SecureFileCallable<Void> {
         private final String target;
         private final TaskListener listener;
         SymlinkTo(String target, TaskListener listener) {
@@ -802,8 +804,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            symlinking(f);
-            Util.createSymlink(f.getParentFile(), target, f.getName(), listener);
+            Util.createSymlink(symlinking(f).getParentFile(), target, f.getName(), listener);
             return null;
         }
     }
@@ -818,7 +819,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public String readLink() throws IOException, InterruptedException {
         return act(new ReadLink());
     }
-    private class ReadLink extends SecureFileCallable<String> {
+    private static class ReadLink extends SecureFileCallable<String> {
         private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -896,7 +897,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             _in.close();
         }
     }
-    private class UntarFrom extends SecureFileCallable<Void> {
+    private static class UntarFrom extends SecureFileCallable<Void> {
         private final TarCompression compression;
         private final InputStream in;
         UntarFrom(TarCompression compression, InputStream in) {
@@ -905,7 +906,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException {
-            readFromTar("input stream",dir, compression.extract(in));
+            readFromTar("input stream",dir, compression.extract(in)); // #writing etc. are called in #readFromTar
             return null;
         }
         private static final long serialVersionUID = 1L;
@@ -1157,7 +1158,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if(channel!=null) {
             // run this on a remote system
             try {
-                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable, cl);
+                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable, cl, this);
                 for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
                     wrapper = factory.wrap(wrapper);
                 }
@@ -1233,7 +1234,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
-            DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable);
+            DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable, this);
             for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
                 wrapper = factory.wrap(wrapper);
             }
@@ -1302,7 +1303,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public URI invoke(File f, VirtualChannel channel) {
-            return f.toURI();
+            return stating(f).toURI();
         }
     }
 
@@ -1340,7 +1341,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             throw new IOException("Failed to mkdirs: " + remote);
         }
     }
-    private class Mkdirs extends SecureFileCallable<Boolean> {
+    private static class Mkdirs extends SecureFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -1366,7 +1367,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Deletes all suffixed directories that are separated by {@link WorkspaceList#COMBINATOR}, including all its contents recursively.
      */
-    private class DeleteSuffixesRecursive extends SecureFileCallable<Void> {
+    private static class DeleteSuffixesRecursive extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1398,7 +1399,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void deleteRecursive() throws IOException, InterruptedException {
         act(new DeleteRecursive());
     }
-    private class DeleteRecursive extends SecureFileCallable<Void> {
+    private static class DeleteRecursive extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
@@ -1413,7 +1414,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void deleteContents() throws IOException, InterruptedException {
         act(new DeleteContents());
     }
-    private class DeleteContents extends SecureFileCallable<Void> {
+    private static class DeleteContents extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
@@ -1516,7 +1517,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             throw new IOException("Failed to create a temp file on "+remote,e);
         }
     }
-    private class CreateTempFile extends SecureFileCallable<String> {
+    private static class CreateTempFile extends SecureFileCallable<String> {
         private final String prefix;
         private final String suffix;
         CreateTempFile(String prefix, String suffix) {
@@ -1526,7 +1527,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File dir, VirtualChannel channel) throws IOException {
-            File f = writing(File.createTempFile(prefix, suffix, dir));
+            creating(new File(dir, prefix + "-security-check-dummy-" + suffix)); // use fake file to check access before creation
+            File f = creating(File.createTempFile(prefix, suffix, dir));
             return f.getName();
         }
     }
@@ -1580,7 +1582,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             throw new IOException("Failed to create a temp file on "+remote,e);
         }
     }
-    private final class CreateTextTempFile extends SecureFileCallable<String> {
+    private static class CreateTextTempFile extends SecureFileCallable<String> {
         private static final long serialVersionUID = 1L;
         private final boolean inThisDirectory;
         private final String prefix;
@@ -1601,6 +1603,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
             File f;
             try {
+                creating(new File(dir, prefix + "-security-check-dummy-" + suffix)); // use fake file to check access before creation
                 f = creating(File.createTempFile(prefix, suffix, dir));
             } catch (IOException e) {
                 throw new IOException("Failed to create a temporary directory in "+dir,e);
@@ -1642,7 +1645,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             throw new IOException("Failed to create a temp directory on "+remote,e);
         }
     }
-    private class CreateTempDir extends SecureFileCallable<String> {
+    private static class CreateTempDir extends SecureFileCallable<String> {
         private final String name;
         CreateTempDir(String name) {
             this.name = name;
@@ -1650,6 +1653,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             private static final long serialVersionUID = 1L;
             @Override
             public String invoke(File dir, VirtualChannel channel) throws IOException {
+                mkdirsing(new File(dir, name + "-security-test")); // ensure access
 
                 Path tempPath;
                 final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
@@ -1661,8 +1665,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     tempPath = Files.createTempDirectory(Util.fileToPath(dir), name);
                 }
 
-                if (tempPath.toFile() == null) {
-                    throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
+                if (mkdirsing(tempPath.toFile()) == null) {
+                    throw new IOException("Failed to obtain file from path " + dir);
                 }
                 return tempPath.toFile().getName();
             }
@@ -1677,7 +1681,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new Delete());
         return true;
     }
-    private class Delete extends SecureFileCallable<Void> {
+    private static class Delete extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
@@ -1692,7 +1696,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public boolean exists() throws IOException, InterruptedException {
         return act(new Exists());
     }
-    private class Exists extends SecureFileCallable<Boolean> {
+    private static class Exists extends SecureFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException {
@@ -1710,7 +1714,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public long lastModified() throws IOException, InterruptedException {
         return act(new LastModified());
     }
-    private class LastModified extends SecureFileCallable<Long> {
+    private static class LastModified extends SecureFileCallable<Long> {
         private static final long serialVersionUID = 1L;
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -1726,7 +1730,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void touch(final long timestamp) throws IOException, InterruptedException {
         act(new Touch(timestamp));
     }
-    private class Touch extends SecureFileCallable<Void> {
+    private static class Touch extends SecureFileCallable<Void> {
         private final long timestamp;
         Touch(long timestamp) {
             this.timestamp = timestamp;
@@ -1750,7 +1754,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             LOGGER.warning(message);
         }
     }
-    private class SetLastModified extends SecureFileCallable<String> {
+    private static class SetLastModified extends SecureFileCallable<String> {
         private final long timestamp;
         SetLastModified(long timestamp) {
             this.timestamp = timestamp;
@@ -1777,7 +1781,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public boolean isDirectory() throws IOException, InterruptedException {
         return act(new IsDirectory());
     }
-    private final class IsDirectory extends SecureFileCallable<Boolean> {
+    private static class IsDirectory extends SecureFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException {
@@ -1793,7 +1797,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public long length() throws IOException, InterruptedException {
         return act(new Length());
     }
-    private class Length extends SecureFileCallable<Long> {
+    private static class Length extends SecureFileCallable<Long> {
         private static final long serialVersionUID = 1L;
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -1808,7 +1812,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public long getFreeDiskSpace() throws IOException, InterruptedException {
         return act(new GetFreeDiskSpace());
     }
-    private static class GetFreeDiskSpace extends SecureFileCallable<Long> {
+    private static class GetFreeDiskSpace extends MasterToSlaveFileCallable<Long> {
         private static final long serialVersionUID = 1L;
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -1823,7 +1827,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public long getTotalDiskSpace() throws IOException, InterruptedException {
         return act(new GetTotalDiskSpace());
     }
-    private static class GetTotalDiskSpace extends SecureFileCallable<Long> {
+    private static class GetTotalDiskSpace extends MasterToSlaveFileCallable<Long> {
         private static final long serialVersionUID = 1L;
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -1838,7 +1842,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public long getUsableDiskSpace() throws IOException, InterruptedException {
         return act(new GetUsableDiskSpace());
     }
-    private static class GetUsableDiskSpace extends SecureFileCallable<Long> {
+    private static class GetUsableDiskSpace extends MasterToSlaveFileCallable<Long> {
         private static final long serialVersionUID = 1L;
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -1870,7 +1874,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if(!isUnix() || mask==-1)   return;
         act(new Chmod(mask));
     }
-    private class Chmod extends SecureFileCallable<Void> {
+    private static class Chmod extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final int mask;
         Chmod(int mask) {
@@ -1909,7 +1913,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if(!isUnix())   return -1;
         return act(new Mode());
     }
-    private class Mode extends SecureFileCallable<Integer> {
+    private static class Mode extends SecureFileCallable<Integer> {
         private static final long serialVersionUID = 1L;
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException {
@@ -1979,7 +1983,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         return act(new ListFilter(filter), (filter != null ? filter : this).getClass().getClassLoader());
     }
-    private class ListFilter extends SecureFileCallable<List<FilePath>> {
+    private static class ListFilter extends SecureFileCallable<List<FilePath>> {
         private final FileFilter filter;
         ListFilter(FileFilter filter) {
             this.filter = filter;
@@ -2045,7 +2049,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public FilePath[] list(final String includes, final String excludes, final boolean defaultExcludes) throws IOException, InterruptedException {
         return act(new ListGlob(includes, excludes, defaultExcludes));
     }
-    private class ListGlob extends SecureFileCallable<FilePath[]> {
+    private static class ListGlob extends SecureFileCallable<FilePath[]> {
         private final String includes;
         private final String excludes;
         private final boolean defaultExcludes;
@@ -2061,7 +2065,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
                 FilePath[] r = new FilePath[files.length];
                 for( int i=0; i<r.length; i++ )
-                    r[i] = new FilePath(new File(f,files[i]));
+                    r[i] = new FilePath(stating(new File(f,files[i])));
 
                 return r;
             }
@@ -2184,7 +2188,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return false;
     }
 
-    private class Read extends SecureFileCallable<Void> {
+    private static class Read extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final Pipe p;
         private String verificationRoot;
@@ -2251,7 +2255,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return new java.util.zip.GZIPInputStream(p.getIn());
     }
     
-    private class OffsetPipeSecureFileCallable extends SecureFileCallable<Void> {
+    private static class OffsetPipeSecureFileCallable extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         
         private Pipe p;
@@ -2284,7 +2288,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public String readToString() throws IOException, InterruptedException {
         return act(new ReadToString());
     } 
-    private final class ReadToString extends SecureFileCallable<String> {
+    private static class ReadToString extends SecureFileCallable<String> {
         private static final long serialVersionUID = 1L;       
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -2308,12 +2312,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if(channel==null) {
             File f = new File(remote).getAbsoluteFile();
             mkdirs(f.getParentFile());
-            return Files.newOutputStream(fileToPath(writing(f)));
+            return Files.newOutputStream(fileToPath(writing(f))); // TODO #writing seems unnecessary on a local file
         }
 
         return act(new WritePipe());
     }
-    private class WritePipe extends SecureFileCallable<OutputStream> {
+    private static class WritePipe extends SecureFileCallable<OutputStream> {
             private static final long serialVersionUID = 1L;
             @Override
             public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -2333,7 +2337,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
         act(new Write(encoding, content));
     }
-    private class Write extends SecureFileCallable<Void> {
+    private static class Write extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final String encoding;
         private final String content;
@@ -2359,7 +2363,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public String digest() throws IOException, InterruptedException {
         return act(new Digest());
     }
-    private class Digest extends SecureFileCallable<String> {
+    private static class Digest extends SecureFileCallable<String> {
         private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException {
@@ -2377,7 +2381,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     	}
         act(new RenameTo(target));
     }
-    private class RenameTo extends SecureFileCallable<Void> {
+    private static class RenameTo extends SecureFileCallable<Void> {
         private final FilePath target;
         RenameTo(FilePath target) {
             this.target = target;
@@ -2385,7 +2389,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Files.move(fileToPath(reading(f)), fileToPath(creating(new File(target.remote))), LinkOption.NOFOLLOW_LINKS);
+            Files.move(fileToPath(deleting(reading(f))), fileToPath(writing(creating(new File(target.remote)))), LinkOption.NOFOLLOW_LINKS);
             return null;
         }
     }
@@ -2401,7 +2405,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         act(new MoveAllChildrenTo(target));
     }
-    private class MoveAllChildrenTo extends SecureFileCallable<Void> {
+    private static class MoveAllChildrenTo extends SecureFileCallable<Void> {
         private final FilePath target;
         MoveAllChildrenTo(FilePath target) {
             this.target = target;
@@ -2412,14 +2416,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
                 // then the rename op will fail
                 File tmp = new File(f.getAbsolutePath()+".__rename");
-                if (!f.renameTo(tmp))
+                if (!deleting(f).renameTo(creating(tmp)))
                     throw new IOException("Failed to rename "+f+" to "+tmp);
 
                 File t = new File(target.getRemote());
 
                 for(File child : reading(tmp).listFiles()) {
                     File target = new File(t, child.getName());
-                    if(!stating(child).renameTo(creating(target)))
+                    if(!deleting(reading(child)).renameTo(writing(creating(target))))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
                 deleting(tmp).delete();
@@ -2456,7 +2460,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         target.chmod(mode());
         target.setLastModifiedIfPossible(lastModified());
     }
-    private class CopyToWithPermission extends SecureFileCallable<Void> {
+    private static class CopyToWithPermission extends SecureFileCallable<Void> {
         private final FilePath target;
         CopyToWithPermission(FilePath target) {
             this.target = target;
@@ -2484,7 +2488,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         // this is needed because I/O operation is asynchronous
         syncIO();
     }
-    private class CopyTo extends SecureFileCallable<Void> {
+    private static class CopyTo extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 4088559042349254141L;
         private final OutputStream out;
         CopyTo(OutputStream out) {
@@ -2616,7 +2620,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // local -> remote copy
             final Pipe pipe = Pipe.createLocalToRemote();
 
-            Future<Void> future = target.actAsync(new ReadToTar(pipe, description, compression));
+            Future<Void> future = target.actAsync(new ReadFromTar(target, pipe, description, compression));
             Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression));
             try {
                 // JENKINS-9540 in case the reading side failed, report that error first
@@ -2662,7 +2666,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 ;
     }
 
-    private class CopyRecursiveLocal extends SecureFileCallable<Integer> {
+    private static class CopyRecursiveLocal extends SecureFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;
         CopyRecursiveLocal(FilePath target, DirScanner scanner) {
@@ -2675,7 +2679,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             if (!base.exists()) {
                 return 0;
             }
-            assert target.channel == null;
+            if (target.channel != null) {
+                throw new IllegalStateException("Expected null channel for " + target);
+            }
             final File dest = new File(target.remote);
             final AtomicInteger count = new AtomicInteger();
             scanner.scan(base, reading(new FileVisitor() {
@@ -2729,12 +2735,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return count.get();
         }
     }
-    private class ReadToTar extends SecureFileCallable<Void> {
+    private static class ReadFromTar extends SecureFileCallable<Void> {
         private final Pipe pipe;
         private final String description;
         private final TarCompression compression;
+        private final FilePath target;
 
-        ReadToTar(Pipe pipe, String description, @NonNull TarCompression compression) {
+        ReadFromTar(FilePath target, Pipe pipe, String description, @NonNull TarCompression compression) {
+            this.target = target;
             this.pipe = pipe;
             this.description = description;
             this.compression = compression;
@@ -2743,12 +2751,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (InputStream in = pipe.getIn()) {
-                readFromTar(remote + '/' + description, f, compression.extract(in));
+                readFromTar(target.remote + '/' + description, f, compression.extract(in));
                 return null;
             }
         }
     }
-    private class WriteToTar extends SecureFileCallable<Integer> {
+    private static class WriteToTar extends SecureFileCallable<Integer> {
         private final DirScanner scanner;
         private final Pipe pipe;
         private final TarCompression compression;
@@ -2760,10 +2768,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return writeToTar(new File(remote), scanner, compression.compress(pipe.getOut()));
+            return writeToTar(reading(f), scanner, compression.compress(pipe.getOut()));
         }
     }
-    private class CopyRecursiveRemoteToLocal extends SecureFileCallable<Integer> {
+    private static class CopyRecursiveRemoteToLocal extends SecureFileCallable<Integer> {
         private static final long serialVersionUID = 1L;
         private final Pipe pipe;
         private final DirScanner scanner;
@@ -2776,7 +2784,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream out = pipe.getOut()) {
-                return writeToTar(f, scanner, compression.compress(out));
+                return writeToTar(reading(f), scanner, compression.compress(out));
             }
         }
     }
@@ -2808,7 +2816,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return
      *      number of files/directories that are written.
      */
-    private Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
+    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
             scanner.scan(baseDir,reading(tw));
@@ -2822,14 +2830,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        baseDir = baseDir.getCanonicalFile();
 
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
             TarArchiveEntry te;
             while ((te = t.getNextTarEntry()) != null) {
-                File f = new File(baseDir, te.getName());
-                if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
+                File f = new File(baseDir, te.getName()).getCanonicalFile();
+                if (!f.toPath().startsWith(baseDir.toPath())) {
                     throw new IOException(
                             "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
                 }
@@ -2838,12 +2847,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 } else {
                     File parent = f.getParentFile();
                     if (parent != null) mkdirs(parent);
-                    writing(f);
 
                     if (te.isSymbolicLink()) {
-                        new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
+                        new FilePath(symlinking(f)).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
-                        IOUtils.copy(t, f);
+                        IOUtils.copy(t, writing(f));
 
                         f.setLastModified(te.getModTime().getTime());
                         int mode = te.getMode() & 0777;
@@ -3280,14 +3288,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         ois.defaultReadObject();
         if(ois.readBoolean()) {
             this.channel = channel;
-            this.filter = null;
         } else {
             this.channel = null;
             // If the remote channel wants us to create a FilePath that points to a local file,
             // we need to make sure the access control takes place.
-            // This covers the immediate case of FileCallables taking FilePath into reference closure implicitly,
-            // but it also covers more general case of FilePath sent as a return value or argument.
-            this.filter = SoloFilePathFilter.wrap(FilePathFilter.current());
+            // Any FileCallables acting on a deserialized FilePath need to ensure they're subjecting it to
+            // access control checks like #reading(File) etc.
         }
     }
 
@@ -3301,24 +3307,27 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Adapts {@link FileCallable} to {@link Callable}.
      */
-    private class FileCallableWrapper<T> implements DelegatingCallable<T,IOException> {
+    private static class FileCallableWrapper<T> implements DelegatingCallable<T,IOException> {
         private final FileCallable<T> callable;
         private transient ClassLoader classLoader;
+        private final FilePath filePath;
 
-        FileCallableWrapper(FileCallable<T> callable) {
+        FileCallableWrapper(FileCallable<T> callable, FilePath filePath) {
             this.callable = callable;
             this.classLoader = callable.getClass().getClassLoader();
+            this.filePath = filePath;
         }
 
-        private FileCallableWrapper(FileCallable<T> callable, ClassLoader classLoader) {
+        private FileCallableWrapper(FileCallable<T> callable, ClassLoader classLoader, FilePath filePath) {
             this.callable = callable;
             this.classLoader = classLoader;
+            this.filePath = filePath;
         }
 
         @Override
         public T call() throws IOException {
             try {
-                return callable.invoke(new File(remote), Channel.current());
+                return callable.invoke(new File(filePath.remote), filePath.channel);
             } catch (InterruptedException e) {
                 throw new TunneledInterruptedException(e);
             }
@@ -3413,15 +3422,16 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @NonNull
     public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
 
-    private @NonNull SoloFilePathFilter filterNonNull() {
-        return filter!=null ? filter : UNRESTRICTED;
+    private static @NonNull SoloFilePathFilter filterNonNull() {
+        final SoloFilePathFilter filter = SoloFilePathFilter.wrap(FilePathFilter.current());
+        return filter != null ? filter : UNRESTRICTED;
     }
 
     /**
      * Wraps {@link FileVisitor} to notify read access to {@link FilePathFilter}.
      */
-    private FileVisitor reading(final FileVisitor v) {
-        final FilePathFilter filter = FilePathFilter.current();
+    private static FileVisitor reading(final FileVisitor v) {
+        final FilePathFilter filter = SoloFilePathFilter.wrap(FilePathFilter.current());
         if (filter==null)    return v;
 
         return new FileVisitor() {
@@ -3470,7 +3480,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can read that file.
      */
-    private File reading(File f) {
+    private static File reading(File f) {
         filterNonNull().read(f);
         return f;
     }
@@ -3478,7 +3488,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can access the file attributes.
      */
-    private File stating(File f) {
+    private static File stating(File f) {
         filterNonNull().stat(f);
         return f;
     }
@@ -3486,7 +3496,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can create that file/dir.
      */
-    private File creating(File f) {
+    private static File creating(File f) {
         filterNonNull().create(f);
         return f;
     }
@@ -3494,7 +3504,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can write to that file.
      */
-    private File writing(File f) {
+    private static File writing(File f) {
         FilePathFilter filter = filterNonNull();
         if (!f.exists())
             filter.create(f);
@@ -3505,7 +3515,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can create that symlink.
      */
-    private File symlinking(File f) {
+    private static File symlinking(File f) {
         FilePathFilter filter = filterNonNull();
         if (!f.exists())
             filter.create(f);
@@ -3516,24 +3526,40 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Pass through 'f' after ensuring that we can delete that file.
      */
-    private File deleting(File f) {
+    private static File deleting(File f) {
         filterNonNull().delete(f);
         return f;
     }
 
-    private boolean mkdirs(File dir) throws IOException {
+    /**
+     * Pass through 'f' after ensuring that we can mkdirs that directory.
+     */
+    private static File mkdirsing(File f) {
+        filterNonNull().mkdirs(f);
+        return f;
+    }
+
+    private static boolean mkdirs(File dir) throws IOException {
         if (dir.exists())   return false;
 
-        filterNonNull().mkdirs(dir);
+        File reference = dir;
+        while (reference != null && !reference.exists()) {
+            filterNonNull().mkdirs(reference);
+            reference = reference.getParentFile();
+        }
         Files.createDirectories(fileToPath(dir));
         return true;
     }
 
-    private File mkdirsE(File dir) throws IOException {
+    private static File mkdirsE(File dir) throws IOException {
         if (dir.exists()) {
             return dir;
         }
-        filterNonNull().mkdirs(dir);
+        File reference = dir;
+        while (reference != null && !reference.exists()) {
+            filterNonNull().mkdirs(reference);
+            reference = reference.getParentFile();
+        }
         return IOUtils.mkdirs(dir);
     }
 
@@ -3561,7 +3587,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
     
-            Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
+            Path parentAbsolutePath = Util.fileToPath(stating(parentFile).getAbsoluteFile());
             Path parentRealPath;
             try {
                 if (Functions.isWindows()) {

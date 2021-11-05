@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     See
-    http://wiki.jenkins-ci.org/display/JENKINS/Jelly+form+controls
+    https://www.jenkins.io/doc/developer/forms/jelly-form-controls/
     for the reference.
 
     <st:attribute name="method" use="required">
@@ -52,15 +52,15 @@ THE SOFTWARE.
   </st:documentation>
   <f:entry>
     <div style="float:right">
-      <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz}" 
+      <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz} Behaviour-validateButton"
              data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
              data-validate-button-method="${method}"
-             data-validate-button-with="${with}"
-             onclick="safeValidateButton(this)" />
+             data-validate-button-with="${with}" />
     </div>
     <div style="display:none;">
       <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}
     </div>
     <div><!-- this is where the error message goes --></div>
+    <st:adjunct includes="lib.form.validateButton.adjunct"/>
   </f:entry>
 </j:jelly>
