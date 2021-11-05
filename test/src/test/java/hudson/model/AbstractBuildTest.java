@@ -23,6 +23,15 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
@@ -34,26 +43,16 @@ import hudson.slaves.WorkspaceList;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
+import hudson.tasks.LogRotatorTest;
+import hudson.tasks.Recorder;
+import hudson.tasks.Shell;
+import hudson.util.OneShotEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import hudson.tasks.LogRotatorTest;
-import hudson.tasks.Recorder;
-import hudson.tasks.Shell;
-import hudson.util.OneShotEvent;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.ClassRule;
@@ -102,7 +101,7 @@ public class AbstractBuildTest {
         public static final String ERROR_MESSAGE = "This publisher fails by design";
         
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
             throw new IOException(ERROR_MESSAGE);
         }
         
@@ -133,7 +132,7 @@ public class AbstractBuildTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println(out);
                 return true;
             }
@@ -277,7 +276,7 @@ public class AbstractBuildTest {
     }
 
     private static class ThrowBuilder extends Builder {
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
             throw new NullPointerException();
         }
         @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
@@ -300,7 +299,7 @@ public class AbstractBuildTest {
             }
 
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 if (build.number == 1) {
                     e1.signal();  // signal that build #1 is in publisher
                 } else if (build.number == 2) {

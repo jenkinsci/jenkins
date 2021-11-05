@@ -24,17 +24,12 @@
 package hudson.node_monitors;
 
 import hudson.Util;
-import hudson.model.Computer;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
-import hudson.triggers.SafeTimerTask;
+import hudson.model.Computer;
+import hudson.model.ComputerSet;
+import hudson.model.Descriptor;
 import hudson.slaves.OfflineCause;
-import jenkins.util.SystemProperties;
-import jenkins.util.Timer;
-
-import net.jcip.annotations.GuardedBy;
+import hudson.triggers.SafeTimerTask;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +38,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import jenkins.util.Timer;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * Convenient base class for common {@link NodeMonitor} implementation

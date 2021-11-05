@@ -24,8 +24,14 @@
 
 package jenkins.security.stapler;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,13 +39,6 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.util.Locale;
-
-import static org.junit.Assert.assertEquals;
 
 @Issue("SECURITY-534")
 public class StaplerDispatchValidatorTest {

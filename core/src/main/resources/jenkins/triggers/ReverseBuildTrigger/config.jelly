@@ -40,4 +40,8 @@ THE SOFTWARE.
         <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
                title="${%Trigger even if the build fails}" value="FAILURE"/>
     </f:entry>
+    <f:entry title="">
+        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='ABORTED'}"
+               title="${%Always trigger, even if the build is aborted}" value="ABORTED"/>
+    </f:entry>
 </j:jelly>

@@ -23,8 +23,11 @@
  */
 package hudson.model;
 
-import java.util.concurrent.TimeUnit;
-import net.sf.json.JSONObject;
+import static java.util.Objects.requireNonNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNoException;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -33,12 +36,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Date;
-
-import static java.util.Objects.requireNonNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeNoException;
+import java.util.concurrent.TimeUnit;
+import net.sf.json.JSONObject;
 import org.junit.Test;
 
 /**
@@ -47,7 +46,7 @@ import org.junit.Test;
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenterTest {
-    @Test public void data() throws Exception {
+    @Test public void data() {
         try {
             doData("https://updates.jenkins.io/update-center.json?version=build");
             doData("https://updates.jenkins.io/stable/update-center.json?version=build");

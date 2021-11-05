@@ -24,6 +24,9 @@
 
 package hudson.cli;
 
+import static java.util.logging.Level.FINE;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -36,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -50,8 +52,6 @@ import org.apache.sshd.common.future.WaitableFuture;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.apache.sshd.common.util.security.SecurityUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Implements SSH connection mode of {@link CLI}.

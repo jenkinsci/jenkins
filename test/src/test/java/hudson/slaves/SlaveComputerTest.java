@@ -23,6 +23,10 @@
  */
 package hudson.slaves;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -43,7 +47,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
-
 
 /**
  * @author suren
@@ -103,6 +106,11 @@ public class SlaveComputerTest {
         // Both listeners should fire and not cause the other not to fire.
         Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
         Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+
+        // We should get the stack trace too.
+        assertThat(nodeA.getComputer().getLog(), allOf(
+                containsString("\tat " + IOExceptionOnOnlineListener.class.getName() + ".onOnline"),
+                containsString("\tat " + RuntimeExceptionOnOnlineListener.class.getName() + ".onOnline")));
     }
 
     @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")
@@ -111,7 +119,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) throws IOException {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOException("Something happened (the listener always throws this exception)");
@@ -125,7 +133,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new RuntimeException("Something happened (the listener always throws this exception)");
@@ -156,10 +164,10 @@ public class SlaveComputerTest {
     @TestExtension(value = "startupShouldFailOnErrorOnlineListener")
     public static final class ErrorOnOnlineListener extends ComputerListener {
 
-        static int onOnlineCount = 0;
+        static volatile int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOError(new Exception("Something happened (the listener always throws this exception)"));

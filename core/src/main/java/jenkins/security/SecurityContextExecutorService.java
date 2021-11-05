@@ -23,12 +23,13 @@
  */
 package jenkins.security;
 
-import jenkins.util.InterceptingExecutorService;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import org.springframework.security.core.context.SecurityContext;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 import static org.springframework.security.core.context.SecurityContextHolder.setContext;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import jenkins.util.InterceptingExecutorService;
+import org.springframework.security.core.context.SecurityContext;
 
 /**
  * Creates a delegating {@link ExecutorService}

@@ -1,12 +1,11 @@
 package hudson.scm;
 
-import hudson.model.AbstractProject;
-import hudson.model.TaskListener;
-import hudson.Launcher;
-import hudson.FilePath;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractProject;
+import hudson.model.TaskListener;
 import java.io.Serializable;
 
 /**

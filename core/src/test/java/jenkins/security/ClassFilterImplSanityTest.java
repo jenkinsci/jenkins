@@ -23,16 +23,16 @@
  */
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import jenkins.util.MemoryReductionUtil;
 import org.apache.commons.io.IOUtils;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 

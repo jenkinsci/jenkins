@@ -24,7 +24,17 @@
  */
 package hudson;
 
+import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
+import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
+import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
+import static java.util.logging.Level.WARNING;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
@@ -33,30 +43,12 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
-import jenkins.YesNoMaybe;
-import jenkins.model.Jenkins;
-import jenkins.security.UpdateSiteWarningsMonitor;
-import jenkins.util.java.JavaUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
@@ -76,15 +68,26 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
-import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
-import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
-import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
-import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
-import static java.util.logging.Level.WARNING;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
+import jenkins.security.UpdateSiteWarningsMonitor;
+import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -110,6 +113,7 @@ import static org.apache.commons.io.FilenameUtils.getBaseName;
  */
 @ExportedBean
 public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
+
     /**
      * A plugin won't be loaded unless his declared dependencies are present and match the required minimal version.
      * This can be set to false to disable the version check (legacy behaviour)
@@ -377,6 +381,56 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return !getDeprecations().isEmpty();
     }
 
+    /**
+     * Inject the specified jar file(s) to the plugins classpath.
+     * <p><strong>Warning:</strong> This is advanced usage that you should not be needed in 99.9% of all cases, any jar insertion
+     * should happen early into the plugins lifecycle to prevent classloading issues in dependent plugins. 
+     * </p><p>
+     * Rather than use this functionality it is to have co-operative behaviour between any consumer of the libraries and load the classes in a separate {@link ClassLoader}.
+     * you can expose third-party libraries from a dynamic location in various ways, such as:
+     * 
+     * <ul>
+     * <li>You could split your plugin into two modules:
+     * <ul>
+     * <li>regular Jenkins plugin code, plus some interface encapsulating access to the lib via a minimal, simplified
+     * API
+     * <li>an implementation of that interface which compiles against a provided static reference copy of the library,
+     * and which is packaged in your plugin as a resource (not in WEB-INF/lib/*.jar)
+     * </ul>
+     * <li>with coordination:
+     * <ul>
+     * <li>dynamically find some JAR(s) on the controller (or perhaps even agent)
+     * <li>find the bridge JAR in your plugin’s resources area
+     * <li>create some {@link URLClassLoader} loading them both, parented to the plugin {@link ClassLoader}
+     * <li>use reflection to load &amp; instantiate the class of the bridge implementation, casting to the interface from
+     * the plugin
+     * </ul>
+     * </ul>
+     * For a concrete example see the <a href=
+     * "https://github.com/jenkinsci/database-plugin/blob/117.va2009e38b882/src/main/java/org/jenkinsci/plugins/database/GenericDatabase.java#L129-L142">database
+     * plugin</a>. *
+     * 
+     * @throws Exception if the File could not be inserted into the classpath for some reason.
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public void injectJarsToClasspath(File... jars) throws Exception {
+        if (classLoader instanceof AntClassLoader) {
+            for (File f : jars) {
+                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
+                ((AntClassLoader) classLoader).addPathComponent(f);
+            }
+        } else if (classLoader instanceof URLClassLoader2) {
+            for (File f : jars) {
+                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
+                ((URLClassLoader2) classLoader).addURL(f.toURI().toURL());
+            }
+        } else {
+            throw new AssertionError("PluginWrapper classloader has changed type, but this code has not been updated accordingly");
+        }
+
+    }
+
     @ExportedBean
     public static final class Dependency {
         @Exported
@@ -640,7 +694,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Generally coming from the {@code java.level} extracted as MANIFEST's metadata with
      * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
      *
-     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.
+     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>
      *
      * @since 2.158
      */
@@ -714,7 +768,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
      * {@link #disable(PluginDisableStrategy)}
      */
-    @Deprecated //see https://issues.jenkins-ci.org/browse/JENKINS-27177
+    @Deprecated //see https://issues.jenkins.io/browse/JENKINS-27177
     public void disable() throws IOException {
         disableWithoutCheck();
     }
@@ -1071,7 +1125,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Get list of implied dependencies.
-     * @since TODO
+     * @since 2.296
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Set<String> getImpliedDependents() {

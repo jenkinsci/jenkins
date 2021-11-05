@@ -6,15 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import jenkins.model.Jenkins;
-import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 import java.util.ArrayList;
-
-import java.util.List;
 import java.util.Collection;
-
+import java.util.List;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -48,7 +46,7 @@ public class ExtensionListTest {
 
 
     @Test
-    public void autoDiscovery() throws Exception {
+    public void autoDiscovery() {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Dog.class));
@@ -57,14 +55,14 @@ public class ExtensionListTest {
 
     @Test
     @WithoutJenkins
-    public void nullJenkinsInstance() throws Exception {
+    public void nullJenkinsInstance() {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(0, list.size());
         assertFalse(list.iterator().hasNext());
     }
 
     @Test
-    public void extensionListView() throws Exception {
+    public void extensionListView() {
         // this is how legacy list like UserNameResolver.LIST gets created.
         List<Animal> LIST = ExtensionListView.createList(Animal.class);
 
@@ -119,7 +117,7 @@ public class ExtensionListTest {
      * Verifies that the automated {@link Descriptor} lookup works.
      */
     @Test
-    public void descriptorLookup() throws Exception {
+    public void descriptorLookup() {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
         DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
@@ -129,7 +127,7 @@ public class ExtensionListTest {
     }
 
     @Test
-    public void fishDiscovery() throws Exception {
+    public void fishDiscovery() {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<>(Fish.class);
 
@@ -158,7 +156,7 @@ public class ExtensionListTest {
     }
 
     @Test
-    public void legacyDescriptorList() throws Exception {
+    public void legacyDescriptorList() {
         // created in a legacy fashion without any tie to ExtensionList
         DescriptorList<Fish> LIST = new DescriptorList<>();
 

@@ -23,12 +23,13 @@
  */
 package hudson.model.listeners;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class ItemListenerTest {
     private StringBuffer events = new StringBuffer();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ItemListener listener = new ItemListener() {
             @Override public void onCreated(Item item) {
                 events.append('C');
@@ -59,7 +60,7 @@ public class ItemListenerTest {
     }
 
     @Test
-    public void onCreatedViaCLI() throws Exception {
+    public void onCreatedViaCLI() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
                 withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes())).
                 invokeWithArgs("testJob");

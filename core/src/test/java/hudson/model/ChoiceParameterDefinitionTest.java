@@ -1,9 +1,5 @@
 package hudson.model;
 
-import hudson.util.FormValidation;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -11,6 +7,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+
+import hudson.util.FormValidation;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
 public class ChoiceParameterDefinitionTest {
     @Test

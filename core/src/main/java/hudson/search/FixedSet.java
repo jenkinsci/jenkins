@@ -26,7 +26,6 @@ package hudson.search;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 
 /**

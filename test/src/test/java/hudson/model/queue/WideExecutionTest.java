@@ -32,15 +32,14 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -57,7 +56,7 @@ public class WideExecutionTest {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
                 @Override
-                public Executable createExecutable() throws IOException {
+                public Executable createExecutable() {
                     return new Executable() {
                         @Override
                         public SubTask getParent() {

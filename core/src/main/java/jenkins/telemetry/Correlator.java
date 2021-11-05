@@ -27,10 +27,9 @@ import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import java.util.UUID;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.UUID;
 
 /**
  * This class stores a UUID identifying this instance for telemetry reporting to allow deduplication or merging of submitted records.

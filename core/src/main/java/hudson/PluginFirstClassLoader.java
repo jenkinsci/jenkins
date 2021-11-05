@@ -27,12 +27,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-
-import jenkins.util.AntWithFindResourceClassLoader;
+import java.util.concurrent.CopyOnWriteArrayList;
+import jenkins.util.AntClassLoader;
 
 /**
  * classLoader which use first /WEB-INF/lib/*.jar and /WEB-INF/classes before core classLoader
@@ -41,14 +40,13 @@ import jenkins.util.AntWithFindResourceClassLoader;
  * @since 1.371
  */
 public class PluginFirstClassLoader
-    extends AntWithFindResourceClassLoader
+    extends AntClassLoader
 {
-
     public PluginFirstClassLoader() {
         super(null, false);
     }
 
-    private List<URL> urls = new ArrayList<>();
+    private List<URL> urls = new CopyOnWriteArrayList<>();
 
     @Override
     public void addPathFiles( Collection<File> paths )
@@ -70,10 +68,10 @@ public class PluginFirstClassLoader
     }
 
     @Override
-    protected Enumeration findResources( String arg0, boolean arg1 )
+    protected Enumeration findResources( String name, boolean skipParent )
         throws IOException
     {
-        return super.findResources( arg0, arg1 );
+        return super.findResources( name, skipParent );
     }
 
     @Override
@@ -84,9 +82,9 @@ public class PluginFirstClassLoader
     }
 
     @Override
-    public URL getResource( String arg0 )
+    public URL getResource( String name )
     {
-        return super.getResource( arg0 );
+        return super.getResource( name );
     }
 
     @Override

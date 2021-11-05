@@ -23,14 +23,13 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Fingerprint;
+import java.util.List;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Plugin-specific additions to fingerprint information.

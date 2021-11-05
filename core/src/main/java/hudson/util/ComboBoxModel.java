@@ -23,19 +23,18 @@
  */
 package hudson.util;
 
+import static java.util.Arrays.asList;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.servlet.ServletException;
 import net.sf.json.JSONArray;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Flavor;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import static java.util.Arrays.asList;
 
 /**
  * Model object for dynamically filed combo box, which is really just {@code ArrayList<String>}

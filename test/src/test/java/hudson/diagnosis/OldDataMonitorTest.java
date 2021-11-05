@@ -24,6 +24,9 @@
 
 package hudson.diagnosis;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -40,8 +43,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import jenkins.model.lazy.BuildReference;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,14 +68,6 @@ public class OldDataMonitorTest {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
-        /*
-        System.err.println(p.getActions());
-        for (Map.Entry<Saveable,OldDataMonitor.VersionRange> entry : odm.getData().entrySet()) {
-            System.err.println(entry.getKey());
-            System.err.println(entry.getValue());
-            System.err.println(entry.getValue().extra);
-        }
-        */
         assertEquals(Collections.singleton(p), odm.getData().keySet());
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
@@ -91,7 +84,7 @@ public class OldDataMonitorTest {
         p._getRuns().purgeCache();
         b = p.getBuildByNumber(1);
         assertEquals(Collections.singleton(b), OldDataMonitor.get(r.jenkins).getData().keySet());
-        WeakReference<?> ref = new WeakReference<Object>(b);
+        WeakReference<?> ref = new WeakReference<>(b);
         b = null;
         MemoryAssert.assertGC(ref, true);
     }

@@ -28,11 +28,9 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import jenkins.model.Jenkins;
-
 
 /**
  * Extension point for adding Captcha Support to User Registration Page {@link CaptchaSupport}.

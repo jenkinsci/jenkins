@@ -26,9 +26,6 @@ package hudson.scm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -38,7 +35,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.Result;
-
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -86,7 +83,7 @@ public class ScmTest {
             public boolean checkout(AbstractBuild<?, ?> build,
                     Launcher launcher, FilePath remoteDir,
                     BuildListener listener, File changeLogFile)
-                    throws IOException, InterruptedException {
+                    throws InterruptedException {
                 throw new InterruptedException();
             }
 

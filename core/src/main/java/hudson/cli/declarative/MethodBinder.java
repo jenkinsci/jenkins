@@ -26,19 +26,18 @@ package hudson.cli.declarative;
 import hudson.cli.CLICommand;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.FieldSetter;
-import org.kohsuke.args4j.spi.Setter;
-import org.kohsuke.args4j.spi.OptionHandler;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Binds method parameters to CLI arguments and parameters via args4j.

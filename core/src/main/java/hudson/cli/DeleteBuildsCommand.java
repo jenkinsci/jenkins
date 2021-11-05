@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Run;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.util.Collection;
-
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -124,7 +123,7 @@ public class AbstractItemTest {
 
     @Test
     @Issue("JENKINS-58571")
-    public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() throws IOException {
+    public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() {
 
         //GIVEN
         NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");

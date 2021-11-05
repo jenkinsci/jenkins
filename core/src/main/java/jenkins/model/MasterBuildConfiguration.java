@@ -25,18 +25,17 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.Node.Mode;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
 
 /**
  * Adds the configuration regarding building on the built-in node.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=500) @Symbol("masterBuild")
+@Extension(ordinal=500) @Symbol({"builtInNode", "masterBuild"})
 public class MasterBuildConfiguration extends GlobalConfiguration {
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
@@ -57,8 +56,8 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
             }
             
             j.setNumExecutors(json.getInt("numExecutors"));
-            if (req.hasParameter("master.mode"))
-                j.setMode(Mode.valueOf(req.getParameter("master.mode")));
+            if (req.hasParameter("builtin.mode"))
+                j.setMode(Mode.valueOf(req.getParameter("builtin.mode")));
             else
                 j.setMode(Mode.NORMAL);
 

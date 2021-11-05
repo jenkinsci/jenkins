@@ -12,11 +12,7 @@
 
   <name>Jenkins cli</name>
   <description>Command line interface for Jenkins</description>
-
-  <properties>
-    <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
-    <findbugs.threshold>Medium</findbugs.threshold>
-  </properties>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <dependencyManagement>
     <dependencies>
@@ -90,7 +86,7 @@
     <dependency>
       <groupId>org.glassfish.tyrus.bundles</groupId>
       <artifactId>tyrus-standalone-client-jdk</artifactId>
-      <version>2.0.0</version>
+      <version>2.0.1</version>
       <optional>true</optional>
     </dependency>
     <dependency>

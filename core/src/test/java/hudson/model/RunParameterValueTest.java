@@ -24,15 +24,16 @@
 
 package hudson.model;
 
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import org.junit.Test;
+
 public class RunParameterValueTest {
     
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test public void robustness() throws Exception {
+    @Test public void robustness() {
         RunParameterValue rpv = new RunParameterValue("whatever", "folder/job#57");
         assertEquals("whatever", rpv.getName());
         assertEquals("folder/job", rpv.getJobName());

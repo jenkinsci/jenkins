@@ -23,14 +23,16 @@
  */
 package hudson.util;
 
-import java.util.Comparator;
 import java.io.Serializable;
+import java.util.Comparator;
 
 /**
  * Case-insensitive string comparator.
  *
+ * @deprecated use {@link String#CASE_INSENSITIVE_ORDER} directly
  * @author Kohsuke Kawaguchi
  */
+@Deprecated
 public final class CaseInsensitiveComparator implements Comparator<String>, Serializable {
     public static final Comparator<String> INSTANCE = new CaseInsensitiveComparator();
 

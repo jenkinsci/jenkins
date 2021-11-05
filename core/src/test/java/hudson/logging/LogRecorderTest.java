@@ -24,6 +24,11 @@
 
 package hudson.logging;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -32,22 +37,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
-@RunWith(PowerMockRunner.class)
 public class LogRecorderTest {
 
     @Issue("JENKINS-17983")
@@ -72,27 +65,24 @@ public class LogRecorderTest {
         assertFalse(matches("", "hudson.model.Hudson", Level.FINE));
     }
 
-    @PrepareForTest(Jenkins.class)
     @Test public void testClearing() throws IOException {
         LogRecorder lr = new LogRecorder("foo");
         LogRecorder.Target t = new LogRecorder.Target("", Level.FINE);
         lr.targets.add(t);
 
-        createMockJenkins();
-        LogRecord record = createLogRecord("jenkins", Level.INFO, "message");
-        lr.handler.publish(record);
-        assertEquals(lr.handler.getView().get(0), record);
-        assertEquals(1, lr.handler.getView().size());
+        Jenkins j = Mockito.mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = Mockito.mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(j);
 
-        lr.doClear();
+            LogRecord record = createLogRecord("jenkins", Level.INFO, "message");
+            lr.handler.publish(record);
+            assertEquals(lr.handler.getView().get(0), record);
+            assertEquals(1, lr.handler.getView().size());
 
-        assertEquals(0, lr.handler.getView().size());
-    }
+            lr.doClear();
 
-    private void createMockJenkins() {
-        mockStatic(Jenkins.class);
-        Jenkins j = mock(Jenkins.class);
-        when(Jenkins.get()).thenReturn(j);
+            assertEquals(0, lr.handler.getView().size());
+        }
     }
 
     @Test public void testSpecificExclusion() {
@@ -153,7 +143,7 @@ public class LogRecorderTest {
     }
 
     @Test
-    public void autocompletionTest() throws Exception {
+    public void autocompletionTest() {
         List<String> loggers = Arrays.asList(
                 "com.company.whatever.Foo", "com.foo.Bar", "com.foo.Baz",
                 "org.example.app.Main", "org.example.app.impl.xml.Parser", "org.example.app.impl.xml.Validator");

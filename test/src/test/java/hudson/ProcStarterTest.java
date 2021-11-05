@@ -23,14 +23,6 @@
  */
 package hudson;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import hudson.Launcher.DecoratedLauncher;
 import hudson.Launcher.ProcStarter;
 import hudson.model.AbstractBuild;
@@ -44,6 +36,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
+import java.io.File;
+import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Contains tests for {@link ProcStarter} class.
@@ -122,7 +120,7 @@ public class ProcStarterTest {
     public static class DecoratedWrapper extends BuildWrapper {
 
         @Override
-        public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
+        public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws Run.RunnerAbortedException {
             final BuildListener l = listener;
             return new DecoratedLauncher(launcher) {
                 @Override
@@ -135,7 +133,7 @@ public class ProcStarterTest {
         }
 
         @Override
-        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) {
             return new Environment() {
             };
         }

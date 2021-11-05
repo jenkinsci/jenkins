@@ -24,23 +24,21 @@
 
 package hudson.model;
 
-import hudson.XmlFile;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import hudson.XmlFile;
+import hudson.tasks.BuildTrigger;
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import hudson.tasks.BuildTrigger;
-import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -98,7 +96,7 @@ public class CauseTest {
 
 
     @Issue("JENKINS-48467")
-    @Test public void userIdCausePrintTest() throws Exception {
+    @Test public void userIdCausePrintTest() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos);
 
@@ -224,6 +222,41 @@ public class CauseTest {
         B result = down.getBuilds().getLastBuild();
 
         return result;
+    }
+
+
+    @Test
+    @Issue("SECURITY-2452")
+    public void basicCauseIsSafe() throws Exception {
+        final FreeStyleProject fs = j.createFreeStyleProject();
+        {
+            final FreeStyleBuild build = j.waitForCompletion(fs.scheduleBuild2(0, new SimpleCause("safe")).get());
+
+            final JenkinsRule.WebClient wc = j.createWebClient();
+            final String content = wc.getPage(build).getWebResponse().getContentAsString();
+            Assert.assertTrue(content.contains("Simple cause: safe"));
+        }
+        {
+            final FreeStyleBuild build = j.waitForCompletion(fs.scheduleBuild2(0, new SimpleCause("<img src=x onerror=alert(1)>")).get());
+
+            final JenkinsRule.WebClient wc = j.createWebClient();
+            final String content = wc.getPage(build).getWebResponse().getContentAsString();
+            Assert.assertFalse(content.contains("Simple cause: <img"));
+            Assert.assertTrue(content.contains("Simple cause: &lt;img"));
+        }
+    }
+
+    public static class SimpleCause extends Cause {
+        private final String description;
+
+        public SimpleCause(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return "Simple cause: " + description;
+        }
     }
 
     public static class CustomBuild extends Build<FullNameChangingProject, CustomBuild> {

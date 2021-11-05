@@ -23,11 +23,11 @@
  */
 package hudson.search;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link SearchIndex} built on a {@link Map}.

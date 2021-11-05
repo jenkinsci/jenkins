@@ -23,6 +23,8 @@
  */
 package jenkins.util;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.cli.FullDuplexHttpStream;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -39,9 +41,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;

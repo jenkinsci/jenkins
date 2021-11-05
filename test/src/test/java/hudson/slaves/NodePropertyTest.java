@@ -10,7 +10,6 @@ import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
@@ -53,7 +52,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
             reconfigured = true;
             return this;
         }

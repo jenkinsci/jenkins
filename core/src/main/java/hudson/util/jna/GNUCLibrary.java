@@ -23,13 +23,13 @@
  */
 package hudson.util.jna;
 
-import com.sun.jna.Library;
-import com.sun.jna.StringArray;
-import com.sun.jna.Pointer;
-import com.sun.jna.Native;
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
 import com.sun.jna.LastErrorException;
+import com.sun.jna.Library;
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.StringArray;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
 import hudson.os.PosixAPI;
@@ -124,5 +124,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    GNUCLibrary LIBC = Native.loadLibrary("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = Native.load("c",GNUCLibrary.class);
 }

@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.model.queue.CauseOfBlockage;
-
 import java.util.Collections;
 import java.util.List;
 

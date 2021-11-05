@@ -23,11 +23,11 @@
  */
 package hudson.util;
 
-import hudson.FilePath;
-import java.io.File;
-import java.io.IOException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import hudson.FilePath;
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -95,7 +95,7 @@ public class DirScannerTest {
         }
     
         @Override
-        public void visit(File f, String relativePath) throws IOException {
+        public void visit(File f, String relativePath) {
             if (relativePath.endsWith(filename)) {
                 found = true;
             }
