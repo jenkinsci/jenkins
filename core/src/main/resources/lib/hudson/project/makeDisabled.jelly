@@ -45,7 +45,7 @@ THE SOFTWARE.
       <div align="right">
         <form method="post" id="disable-project" action="disable">
           <l:hasPermission permission="${it.CONFIGURE}">
-            <f:submit value="${%Disable Project}" secondary="true" class="jenkins-button--red" />
+            <f:submit value="${%Disable Project}" secondary="true" class="jenkins-button--destructive" />
           </l:hasPermission>
         </form>
       </div>

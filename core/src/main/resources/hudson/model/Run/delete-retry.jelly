@@ -9,7 +9,7 @@
             <div class="error">
               ${%Not successful}
             </div>
-            <f:submit name="now" value="${%Retry delete}" secondary="true" class="jenkins-button--red" />
+            <f:submit name="now" value="${%Retry delete}" secondary="true" class="jenkins-button--destructive" />
           </form>
         </td></tr>
         <tr><td>

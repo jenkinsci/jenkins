@@ -193,7 +193,7 @@ THE SOFTWARE.
                             </div>
                           </j:if>
                           <form method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-button jenkins-button--red">
+                              <button class="jenkins-button jenkins-button--destructive">
                                 ${%Uninstall}
                               </button>
                           </form>
