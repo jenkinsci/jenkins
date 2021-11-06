@@ -16,7 +16,7 @@ l.layout(permission: Jenkins.ADMINISTER) {
         }
         p { raw _("msg",my.shortName) }
         f.form(method:"post",action:"doUninstall") {
-            f.submit(value:_("Yes"))
+            f.submit(value:_("Yes"), secondary: true, class: "jenkins-button--red")
         }
     }
 }
