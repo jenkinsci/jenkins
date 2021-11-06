@@ -414,7 +414,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     public void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
         DependencyClassLoader classLoader = findAncestorDependencyClassLoader(depender.classLoader);
         if (classLoader != null) {
-            classLoader.updateTransientDependencies();
+            classLoader.updateTransitiveDependencies();
             LOGGER.log(Level.INFO, "Updated dependency of {0}", depender.getShortName());
         }
     }
@@ -580,9 +580,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         private final PluginManager pluginManager;
 
         /**
-         * Topologically sorted list of transient dependencies. Lazily initialized via double-checked locking.
+         * Topologically sorted list of transitive dependencies. Lazily initialized via double-checked locking.
          */
-        private volatile List<PluginWrapper> transientDependencies;
+        private volatile List<PluginWrapper> transitiveDependencies;
 
         static {
             registerAsParallelCapable();
@@ -595,17 +595,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.pluginManager = pluginManager;
         }
 
-        private void updateTransientDependencies() {
+        private void updateTransitiveDependencies() {
             // This will be recalculated at the next time.
-            transientDependencies = null;
+            transitiveDependencies = null;
         }
 
         private List<PluginWrapper> getTransitiveDependencies() {
-          List<PluginWrapper> localTransientDependencies = transientDependencies;
-          if (localTransientDependencies == null) {
+          List<PluginWrapper> localTransitiveDependencies = transitiveDependencies;
+          if (localTransitiveDependencies == null) {
             synchronized (this) {
-              localTransientDependencies = transientDependencies;
-              if (localTransientDependencies == null) {
+              localTransitiveDependencies = transitiveDependencies;
+              if (localTransitiveDependencies == null) {
                 CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
@@ -629,11 +629,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     throw new AssertionError(e);    // such error should have been reported earlier
                 }
 
-                transientDependencies = localTransientDependencies = cgd.getSorted();
+                transitiveDependencies = localTransitiveDependencies = cgd.getSorted();
               }
             }
           }
-          return localTransientDependencies;
+          return localTransitiveDependencies;
         }
 
         @Override
