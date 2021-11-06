@@ -140,6 +140,7 @@ THE SOFTWARE.
     </div>
     <j:if test="${!empty(items) and !attrs.noAddButton and attrs.enableTopButton}">
       <button type="button" class="jenkins-button repeatable-add repeatable-add-top">
+        <l:ionicon name="add-outline" />
         ${attrs.add?:'%Add'}
       </button>
     </j:if>
@@ -166,6 +167,7 @@ THE SOFTWARE.
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
       <button type="button" class="jenkins-button repeatable-add">
+        <l:ionicon name="add-outline" />
         ${attrs.add?:'%Add'}
       </button>
     </j:if>
