@@ -193,7 +193,9 @@ THE SOFTWARE.
                             </div>
                           </j:if>
                           <form method="post" action="plugin/${p.shortName}/uninstall">
-                              <input class="uninstall" type="submit" value="${%Uninstall}"/>
+                              <button class="jenkins-button jenkins-button--red">
+                                ${%Uninstall}
+                              </button>
                           </form>
                       </j:otherwise>
                     </j:choose>
