@@ -18,6 +18,8 @@
   cursor: pointer;
   min-height: 36px;
   text-shadow: 0 1px 0 var(--background);
+  white-space: nowrap;
+  gap: 0.66ch;
 
   &::before, &::after {
     content: "";
@@ -59,7 +61,6 @@
   svg {
     width: 14px;
     height: 14px;
-    margin-right: 1ch;
   }
 }
 
@@ -125,15 +126,15 @@ each(@variants, {
 
 .jenkins-buttons-row {
   display: flex;
-  
+
   .jenkins-button {
     margin-left: 0!important;
     margin-right: 0.5rem!important;
   }
-  
+
   &--invert {
     justify-content: flex-end;
-    
+
     .jenkins-button {
       margin-left: 0.5rem!important;
       margin-right: 0!important;
