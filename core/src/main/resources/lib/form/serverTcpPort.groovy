@@ -9,38 +9,20 @@ package lib.form
  * port number. The getter method should just expose the port number integer.
  */
 
+int port = instance ? instance[field] : 0
 
-int port = instance?instance[field]:0
-
-def f=namespace(lib.FormTagLib)
+def f = namespace(lib.FormTagLib)
 
 def type = "${field}.type"
-def id   = "${field}Id" // TODO: get rid of this
+def id = "${field}Id" // TODO: get rid of this
 
-div(name:field) {
-    label {
-        f.radio(name: type, value:"fixed",
-                checked:port>0, onclick:"\$('${id}').disabled=false")
-        text(_("Fixed"))
-        text(" : ")
-    }
-    input(type:"number", "class":"number", name:"value", id:id,
-            value: port>0 ? port : null, disabled: port>0 ? null : "true",
-            min:0, max:65535, step:1)
-
-    raw("&nbsp;") ////////////////////////////
-
-    label {
-        f.radio(name:type, value:"random",
-                checked:port==0, onclick:"\$('${id}').disabled=true")
-        text(_("Random"))
+div(name: field) {
+    f.radio(name: type, value: "fixed", title: _("Fixed"), id: "radio-tcp-fixed", checked: port > 0) {
+        input(type: "number", class: "jenkins-input", name: "value", id: id, placeholder: _("Port"),
+                value: port > 0 ? port : null, min: 0, max: 65535, step: 1)
     }
 
-    raw("&nbsp;") ////////////////////////////
+    f.radio(name: type, value: "random", title: _("Random"), id: "radio-tcp-random", checked: port == 0)
 
-    label {
-        f.radio(name:type, value:"disable",
-                checked:port==-1, onclick:"\$('${id}').disabled=true")
-        text(_("Disable"))
-    }
+    f.radio(name: type, value: "disable", title: _("Disable"), id: "radio-tcp-disable", checked: port == -1)
 }

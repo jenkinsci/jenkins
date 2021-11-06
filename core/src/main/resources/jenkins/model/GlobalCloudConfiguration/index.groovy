@@ -17,10 +17,12 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
         }
     }
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-health-40to59 icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
+        div(class: "jenkins-app-bar") {
+            div(class: "jenkins-app-bar__content") {
+                h1 {
+                    text(my.displayName)
+                }
+            }
         }
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
