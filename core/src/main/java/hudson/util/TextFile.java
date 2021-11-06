@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import edu.umd.cs.findbugs.annotations.CreatesObligation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import java.io.BufferedReader;
@@ -38,7 +37,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.stream.Stream;
-import jenkins.util.io.LinesStream;
 
 /**
  * Represents a text file.
@@ -80,20 +78,6 @@ public class TextFile {
     }
 
     /**
-     * @throws RuntimeException in the case of {@link IOException} in {@link #linesStream()}
-     * @deprecated This method does not properly propagate errors and may lead to file descriptor leaks
-     *             if the collection is not fully iterated. Use {@link #lines2()} instead.
-     */
-    @Deprecated
-    public @NonNull Iterable<String> lines() {
-        try {
-            return linesStream();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
      * Read all lines from the file as a {@link Stream}. Bytes from the file are decoded into
      * characters using the {@link StandardCharsets#UTF_8 UTF-8} {@link Charset charset}. If timely
      * disposal of file system resources is required, the try-with-resources construct should be
@@ -104,24 +88,8 @@ public class TextFile {
      * @throws IOException if an I/O error occurs opening the file
      */
     @NonNull
-    public Stream<String> lines2() throws IOException {
+    public Stream<String> lines() throws IOException {
         return Files.lines(Util.fileToPath(file));
-    }
-
-    /**
-     * Creates a new {@link jenkins.util.io.LinesStream} of the file.
-     * <p>
-     * Note: The caller is responsible for closing the returned
-     * {@code LinesStream}.
-     * @throws IOException if the file cannot be converted to a
-     * {@link java.nio.file.Path} or if the file cannot be opened for reading
-     * @since 2.111
-     * @deprecated use {@link #lines2}
-     */
-    @CreatesObligation
-    @Deprecated
-    public @NonNull LinesStream linesStream() throws IOException {
-        return new LinesStream(Util.fileToPath(file));
     }
 
     /**
