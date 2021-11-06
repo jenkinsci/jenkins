@@ -1174,13 +1174,21 @@ div.to-be-removed { display: none; }
   max-width: 100%;
 }
 
+.radioBlock-container {
+  margin-bottom: 0.66rem;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
 .optionalBlock-container > .form-container,
 .radioBlock-container > .form-container,
 .dropdownList-container {
   position: relative;
-  margin-top: 10px;
   padding-left: 32px;
   transition: var(--standard-transition);
+  margin-top: 0.66rem;
 
   &::after {
     content: "";
@@ -1193,6 +1201,10 @@ div.to-be-removed { display: none; }
     border-radius: 2px;
     transition: var(--standard-transition);
   }
+
+  &:empty {
+    display: none;
+  }
 }
 
 .form-container--hidden {
@@ -1200,6 +1212,7 @@ div.to-be-removed { display: none; }
   margin-top: 0!important;
   opacity: 0!important;
   max-height: 0!important;
+  height: 0!important;
 }
 
 .row-set-end { display: none; }

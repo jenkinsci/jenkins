@@ -13,9 +13,12 @@ def st=namespace("jelly:stapler")
 
 l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-secure icon-xlg')
-            text(my.displayName)
+        div(class: "jenkins-app-bar") {
+            div(class: "jenkins-app-bar__content") {
+                h1 {
+                    text(my.displayName)
+                }
+            }
         }
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
@@ -32,12 +35,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
-                div(style:"width:100%") {
-                    f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
-                }
-            }
+                f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
 
-            div(style:"width:100%") {
                 f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
