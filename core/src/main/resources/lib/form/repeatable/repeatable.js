@@ -169,8 +169,19 @@ Behaviour.specify("BUTTON.repeatable-add", 'repeatable', 0, function(e) {
         });
         e = null; // avoid memory leak
     });
+Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
+    e.addEventListener('click', function(e) {
+        repeatableSupport.onAdd(e.target);
+    });
+    e = null; // avoid memory leak
+});
 
 Behaviour.specify("BUTTON.repeatable-delete", 'repeatable', 0, function(e) {
+    e.addEventListener('click', function(e) {
+        repeatableSupport.onDelete(e.target);
+    });
+});
+Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
     e.addEventListener('click', function(e) {
         repeatableSupport.onDelete(e.target);
     });
