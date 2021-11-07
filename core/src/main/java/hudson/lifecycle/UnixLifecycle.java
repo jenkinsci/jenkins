@@ -80,8 +80,9 @@ public class UnixLifecycle extends Lifecycle {
             LIBC.fcntl(i, F_SETFD,flags| FD_CLOEXEC);
         }
 
-        // exec to self
+        // exec to self, except for a possible daemon-supplied prefix (JENKINS-67075):
         String exe = args.get(0);
+        exe = exe.replaceFirst("^(.*): /", "/");
         LIBC.execvp(exe, new StringArray(args.toArray(new String[0])));
         throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
