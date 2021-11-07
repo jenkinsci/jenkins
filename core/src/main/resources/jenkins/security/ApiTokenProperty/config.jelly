@@ -130,8 +130,8 @@ THE SOFTWARE.
                             <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"/>
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value"><!--will be filled by javascript--></span>
-                            <span class="jenkins-button token-save">
-                                <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
+                            <span class="token-save">
+                                <button class="jenkins-button" type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
                                     ${%GenerateNewToken}
                                 </button>
                             </span>

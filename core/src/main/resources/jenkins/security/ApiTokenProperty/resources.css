@@ -95,9 +95,14 @@
 .token-list .token-list-new-item .token-cancel.hidden-button{
     display: none;
 }
-.token-list .token-list-new-item .token-cancel .yui-button{
+.token-list .token-list-new-item .token-cancel .jenkins-button{
     vertical-align: baseline;
 }
+
+.token-cancel {
+    margin-left: 0.3rem;
+}
+
 .token-list .token-list-new-item .token-name{
     width: 40%; 
     display: inline-block;
@@ -119,7 +124,7 @@
     width: 18px;
     vertical-align: middle;
 }
-#jenkins .token-list .token-list-new-item .copy-button .yui-button{
+#jenkins .token-list .token-list-new-item .copy-button .jenkins-button{
     vertical-align: middle;
 }
 #jenkins .token-list .token-list-new-item .copy-button button{
