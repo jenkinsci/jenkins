@@ -122,7 +122,7 @@ public class HeteroListTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
-        assertThat(resultString, not(containsString("<")));
+        assertThat(resultString, not(containsString("<img")));
     }
 
     // only possible after a partial fix
@@ -184,7 +184,7 @@ public class HeteroListTest {
         @SuppressWarnings("unchecked")
         List<String> resultList = (List<String>) result;
         for (String str : resultList) {
-            assertThat(str, not(containsString("<")));
+            assertThat(str, not(containsString("<img")));
         }
         
         // "delete" then "add" makes us coming back in scenario covered by xssUsingToolInstallationRepeatableAdd

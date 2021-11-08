@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
@@ -115,11 +116,11 @@ public class ExpandableTextboxTest {
         assertNotEquals("hacked", p.getTitleText());
     }
     
-    private HtmlButtonInput getExpandButton(HtmlPage page){
-        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
+    private HtmlButton getExpandButton(HtmlPage page){
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
         // the first one is the text input
-        assertEquals(2, buttons.size());
-        return (HtmlButtonInput) buttons.get(1);
+        assertEquals(1, buttons.size());
+        return (HtmlButton) buttons.get(0);
     }
     
     @TestExtension("noInjectionArePossible")
@@ -144,7 +145,7 @@ public class ExpandableTextboxTest {
         
         @WebMethod(name = "submit")
         public HttpResponse doSubmit(StaplerRequest request) {
-            return HttpResponses.plainText("method:" + request.getMethod());
+            return HttpResponses.text("method:" + request.getMethod());
         }
     }
 
@@ -161,7 +162,7 @@ public class ExpandableTextboxTest {
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlInput xssInput = configurePage.getElementByName("_.xss");
-        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlElement expandButton = (HtmlElement) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted

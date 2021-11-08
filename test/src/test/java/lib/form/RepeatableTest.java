@@ -46,6 +46,7 @@ import hudson.model.RootAction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -617,7 +618,9 @@ public class RepeatableTest {
      * @return list of buttons
      */
     private List<?> getButtonsList(HtmlForm form, String buttonCaption) {
-        return form.getByXPath("//button[text() = '" + buttonCaption + "']");
+        return form.getElementsByTagName("button").stream()
+                .filter(button -> button.getTextContent().trim().equals(buttonCaption))
+                .collect(Collectors.toList());
     }
 
     @TestExtension

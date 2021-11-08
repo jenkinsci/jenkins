@@ -114,7 +114,7 @@ public class SecretTextareaTest {
     }
 
     private static void clickSecretUpdateButton(HtmlForm configForm) throws IOException {
-        configForm.getOneHtmlElementByAttribute("input", "class", "secret-update-btn").click();
+        configForm.getOneHtmlElementByAttribute("button", "class", "jenkins-button secret-update-btn").click();
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {

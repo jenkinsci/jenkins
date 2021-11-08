@@ -50,7 +50,7 @@ if (my.isFixingActive()) {
 form(method: "post", action: "${rootURL}/${my.url}/scan", name:"rekey") {
     f.submit(name: "background", value:_("Re-key in background now"))
     if (my.isScanOnBoot()) {
-        input(type: "button", class: "yui-button", disabled: "true", value:_("Re-keying currently scheduled during the next startup"))
+        button(class: "jenkins-button", disabled: "true", value:_("Re-keying currently scheduled during the next startup"))
     } else {
         f.submit(name: "schedule", value:_("Schedule a re-key during the next startup"))
     }
