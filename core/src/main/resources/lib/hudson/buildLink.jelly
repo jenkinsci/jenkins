@@ -40,21 +40,21 @@ THE SOFTWARE.
   </st:documentation>
   <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
   <j:choose>
-	  <j:when test="${job==null}">
-	    ${jobName_}#<!-- -->${number}
-	  </j:when>
-	  <j:otherwise>
-	    <j:set var="r" value="${job.getBuildByNumber(number)}" />
-	    <j:choose>
-	      <j:when test="${r==null}">
-	        <a href="${rootURL}/${job.url}" class="model-link">${jobName}</a>
+    <j:when test="${job==null}">
+      ${jobName_}#<!-- -->${number}
+    </j:when>
+    <j:otherwise>
+      <j:set var="r" value="${job.getBuildByNumber(number)}" />
+      <j:choose>
+        <j:when test="${r==null}">
+          <a href="${rootURL}/${job.url}" class="model-link">${jobName}</a>
           #<!-- -->${number}
-	      </j:when>
-	      <j:otherwise>
-	        <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
-	          <l:icon alt="${r.iconColor.description}" class="${r.buildStatusIconClassName} icon-sm"/>${jobName_}#<!-- -->${number}</a>
-	      </j:otherwise>
-	    </j:choose>
-	  </j:otherwise>
-	</j:choose>
+        </j:when>
+        <j:otherwise>
+          <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
+          <l:icon alt="${r.iconColor.description}" class="${r.buildStatusIconClassName} icon-sm"/><span class="jenkins-icon-adjacent">${jobName_}#<!-- -->${number}</span></a>
+        </j:otherwise>
+      </j:choose>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
