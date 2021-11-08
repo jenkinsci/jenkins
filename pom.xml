@@ -91,7 +91,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.12-rc2971.4c94acca8a7f</remoting.version>
+    <remoting.version>4.12-rc2973.8313af85b933</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
