@@ -32,7 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Obtains the structured form data from {@link StaplerRequest}.
- * See http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
+ * See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
  *
  * @author Kohsuke Kawaguchi
  */

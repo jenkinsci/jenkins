@@ -23,7 +23,9 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
         }
 
         p()
-        div(class:"behavior-loading", _("LOADING"))
+        div(class:"behavior-loading") {
+            l.spinner(text: _("LOADING"))
+        }
 
         f.form(method:"post",name:"config",action:"configure") {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->

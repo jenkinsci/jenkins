@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.319</revision>
+    <revision>2.321</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -91,7 +91,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.11</remoting.version>
+    <remoting.version>4.11.1</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -260,6 +260,7 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
             <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
+            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
@@ -418,7 +419,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.0.1</version>
+              <version>9.1</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->

@@ -251,6 +251,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return this;
     }
 
+    @Override
+    public Queue.Executable getParentExecutable() {
+        AbstractBuild<?, ?> rootBuild = getRootBuild();
+        return rootBuild != this ? rootBuild : null;
+    }
+
     /**
      * Used to render the side panel "Back to project" link.
      *

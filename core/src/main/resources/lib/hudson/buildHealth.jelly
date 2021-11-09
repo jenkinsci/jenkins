@@ -38,9 +38,6 @@ THE SOFTWARE.
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
         <x:attribute name="class">healthReport</x:attribute>
-        <x:attribute name="onmouseover">this.className='healthReport hover';return true;
-        </x:attribute>
-        <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
         <j:if test="${buildHealth!=null}">
             <j:if test="${iconSizeClass == null}">
               <j:choose>
