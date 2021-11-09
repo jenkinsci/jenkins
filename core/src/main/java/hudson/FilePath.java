@@ -2831,14 +2831,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
     private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
-        baseDir = baseDir.getCanonicalFile();
 
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
             TarArchiveEntry te;
             while ((te = t.getNextTarEntry()) != null) {
-                File f = new File(baseDir, te.getName()).getCanonicalFile();
-                if (!f.toPath().startsWith(baseDir.toPath())) {
+                File f = new File(baseDir, te.getName());
+                if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
                     throw new IOException(
                             "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
                 }

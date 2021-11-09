@@ -11,8 +11,8 @@
     </st:documentation>
 
     <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getIonicon">
-        <j:arg value="${name}"/>
-        <j:arg value="${title}"/>
+        <j:arg value="${attrs.name}"/>
+        <j:arg value="${attrs.title ?: ''}"/>
     </j:invokeStatic>
     <j:out value="${icon}" />
 </j:jelly>
