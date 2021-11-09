@@ -2258,7 +2258,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     void trimLabels(Node... nodes) {
         Set<LabelAtom> includedLabels = new HashSet<>();
         for (Node n : nodes) {
-            includedLabels.addAll(n.getAssignedLabels());
+            if (n != null) {
+                includedLabels.addAll(n.getAssignedLabels());
+            }
         }
         Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
