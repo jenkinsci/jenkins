@@ -2239,16 +2239,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * but we also call this periodically to self-heal any data out-of-sync issue.
      */
     /*package*/ void trimLabels() {
-        Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
-        this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
-        for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
-            Label l = itr.next();
-            if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
-                resetLabel(l);
-            } else {
-                itr.remove();
-            }
-        }
+        trimLabels((Set) null);
     }
 
     /**
@@ -2257,16 +2248,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     void trimLabels(Node... nodes) {
         Set<LabelAtom> includedLabels = new HashSet<>();
-        for (Node n : nodes) {
-            if (n != null) {
-                includedLabels.addAll(n.getAssignedLabels());
-            }
-        }
+        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        trimLabels(includedLabels);
+    }
+
+    /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param includedLabels the labels taken as reference to update labels. If null, all labels are considered.
+     */
+    private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
         Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
-        for (Iterator<Label> itr = this.labels.values().iterator(); itr.hasNext();) {
+        for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (includedLabels.contains(l)) {
+            if (includedLabels == null || includedLabels.contains(l)) {
                 if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
                     resetLabel(l);
                 } else {
