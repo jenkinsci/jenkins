@@ -1,0 +1,45 @@
+@unit: 0.4rem;
+
+each(range(5), {
+	.jenkins-\!-margin-@{value} {
+		margin: @value * @unit;
+	}
+
+	.jenkins-\!-margin-top-@{value} {
+		margin-top: @value * @unit;
+	}
+
+	.jenkins-\!-margin-left-@{value} {
+		margin-left: @value * @unit;
+	}
+
+	.jenkins-\!-margin-bottom-@{value} {
+		margin-bottom: @value * @unit;
+	}
+
+	.jenkins-\!-margin-right-@{value} {
+		margin-right: @value * @unit;
+	}
+});
+
+each(range(5), {
+	.jenkins-\!-padding-@{value} {
+		padding: @value * @unit;
+	}
+
+	.jenkins-\!-padding-top-@{value} {
+		padding-top: @value * @unit;
+	}
+
+	.jenkins-\!-padding-left-@{value} {
+		padding-left: @value * @unit;
+	}
+
+	.jenkins-\!-padding-bottom-@{value} {
+		padding-bottom: @value * @unit;
+	}
+
+	.jenkins-\!-padding-right-@{value} {
+		padding-right: @value * @unit;
+	}
+});
