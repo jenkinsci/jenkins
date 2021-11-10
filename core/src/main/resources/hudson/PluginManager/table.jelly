@@ -95,7 +95,7 @@ THE SOFTWARE.
                                data-compat-warning="${!p.isCompatible(cache)}" />
                     </td>
                   </l:isAdmin>
-                  <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
+                  <td class="pane details" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                     <div>
                       <a href="${p.wiki}" rel="noopener noreferrer" target="_blank"><st:out value="${p.displayName}"/></a>
                     </div>
