@@ -1037,16 +1037,6 @@ table.fingerprint-in-build td {
   border-top: none;
 }
 
-#plugins.bigtable {
-  // Add this fallback because tables with hidden rows will
-  // not have a bottom border
-  border-bottom: 1px solid var(--bigtable-row-border-color);
-}
-
-#pluginsAdv tr:hover {
-  background-color: inherit;
-}
-
 #plugins tr.already-upgraded {
   background-color: var(--plugin-manager-bg-color-already-upgraded);
 }
@@ -1280,16 +1270,6 @@ textarea.rich-editor {
     margin-top: 0.5em;
     padding-left: 2em;
     color: #f00;
-}
-
-#pluginsAdv {
-  padding: 0.5rem;
-}
-
-#pluginsAdv section {
-  &:not(:last-child) {
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ========================= progress bar ========================= */

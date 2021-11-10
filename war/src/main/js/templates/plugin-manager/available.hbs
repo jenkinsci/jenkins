@@ -1,13 +1,13 @@
 {{#each plugins}}
     <tr data-plugin-id="{{ this.name }}" data-plugin-version="{{ this.version }}">
         {{#if @root/admin }}
-            <td class="pane">
+            <td>
                 <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}">
             </td>
         {{/if}}
-        <td class="pane">
+        <td>
             <div>
-                <a href="{{ this.wiki }}" target="_blank" rel="noopener noreferrer">
+                <a href="{{ this.wiki }}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
                     {{ this.displayName }}
                 </a>
             </div>
@@ -65,10 +65,10 @@
                 </div>
             {{/if}}
         </td>
-        <td class="pane">
+        <td>
             {{ this.version }}
         </td>
-        <td class="pane">
+        <td>
             {{#if this.releaseTimestamp }}
                 <time datetime="{{ this.releaseTimestamp.iso8601 }}">
                     {{ this.releaseTimestamp.displayValue }}
