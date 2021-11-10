@@ -37,33 +37,34 @@ THE SOFTWARE.
     <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
-        <x:attribute name="class">healthReport</x:attribute>
+        <x:attribute name="class">jenkins-table__cell--tight jenkins-table__icon healthReport</x:attribute>
         <j:if test="${buildHealth!=null}">
-            <j:if test="${iconSizeClass == null}">
-              <j:choose>
-                <j:when  test="${iconSize == null}">
-                  <j:set var="iconSizeClass" value="icon-sm"/>
+            <div class="jenkins-table__cell__button-wrapper">
+                <j:if test="${iconSizeClass == null}">
+                  <j:choose>
+                    <j:when  test="${iconSize == null}">
+                      <j:set var="iconSizeClass" value="icon-sm"/>
+                    </j:when>
+                    <j:otherwise>
+                      <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}"/>
+                    </j:otherwise>
+                  </j:choose>
+                </j:if>
+                <j:choose>
+                <j:when test="${!empty(healthReports)}">
+                    <a class="build-health-link jenkins-table__button" href="${empty(link)?'#':link}" style="${attrs.style}">
+                       <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" ariaHidden="true"/>
+                    </a>
                 </j:when>
-                <j:otherwise>
-                  <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}"/>
-                </j:otherwise>
-              </j:choose>
-            </j:if>
-            <j:choose>
-              <j:when  test="${!empty(healthReports)}">
-                <a class="build-health-link" href="${empty(link)?'#':link}" 
-                    style="${attrs.style}">
-                    <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%"/>
-                </a>
-              </j:when>
-              <j:otherwise>
-                 <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%" />
-               </j:otherwise>
-             </j:choose>  
+                    <j:otherwise>
+                        <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" tooltip="${buildHealth.score}%" />
+                    </j:otherwise>
+                </j:choose>
+            </div>
         </j:if>
         <j:if test="${!empty(healthReports)}">
             <div class="jenkins-tooltip healthReportDetails">
-                <table class="bigtable stripped-odd">
+                <table class="jenkins-table">
                     <thead>
                         <tr>
                             <th align="left">W</th>
@@ -77,7 +78,7 @@ THE SOFTWARE.
                                 <td align="left">
                                     <l:icon class="${rpt.iconClassName} icon-sm" />
                                 </td>
-                                <td>${rpt.localizableDescription}</td>
+                                <td align="left">${rpt.localizableDescription}</td>
                                 <td align="right">${rpt.score}</td>
                             </tr>
                         </j:forEach>

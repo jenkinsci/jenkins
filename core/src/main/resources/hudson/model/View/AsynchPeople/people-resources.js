@@ -1,7 +1,6 @@
 function display(data) {
     var p = document.getElementById('people');
     var rootURL = document.head.getAttribute('data-rooturl');
-    var iconSize = document.getElementById("asynch-people-description").getAttribute("data-iconsize");
     for (var x = 0; data.length > x; x++) {
         var e = data[x];
         var id = 'person-' + e.id;
@@ -17,14 +16,12 @@ function display(data) {
         }
 
         var d = document.createElement('td');
-        var a = document.createElement('a');
-        a.href = rootURL + "/" + e.url;
-        a.className = 'model-link inside';
-        var i = document.createElement('img');
-        i.src = e.avatar;
-        i.className = 'icon' + iconSize;
-        a.appendChild(i);
-        d.appendChild(a);
+        var wrapper = document.createElement('div');
+        wrapper.className = 'jenkins-table__cell__button-wrapper';
+        d.className = 'jenkins-table__cell--tight jenkins-table__icon';
+        var icon = document.getElementById('person-circle-outline')
+        wrapper.innerHTML = icon.children[0].outerHTML;
+        d.appendChild(wrapper);
         r.appendChild(d);
 
         d = document.createElement('td');
@@ -50,7 +47,7 @@ function display(data) {
         if (e.projectUrl != null) {
             a = document.createElement('a');
             a.href = rootURL + "/" + e.projectUrl;
-            a.className = 'model-link inside';
+            a.className = 'jenkins-table__link model-link inside';
             a.appendChild(document.createTextNode(e.projectFullDisplayName));
             d.appendChild(a);
         }

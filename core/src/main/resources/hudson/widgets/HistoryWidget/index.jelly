@@ -29,10 +29,16 @@ THE SOFTWARE.
     <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
       <j:arg value="hudson.model.Job"/>
     </j:invoke>
-    <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-      <div style="float:right;margin-left:1rem;"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
-      <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
-    </j:if>
+
+    <div class="jenkins-pane__header--build-history">
+      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
+        <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
+      </j:if>
+      ${it.displayName}
+      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
+        <a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>
+      </j:if>
+    </div>
   </j:parse>
 
   <j:parse var="paneFooter">
@@ -66,7 +72,7 @@ THE SOFTWARE.
       </div>
     </div>
 
-    <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
+    <l:pane width="3" title="${h.runScript(paneTitle)}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
       <tr class="build-search-row">
         <td>
           <div class="jenkins-search">

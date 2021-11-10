@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
+    <st:documentation>
+        Provides ionicon icons
+        <st:attribute name="name" use="required">
+            The name of the icon
+        </st:attribute>
+        <st:attribute name="title">
+            Title to use for the icon
+        </st:attribute>
+    </st:documentation>
+
+    <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getIonicon">
+        <j:arg value="${attrs.name}"/>
+        <j:arg value="${attrs.title ?: ''}"/>
+    </j:invokeStatic>
+    <j:out value="${icon}" />
+</j:jelly>
