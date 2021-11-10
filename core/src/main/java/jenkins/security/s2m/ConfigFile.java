@@ -55,7 +55,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
         COL result = create();
 
         if (exists()) {
-            try (Stream<String> stream = lines2()) {
+            try (Stream<String> stream = lines()) {
                 stream.forEach(line -> {
                     if (line.startsWith("#")) return;   // comment
                     T r = parse(line);

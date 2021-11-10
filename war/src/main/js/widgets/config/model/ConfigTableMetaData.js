@@ -61,7 +61,7 @@ function fromConfigTable(configTable) {
       } else {
         tr = td = 'div';
       }
-      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><'+td+' colspan="4"><div class="section-header"><a class="section-anchor">#</a>General</div></+'+td+'></'+tr+'>');
+      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><'+td+' colspan="4"><div class="jenkins-section__header"><a class="section-anchor">#</a>General</div></+'+td+'></'+tr+'>');
       firstRow.before(generalRow);
       firstRow = configTableMetadata.getFirstRow();
       var newArray = $.makeArray(topRows);

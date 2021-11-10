@@ -275,7 +275,7 @@ var Sortable = (function() {
         },
         none: {
             id: "none",
-            text: "&nbsp;&nbsp;&nbsp;"
+            text: ""
         },
         lnkRef: null
     };
