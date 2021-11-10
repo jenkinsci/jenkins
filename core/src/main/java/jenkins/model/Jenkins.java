@@ -2262,7 +2262,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             if (includedLabels == null || includedLabels.contains(l)) {
-                if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
+                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
                     resetLabel(l);
                 } else {
                     itr.remove();
