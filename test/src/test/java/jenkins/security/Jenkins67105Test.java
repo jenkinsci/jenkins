@@ -23,7 +23,7 @@ public class Jenkins67105Test {
     public void arrayListMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
-        p.getBuildersList().add(new GuavaBuilder(new ArrayListMultiMapCallable()));
+        p.getBuildersList().add(new GuavaBuilder(new ArrayListMultimapCallable()));
         r.buildAndAssertSuccess(p);
     }
 
@@ -32,7 +32,7 @@ public class Jenkins67105Test {
     public void hashMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
-        p.getBuildersList().add(new GuavaBuilder(new HashMultiMapCallable()));
+        p.getBuildersList().add(new GuavaBuilder(new HashMultimapCallable()));
         r.buildAndAssertSuccess(p);
     }
 
@@ -51,7 +51,7 @@ public class Jenkins67105Test {
         }
     }
 
-    private static class ArrayListMultiMapCallable
+    private static class ArrayListMultimapCallable
             extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
         @Override
         public Multimap<?, ?> call() throws RuntimeException {
@@ -59,7 +59,7 @@ public class Jenkins67105Test {
         }
     }
 
-    private static class HashMultiMapCallable
+    private static class HashMultimapCallable
             extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
         @Override
         public Multimap<?, ?> call() throws RuntimeException {
