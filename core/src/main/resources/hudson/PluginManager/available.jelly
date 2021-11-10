@@ -46,6 +46,7 @@ THE SOFTWARE.
 		</l:app-bar>
 
 		<st:include page="sidepanel.jelly"/>
+
 		<l:main-panel>
 			<script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 

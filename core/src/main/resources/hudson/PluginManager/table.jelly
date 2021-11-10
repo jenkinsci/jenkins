@@ -102,7 +102,8 @@ THE SOFTWARE.
 												   data-compat-warning="${!p.isCompatible(cache)}"/>
 										</td>
 									</l:isAdmin>
-									<td data="${h.xmlEscape(p.displayName)}"
+									<td class="details"
+										data="${h.xmlEscape(p.displayName)}"
 										data-id="${h.xmlEscape(p.name+':'+p.version)}">
 										<div>
 											<a href="${p.wiki}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">
@@ -245,7 +246,8 @@ THE SOFTWARE.
 											<l:isAdmin>
 												<td><!-- install --></td>
 											</l:isAdmin>
-											<td data="${h.xmlEscape(p.displayName)}"
+											<td class="details"
+												data="${h.xmlEscape(p.displayName)}"
 												data-id="${h.xmlEscape(p.name+':'+p.version)}">
 												<div>
 													<a href="${p.wiki}" rel="noopener noreferrer" target="_blank">
