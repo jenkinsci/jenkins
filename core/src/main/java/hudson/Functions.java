@@ -2285,18 +2285,4 @@ public class Functions {
             return true;
         }
     }
-    
-    @Restricted(NoExternalUse.class)
-    @CheckForNull
-    public static Header header() {
-        List<Header> headers = ExtensionList.lookup(Header.class).stream().filter(header -> header.isHeaderEnabled()).collect(Collectors.toList());
-        if (headers.size() > 0) {
-            if (headers.size() > 1) {
-                LOGGER.warning("More than one configured header. This should not happen. Serving the Jenkins default header and please review");
-            } else {
-                return headers.get(0);
-            }
-        }
-        return new JenkinsHeader();
-    }
 }
