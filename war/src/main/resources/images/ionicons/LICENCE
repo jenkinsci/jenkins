@@ -1,7 +1,6 @@
-<!--
-The MIT License
+The MIT License (MIT)
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+Copyright (c) 2015-present Ionic (http://ionic.io/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
--->
-
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-    <th class="jenkins-table__cell--tight" tooltip="${%Status of the last build}">${%S}</th>
-</j:jelly>

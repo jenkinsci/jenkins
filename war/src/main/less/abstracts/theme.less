@@ -13,13 +13,13 @@
   // Color palette
   --white: #fff;
   --very-light-grey: #f8f8f8;
-  --light-grey: #eaeff2;
+  --light-grey: #f2f2f2;
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
   --black: #333;
 
   // branding
-  --primary: #0b6aa2;
+  --primary: #024cb6;
   --secondary: #4d545d;
   --success: #138347;
   --danger: #cc0003;
@@ -169,6 +169,14 @@
   --configure-job-help-area-bg-color: var(--medium-translucent);
 
   // Table
+  --table-background: var(--panel-header-bg-color);
+  --table-header-foreground: black;
+  --table-body-background: white;
+  --table-body-foreground: black;
+  --table-border-radius: 10px;
+  --table-body-radius: 6px;
+
+  // Deprecated
   --even-row-color: var(--very-light-grey);
   --bigtable-border-width: var(--pane-border-width);
   --bigtable-header-bg: var(--dark-grey);
@@ -216,8 +224,20 @@
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
-  // TabBar links
-  --tab-link-border-radius: 4px;
+  // Tab bar
+  --tabs-background: var(--panel-header-bg-color);
+  --tabs-item-background: transparent;
+  --tabs-item-foreground: var(--text-color);
+  --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
+  --tabs-item-foreground--hover: var(--text-color);
+  --tabs-item-background--active: rgba(0, 0, 0, 0.1);
+  --tabs-item-foreground--active: var(--text-color);
+  --tabs-item-background--selected: white;
+  --tabs-item-foreground--selected: var(--link-color);
+  --tabs-border-radius: calc((10px + 2rem) / 2);
+
+  // Deprecated
+  --tab-link-border-radius: 10px;
   --tab-link-border-width: 2px;
   --tab-link-padding-x: 0.75rem;
   --tab-link-padding-y: 0.375rem;
@@ -300,4 +320,8 @@
   // Call to action
   --call-to-action-link-color: #000;
   --call-to-action-text-color: var(--alert-info-text-color);
+
+  // Colors
+  --green: #1c9146;
+  --red: #df001c;
 }

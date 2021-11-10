@@ -56,7 +56,6 @@ THE SOFTWARE.
 
   <t:setIconSize/>
   <div class="dashboard">
-
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
@@ -66,16 +65,19 @@ THE SOFTWARE.
       <div id="projectstatus-tabBar">
         <d:invokeBody/>
       </div>
+
       <!-- project list -->
-      <table id="projectstatus" class="sortable pane bigtable stripped-odd ${iconSize == '16x16' ? 'bigtable--compact' : ''}">
-        <tr class="header">
-          <j:forEach var="col" items="${columnExtensions}">
-            <st:include page="columnHeader.jelly" it="${col}" />
-          </j:forEach>
-          <th>
-            <st:nbsp/>
-          </th>
-        </tr>
+      <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
+        <thead>
+          <tr>
+            <j:forEach var="col" items="${columnExtensions}">
+              <st:include page="columnHeader.jelly" it="${col}" />
+            </j:forEach>
+            <th>
+              <st:nbsp/>
+            </th>
+          </tr>
+        </thead>
 
         <j:forEach var="v" items="${attrs.views}">
           <t:projectViewNested />

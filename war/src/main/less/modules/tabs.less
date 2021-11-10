@@ -3,17 +3,16 @@
 }
 
 .tabBar {
-  overflow: auto;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-}
+  background: var(--tabs-background);
+  border-radius: var(--tabs-border-radius);
+  padding: 2.5px;
+  margin-bottom: 2rem;
 
-.tabBar .tab {
-  float: left;
-
-  &:not(:first-child) {
-    margin-left: 0.2rem;
+  .tab {
+    float: left;
   }
 }
 
@@ -21,51 +20,27 @@
   position: relative;
   display: block;
   min-width: 3rem;
-  border: solid var(--tab-link-border-width) var(--tab-link-border-color);
   text-decoration: none;
-  padding: var(--tab-link-padding-y) var(--tab-link-padding-x);
-  border-top-left-radius: var(--tab-link-border-radius);
-  border-top-right-radius: var(--tab-link-border-radius);
-  font-weight: var(--tab-link-font-weight);
-  color: var(--tab-link-text-color);
-  background: var(--tab-link-bg);
-  border-color: var(--tab-link-border-color);
+  margin: 2.5px;
+  padding: 0.4rem 1.2rem;
+  border-radius: 100px;
+  background: var(--tabs-item-background);
+  color: var(--tabs-item-foreground);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.75rem;
+  transition: 0.2s ease;
 
-  &:hover,
-  &:focus {
-    color: var(--tab-link-text-color--hover);
-    background: var(--tab-link-bg--hover);
-    border-color: var(--tab-link-border-color--hover);
+  &:hover {
+    background: var(--tabs-item-background--hover);
+    color: var(--tabs-item-foreground--hover);
   }
 
-  &:focus {
-    border-color: var(--focus);
+  &:active, &:focus {
     outline: none;
-  }
-
-  &:active {
-    color: var(--tab-link-text-color--active);
-    background: var(--tab-link-bg--active);
-    border-color: var(--tab-link-border-color--active);
-  }
-}
-
-.tabBar .tab a.addTab {
-  color: var(--link-color);
-  border: none;
-  padding: 0.25rem;
-  border-radius: var(--tab-link-border-radius);
-  min-width: 0;
-
-  &:hover,
-  &:focus {
-    color: var(--link-color--hover);
-    background: var(--tab-link-bg--hover);
-  }
-
-  &:active {
-    color: var(--link-color--active);
-    background: var(--tab-link-bg--active);
+    background: var(--tabs-item-background--active);
+    color: var(--tabs-item-foreground--active);
   }
 }
 
@@ -79,9 +54,8 @@
 }
 
 .tabBar .tab.active a {
-  border: var(--tab-link-border-width) solid var(--tab-link-checked-border-color);
-  background: var(--tab-link-checked-bg);
-  color: var(--tab-link-checked-text-color);
+  background: var(--tabs-item-background--selected);
+  color: var(--tabs-item-foreground--selected);
   z-index: 2;
 }
 

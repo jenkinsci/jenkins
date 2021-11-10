@@ -37,52 +37,53 @@ THE SOFTWARE.
       Additional CSS styles to apply.
     </st:attribute>
   </st:documentation>
-  <td data="${it.ordinal()}">
-    <j:if test="${attrs.it!=null}">
-      <j:set var="iconClassName" value="${it.iconClassName}"/>
-      <j:if test="${iconClassName == null}">
-        <j:set var="iconClassName" value="${icons.toNormalizedIconNameClass(it.image)}"/>
-      </j:if>
-      <!-- convert legacy @iconSize specification to @iconSizeClass -->
-      <j:if test="${iconSizeClass==null}">
+  <td class="jenkins-table__cell--tight jenkins-table__icon" data="${it.ordinal()}">
+    <div class="jenkins-table__cell__button-wrapper">
+      <j:if test="${attrs.it!=null}">
+        <j:set var="iconClassName" value="${it.iconClassName}"/>
+        <j:if test="${iconClassName == null}">
+          <j:set var="iconClassName" value="${icons.toNormalizedIconNameClass(it.image)}"/>
+        </j:if>
+        <!-- convert legacy @iconSize specification to @iconSizeClass -->
+        <j:if test="${iconSizeClass==null}">
+          <j:choose>
+            <j:when test="${attrs.iconSize!=null}">
+              <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
+            </j:when>
+            <j:when test="${iconSize!=null}">
+              <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}" />
+            </j:when>
+          </j:choose>
+        </j:if>
+
         <j:choose>
-          <j:when test="${attrs.iconSize!=null}">
-            <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
+          <j:when test="${iconClassName != null}">
+            <l:icon class="${iconClassName} icon-lg" alt="${it.description}" tooltip="${it.description}" />
           </j:when>
-          <j:when test="${iconSize!=null}">
-            <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}" />
-          </j:when>
+          <j:otherwise>
+            <!-- "it" is not a hudson.model.BallColor.  Let's try figure out the icon from its URL.  -->
+            <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
+            <j:if test="${iconUrl.startsWith(imagesURL)}">
+              <!-- Normalize the icon URL  -->
+              <j:set var="iconUrl" value="${iconUrl.substring(imagesURL.length() + 1)}"/>
+            </j:if>
+
+            <!-- See if we can get an Icon def from the URL  -->
+            <j:set var="icon" value="${icons.getIconByUrl(iconUrl)}"/>
+            <j:choose>
+              <j:when test="${icon != null}">
+                <!-- We found the Icon def -->
+                <l:icon class="${icon.classSpec}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
+              </j:when>
+              <j:otherwise>
+                <!-- We don't seem to have this icon in the IconSet... fallback again... -->
+                <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
+                <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
+              </j:otherwise>
+            </j:choose>
+          </j:otherwise>
         </j:choose>
       </j:if>
-
-      <j:choose>
-        <j:when test="${iconClassName != null}">
-          <l:icon class="${iconClassName} ${iconSizeClass}" alt="${it.description}"
-               tooltip="${it.description}" style="${attrs.style}" />
-        </j:when>
-        <j:otherwise>
-          <!-- "it" is not a hudson.model.BallColor.  Let's try figure out the icon from its URL.  -->
-          <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-          <j:if test="${iconUrl.startsWith(imagesURL)}">
-            <!-- Normalize the icon URL  -->
-            <j:set var="iconUrl" value="${iconUrl.substring(imagesURL.length() + 1)}"/>
-          </j:if>
-
-          <!-- See if we can get an Icon def from the URL  -->
-          <j:set var="icon" value="${icons.getIconByUrl(iconUrl)}"/>
-          <j:choose>
-            <j:when test="${icon != null}">
-              <!-- We found the Icon def -->
-              <l:icon class="${icon.classSpec}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
-            </j:when>
-            <j:otherwise>
-              <!-- We don't seem to have this icon in the IconSet... fallback again... -->
-              <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-              <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
-            </j:otherwise>
-          </j:choose>
-        </j:otherwise>
-      </j:choose>
-    </j:if>
+    </div>
   </td>
 </j:jelly>
