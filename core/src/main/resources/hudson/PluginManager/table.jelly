@@ -111,7 +111,7 @@ THE SOFTWARE.
 											</a>
 										</div>
 										<j:if test="${!p.categories.isEmpty()}">
-											<div class="plugin-manager__categories">
+											<div class="app-plugin-manager__categories">
 												<j:forEach var="label" items="${p.categories}">
 													<j:if test="${!it.isMetaLabel(label)}">
 														<a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
@@ -256,7 +256,7 @@ THE SOFTWARE.
 													<span class="unavailable-label">${%unavailable}</span>
 												</div>
 												<j:if test="${!p.categories.isEmpty()}">
-													<div class="plugin-manager__categories">
+													<div class="app-plugin-manager__categories">
 														<j:forEach var="label" items="${p.categories}">
 															<j:if test="${!it.isMetaLabel(label)}">
 																<a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
