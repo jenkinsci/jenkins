@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:parse var="paneTitle">
     <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>
     <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
@@ -73,16 +73,12 @@ THE SOFTWARE.
             <input type="search" placeholder="${%find}" class="jenkins-search__input" />
             <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
           </div>
-          <j:if test="${page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information">
-              No builds
-            </div>
-          </j:if>
-          <j:if test="${!page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information" style="display: none;">
-              No builds
-            </div>
-          </j:if>
+          <x:element name="div">
+            <x:attribute name="id">no-builds</x:attribute>
+            <x:attribute name="class">jenkins-pane__information</x:attribute>
+            <x:attribute name="style">${page.runs.isEmpty() ? "" : "display: none;"}</x:attribute>
+            ${%No builds}
+          </x:element>
         </td>
       </tr>
 

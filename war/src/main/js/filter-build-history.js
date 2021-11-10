@@ -1,8 +1,8 @@
 import debounce from 'lodash/debounce'
 
 const buildHistoryContainer = document.getElementById("buildHistory")
-const pageSearchInputContainer = buildHistoryContainer.querySelectorAll('.build-search-row .jenkins-search')[0]
-const pageSearchInput = buildHistoryContainer.querySelectorAll('.build-search-row input')[0]
+const pageSearchInputContainer = buildHistoryContainer.querySelector('.build-search-row .jenkins-search')
+const pageSearchInput = buildHistoryContainer.querySelector('.build-search-row input')
 const buildHistoryPage = document.getElementById("buildHistoryPage")
 const properties = document.getElementById("properties")
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax")
@@ -27,12 +27,19 @@ function updateBuilds() {
                 const dataTable = getDataTable(buildHistoryContainer)
                 const rows = dataTable.rows
 
+                // Check there are no existing rows (except the search bar) before showing the no builds banner
+                if (rows.length <= 1 && rsp.responseText === "<table class=\"pane\"></table>") {
+                    noBuildsBanner.style.display = "block"
+                } else {
+                    noBuildsBanner.style.display = "none"
+                }
+
                 //delete rows with transitive data
                 let firstBuildRow = 0
                 if (rows[firstBuildRow].classList.contains('build-search-row')) {
                     firstBuildRow++
                 }
-                while (rows.length > 0 && rows[firstBuildRow].classList.contains('transitive')) {
+                while (rows.length > 1 && rows[firstBuildRow].classList.contains('transitive')) {
                     Element.remove(rows[firstBuildRow])
                 }
 
@@ -51,7 +58,7 @@ function updateBuilds() {
                     } else {
                         // The data table has no rows.  In this case, we just add all new rows directly to the
                         // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-                        dataTable.appendChild(newRows[0])
+                        dataTable.getElementsByTagName("tbody")[0].appendChild(newRows[0])
                     }
                 }
 
@@ -400,9 +407,6 @@ function checkAllRowCellOverflows() {
 
 function loadPage(params, focusOnSearch) {
     const searchString = pageSearchInput.value
-
-    console.log(nextBuild)
-    console.log(ajaxUrl)
 
     if (searchString !== '') {
         if (params === undefined) {
