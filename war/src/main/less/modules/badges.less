@@ -1,62 +1,40 @@
+
 .am-badge,
 .plugin-manager__category-label:link,
 .plugin-manager__category-label:visited {
-	position: relative;
-	display: inline-block;
-	color: var(--text-color);
-	border-radius: 6px;
-	font-size: 0.75rem;
-	font-weight: 500;
-	padding: 0.1rem 0.5rem;
-	margin: 0 0.6rem 0 0;
-	text-decoration: none;
-	text-align: center;
-	white-space: nowrap;
-	vertical-align: baseline;
-	transition: var(--standard-transition);
-	z-index: 0;
-
-	&::before, &::after {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		z-index: -1;
-		opacity: 0.05;
-		border-radius: inherit;
-		transition: 0.2s ease;
-	}
-
-	&::before {
-		background: currentColor;
-	}
-
-	&::after {
-		box-shadow: 0 0 0 10px transparent;
-	}
+    display: inline-block;
+    border: 1px solid #ccc;
+    border: 1px solid var(--plugin-manager-category-link-border-color);
+    background-color: #fbfbfb;
+    background-color: var(--plugin-manager-category-link-bg-color);
+    color: #333;
+    color: var(--plugin-manager-category-text-color);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0 0.5rem;
+    margin: 0 0.25rem 0.25rem 0;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    transition: all 0.15s ease-in-out;
 }
 
 .plugin-manager__category-label:link,
 .plugin-manager__category-label:visited {
-	&:hover {
-		&::before {
-			opacity: 0.1125;
-		}
-	}
-
-	&:active, &:focus {
-		&::before {
-			opacity: 0.15;
-		}
-
-		&::after {
-			box-shadow: 0 0 0 5px currentColor;
-		}
-	}
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: #f2f2f2;
+    background-color: var(--plugin-manager-category-link-bg-color--hover);
+    border-color:  #333;
+    border-color:  var(--plugin-manager-category-link-border-color--hover);
+    color: #333;
+    color: var(--plugin-manager-category-link-color--hover);
+  }
 }
 
 .am-badge {
-	display: inline;
+  display: inline;
 }

@@ -86,9 +86,8 @@ THE SOFTWARE.
 					<j:otherwise>
 						<thead>
 							<tr>
-								<th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
 								<th initialSortDir="down">${%Name}</th>
-								<th width="1">${%Version}</th>
+								<th>${%Enabled}</th>
 								<l:isAdmin>
 									<th width="1">${%Previously installed version}</th>
 									<th width="1">${%Uninstall}</th>
@@ -101,19 +100,17 @@ THE SOFTWARE.
 									class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}"
 									data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
 									<j:set var="state" value="${p.enabled?'true':null}"/>
-									<td class="center enable" data="${state}">
-										<input type="checkbox" checked="${state}" onclick="flip(event)"
-											   url="plugin/${p.shortName}"
-											   disabled="${readOnlyMode ? 'true' : null}"
-											   original="${p.active?'true':'false'}"/>
-									</td>
 									<td class="details">
 										<div class="plugin-name success-plugin">
 											<a href="${p.url}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
 												${p.updateInfo.displayName?:p.displayName}
+												<span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
+													<span class="jenkins-visually-hidden">${%Version}</span>
+													${p.version}
+												</span>
 											</a>
 										</div>
-										<div class="excerpt">
+										<div class="excerpt jenkins-!-margin-top-1">
 											<j:set var="indexPage" value="${p.indexPage.toString()}"/>
 											<j:set var="excerpt"
 												   value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
@@ -155,15 +152,16 @@ THE SOFTWARE.
 											</div>
 										</j:if>
 										<j:if test="${it.hasAdoptThisPluginLabel(p)}">
-											<div class="alert alert-warning">
+											<div class="alert alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
 												${%adoptThisPlugin}
 											</div>
 										</j:if>
 									</td>
-									<td style="white-space:normal">
-										<a href="plugin/${p.shortName}/thirdPartyLicenses" class="jenkins-table__link">
-											${p.version}
-										</a>
+									<td class="center enable" data="${state}">
+										<input type="checkbox" checked="${state}" onclick="flip(event)"
+											   url="plugin/${p.shortName}"
+											   disabled="${readOnlyMode ? 'true' : null}"
+											   original="${p.active?'true':'false'}"/>
 									</td>
 									<l:isAdmin>
 										<td>

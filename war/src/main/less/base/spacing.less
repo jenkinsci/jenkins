@@ -1,45 +1,45 @@
 @unit: 0.4rem;
 
-each(range(5), {
+each(range(0, 5), {
 	.jenkins-\!-margin-@{value} {
-		margin: @value * @unit;
+		margin: @value * @unit!important;
 	}
 
 	.jenkins-\!-margin-top-@{value} {
-		margin-top: @value * @unit;
+		margin-top: @value * @unit!important;
 	}
 
 	.jenkins-\!-margin-left-@{value} {
-		margin-left: @value * @unit;
+		margin-left: @value * @unit!important;
 	}
 
 	.jenkins-\!-margin-bottom-@{value} {
-		margin-bottom: @value * @unit;
+		margin-bottom: @value * @unit!important;
 	}
 
 	.jenkins-\!-margin-right-@{value} {
-		margin-right: @value * @unit;
+		margin-right: @value * @unit!important;
 	}
 });
 
-each(range(5), {
+each(range(0, 5), {
 	.jenkins-\!-padding-@{value} {
-		padding: @value * @unit;
+		padding: @value * @unit!important;
 	}
 
 	.jenkins-\!-padding-top-@{value} {
-		padding-top: @value * @unit;
+		padding-top: @value * @unit!important;
 	}
 
 	.jenkins-\!-padding-left-@{value} {
-		padding-left: @value * @unit;
+		padding-left: @value * @unit!important;
 	}
 
 	.jenkins-\!-padding-bottom-@{value} {
-		padding-bottom: @value * @unit;
+		padding-bottom: @value * @unit!important;
 	}
 
 	.jenkins-\!-padding-right-@{value} {
-		padding-right: @value * @unit;
+		padding-right: @value * @unit!important;
 	}
 });
