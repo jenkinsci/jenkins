@@ -26,7 +26,5 @@
         </st:attribute>
     </st:documentation>
 	<j:invokeStatic var="header" className="jenkins.views.JenkinsHeader" method="get"/>
-	<st:include it="${header}" page="preHeader.jelly"/>
 	<st:include it="${header}" page="headerContent.jelly"/>
-	<st:include it="${header}" page="postHeader.jelly"/>
 </j:jelly>
