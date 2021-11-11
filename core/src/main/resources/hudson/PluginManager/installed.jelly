@@ -158,10 +158,13 @@ THE SOFTWARE.
 										</j:if>
 									</td>
 									<td class="center enable" data="${state}">
-										<input type="checkbox" checked="${state}" onclick="flip(event)"
-											   url="plugin/${p.shortName}"
-											   disabled="${readOnlyMode ? 'true' : null}"
-											   original="${p.active?'true':'false'}"/>
+										<span class="jenkins-toggle-switch">
+											<input type="checkbox" checked="${state}" onclick="flip(event)"
+												   url="plugin/${p.shortName}"
+												   disabled="${readOnlyMode ? 'true' : null}"
+												   original="${p.active?'true':'false'}"/>
+											<label class="attach-previous"></label>
+										</span>
 									</td>
 									<l:isAdmin>
 										<td>
@@ -226,7 +229,13 @@ THE SOFTWARE.
 							<j:forEach var="p" items="${it.failedPlugins}">
 								<tr class="hoverback">
 									<td class="center enable">
-										<input type="checkbox" disabled="disabled"/>
+										<span class="jenkins-toggle-switch">
+											<input type="checkbox" checked="${state}" onclick="flip(event)"
+												   url="plugin/${p.shortName}"
+												   disabled="${readOnlyMode ? 'true' : null}"
+												   original="${p.active?'true':'false'}"/>
+											<label class="attach-previous"></label>
+										</span>
 									</td>
 									<td>
 										<j:if test="${p.pluginWrapper != null}">
