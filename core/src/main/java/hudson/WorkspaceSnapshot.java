@@ -23,10 +23,9 @@
  */
 package hudson;
 
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-
 import java.io.IOException;
 
 /**
@@ -47,15 +46,18 @@ public abstract class WorkspaceSnapshot implements Action {
      */
     public abstract void restoreTo(AbstractBuild<?,?> owner, FilePath dst, TaskListener listener) throws IOException, InterruptedException;
 
+    @Override
     public String getIconFileName() {
         // by default, hide from the UI
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return "Workspace";
     }
 
+    @Override
     public String getUrlName() {
         return "workspace";
     }

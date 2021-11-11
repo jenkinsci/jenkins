@@ -6,14 +6,6 @@
 package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.kohsuke.MetaInfServices;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +13,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -31,6 +22,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 /**
@@ -42,7 +40,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 public class CrumbFilter implements Filter {
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
-     * (and different implementations indeed do this differently --- See HUDSON-3878),
+     * (and different implementations indeed do this differently --- See JENKINS-3878),
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
@@ -60,6 +58,7 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
@@ -111,6 +110,7 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         CrumbIssuer crumbIssuer = getCrumbIssuer();
         if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
@@ -145,7 +145,7 @@ public class CrumbFilter implements Filter {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.log(level, "Found invalid crumb {0}. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script", crumb);
+                    LOGGER.log(level, "Found invalid crumb {0}. If you are calling this URL with a script, please use the API Token instead. More information: https://www.jenkins.io/redirect/crumb-cannot-be-used-for-script", crumb);
                 }
             }
 

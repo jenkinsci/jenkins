@@ -26,15 +26,13 @@ package hudson.node_monitors;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
-import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
+import jenkins.security.MasterToSlaveCallable;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -56,7 +54,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         protected Map<Computer, Data> monitor() throws InterruptedException {
             Result<Data> base = monitorDetailed();
             Map<Computer, Data> monitoringData = base.getMonitoringData();
-            for (Entry<Computer, Data> e : monitoringData.entrySet()) {
+            for (Map.Entry<Computer, Data> e : monitoringData.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
                 if (base.getSkipped().contains(c)) {
@@ -99,6 +97,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             this.cur = cur;
         }
 
+        @Override
         public Data call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Data(cur,0);
@@ -119,6 +118,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             this.cur = cur;
         }
 
+        @Override
         public Step3 call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Step3(cur,start);
@@ -138,7 +138,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
         private Object readResolve() {
             long end = System.currentTimeMillis();
-            return new Data(cur,(end-start));
+            return new Data(cur, end - start);
         }
 
         private static final long serialVersionUID = 1L;
@@ -199,12 +199,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
          */
         @Override
         public String toString() {
-//            StringBuilder buf = new StringBuilder();
-//            for (long l : past5) {
-//                if(buf.length()>0)  buf.append(',');
-//                buf.append(l);
-//            }
-//            return buf.toString();
             int fc = failureCount();
             if(fc>0)
                 return Messages.ResponseTimeMonitor_TimeOut(fc);

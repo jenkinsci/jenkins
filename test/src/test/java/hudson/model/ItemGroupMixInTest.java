@@ -24,6 +24,14 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -38,17 +46,14 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,23 +63,13 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
 public class ItemGroupMixInTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Issue("JENKINS-20951")
     @LocalData
-    @Test public void xmlFileReadCannotResolveClassException() throws Exception {
+    @Test public void xmlFileReadCannotResolveClassException() {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
         assertNotNull(d);
         Collection<TopLevelItem> items = d.getItems();
@@ -126,7 +121,7 @@ public class ItemGroupMixInTest {
   @LocalData
   @Issue("JENKINS-22811")
   @Test
-  public void xmlFileReadExceptionOnLoad() throws Exception {
+  public void xmlFileReadExceptionOnLoad() {
     MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
@@ -235,7 +230,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProject_checkGoodName() throws Failure, IOException {
+  public void createProject_checkGoodName() throws Failure {
     final String badName = "calvin@jenkins";
 
     Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
@@ -244,7 +239,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProjectFromXML_checkGoodName() throws Failure, IOException {
+  public void createProjectFromXML_checkGoodName() throws Failure {
     final String badName = "calvin@jenkins";
 
     final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -288,13 +283,9 @@ public class ItemGroupMixInTest {
     req.setAdditionalHeader("Content-Type", "application/xml");
     req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-    try {
-      wc.getPage(req);
-      fail("Should have returned failure.");
-    } catch (FailingHttpStatusCodeException e) {
-      // This really shouldn't return 500, but that's what it does now.
-      assertThat(e.getStatusCode(), equalTo(500));
-    }
+    FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+    // This really shouldn't return 500, but that's what it does now.
+    assertThat(e.getStatusCode(), equalTo(500));
 
     OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
     Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();

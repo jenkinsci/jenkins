@@ -1,5 +1,8 @@
 package hudson.model.queue;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -7,19 +10,14 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.ResourceList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BuildKeepsRunningWhenFaultySubTasksTest {
     @Rule
@@ -47,16 +45,20 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
 
-                public Queue.Executable createExecutable() throws IOException {
+                @Override
+                public Queue.Executable createExecutable() {
                     return new Queue.Executable() {
+                        @Override
                         public SubTask getParent() {
                             return outer;
                         }
 
+                        @Override
                         public void run() {
                             throw new ArrayIndexOutOfBoundsException(ERROR_MESSAGE);
                         }
 
+                        @Override
                         public long getEstimatedDuration() {
                             return 0;
                         }

@@ -40,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -81,7 +82,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
- * Start with <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+CLI+commands">this document</a>
+ * Start with <a href="https://www.jenkins.io/doc/developer/cli/writing-cli-commands/">this document</a>
  * to get the general idea of CLI.
  *
  * <ul>
@@ -205,21 +206,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      Connected to the stderr of the CLI client.
      * @return
      *      Exit code from the CLI command execution
-     *
-     *      <p>
-     *      Jenkins standard exit codes from CLI:
-     *      0 means everything went well.
-     *      1 means further unspecified exception is thrown while performing the command.
-     *      2 means CmdLineException is thrown while performing the command.
-     *      3 means IllegalArgumentException is thrown while performing the command.
-     *      4 mean IllegalStateException is thrown while performing the command.
-     *      5 means AbortException is thrown while performing the command.
-     *      6 means AccessDeniedException is thrown while performing the command.
-     *      7 means BadCredentialsException is thrown while performing the command.
-     *      8-15 are reserved for future usage
-     *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
-     *
-     *      <p>
+     *      <table>
+     *      <caption>Jenkins standard exit codes from CLI</caption>
+     *      <tr><th>Code</th><th>Definition</th></tr>
+     *      <tr><td>0</td><td>everything went well.</td></tr>
+     *      <tr><td>1</td><td>further unspecified exception is thrown while performing the command.</td></tr>
+     *      <tr><td>2</td><td>{@link CmdLineException} is thrown while performing the command.</td></tr>
+     *      <tr><td>3</td><td>{@link IllegalArgumentException} is thrown while performing the command.</td></tr>
+     *      <tr><td>4</td><td>{@link IllegalStateException} is thrown while performing the command.</td></tr>
+     *      <tr><td>5</td><td>{@link AbortException} is thrown while performing the command.</td></tr>
+     *      <tr><td>6</td><td>{@link AccessDeniedException} is thrown while performing the command.</td></tr>
+     *      <tr><td>7</td><td>{@link BadCredentialsException} is thrown while performing the command.</td></tr>
+     *      <tr><td>8-15</td><td>are reserved for future usage.</td></tr>
+     *      <tr><td>16+</td><td>a custom CLI exit error code (meaning defined by the CLI command itself)</td></tr>
+     *      </table>
      *      Note: For details - see JENKINS-32273
      */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
@@ -313,7 +313,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     @Deprecated
     public Channel checkChannel() throws AbortException {
-        throw new AbortException("This command is requesting the -remoting mode which is no longer supported. See https://jenkins.io/redirect/cli-command-requires-channel");
+        throw new AbortException("This command is requesting the -remoting mode which is no longer supported. See https://www.jenkins.io/redirect/cli-command-requires-channel");
     }
 
     /**
@@ -481,9 +481,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected CLICommand createClone() {
         try {
-            return getClass().newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new AssertionError(e);
+            return getClass().getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -539,7 +539,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j!=null) {// only when running on the master
+        if (j != null) { // only when running on the controller
             cls.put(j.getPluginManager().uberClassLoader);
 
             ResourceNameIterator servicesIter =

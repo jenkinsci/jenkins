@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.util.VersionNumber;
-
 import java.io.File;
 import java.util.Locale;
 

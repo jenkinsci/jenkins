@@ -23,9 +23,8 @@
  */
 package hudson.model;
 
-import hudson.util.DescriptorList;
 import hudson.Extension;
-
+import hudson.util.DescriptorList;
 import java.util.List;
 
 /**

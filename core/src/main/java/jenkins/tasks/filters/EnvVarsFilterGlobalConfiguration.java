@@ -27,6 +27,8 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
+import java.io.IOException;
+import java.util.List;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -35,9 +37,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Configuration of the filter rules that are applied globally,

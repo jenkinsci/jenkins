@@ -16,6 +16,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.AssertionFailedError;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
@@ -23,12 +28,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -155,8 +154,8 @@ public class JenkinsLocationConfigurationTest {
     @Test
     @Issue("SECURITY-1471")
     public void cannotInjectJavaScriptUsingRootUrl_inLabelAbsoluteLink() throws Exception {
-        String masterLabel = "master-node";
-        j.jenkins.setLabelString(masterLabel);
+        String builtInLabel = "builtin-node";
+        j.jenkins.setLabelString(builtInLabel);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
@@ -167,7 +166,7 @@ public class JenkinsLocationConfigurationTest {
         wc.setAlertHandler((page, s) -> alertAppeared.set(true));
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(Label.get(masterLabel));
+        p.setAssignedLabel(Label.get(builtInLabel));
 
         HtmlPage projectConfigurePage = wc.getPage(p, "/configure");
 

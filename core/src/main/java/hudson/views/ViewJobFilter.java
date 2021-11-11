@@ -27,11 +27,10 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * Each ViewJobFilter contributes to or removes from the list of Jobs for a view.
@@ -47,6 +46,7 @@ public abstract class ViewJobFilter implements ExtensionPoint, Describable<ViewJ
         return Jenkins.get().getDescriptorList(ViewJobFilter.class);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
 	public Descriptor<ViewJobFilter> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());

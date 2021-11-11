@@ -25,10 +25,10 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
-import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -56,6 +56,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         return FreeStyleBuild.class;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -82,6 +83,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
             return Messages.FreeStyleProject_DisplayName();
         }
 
+        @Override
         public FreeStyleProject newInstance(ItemGroup parent, String name) {
             return new FreeStyleProject(parent,name);
         }

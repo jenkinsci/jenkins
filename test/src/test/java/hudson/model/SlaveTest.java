@@ -23,7 +23,20 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
+
 import com.gargoylesoftware.htmlunit.Page;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.util.XmlSlurper;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
@@ -36,7 +49,6 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.util.FormValidation;
-import static hudson.util.FormValidation.Kind.WARNING;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,19 +56,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -121,9 +121,9 @@ public class SlaveTest {
         DumbSlave.DescriptorImpl d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class);
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("c:\\"));
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("/tmp"));
-        assertEquals(WARNING, d.doCheckRemoteFS("relative/path").kind);
-        assertEquals(WARNING, d.doCheckRemoteFS("/net/foo/bar/zot").kind);
-        assertEquals(WARNING, d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("relative/path").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("/net/foo/bar/zot").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind);
     }
 
     @Test

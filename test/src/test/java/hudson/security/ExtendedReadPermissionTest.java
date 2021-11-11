@@ -1,5 +1,7 @@
 package hudson.security;
 
+import static org.junit.Assert.assertNull;
+
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -7,7 +9,6 @@ import hudson.model.Item;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -45,7 +46,7 @@ public class ExtendedReadPermissionTest {
             grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().to("charlie"));
     }
 
-    private void setPermissionEnabled(boolean enabled) throws Exception {
+    private void setPermissionEnabled(boolean enabled) {
         Item.EXTENDED_READ.setEnabled(enabled);
     }
 

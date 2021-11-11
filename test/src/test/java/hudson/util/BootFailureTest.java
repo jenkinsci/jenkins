@@ -1,5 +1,10 @@
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
@@ -16,11 +21,6 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,7 +46,7 @@ public class BootFailureTest {
 
     static class CustomRule extends JenkinsRule {
         @Override
-        public void before() throws Throwable {
+        public void before() {
             env = new TestEnvironment(testDescription);
             env.pin();
             // don't let Jenkins start automatically
@@ -71,7 +71,7 @@ public class BootFailureTest {
             ServletContext ws = createWebServer((context, server) -> {
                 NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
                 // future-proof
-                Assert.notNull(noListenerConfiguration);
+                Assert.notNull(noListenerConfiguration, "Value must not be null");
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
                     context.addBean(new AbstractLifeCycle() {

@@ -23,10 +23,9 @@
  */
 package hudson.triggers;
 
+import hudson.Extension;
 import hudson.model.Item;
 import hudson.util.DescriptorList;
-import hudson.Extension;
-
 import java.util.List;
 
 /**

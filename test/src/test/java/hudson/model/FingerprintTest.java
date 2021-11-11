@@ -23,9 +23,24 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.security.ACL;
@@ -36,7 +51,6 @@ import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SidACL;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Fingerprinter;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -45,42 +59,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.CreateFileBuilder;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-
 
 //TODO: Refactoring: Tests should be exchanged with FingerprinterTest somehow
 /**
@@ -411,6 +409,26 @@ public class FingerprintTest {
         // could also be reached using static/<anything>/
         Page page2 = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + fp.getHashString() + "/")));
         assertEquals(200, page2.getWebResponse().getStatusCode());
+    }
+
+    @Test
+    @Issue("JENKINS-65611")
+    public void canModifyFacets() {
+        Fingerprint fingerprint = new Fingerprint(new Fingerprint.BuildPtr("foo", 3),
+                "stuff&more.jar", Util.fromHexString(SOME_MD5));
+        TestFacet testFacet = new TestFacet(fingerprint, 0, "test");
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        assertTrue(fingerprint.getFacets().contains(testFacet));
+        fingerprint.getFacets().remove(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        Iterator<FingerprintFacet> itr = fingerprint.getFacets().iterator();
+        itr.next();
+        itr.remove();
+        assertThat(fingerprint.getFacets().size(), is(0));
     }
 
     @Test

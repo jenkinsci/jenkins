@@ -23,17 +23,40 @@
  */
 package lib.form;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Computer;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.RootAction;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -46,22 +69,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.tasks.SimpleBuildStep;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -73,9 +85,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.security.core.Authentication;
 
 public class PasswordTest {
@@ -624,7 +633,7 @@ public class PasswordTest {
         }
 
         final MockAuthorizationStrategy a = new MockAuthorizationStrategy();
-        a.grant(Jenkins.READ, Job.READ, Job.EXTENDED_READ).everywhere().toEveryone();
+        a.grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().toEveryone();
         j.jenkins.setAuthorizationStrategy(a);
 
         /* Now go to the page without Item/Configure and expect asterisks */
@@ -704,7 +713,7 @@ public class PasswordTest {
 
         {
             wc.login(READONLY);
-            HtmlPage page = wc.goTo("computer/(master)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
             String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
             assertThat(value, is("********"));
@@ -712,7 +721,7 @@ public class PasswordTest {
 
         {
             wc.login(ADMIN);
-            HtmlPage page = wc.goTo("computer/(master)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
             String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
             assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));

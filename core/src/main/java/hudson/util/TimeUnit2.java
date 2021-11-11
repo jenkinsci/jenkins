@@ -30,10 +30,9 @@
 package hudson.util;
 
 import hudson.RestrictedSince;
+import java.util.concurrent.TimeUnit;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@code TimeUnit} represents time durations at a given unit of
@@ -83,6 +82,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C0); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toNanos(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toNanos(d); }
+        @Override
         int excessNanos(long d, long m) { return (int)(d - (m*C2)); }
     },
     MICROSECONDS {
@@ -95,6 +95,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C1); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toMicros(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toMicros(d); }
+        @Override
         int excessNanos(long d, long m) { return (int)((d*C1) - (m*C2)); }
     },
     MILLISECONDS {
@@ -107,6 +108,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C2); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toMillis(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toMillis(d); }
+        @Override
         int excessNanos(long d, long m) { return 0; }
     },
     SECONDS {
@@ -119,6 +121,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C3); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toSeconds(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toSeconds(d); }
+        @Override
         int excessNanos(long d, long m) { return 0; }
     },
     MINUTES {
@@ -131,6 +134,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C4); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toMinutes(d); }
         @Override public long convert(long d, TimeUnit u) { return SECONDS.toMinutes(u.toSeconds(d)); }
+        @Override
         int excessNanos(long d, long m) { return 0; }
     },
     HOURS {
@@ -143,6 +147,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d/(C6/C5); }
         @Override public long convert(long d, TimeUnit2 u) { return u.toHours(d); }
         @Override public long convert(long d, TimeUnit u) { return SECONDS.toHours(u.toSeconds(d)); }
+        @Override
         int excessNanos(long d, long m) { return 0; }
     },
     DAYS {
@@ -155,6 +160,7 @@ public enum TimeUnit2 {
         @Override public long toDays(long d)    { return d; }
         @Override public long convert(long d, TimeUnit2 u) { return u.toDays(d); }
         @Override public long convert(long d, TimeUnit u) { return SECONDS.toDays(u.toSeconds(d)); }
+        @Override
         int excessNanos(long d, long m) { return 0; }
     };
 

@@ -24,26 +24,29 @@
  */
 package hudson.triggers;
 
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DependencyRunner;
 import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Describable;
-import hudson.scheduler.Hash;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.Items;
 import hudson.model.PeriodicWork;
 import hudson.model.Project;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTabList;
-
+import hudson.scheduler.Hash;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
@@ -53,18 +56,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Timer;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import antlr.ANTLRException;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.model.Items;
+import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Triggers a {@link Build}.
@@ -150,6 +152,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return Collections.singletonList(a);
     }
 
+    @Override
     public TriggerDescriptor getDescriptor() {
         return (TriggerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -212,6 +215,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             cal.set(Calendar.MILLISECOND, 0);
         }
 
+        @Override
         public long getRecurrencePeriod() {
             return MIN;
         }
@@ -221,6 +225,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }
 
+        @Override
         public void doRun() {
             while(new Date().getTime() >= cal.getTimeInMillis()) {
                 LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
@@ -253,6 +258,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                    @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
@@ -280,12 +286,13 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 long begin_time = System.currentTimeMillis();
                                 t.run();
                                 long end_time = System.currentTimeMillis();
-                                if ((end_time - begin_time) > CRON_THRESHOLD) {
-                                    final String msg = String.format("Trigger %s.run() triggered by %s spent too much time "
-                                                    + "(%s) in its execution, other timers can be affected",
-                                            t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time));
+                                if (end_time - begin_time > CRON_THRESHOLD * 1000) {
+                                    TriggerDescriptor descriptor = t.getDescriptor();
+                                    String name = descriptor.getDisplayName();
+                                    final String msg = String.format("Trigger '%s' triggered by '%s' (%s) spent too much time (%s) in its execution, other timers could be delayed.",
+                                            name, p.getFullDisplayName(), p.getFullName(), Util.getTimeSpanString(end_time - begin_time));
                                     LOGGER.log(Level.WARNING, msg);
-                                    SlowTriggerAdminMonitor.getInstance().report(t.getClass().getName(), msg);
+                                    SlowTriggerAdminMonitor.getInstance().report(descriptor.getClass(), p.getFullName(), end_time - begin_time);
                                 }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
@@ -304,7 +311,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static long CRON_THRESHOLD = 1000*30;    // Default threshold 30s
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
+    /**
+     * Used to be milliseconds, now is seconds since Jenkins 2.TODO.
+     */
+    public static /* non-final for Groovy */ long CRON_THRESHOLD = SystemProperties.getLong(Trigger.class.getName() + ".CRON_THRESHOLD", 30L); // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
 
@@ -320,7 +332,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     @SuppressWarnings("MS_SHOULD_BE_FINAL")
     @Deprecated
-    public static @CheckForNull java.util.Timer timer;
+    public static @CheckForNull Timer timer;
 
     /**
      * Returns all the registered {@link Trigger} descriptors.

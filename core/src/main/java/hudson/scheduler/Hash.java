@@ -24,7 +24,6 @@
 package hudson.scheduler;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -54,6 +53,7 @@ public abstract class Hash {
      */
     public abstract int next(int n);
 
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
     public static Hash from(String seed) {
         try {
             MessageDigest md5 = getMd5();

@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import java.util.function.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -35,8 +34,18 @@ import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
-
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -95,6 +104,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
         return Iterables.mergeSorted(runLists, new Comparator<R>() {
+            @Override
             public int compare(R o1, R o2) {
                 long lhs = o1.getTimeInMillis();
                 long rhs = o2.getTimeInMillis();
@@ -248,6 +258,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
         first = null;
         final Iterable<R> nested = base;
         base = new Iterable<R>() {
+            @Override
             public Iterator<R> iterator() {
                 return hudson.util.Iterators.limit(nested.iterator(),predicate);
             }
@@ -269,6 +280,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     public RunList<R> limit(final int n) {
         return limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R input) {
                 return index<n;
             }
@@ -326,6 +338,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public RunList<R> byTimestamp(final long start, final long end) {
         return
         limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R r) {
                 return start<=r.getTimeInMillis();
             }
@@ -347,6 +360,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return filter((Predicate<R>) r -> !r.isBuilding())
         // put at least 10 builds, but otherwise ignore old builds
         .limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R r) {
                 return index < 10 || r.getTimeInMillis() >= t;
             }

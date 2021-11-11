@@ -5,7 +5,6 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -43,6 +42,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
             return Messages.UserSearchProperty_DisplayName();
         }
 
+        @Override
         public UserProperty newInstance(User user) {
             return new UserSearchProperty(DEFAULT_SEARCH_CASE_INSENSITIVE_MODE);
         }

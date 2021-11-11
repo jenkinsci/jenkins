@@ -23,8 +23,11 @@
  */
 package hudson.model;
 
-import hudson.Util;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
@@ -32,12 +35,6 @@ import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
-import jenkins.model.RunAction2;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,10 +46,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.RunAction2;
 import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Records the parameter values used for a build.
@@ -111,7 +110,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * The additional safe parameters should be only those considered safe to override the environment
      * and what is declared in the project config in addition to those specified by the user in
      * {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}.
-     * See <a href="https://issues.jenkins-ci.org/browse/SECURITY-170">SECURITY-170</a>
+     * See <a href="https://issues.jenkins.io/browse/SECURITY-170">SECURITY-170</a>
      *
      * @param parameters the parameters
      * @param additionalSafeParameters additional safe parameters
@@ -172,6 +171,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return new VariableResolver.Union<String>(resolvers);
     }
     
+    @Override
     public Iterator<ParameterValue> iterator() {
         return getParameters().iterator();
     }
@@ -190,6 +190,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public Label getAssignedLabel(SubTask task) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
@@ -199,14 +200,17 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }
 
+    @Override
     public String getIconFileName() {
         return "document-properties.png";
     }
 
+    @Override
     public String getUrlName() {
         return "parameters";
     }
@@ -214,6 +218,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
+    @Override
     public boolean shouldSchedule(List<Action> actions) {
         List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
         if (others.isEmpty()) {
@@ -280,6 +285,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return parametersAction;
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "parameters in readResolve is needed for data migration.")
     private Object readResolve() {
         if (parameters == null) { // JENKINS-39495
             parameters = Collections.emptyList();

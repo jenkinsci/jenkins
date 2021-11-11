@@ -23,20 +23,19 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+import hudson.util.EnumConverter;
+import hudson.util.RunList;
 import java.util.Objects;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
-import hudson.Extension;
-import hudson.util.EnumConverter;
-import hudson.util.RunList;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
@@ -117,7 +116,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     @Exported
     public RunParameterFilter getFilter() {
     	// if filter is null, default to RunParameterFilter.ALL
-        return (null == filter) ? RunParameterFilter.ALL : filter;
+        return null == filter ? RunParameterFilter.ALL : filter;
     }
 
     /**
@@ -204,6 +203,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         return value;
     }
 
+    @Override
     public RunParameterValue createValue(String value) {
         return new RunParameterValue(getName(), value, getDescription());
     }

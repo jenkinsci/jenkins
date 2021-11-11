@@ -24,30 +24,31 @@
 
 package hudson;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import org.apache.tools.ant.filters.StringInputStream;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.xml.sax.SAXException;
 
 /**
  * Tests of {@link PluginManager}.
@@ -80,14 +81,11 @@ public class PluginManagerTest {
                 "</root>\n";
 
         PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
-        try {
-            pluginManager.parseRequestedPlugins(new StringInputStream(evilXML));
-            fail("XML contains an external entity, but no exception was thrown.");
-        }
-        catch (IOException ex) {
-            assertThat(ex.getCause(), instanceOf(SAXException.class));
-            assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
-        }
+        final IOException ex = assertThrows(IOException.class,
+                () -> pluginManager.parseRequestedPlugins(new StringInputStream(evilXML)),
+                "XML contains an external entity, but no exception was thrown.");
+        assertThat(ex.getCause(), instanceOf(SAXException.class));
+        assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
     }
     
     @Test

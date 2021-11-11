@@ -42,6 +42,7 @@ public abstract class FileSystemProvisioner implements Describable<FileSystemPro
 
     public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException;
 
+    @Override
     public Descriptor getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -49,12 +50,15 @@ public abstract class FileSystemProvisioner implements Describable<FileSystemPro
     public static final FileSystemProvisioner DEFAULT = new Default();
 
     public static final class Default extends FileSystemProvisioner {
+        @Override
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         }
 
+        @Override
         public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
         }
 
+        @Override
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             throw new IOException("unimplemented");
         }

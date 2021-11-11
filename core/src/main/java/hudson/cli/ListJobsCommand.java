@@ -23,14 +23,13 @@
  */
 package hudson.cli;
 
-import java.util.Collection;
-
+import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.Extension;
-import jenkins.model.ModifiableTopLevelItemGroup;
+import java.util.Collection;
 import jenkins.model.Jenkins;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -48,6 +47,7 @@ public class ListJobsCommand extends CLICommand {
     @Argument(metaVar="NAME",usage="Name of the view",required=false)
     public String name;
 
+    @Override
     protected int run() throws Exception {
         Jenkins h = Jenkins.get();
         final Collection<TopLevelItem> jobs;

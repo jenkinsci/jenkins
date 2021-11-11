@@ -1,5 +1,11 @@
 package hudson.console;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -29,11 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -57,7 +58,8 @@ public class ConsoleAnnotatorTest {
     @Test public void completedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("---");
                 listener.getLogger().println("ooo");
                 listener.getLogger().println("ooo");
@@ -109,7 +111,8 @@ public class ConsoleAnnotatorTest {
     @Test public void consoleAnnotationFilterOut() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().print("abc\n");
                 listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/","def")+"\n");
                 return true;
@@ -169,7 +172,8 @@ public class ConsoleAnnotatorTest {
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 lock.phase(0);
                 // make sure the build is now properly started
                 lock.phase(2);
@@ -204,6 +208,7 @@ public class ConsoleAnnotatorTest {
 
     @TestExtension("progressiveOutput")
     public static final ConsoleAnnotatorFactory STATEFUL_ANNOTATOR = new ConsoleAnnotatorFactory() {
+        @Override
         public ConsoleAnnotator newInstance(Object context) {
             return new StatefulAnnotator();
         }
@@ -212,9 +217,10 @@ public class ConsoleAnnotatorTest {
     public static class StatefulAnnotator extends ConsoleAnnotator<Object> {
         int n=1;
 
+        @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
-                text.addMarkup(0,5,"<b tag="+(n++)+">","</b>");
+                text.addMarkup(0, 5, "<b tag=" + n++ + ">", "</b>");
             return this;
         }
     }
@@ -228,6 +234,7 @@ public class ConsoleAnnotatorTest {
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 lock.phase(0);
                 // make sure the build is now properly started
@@ -272,6 +279,7 @@ public class ConsoleAnnotatorTest {
      * Places a triple dollar mark at the specified position.
      */
     public static final class DollarMark extends ConsoleNote<Object> {
+        @Override
         public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
             text.addMarkup(charPos,"$$$");
             return null;
@@ -302,6 +310,7 @@ public class ConsoleAnnotatorTest {
     }
 
     public static final class JustToIncludeScript extends ConsoleNote<Object> {
+        @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text, int charPos) {
             return null;
         }
@@ -312,6 +321,7 @@ public class ConsoleAnnotatorTest {
 
     @TestExtension("scriptInclusion")
     public static final class JustToIncludeScriptAnnotator extends ConsoleAnnotatorFactory {
+        @Override
         public ConsoleAnnotator newInstance(Object context) {
             return null;
         }
@@ -326,7 +336,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("<b>&amp;</b>");
                 return true;
             }
@@ -367,7 +377,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException {
             listener.annotate(new DollarMark());
             listener.getLogger().println("hello from polling");
             return new PollingResult(Change.NONE);

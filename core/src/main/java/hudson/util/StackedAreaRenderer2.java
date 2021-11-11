@@ -23,6 +23,10 @@
  */
 package hudson.util;
 
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Polygon;
+import java.awt.geom.Rectangle2D;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
@@ -34,11 +38,6 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.chart.urls.CategoryURLGenerator;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
-
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Modified {@link StackedAreaRenderer}.
@@ -67,6 +66,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
     /**
      * Override this method to specify the hyperlink target of the given data point.
      */
+    @Override
     public String generateURL(CategoryDataset dataset, int row, int column) {
         return null;
     }
@@ -74,6 +74,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
     /**
      * Override this method to specify the tool tip text of the given data point.
      */
+    @Override
     public String generateToolTip(CategoryDataset dataset, int row, int column) {
         return null;
     }
@@ -131,7 +132,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 // draw item labels, if visible
                 if (isItemLabelVisible(row, column)) {
                     drawItemLabel(g2, plot.getOrientation(), dataset, row, column,
-                            xx1, yy1, (y1 < 0.0));
+                            xx1, yy1, y1 < 0.0);
                 }
             }
         } else {
@@ -191,7 +192,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 } else {
                     if (isItemLabelVisible(row, column)) {
                         drawItemLabel(g2, plot.getOrientation(), dataset, row,
-                                column, xx1, yy1, (y1 < 0.0));
+                                column, xx1, yy1, y1 < 0.0);
                     }
                 }
             }

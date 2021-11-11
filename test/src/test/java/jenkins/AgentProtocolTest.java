@@ -23,14 +23,14 @@
  */
 package jenkins;
 
+import static org.junit.Assert.fail;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.fail;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -73,7 +73,7 @@ public class AgentProtocolTest {
         Set<String> agentProtocols = jenkins.getAgentProtocols();
         List<String> failedChecks = new ArrayList<>();
         for (String protocol : protocolNames) {
-            if (shouldBeEnabled && !(agentProtocols.contains(protocol))) {
+            if (shouldBeEnabled && !agentProtocols.contains(protocol)) {
                 failedChecks.add(protocol);
             }
             if (!shouldBeEnabled && agentProtocols.contains(protocol)) {

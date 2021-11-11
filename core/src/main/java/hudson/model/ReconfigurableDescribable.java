@@ -23,10 +23,10 @@
  */
 package hudson.model;
 
-import hudson.model.Descriptor.FormException;
-import hudson.slaves.NodeProperty;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Descriptor.FormException;
+import hudson.slaves.NodeProperty;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 

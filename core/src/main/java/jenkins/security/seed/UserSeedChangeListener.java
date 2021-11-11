@@ -23,17 +23,16 @@
  */
 package jenkins.security.seed;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.User;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.SecurityListener;
 import org.apache.tools.ant.ExtensionPoint;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Listener notified when a user was requested to changed their seed

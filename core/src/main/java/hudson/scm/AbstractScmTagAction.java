@@ -24,17 +24,16 @@
 package hudson.scm;
 
 import hudson.model.AbstractBuild;
-import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Run;
-import hudson.security.Permission;
+import hudson.model.TaskAction;
 import hudson.security.ACL;
+import hudson.security.Permission;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import jenkins.model.RunAction2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import jenkins.model.RunAction2;
 
 /**
  * Common part of {@code CVSSCM.TagAction} and {@code SubversionTagAction}.
@@ -65,6 +64,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         this((Run) build);
     }
 
+    @Override
     public final String getUrlName() {
         // to make this consistent with CVSSCM, even though the name is bit off
         return "tagBuild";
@@ -73,6 +73,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     /**
      * Defaults to {@link SCM#TAG}.
      */
+    @Override
     protected Permission getPermission() {
         return SCM.TAG;
     }
@@ -101,6 +102,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
      */
     public abstract boolean isTagged();
 
+    @Override
     protected ACL getACL() {
         return run.getACL();
     }

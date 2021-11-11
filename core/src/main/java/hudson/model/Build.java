@@ -23,27 +23,26 @@
  */
 package hudson.model;
 
+import static hudson.model.Result.FAILURE;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.Recorder;
 import hudson.tasks.Notifier;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
+import hudson.tasks.Recorder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import static hudson.model.Result.FAILURE;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A build of a {@link Project}.
@@ -139,6 +138,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             deprecated class here.
          */
 
+        @Override
         protected Result doRun(@NonNull BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
@@ -156,7 +156,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
-                        return (r = FAILURE);
+                        return r = FAILURE;
                     buildEnvironments.add(e);
                 }
 
@@ -173,6 +173,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return r;
         }
 
+        @Override
         public void post2(@NonNull BuildListener listener) throws IOException, InterruptedException {
             if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);

@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Parses the query string of the URL into a key/value pair.
@@ -38,7 +38,7 @@ import java.util.Map;
  * <p>
  * This class is even useful on the server side, as {@link HttpServletRequest#getParameter(String)}
  * can try to parse into the payload (and that can cause an exception if the payload is already consumed.
- * See HUDSON-8056.)
+ * See JENKINS-8056.)
  *
  * <p>
  * So if you are handling the payload yourself and only want to access the query parameters,

@@ -24,6 +24,17 @@
 
 package hudson.tasks;
 
+import static hudson.tasks.LogRotatorTest.build;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -35,33 +46,21 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Result;
-import static hudson.tasks.LogRotatorTest.build;
+import hudson.model.Run;
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import hudson.model.Run;
-import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
-
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.*;
 import org.junit.ClassRule;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -98,6 +97,7 @@ public class ArtifactArchiverTest {
         Publisher artifactArchiver = new ArtifactArchiver("dir/");
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath dir = build.getWorkspace().child("dir");
                 dir.child("subdir1").mkdirs();
@@ -242,6 +242,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateArtifact extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             return true;
@@ -249,6 +250,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateArtifactAndFail extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             throw new AbortException("failing the build");
@@ -288,6 +290,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateDefaultExcludesArtifact extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             FilePath dir = build.getWorkspace().child("dir");
             FilePath subSvnDir = dir.child(".svn");
@@ -441,7 +444,7 @@ public class ArtifactArchiverTest {
 
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
-        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        public Object invoke(File f, VirtualChannel channel) throws IOException {
             assertTrue(f.createNewFile());
             assertTrue(f.setReadable(false));
             return null;

@@ -1,9 +1,8 @@
 package jenkins.security.s2m;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.PluginWrapper;
 import jenkins.model.Jenkins;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
 * @author Kohsuke Kawaguchi

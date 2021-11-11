@@ -36,30 +36,55 @@ import hudson.util.CopyOnWriteList;
 import hudson.util.HttpResponses;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
+import hudson.model.AbstractModelObject;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.Computer;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
+import hudson.util.CopyOnWriteList;
+import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
-import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.*;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.MemoryReductionUtil;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -104,7 +129,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
         List<Target> tempLoggers = new ArrayList<>(loggers);
-        
+
         if (!targets.isEmpty()) {
             loggers.addAll(targets.getView());
         }
@@ -363,10 +388,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return name;
     }
 
+    @Override
     public String getSearchUrl() {
         return Util.rawEncode(name);
     }
@@ -429,6 +456,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Save the settings to a file.
      */
+    @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
 
@@ -521,6 +549,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         Map<Computer,List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
             final Collator COLL = Collator.getInstance();
 
+            @Override
             public int compare(Computer c1, Computer c2) {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }

@@ -23,6 +23,9 @@
  */
 package jenkins.security.stapler;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.TestExtension;
@@ -31,10 +34,6 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.List;
 
 public class PreventRoutingTest extends StaplerAbstractTest {
     

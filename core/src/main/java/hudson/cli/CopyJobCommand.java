@@ -23,13 +23,12 @@
  */
 package hudson.cli;
 
-import jenkins.model.Jenkins;
-import hudson.model.TopLevelItem;
 import hudson.Extension;
 import hudson.model.Item;
+import hudson.model.TopLevelItem;
+import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
-
 
 /**
  * Copies a job from CLI.
@@ -49,6 +48,7 @@ public class CopyJobCommand extends CLICommand {
     @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1,required=true)
     public String dst;
 
+    @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
 
@@ -77,4 +77,3 @@ public class CopyJobCommand extends CLICommand {
         return 0;
     }
 }
-

@@ -30,19 +30,18 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.DescriptorVisibilityFilter;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ListView;
 import hudson.model.View;
 import hudson.util.DescriptorList;
-import org.kohsuke.stapler.export.Exported;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Extension point for adding a column to a table rendering of {@link Item}s, such as {@link ListView}.
@@ -115,6 +114,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * For compatibility reason, this method may not return a {@link ListViewColumnDescriptor}
      * and instead return a plain {@link Descriptor} instance.
      */
+    @Override
     public Descriptor<ListViewColumn> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }

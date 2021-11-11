@@ -24,22 +24,21 @@
 package hudson.model;
 
 import hudson.util.ByteBuffer;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.Reader;
+import java.io.Writer;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.framework.io.CharSpool;
 import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
-import org.apache.commons.io.output.CountingOutputStream;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.io.Writer;
-import java.io.Reader;
-import java.io.InputStreamReader;
 
 /**
  * Represents a large text data.
@@ -66,14 +65,17 @@ public class LargeText {
 
     public LargeText(final File file, boolean completed) {
         this.source = new Source() {
+            @Override
             public Session open() throws IOException {
                 return new FileSession(file);
             }
 
+            @Override
             public long length() {
                 return file.length();
             }
 
+            @Override
             public boolean exists() {
                 return file.exists();
             }
@@ -84,14 +86,17 @@ public class LargeText {
     @SuppressWarnings("deprecation")
     public LargeText(final ByteBuffer memory, boolean completed) {
         this.source = new Source() {
+            @Override
             public Session open() throws IOException {
                 return new BufferSession(memory);
             }
 
+            @Override
             public long length() {
                 return memory.length();
             }
 
+            @Override
             public boolean exists() {
                 return true;
             }
@@ -113,6 +118,7 @@ public class LargeText {
     public Reader readAll() throws IOException {
         return new InputStreamReader(new InputStream() {
             final Session session = source.open();
+            @Override
             public int read() throws IOException {
                 byte[] buf = new byte[1];
                 int n = session.read(buf);
@@ -311,6 +317,7 @@ public class LargeText {
      * Methods generally follow the contracts of {@link InputStream}.
      */
     private interface Session extends AutoCloseable {
+        @Override
         void close() throws IOException;
         void skip(long start) throws IOException;
         int read(byte[] buf) throws IOException;
@@ -327,18 +334,22 @@ public class LargeText {
             this.file = new RandomAccessFile(file,"r");
         }
 
+        @Override
         public void close() throws IOException {
             file.close();
         }
 
+        @Override
         public void skip(long start) throws IOException {
             file.seek(file.getFilePointer()+start);
         }
 
+        @Override
         public int read(byte[] buf) throws IOException {
             return file.read(buf);
         }
 
+        @Override
         public int read(byte[] buf, int offset, int length) throws IOException {
             return file.read(buf,offset,length);
         }
@@ -356,19 +367,23 @@ public class LargeText {
         }
 
 
+        @Override
         public void close() throws IOException {
             in.close();
         }
 
+        @Override
         public void skip(long n) throws IOException {
             while(n>0)
                 n -= in.skip(n);
         }
 
+        @Override
         public int read(byte[] buf) throws IOException {
             return in.read(buf);
         }
 
+        @Override
         public int read(byte[] buf, int offset, int length) throws IOException {
             return in.read(buf,offset,length);
         }

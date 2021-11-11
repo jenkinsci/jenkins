@@ -30,7 +30,7 @@ THE SOFTWARE.
 <l:layout permission="${app.ADMINISTER}" title="${%Configure Log Recorder}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1>${%Configure log recorder} <t:help iconSize="large" href="https://jenkins.io/redirect/log-recorders" /></h1>
+    <h1>${%Configure log recorder} <t:help iconSize="large" href="https://www.jenkins.io/redirect/log-recorders" /></h1>
     <p>
       ${%Enter the name of the logger you want to enable}.
     </p>

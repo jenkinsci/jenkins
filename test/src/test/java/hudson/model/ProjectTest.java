@@ -23,69 +23,65 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
-import hudson.*;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.security.AccessDeniedException3;
-import hudson.tasks.*;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-
-import java.net.URL;
-import java.util.Collections;
-
-import org.jvnet.hudson.reactor.ReactorException;
-import org.jvnet.hudson.test.FakeChangeLogSCM;
-import hudson.scm.SCMRevisionState;
-import hudson.scm.PollingResult;
-import hudson.Launcher.RemoteLauncher;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import hudson.model.queue.SubTaskContributor;
-import hudson.model.Queue.Executable;
-import hudson.model.Queue.Task;
-import hudson.model.queue.SubTask;
-import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
-import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
-import jenkins.model.WorkspaceWriter;
-import jenkins.model.Jenkins;
-import antlr.ANTLRException;
-import hudson.triggers.SCMTrigger;
-import hudson.model.Cause.UserIdCause;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import java.io.Serializable;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
-import java.io.File;
-
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.model.labels.LabelAtom;
-import hudson.scm.SCMDescriptor;
-import hudson.security.ACL;
-import hudson.security.ACLContext;
-import hudson.slaves.Cloud;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProvisioner;
-import org.jvnet.hudson.test.TestExtension;
-import java.util.List;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import antlr.ANTLRException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Launcher.RemoteLauncher;
+import hudson.Util;
+import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
+import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
+import hudson.model.Cause.UserIdCause;
+import hudson.model.Queue.Executable;
+import hudson.model.Queue.Task;
+import hudson.model.labels.LabelAtom;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.SubTask;
+import hudson.model.queue.SubTaskContributor;
+import hudson.scm.NullSCM;
+import hudson.scm.PollingResult;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.AccessDeniedException3;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.slaves.Cloud;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProvisioner;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BatchFile;
+import hudson.tasks.BuildTrigger;
+import hudson.tasks.Fingerprinter;
+import hudson.tasks.Shell;
+import hudson.triggers.SCMTrigger;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -93,10 +89,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
-
+import jenkins.model.Jenkins;
+import jenkins.model.WorkspaceWriter;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  *
@@ -303,7 +308,7 @@ public class ProjectTest {
     public void testScheduleBuild2() throws IOException, InterruptedException{
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
-        p.scheduleBuild(0, new UserIdCause(), new Action[0]);
+        p.scheduleBuild(0, new UserIdCause());
         assertNotNull("Project should be in queue.", Queue.getInstance().getItem(p));
         p.setAssignedLabel(null);
         int count = 0;
@@ -448,7 +453,7 @@ public class ProjectTest {
         assertNotNull(ws);
         FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
-        BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
+        BuildListener listener = new StreamBuildListener(TaskListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
         p.setScm(scm);
         assertTrue("Project should perform checkout without problems.",p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
@@ -508,7 +513,7 @@ public class ProjectTest {
         upstream.getPublishersList().add(new ArtifactArchiver("change.log"));
         downstream.getPublishersList().add(new Fingerprinter("change.log", false));
         downstream.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a: upstream.getLastBuild().getArtifacts()) {
                     Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
                 }
@@ -544,14 +549,8 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doCancelQueue(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doCancelQueue(null, null));
         }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
     }
     
     @Test
@@ -563,17 +562,11 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            project.doDoDelete(null, null);
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
         }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
         auth.add(Jenkins.READ, user.getId());
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.DELETE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.DELETE, user.getId());
 
         // use Basic to speedup the test, normally it's pure UI testing
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -600,17 +593,11 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDoWipeOutWorkspace();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDoWipeOutWorkspace);
         }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.BUILD, user.getId());
-        auth.add(Job.WIPEOUT, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.BUILD, user.getId());
+        auth.add(Item.WIPEOUT, user.getId());
         auth.add(Jenkins.READ, user.getId());
         Slave slave = j.createOnlineSlave();
         project.setAssignedLabel(slave.getSelfLabel());
@@ -638,16 +625,10 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
         try (ACLContext as = ACL.as(user)) {
-            project.doDisable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doDisable);
         }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -676,16 +657,10 @@ public class ProjectTest {
             project.disable();
         }
         try (ACLContext as = ACL.as(user)) {
-            project.doEnable();
-            fail("User should not have permission to build project");
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, project::doEnable);
         }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -703,7 +678,6 @@ public class ProjectTest {
     
     /**
      * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
-     * @throws Exception 
      */
     @Test
     public void testJobSubmittedShouldSpawnCloud() throws Exception {
@@ -733,7 +707,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
-     * @throws Exception
      */
     @Test
     public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
@@ -778,7 +751,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
-     * @throws Exception 
      */
     @Test
     public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        
@@ -856,7 +828,7 @@ public class ProjectTest {
         }
         
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return hasChange;
         }
                        
@@ -869,7 +841,7 @@ public class ProjectTest {
         }
         
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {            
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             if(!hasChange) {
                 return PollingResult.NO_CHANGES;
             }
@@ -881,7 +853,7 @@ public class ProjectTest {
     public static class AlwaysChangedSCM extends NullSCM {
 
         @Override
-        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             return true;
         }
         
@@ -891,7 +863,7 @@ public class ProjectTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) {
             return PollingResult.SIGNIFICANT;
         }
         

@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
@@ -32,10 +33,8 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.NamingThreadFactory;
 import hudson.util.NullStream;
-import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
-import org.apache.commons.io.input.NullInputStream;
-
+import hudson.util.StreamCopyThread;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -157,6 +156,7 @@ public abstract class Proc {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             executor.submit(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!latch.await(timeout, unit)) {
@@ -297,14 +297,17 @@ public abstract class Proc {
             }
         }
 
+        @Override
         public InputStream getStdout() {
             return stdout;
         }
 
+        @Override
         public InputStream getStderr() {
             return stderr;
         }
 
+        @Override
         public OutputStream getStdin() {
             return stdin;
         }
@@ -325,7 +328,7 @@ public abstract class Proc {
 
             try {
                 int r = proc.waitFor();
-                // see https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
+                // see https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 if (copier!=null)   copier.join(TimeUnit.SECONDS.toMillis(10));
@@ -333,7 +336,7 @@ public abstract class Proc {
                 if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
+                    String msg = "Process leaked file descriptors. See https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 
@@ -422,12 +425,7 @@ public abstract class Proc {
         }
 
         private static String calcName(String[] cmd) {
-            StringBuilder buf = new StringBuilder();
-            for (String token : cmd) {
-                if(buf.length()>0)  buf.append(' ');
-                buf.append(token);
-            }
-            return buf.toString();
+            return String.join(" ", cmd);
         }
 
         public static final InputStream SELFPUMP_INPUT = new NullInputStream(0);
@@ -511,7 +509,7 @@ public abstract class Proc {
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
-    * See <a href="https://jenkins-ci.org/issue/23271">JENKINS-23271</a>
+    * See <a href="https://issues.jenkins.io/browse/JENKINS-23271">JENKINS-23271</a>
     * @author Oleg Nenashev
     */
     @Restricted(NoExternalUse.class)

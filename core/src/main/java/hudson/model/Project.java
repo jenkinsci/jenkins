@@ -32,18 +32,13 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven;
-import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Maven.ProjectWithMaven;
+import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -53,8 +48,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.servlet.ServletException;
 import jenkins.triggers.SCMTriggerItem;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Buildable software project.
@@ -100,6 +98,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         getBuildWrappersList().setOwner(this);
     }
 
+    @Override
     public AbstractProject<?, ?> asProject() {
         return this;
     }
@@ -137,6 +136,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return builders;
     }
     
+    @Override
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
         if (publishers == null) {
             publishersSetter.compareAndSet(this,null,new DescribableList<Publisher,Descriptor<Publisher>>(this));
@@ -148,6 +148,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return getBuildWrappersList().toMap();
     }
 
+    @Override
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
         if (buildWrappers == null) {
             buildWrappersSetter.compareAndSet(this,null,new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this));
@@ -209,6 +210,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return getPublishersList().get(Fingerprinter.class)!=null;
     }
 
+    @Override
     public MavenInstallation inferMavenInstallation() {
         Maven m = getBuildersList().get(Maven.class);
         if (m!=null)    return m.getMaven();

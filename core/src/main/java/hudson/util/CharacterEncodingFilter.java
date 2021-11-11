@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import jenkins.util.SystemProperties;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import jenkins.util.SystemProperties;
 
 /**
  * Filter that sets the character encoding to be used in parsing the request
@@ -57,16 +57,19 @@ public class CharacterEncodingFilter implements Filter {
     private static final Boolean FORCE_ENCODING
             = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         LOGGER.log(Level.FINE,
                 "CharacterEncodingFilter initialized. DISABLE_FILTER: {0} FORCE_ENCODING: {1}",
                 new Object[]{DISABLE_FILTER, FORCE_ENCODING});
     }
 
+    @Override
     public void destroy() {
         LOGGER.fine("CharacterEncodingFilter destroyed.");
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 

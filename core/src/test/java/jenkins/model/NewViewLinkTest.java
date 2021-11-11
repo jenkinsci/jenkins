@@ -1,19 +1,20 @@
 package jenkins.model;
 
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import hudson.model.Action;
-import hudson.model.ModifiableViewGroup;
-import hudson.model.View;
-import hudson.model.ViewGroup;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.model.Action;
+import hudson.model.ModifiableViewGroup;
+import hudson.model.View;
+import hudson.model.ViewGroup;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NewViewLinkTest {
 	
@@ -24,7 +25,7 @@ public class NewViewLinkTest {
     private final String viewGroupURL = "abc/";
 
     @Before
-    public void initTests() throws Exception {
+    public void initTests() {
         when(view.getOwner()).thenReturn(group);
         when(group.getUrl()).thenReturn(viewGroupURL);
 
@@ -32,7 +33,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsHasPermission() throws Exception {
+    public void getActionsHasPermission() {
         when(group.hasPermission(any())).thenReturn(true);
 
         final List<Action> actions = newViewLink.createFor(view);
@@ -45,7 +46,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsNoPermission() throws Exception {
+    public void getActionsNoPermission() {
         when(group.hasPermission(any())).thenReturn(false);
 
         final List<Action> actions = newViewLink.createFor(view);
@@ -57,7 +58,7 @@ public class NewViewLinkTest {
     }
 
     @Test
-    public void getActionsNotModifiableOwner() throws Exception {
+    public void getActionsNotModifiableOwner() {
         ViewGroup vg = mock(ViewGroup.class);
         when(view.getOwner()).thenReturn(vg);
         when(vg.hasPermission(any())).thenReturn(true);

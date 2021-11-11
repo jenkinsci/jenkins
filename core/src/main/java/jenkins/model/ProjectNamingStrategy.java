@@ -32,12 +32,10 @@ import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.util.FormValidation;
 import java.io.IOException;
-
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
-
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -50,6 +48,7 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public abstract class ProjectNamingStrategy implements Describable<ProjectNamingStrategy>, ExtensionPoint {
 
+    @Override
     public ProjectNamingStrategyDescriptor getDescriptor() {
         return (ProjectNamingStrategyDescriptor) Jenkins.get().getDescriptor(getClass());
     }

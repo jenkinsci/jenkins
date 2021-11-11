@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
@@ -58,54 +59,14 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
         setPasswordParameter("j_password");
     }
 
-    /* TODO none of this compiles against Spring Security; rewrite (try InteractiveAuthenticationSuccessEvent & SimpleUrlAuthenticationFailureHandler):
-
-    @Override
-    protected String determineTargetUrl(HttpServletRequest request) {
-        AbstractAuthenticationProcessingFilter f = new UsernamePasswordAuthenticationFilter();
-        String targetUrl = request.getParameter("from");
-        request.getSession().setAttribute("from", targetUrl);
-
-        if (targetUrl == null)
-            return getDefaultTargetUrl();
-
-        if (!Util.isSafeToRedirectTo(targetUrl))
-            return "."; // avoid open redirect
-
-        // URL returned from determineTargetUrl() is resolved against the context path,
-        // whereas the "from" URL is resolved against the top of the website, so adjust this.
-        if(targetUrl.startsWith(request.getContextPath()))
-            return targetUrl.substring(request.getContextPath().length());
-
-        // not sure when this happens, but apparently this happens in some case.
-        // see #1274
-        return targetUrl;
-    }
-
-    /**
-     * @see AbstractProcessingFilter#determineFailureUrl(HttpServletRequest, AuthenticationException)
-     * /
-    @Override
-    protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {
-        Properties excMap = getExceptionMappings();
-		String failedClassName = failed.getClass().getName();
-		String whereFrom = request.getParameter("from");
-		request.getSession().setAttribute("from", whereFrom);
-		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
-    }
-    */
-
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {
+            // While use of SessionFixationProtectionStrategy is the canonical Spring Security approach, it may not be compatible with some security realms, so offer this alternative
+            request.getSession().invalidate();
+            request.getSession(true);
+        }
         super.successfulAuthentication(request, response, chain, authResult);
-        // make sure we have a session to store this successful authentication, given that we no longer
-        // let HttpSessionContextIntegrationFilter2 to create sessions.
-        // SecurityContextPersistenceFilter stores the updated SecurityContext object into this session later
-        // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
-        // doFilter method.
-        /* TODO causes an ISE on the next line:
-        request.getSession().invalidate();
-        */
         HttpSession newSession = request.getSession();
 
         if (!UserSeedProperty.DISABLE_USER_SEED) {

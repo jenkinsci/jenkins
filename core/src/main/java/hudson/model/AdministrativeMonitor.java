@@ -23,17 +23,15 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-
-import java.util.Set;
 import java.io.IOException;
-
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -113,10 +111,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         return "administrativeMonitor/"+id;
     }
 
+    @Override
     public String getDisplayName() {
         return id;
     }
 
+    @Override
     public final String getSearchUrl() {
         return getUrl();
     }
@@ -201,6 +201,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Ensure that URLs in this administrative monitor are only accessible to users with {@link #getRequiredPermission()}.
      */
+    @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         Jenkins.get().checkPermission(getRequiredPermission());

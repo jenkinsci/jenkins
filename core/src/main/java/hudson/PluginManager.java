@@ -23,6 +23,18 @@
  */
 package hudson;
 
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -52,6 +64,49 @@ import hudson.util.Retrier;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
@@ -63,7 +118,6 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -79,7 +133,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskBuilder;
@@ -99,64 +152,11 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static hudson.init.InitMilestone.*;
-import static java.util.logging.Level.*;
-import static java.util.stream.Collectors.toList;
-
-import org.springframework.security.core.Authentication;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -329,8 +329,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     // and load plugin-contributed classes.
     public final ClassLoader uberClassLoader = new UberClassLoader();
 
-    private final Transformer compatibilityTransformer = new Transformer();
-
     /**
      * Once plugin is uploaded, this flag becomes true.
      * This is used to report a message that Jenkins needs to be restarted
@@ -361,17 +359,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
         strategy = createPluginStrategy();
-
-        // load up rules for the core first
-        try {
-            compatibilityTransformer.loadRules(getClass().getClassLoader());
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
-        }
-    }
-
-    public Transformer getCompatibilityTransformer() {
-        return compatibilityTransformer;
     }
 
     public Api getApi() {
@@ -412,18 +399,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                 {
                     Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             bundledPlugins = loadBundledPlugins();
                         }
                     });
 
                     Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             archives = initStrategy.listPluginArchives(PluginManager.this);
                         }
                     });
 
                     requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             // once we've listed plugins, we can fill in the reactor with plugin-specific initialization tasks
                             TaskGraphBuilder g = new TaskGraphBuilder();
@@ -432,6 +422,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                             for( final File arc : archives ) {
                                 g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
+                                    @Override
                                     public void run(Reactor session1) throws Exception {
                                         try {
                                             PluginWrapper p = strategy.createPluginWrapper(arc);
@@ -466,6 +457,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 /**
                                  * Makes sure there's no cycle in dependencies.
                                  */
+                                @Override
                                 public void run(Reactor reactor) throws Exception {
                                     try {
                                         CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
@@ -486,13 +478,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             }
 
                                             @Override
-                                            protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle)
-                                                    throws hudson.util.CyclicGraphDetector.CycleDetectedException {
+                                            protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle) {
 
-                                                LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root="+q+", deactivating all involved) "+Util.join(cycle," -> "));
+                                                LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root=" + q + ", deactivating all involved) " + cycle.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
                                                 for (PluginWrapper pluginWrapper : cycle) {
                                                     pluginWrapper.setHasCycleDependency(true);
-                                                    failedPlugins.add(new FailedPlugin(pluginWrapper.getShortName(), new CycleDetectedException(cycle)));
+                                                    failedPlugins.add(new FailedPlugin(pluginWrapper, new CycleDetectedException(cycle)));
                                                 }
                                             }
 
@@ -510,13 +501,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     }
                                 }
                             });
-
-                            // Let's see for a while until we open this functionality up to plugins
-//                            g.followedBy().attains(PLUGINS_LISTED).add("Load compatibility rules", new Executable() {
-//                                public void run(Reactor reactor) throws Exception {
-//                                    compatibilityTransformer.loadRules(uberClassLoader);
-//                                }
-//                            });
 
                             session.addAll(g.discoverTasks(session));
 
@@ -538,6 +522,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 /**
                  * Once the plugins are listed, schedule their initialization.
                  */
+                @Override
                 public void run(Reactor session) throws Exception {
                     Jenkins.get().lookup.set(PluginInstanceStore.class, new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
@@ -545,17 +530,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
+                            @Override
                             public void run(Reactor session) throws Exception {
                                 try {
                                     p.resolvePluginDependencies();
                                     strategy.load(p);
                                 } catch (MissingDependencyException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -567,6 +553,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // schedule execution of initializing plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
+                            @Override
                             public void run(Reactor session) throws Exception {
                                 if (!activePlugins.contains(p)) {
                                     return;
@@ -574,7 +561,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 try {
                                     p.getPluginOrFail().postInitialize();
                                 } catch (Exception e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -584,6 +571,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
 
                     g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
+                        @Override
                         public void run(Reactor reactor) throws Exception {
                             // rescan to find plugin-contributed @Initializer
                             reactor.addAll(initializerFinder.discoverTasks(reactor));
@@ -634,7 +622,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
     @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
-        Set<String> names = new HashSet();
+        Set<String> names = new HashSet<>();
 
         ServletContext context = Jenkins.get().servletContext;
         Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
@@ -1078,8 +1066,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
-        try {
-            URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
+        try (URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi})){
             InputStream in=null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
@@ -1089,8 +1076,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             } finally {
                 Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());
-                if (cl instanceof Closeable)
-                    ((Closeable)cl).close();
             }
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
@@ -1116,7 +1101,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final String entryName = jarURLConnection.getEntryName();
             
             try(JarFile jarFile = jarURLConnection.getJarFile()) {
-                final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
+                final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
                         byte[] manifestBytes = IOUtils.toByteArray(i);
@@ -1288,10 +1273,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return Collections.unmodifiableList(result);
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.PluginManager_DisplayName();
     }
 
+    @Override
     public String getSearchUrl() {
         return "pluginManager";
     }
@@ -1748,6 +1735,51 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return new HttpRedirect("advanced");
     }
 
+    interface PluginCopier {
+        void copy(File target) throws Exception;
+        void cleanup();
+    }
+
+    class FileUploadPluginCopier implements PluginCopier {
+        private FileItem fileItem;
+
+        FileUploadPluginCopier(FileItem fileItem) {
+            this.fileItem = fileItem;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            fileItem.write(target);
+        }
+
+        @Override
+        public void cleanup() {
+            fileItem.delete();
+        }
+    }
+
+    class UrlPluginCopier implements PluginCopier {
+        private String url;
+
+        UrlPluginCopier(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            try(InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
+                Files.copy(input, target.toPath());
+            } catch(Exception e) {
+                throw e;
+            }
+        }
+
+        @Override
+        public void cleanup() {
+
+        }
+    }
+
     /**
      * Uploads a plugin.
      */
@@ -1756,11 +1788,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
+            String fileName = "";
+            PluginCopier copier;
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            List<FileItem> items = upload.parseRequest(req);
+            if(StringUtils.isNotBlank(items.get(1).getString())) {
+                // this is a URL deployment
+                fileName = items.get(1).getString();
+                copier = new UrlPluginCopier(fileName);
+            } else {
+                // this is a file upload
+                FileItem fileItem = items.get(0);
+                fileName = Util.getFileName(fileItem.getName());
+                copier = new FileUploadPluginCopier(fileItem);
+            }
 
-            // Parse the request
-            FileItem fileItem = upload.parseRequest(req).get(0);
-            String fileName = Util.getFileName(fileItem.getName());
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
             }
@@ -1776,12 +1818,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
                 t.delete();
 
-                fileItem.write(t);
+                copier.copy(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
                 throw new ServletException(e);
             }
-            fileItem.delete();
+            copier.cleanup();
 
             final String baseName = identifyPluginShortName(t);
 
@@ -1822,6 +1864,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
+        if(StringUtils.isNotBlank(value)) {
+            try {
+                URL url = new URL(value);
+                if(!url.getProtocol().startsWith("http")) {
+                    return FormValidation.error(Messages.PluginManager_invalidUrl());
+                }
+
+                if(!url.getProtocol().equals("https")) {
+                    return FormValidation.warning(Messages.PluginManager_insecureUrl());
+                }
+            } catch(MalformedURLException e) {
+                return FormValidation.error(e.getMessage());
+            }
+        }
+        return FormValidation.ok();
     }
 
     @Restricted(NoExternalUse.class)
@@ -2111,11 +2172,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * {@link ClassLoader} that can see all plugins.
      */
     public final class UberClassLoader extends ClassLoader {
-        /**
-         * Make generated types visible.
-         * Keyed by the generated class name.
-         */
-        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<>();
         /** Cache of loaded, or known to be unloadable, classes. */
         private final Map<String,Class<?>> loaded = new HashMap<>();
 
@@ -2123,19 +2179,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             super(PluginManager.class.getClassLoader());
         }
 
-        public void addNamedClass(String className, Class c) {
-            generatedClasses.put(className, new WeakReference<>(c));
-        }
-
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            WeakReference<Class> wc = generatedClasses.get(name);
-            if (wc!=null) {
-                Class c = wc.get();
-                if (c!=null)    return c;
-                else            generatedClasses.remove(name,wc);
-            }
-
             if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
                 throw new ClassNotFoundException("ignoring " + name);
             }
@@ -2182,9 +2227,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 loaded.put(name, null);
             }
             // not found in any of the classloader. delegate.
-            ClassNotFoundException cnfe = new ClassNotFoundException(name);
-            MissingClassTelemetry.reportException(name, cnfe);
-            throw cnfe;
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -2243,10 +2286,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static final class FailedPlugin {
         public final String name;
         public final Exception cause;
+        @Nullable
+        public final PluginWrapper pluginWrapper;
 
+        /**
+         * Constructor for FailedPlugin when we do not have an associated PluginWrapper
+         */
         public FailedPlugin(String name, Exception cause) {
             this.name = name;
             this.cause = cause;
+            this.pluginWrapper = null;
+        }
+
+        /**
+         * Constructor for FailedPlugin when we know which PluginWrapper failed
+         */
+        public FailedPlugin(PluginWrapper pluginWrapper, Exception cause) {
+            this.name = pluginWrapper.getShortName();
+            this.cause = cause;
+            this.pluginWrapper = pluginWrapper;
         }
 
         public String getExceptionString() {
@@ -2276,6 +2334,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         private transient volatile List<PluginWrapper> pluginsWithCycle;
 
+        @Override
         public boolean isActivated() {
             if(pluginsWithCycle == null){
                 pluginsWithCycle = new ArrayList<>();
@@ -2327,6 +2386,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
+        @Override
         public boolean isActivated() {
             return !pluginsToBeUpdated.isEmpty();
         }
@@ -2375,6 +2435,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
         }
 
+        @Override
         public boolean isActivated() {
             return !getDeprecatedPlugins().isEmpty();
         }
@@ -2432,5 +2493,5 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

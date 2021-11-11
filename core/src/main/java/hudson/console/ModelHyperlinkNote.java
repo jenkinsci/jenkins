@@ -1,12 +1,17 @@
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.User;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link HyperlinkNote} that links to a {@linkplain ModelObject model object},
@@ -50,7 +55,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         if (c != null) {
             return encodeTo("/" + c.getUrl(), node.getDisplayName());
         }
-        String nodePath = node == Jenkins.get() ? "(master)" : node.getNodeName();
+        String nodePath = node == Jenkins.get() ? "(built-in)" : node.getNodeName();
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 

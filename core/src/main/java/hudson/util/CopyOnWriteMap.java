@@ -30,7 +30,6 @@ import com.thoughtworks.xstream.converters.collections.TreeMapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -79,26 +78,32 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         update(d);
     }
 
+    @Override
     public int size() {
         return core.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return core.isEmpty();
     }
 
+    @Override
     public boolean containsKey(Object key) {
         return core.containsKey(key);
     }
 
+    @Override
     public boolean containsValue(Object value) {
         return core.containsValue(value);
     }
 
+    @Override
     public V get(Object key) {
         return core.get(key);
     }
 
+    @Override
     public synchronized V put(K key, V value) {
         Map<K,V> m = copy();
         V r = m.put(key,value);
@@ -107,6 +112,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         return r;
     }
 
+    @Override
     public synchronized V remove(Object key) {
         Map<K,V> m = copy();
         V r = m.remove(key);
@@ -115,6 +121,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         return r;
     }
 
+    @Override
     public synchronized void putAll(Map<? extends K, ? extends V> t) {
         Map<K,V> m = copy();
         m.putAll(t);
@@ -123,6 +130,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
     protected abstract Map<K,V> copy();
 
+    @Override
     public synchronized void clear() {
         update(Collections.emptyMap());
     }
@@ -130,6 +138,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     /**
      * This method will return a read-only {@link Set}.
      */
+    @Override
     public Set<K> keySet() {
         return view.keySet();
     }
@@ -137,6 +146,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     /**
      * This method will return a read-only {@link Collection}.
      */
+    @Override
     public Collection<V> values() {
         return view.values();
     }
@@ -144,6 +154,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     /**
      * This method will return a read-only {@link Set}.
      */
+    @Override
     public Set<Entry<K,V>> entrySet() {
         return view.entrySet();
     }
@@ -172,6 +183,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         public Hash() {
         }
 
+        @Override
         protected Map<K,V> copy() {
             return new LinkedHashMap<>(core);
         }
@@ -218,6 +230,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
             this(null);
         }
 
+        @Override
         protected Map<K,V> copy() {
             TreeMap<K,V> m = new TreeMap<>(comparator);
             m.putAll(core);

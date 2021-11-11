@@ -5,7 +5,6 @@ import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-
 import java.util.Collection;
 import java.util.Collections;
 
@@ -24,6 +23,7 @@ public abstract class AbstractTopLevelItem extends AbstractItem implements TopLe
         return Collections.emptySet();
     }
 
+    @Override
     public TopLevelItemDescriptor getDescriptor() {
         return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

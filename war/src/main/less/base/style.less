@@ -228,10 +228,6 @@ td.tab {
   background: #f0f0f0;
 }
 
-.dashboard td {
-  padding: 4px 4px 4px 4px;
-}
-
 pre {
     white-space: pre-wrap;       /* css-3 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
@@ -273,7 +269,6 @@ pre.console {
 }
 
 .setting-main {
-  margin-top: 0.25rem;
   width: 100%; /* try to make this column as big as possible. */
 }
 
@@ -422,24 +417,6 @@ pre.console {
   color: gray;
 }
 
-.spinner {
-  padding-left: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: left;
-}
-
-.spinner-right {
-  padding-right: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: right;
-}
-
 #login-field {
     vertical-align: middle;
     padding-right: 1em;
@@ -460,74 +437,25 @@ pre.console {
 }
 
 div.behavior-loading {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+
+  &::before {
+    content: "";
     position: absolute;
+    top: 0;
     left: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #e4e4e4;
-    text-align: center;
-    // TODO: use a display font, maybe 3rem
-    font-size: 300%;
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-}
-
-.config div.behavior-loading {
-    background: rgba(255, 255, 255, 0.85);
-    left: 0;
-    width: 100%;
-    right: 0;
-    top: 15px;
     bottom: 0;
-    height: 100%;
-    width: auto;
-    min-height: 100%;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-    filter: alpha(opacity=100);
-    font-size: 1.5em;
-    z-index: 99;
-    opacity: 1;
-    color: #999;
-    text-shadow: #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px;
-}
-
-.behavior-loading::before {
-  content: ' ';
-  display: block;
-  width: 100px;
-  height: 100px;
-  margin: 200px auto 25px;
-  background-color: rgba(0, 0, 0, 0.15);
-  border: 5px solid rgba(0, 0, 0, 0.33);
-  position: relative;
-  z-index: 2;
-  border-radius: 100%;
-  -webkit-animation: sk-scaleout 1s infinite ease-in-out;
-  animation: sk-scaleout 1s infinite ease-in-out;
-  box-shadow: #fff 0 0 0 10px;
-}
-
-@-webkit-keyframes sk-scaleout {
-  0% { -webkit-transform: scale(0); }
-
-  100% {
-    -webkit-transform: scale(1);
-    opacity: 0;
-  }
-}
-
-@keyframes sk-scaleout {
-  0% {
-    -webkit-transform: scale(0);
-    transform: scale(0);
-  }
-
- 100% {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-    opacity: 0;
+    right: 0;
+    background: var(--background);
+    opacity: 0.95;
   }
 }
 
@@ -577,9 +505,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/error.png");
-    background-position: left center;
+    background-image: url("../../images/svgs/error.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .error-inline {
@@ -593,10 +522,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/warning.png");
-    background-size: 16px 16px;
-    background-position: left center;
+    background-image: url("../../images/svgs/warning.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .warning-inline {
@@ -632,12 +561,34 @@ label.attach-previous {
 /* ====================== help ===================================== */
 
 .help {
+  position: relative;
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: var(--help-area-bg-color);
-  padding: 1em;
-  margin-bottom: 1em;
+  padding: 1rem;
+  margin: 1rem 0;
   word-break: break-word;
+  border-radius: 6px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.05;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .help a {
@@ -651,18 +602,6 @@ label.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
-}
-
-.help-button {
-  margin-left: 2px;
-  margin-right: 2ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.setting-help .help-button {
-  margin: 0;
 }
 
 .icon-help,
@@ -740,7 +679,7 @@ img.icon-help {
   border-bottom: 1px solid var(--bigtable-header-border-color);
 }
 
-#projectstatus th {
+#projectstatus > thead > th {
   text-align: left;
   // padding: 7px 0px;
 }
@@ -780,7 +719,15 @@ table.parameters > tbody:hover {
 }
 
 .healthReport div.healthReportDetails {
-    display: none;
+  display: none;
+  margin-left: 20px;
+  padding: 0;
+
+  table * {
+    font-size: 0.8rem;
+    border-top: none!important;
+    border-bottom: none!important;
+  }
 }
 
 .healthReport:hover,
@@ -790,12 +737,7 @@ table.parameters > tbody:hover {
 
 .healthReport:hover div.healthReportDetails,
 .healthReport.hover div.healthReportDetails {
-    display: block;
-    position: absolute;
-    background-color: #ffe;
-    border: 1px solid #bbb;
-    margin-left: 32px; /* move it across a bit */
-    z-index: 26;
+  display: block;
 }
 
 .healthReport div.healthReportDetails table {
@@ -804,11 +746,6 @@ table.parameters > tbody:hover {
 }
 
 /* ========================= build history ========================= */
-#buildHistory .healthReport {
-    display: inline;
-    margin-right: 1em;
-}
-
 #buildHistory a:visited {
   color: fuchsia;
 }
@@ -847,95 +784,96 @@ table.parameters > tbody:hover {
 
 #buildHistoryPage {
   position: relative;
-}
 
-#buildHistoryPage .build-search-row td {
-    position: relative;
-}
+  .build-search-row, .build-search-no-results-row {
+    &:hover {
+      background: transparent !important;
+    }
 
-#buildHistoryPage .build-search-row .clear {
-    position: absolute;
-    padding: 0 4px;
-    cursor: pointer;
-    top: 4px;
-    right: 6px;
-    opacity: 0.5;
-}
+    td {
+      padding: 8px;
+    }
+  }
 
-#buildHistoryPage .build-search-row .clear:hover {
-    background-color: var(--very-light-grey);
-    border: 1px solid var(--medium-grey);
-    padding-right: 3px;
-    border-top-right-radius: 2px;
-}
+  .build-search-no-results-row {
+    border: none!important;
+    width: 100%!important;
+    background: transparent;
 
-#buildHistoryPage .build-search-row input {
-    width: 100%;
-    padding-left: 5px;
-    padding-right: 20px;
-}
-
-#buildHistoryPage .build-search-row table {
-    width: 100%;
-}
-
-#buildHistoryPage .build-search-row .build-search-help {
-    width: 20px;
-}
-
-#buildHistoryPage .build-search-row .icon-help {
-    position: absolute;
-    cursor: pointer;
-    top: 6px;
+    td {
+      padding-top: 0!important;
+    }
+  }
 }
 
 #buildHistoryPageNav {
   position: absolute;
-  right: -21px;
-  top: 41px;
-  border: 1px solid;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  right: -28px;
+  top: 96px;
+  border-radius: 6px;
+  background: var(--input-color);
+  border: 2px solid var(--input-border);
   visibility: hidden;
-}
+  z-index: 0;
+  opacity: 0;
+  transition: 0.2s ease;
 
-#buildHistoryPageNav .nav {
-  width: 16px;
-  height: 16px;
-  background: no-repeat;
-  background-position: center;
-  background-size: 16px 16px;
-  margin: 4px 2px;
-  cursor: pointer;
+  // Invisible pseudo element on the left so #buildHistoryPageNav
+  // doesn't disappear when moving cursor over gap
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -8px;
+    bottom: 0;
+    width: 8px;
+    background: transparent;
+    z-index: -1;
+  }
+
+  .buildHistoryPageNav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 8px;
+    height: 30px;
+    cursor: pointer;
+    transition: opacity .2s ease;
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &:active {
+      opacity: 0.25;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    &-page-one-top {
+      width: 12px;
+      height: 2px;
+      background: currentColor;
+      margin: 2px 0;
+      border-radius: 2px;
+    }
+
+    svg {
+      fill: currentColor;
+      width: 12px;
+      height: 12px;
+    }
+  }
 }
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  border-color: var(--light-grey) !important;
-}
-
-#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav:hover {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav .pageOne {
-  background-image: url(../../images/16x16/go_top.png);
-}
-
-#buildHistoryPageNav .pageUp {
-  background-image: url(../../images/16x16/go_up.png);
-}
-
-#buildHistoryPageNav .pageDown {
-  background-image: url(../../images/16x16/go_down.png);
-}
-
-#buildHistoryPageNav .find {
-  background-image: url(../../images/16x16/find.png);
+  right: -38px;
+  opacity: 1;
 }
 
 .build-row.model-link-active {
@@ -1269,20 +1207,7 @@ textarea.rich-editor {
   visibility: hidden;
 }
 
-/* ========================= hover notification ========================= */
-
-#hoverNotification {
-    visibility: hidden;
-    background-color: white;
-    border: 1px solid black;
-    padding: 0.5em;
-}
-
 /* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container .has-help {
-    display: flex;
-}
 
 .hetero-list-container .has-help .dd-handle {
     flex: 1;
@@ -1713,19 +1638,6 @@ svg.icon-xlg {
 
 /* -------------------------------------- */
 
-/* --------------- RSS bar -------------- */
-
-#rss-bar {
-    margin: 1em;
-    text-align: right;
-}
-
-#rss-bar .icon-rss {
-    border: 0;
-}
-
-/* -------------------------------------- */
-
 
 /* -------------- SVG icons ------------- */
 
@@ -1742,16 +1654,14 @@ svg.icon-xlg {
   fill: currentColor;
 }
 
-/* -------------------------------------- */
-
-.tr {
-  margin-top: 0.4em;
+.jenkins-icon-adjacent {
+  margin-left: 0.2rem;
 }
 
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2em;
+  height: 2rem;
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */

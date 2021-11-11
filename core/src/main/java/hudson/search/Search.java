@@ -26,10 +26,10 @@ package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
-
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,12 +39,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
-
-import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -182,6 +180,7 @@ public class Search implements StaplerProxy {
 
         private boolean hasMoreResults = false;
 
+        @Override
         public boolean hasMoreResults() {
             return hasMoreResults;
         }
@@ -205,11 +204,13 @@ public class Search implements StaplerProxy {
 
     private enum Mode {
         FIND {
+            @Override
             void find(SearchIndex index, String token, List<SearchItem> result) {
                 index.find(token, result);
             }
         },
         SUGGEST {
+            @Override
             void find(SearchIndex index, String token, List<SearchItem> result) {
                 index.suggest(token, result);
             }
@@ -299,6 +300,7 @@ public class Search implements StaplerProxy {
                 prefixMatch = i.getPath().startsWith(tokenList)?1:0;
             }
 
+            @Override
             public int compareTo(Tag that) {
                 int r = this.prefixMatch -that.prefixMatch;
                 if(r!=0)    return -r;  // ones with head match should show up earlier
@@ -336,6 +338,7 @@ public class Search implements StaplerProxy {
          */
         public List<String> subSequence(final int start) {
             return new AbstractList<String>() {
+                @Override
                 public String get(int index) {
                     StringBuilder buf = new StringBuilder();
                     for(int i=start; i<=start+index; i++ )
@@ -343,6 +346,7 @@ public class Search implements StaplerProxy {
                     return buf.toString().trim();
                 }
 
+                @Override
                 public int size() {
                     return tokens.length-start;
                 }
@@ -350,6 +354,7 @@ public class Search implements StaplerProxy {
         }
         
         
+        @Override
         public String toString() {
             StringBuilder s = new StringBuilder("TokenList{");
             for(String token : tokens) {
@@ -419,7 +424,7 @@ public class Search implements StaplerProxy {
      */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 
     private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

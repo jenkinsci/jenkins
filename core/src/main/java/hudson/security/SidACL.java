@@ -23,9 +23,10 @@
  */
 package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Logger;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -137,6 +138,7 @@ public abstract class SidACL extends ACL {
     public final SidACL newInheritingACL(final SidACL parent) {
         final SidACL child = this;
         return new SidACL() {
+            @Override
             protected Boolean hasPermission(Sid p, Permission permission) {
                 Boolean b = child.hasPermission(p, permission);
                 if(b!=null) return b;

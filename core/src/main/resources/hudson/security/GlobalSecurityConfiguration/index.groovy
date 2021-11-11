@@ -20,7 +20,9 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
-        div(class:"behavior-loading", _("LOADING"))
+        div(class:"behavior-loading") {
+            l.spinner(text: _("LOADING"))
+        }
         f.form(method:"post",name:"config",action:"configure") {
             set("instance",my)
             set("descriptor", my.descriptor)

@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -34,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -90,6 +90,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         super(parent,name);
     }
 
+    @Override
     public boolean isBuildable() {
         return false;
     }
@@ -100,6 +101,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         notLoaded = true;
     }
 
+    @Override
     protected SortedMap<Integer,RunT> _getRuns() {
         if(notLoaded || runs==null) {
             // if none is loaded yet, do so immediately.
@@ -135,6 +137,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         return runs;
     }
 
+    @Override
     public void removeRun(RunT run) {
         if (runs != null && !runs.remove(run)) {
             LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});

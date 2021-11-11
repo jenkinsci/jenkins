@@ -24,7 +24,6 @@
 
 package jenkins.agents;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Computer;
@@ -41,6 +40,8 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.slaves.JnlpAgentReceiver;
@@ -87,11 +88,11 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         state.setRemoteEndpointDescription(req.getRemoteAddr());
         state.fireBeforeProperties();
         LOGGER.fine(() -> "connecting " + agent);
-        state.fireAfterProperties(ImmutableMap.of(
-            // TODO or just pass all request headers?
-            JnlpConnectionState.CLIENT_NAME_KEY, agent,
-            JnlpConnectionState.SECRET_KEY, secret
-        ));
+        // TODO or just pass all request headers?
+        Map<String, String> properties = new HashMap<>();
+        properties.put(JnlpConnectionState.CLIENT_NAME_KEY, agent);
+        properties.put(JnlpConnectionState.SECRET_KEY, secret);
+        state.fireAfterProperties(Collections.unmodifiableMap(properties));
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());

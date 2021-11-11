@@ -23,11 +23,11 @@
  */
 package hudson.cli;
 
-import java.util.List;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -46,6 +46,7 @@ public class ListPluginsCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Name of a specific plugin", required = false)
     public String name;
 
+    @Override
     protected int run() {
         Jenkins h = Jenkins.get();
         h.checkPermission(Jenkins.ADMINISTER);

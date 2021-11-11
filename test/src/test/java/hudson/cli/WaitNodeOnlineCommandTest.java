@@ -24,18 +24,6 @@
 
 package hudson.cli;
 
-import hudson.slaves.DumbSlave;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -43,6 +31,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
+
+import hudson.slaves.DumbSlave;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -60,7 +58,7 @@ public class WaitNodeOnlineCommandTest {
     }
 
     @Test
-    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() throws Exception {
+    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -86,14 +84,12 @@ public class WaitNodeOnlineCommandTest {
         slave.toComputer().setTemporarilyOffline(true);
 
         boolean timeoutOccurred = false;
-        FutureTask task = new FutureTask(new Callable() {
-            public Object call() {
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ)
-                        .invokeWithArgs("aNode");
-                fail("Never should return from previous CLI call!");
-                return null;
-            }
+        FutureTask task = new FutureTask(() -> {
+            final CLICommandInvoker.Result result = command
+                    .authorizedTo(Jenkins.READ)
+                    .invokeWithArgs("aNode");
+            fail("Never should return from previous CLI call!");
+            return null;
         });
         try {
             task.get(30, TimeUnit.SECONDS);
@@ -114,14 +110,12 @@ public class WaitNodeOnlineCommandTest {
         slave.toComputer().waitUntilOffline();
 
         boolean timeoutOccurred = false;
-        FutureTask task = new FutureTask(new Callable() {
-            public Object call() {
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ)
-                        .invokeWithArgs("aNode");
-                fail("Never should return from previous CLI call!");
-                return null;
-            }
+        FutureTask task = new FutureTask(() -> {
+            final CLICommandInvoker.Result result = command
+                    .authorizedTo(Jenkins.READ)
+                    .invokeWithArgs("aNode");
+            fail("Never should return from previous CLI call!");
+            return null;
         });
         try {
             task.get(30, TimeUnit.SECONDS);
@@ -141,14 +135,12 @@ public class WaitNodeOnlineCommandTest {
         slave.toComputer().disconnect();
 
         boolean timeoutOccurred = false;
-        FutureTask task = new FutureTask(new Callable() {
-            public Object call() {
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ)
-                        .invokeWithArgs("aNode");
-                fail("Never should return from previous CLI call!");
-                return null;
-            }
+        FutureTask task = new FutureTask(() -> {
+            final CLICommandInvoker.Result result = command
+                    .authorizedTo(Jenkins.READ)
+                    .invokeWithArgs("aNode");
+            fail("Never should return from previous CLI call!");
+            return null;
         });
         try {
             task.get(30, TimeUnit.SECONDS);

@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+
+<style>
+
+</style>
+<div class="lds-ellipsis"><div></div><div></div><div></div></div>
+</j:jelly>

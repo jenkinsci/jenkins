@@ -7,22 +7,22 @@ import static org.junit.Assume.assumeFalse;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Launcher.RemoteLauncher.ProcImpl;
+import hudson.model.TaskListener;
 import hudson.remoting.Pipe;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import jenkins.security.MasterToSlaveCallable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -55,7 +55,7 @@ public class ProcTest {
             }
         }.start();
 
-        RemoteLauncher launcher = new RemoteLauncher(StreamTaskListener.NULL, ch, true);
+        RemoteLauncher launcher = new RemoteLauncher(TaskListener.NULL, ch, true);
 
         String str="";
         for (int i=0; i<256; i++)
@@ -88,6 +88,7 @@ public class ProcTest {
             this.o = o;
         }
 
+        @Override
         public Void call() throws IOException {
             while (!Thread.interrupted()) {
                 o.write(new byte[256]);

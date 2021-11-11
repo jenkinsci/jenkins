@@ -26,12 +26,11 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * Reconnect to a node or nodes.
@@ -42,7 +41,7 @@ import java.util.logging.Logger;
 public class ConnectNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comma-separated list is supported", required=true, multiValued=true)
+    @Argument(metaVar="NAME", usage="Agent name, or empty string for built-in node; comma-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
 
     @Option(name="-f", usage="Cancel any currently pending connect operation and retry from scratch")

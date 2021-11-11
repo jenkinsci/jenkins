@@ -24,21 +24,20 @@
 
 package hudson.cli;
 
-import hudson.model.Job;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
+
+import hudson.model.Item;
+import java.io.IOException;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -59,7 +58,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Jenkins.READ)
+                .authorizedTo(Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(6));
@@ -72,7 +71,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(3));
@@ -85,7 +84,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, succeededSilently());
@@ -95,7 +94,7 @@ public class DeleteJobCommandTest {
     @Test public void deleteJobShouldFailIfJobDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created");
 
         assertThat(result, failedWith(3));
@@ -110,7 +109,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject3");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject3");
 
         assertThat(result, succeededSilently());
@@ -125,7 +124,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aProject1", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -144,7 +143,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1","never_created", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -163,7 +162,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
         assertThat(result, failedWith(5));
@@ -182,7 +181,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -203,7 +202,7 @@ public class DeleteJobCommandTest {
         j.createFreeStyleProject("aProject2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject1");
 
         assertThat(result, succeededSilently());

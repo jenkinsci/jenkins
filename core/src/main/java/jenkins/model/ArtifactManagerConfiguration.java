@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
 import hudson.util.DescribableList;
@@ -31,8 +32,6 @@ import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * List of configured {@link ArtifactManagerFactory}s.

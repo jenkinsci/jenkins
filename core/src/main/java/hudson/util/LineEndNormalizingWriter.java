@@ -24,8 +24,8 @@
 package hudson.util;
 
 import java.io.FilterWriter;
-import java.io.Writer;
 import java.io.IOException;
+import java.io.Writer;
 
 /**
  * Finds the lone LF and converts that to CR+LF.
@@ -64,7 +64,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
             super.write("\r\n");
         else
             super.write(c);
-        seenCR = (c==CR);
+        seenCR = c == CR;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
                 super.write("\r\n");
                 writeBegin=i+1;
             }
-            seenCR = (ch==CR);
+            seenCR = ch == CR;
         }
 
         super.write(cbuf,writeBegin,end-writeBegin);
@@ -99,7 +99,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
                 super.write("\r\n");
                 writeBegin=i+1;
             }
-            seenCR = (ch==CR);
+            seenCR = ch == CR;
         }
 
         super.write(str,writeBegin,end-writeBegin);

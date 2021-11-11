@@ -23,12 +23,11 @@
  */
 package hudson.util;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Server-side code related to the {@code <f:apply>} button.
@@ -46,6 +45,7 @@ public class FormApply {
      */
     public static HttpResponseException success(final String destination) {
         return new HttpResponseException() {
+            @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
@@ -73,6 +73,7 @@ public class FormApply {
      */
     public static HttpResponseException applyResponse(final String script) {
         return new HttpResponseException() {
+            @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 rsp.setContentType("text/html;charset=UTF-8");
                 rsp.getWriter().println("<html><body><script>" +

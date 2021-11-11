@@ -23,22 +23,20 @@
  */
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
-
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import org.jfree.chart.JFreeChart;
-import org.junit.Test;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import javax.imageio.ImageIO;
+import org.jfree.chart.JFreeChart;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -48,14 +46,17 @@ public class LoadStatisticsTest {
     @Test
     public void graph() throws IOException {
         LoadStatistics ls = new LoadStatistics(0, 0) {
+            @Override
             public int computeIdleExecutors() {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public int computeTotalExecutors() {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
@@ -96,7 +97,7 @@ public class LoadStatisticsTest {
     }
 
     @Test
-    public void isModernWorks() throws Exception {
+    public void isModernWorks() {
         assertThat(LoadStatistics.isModern(Modern.class), is(true));
         assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
     }

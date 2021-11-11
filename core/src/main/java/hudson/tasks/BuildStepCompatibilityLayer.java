@@ -23,26 +23,23 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.FilePath;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Action;
-import hudson.model.Project;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.Launcher;
 import hudson.Util;
-
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.Project;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -57,6 +54,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
 //
 // new definitions >= 1.150
 //
+    @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
         if (build instanceof Build)
             return prebuild((Build)build,listener);
@@ -90,6 +88,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
         }
     }
 
+    @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
         if (project instanceof Project)
             return getProjectAction((Project) project);
@@ -97,6 +96,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
+    @Override
     @NonNull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior

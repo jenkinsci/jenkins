@@ -1,15 +1,15 @@
 package hudson.model;
 
-import hudson.util.Secret;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+
+import hudson.util.Secret;
+import org.junit.Test;
 
 public class ParameterDefinitionTest {
 
     @Test
-    public void compareStringParameterDefinition() throws Exception {
+    public void compareStringParameterDefinition() {
         StringParameterDefinition spd = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdSame = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdOther = new StringParameterDefinition("spdOther", "default");
@@ -154,15 +154,15 @@ public class ParameterDefinitionTest {
     }
 
     static class ExtendStringParameterDefinition extends StringParameterDefinition {
-        public ExtendStringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
+        ExtendStringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
             super(name, defaultValue, description, trim);
         }
 
-        public ExtendStringParameterDefinition(String name, String defaultValue, String description) {
+        ExtendStringParameterDefinition(String name, String defaultValue, String description) {
             super(name, defaultValue, description);
         }
 
-        public ExtendStringParameterDefinition(String name, String defaultValue) {
+        ExtendStringParameterDefinition(String name, String defaultValue) {
             super(name, defaultValue);
         }
     }

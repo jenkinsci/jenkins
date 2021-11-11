@@ -23,17 +23,16 @@
  */
 package hudson.model;
 
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.util.Secret;
+import java.util.Objects;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.Objects;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
@@ -131,7 +130,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         return Objects.equals(defaultValue, other.defaultValue);
     }
 
-    @Extension @Symbol({"password"})
+    @Extension @Symbol("password")
     public static final class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

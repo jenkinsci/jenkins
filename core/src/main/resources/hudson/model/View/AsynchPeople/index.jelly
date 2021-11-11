@@ -28,84 +28,36 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <t:setIconSize/>
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-user icon-xlg"/>
-        ${%People}
-        <j:set var="viewType" value="${it.parent.class.simpleName}"/>
-        <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
-        <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
-      </h1>
-      <p>${%blurb}</p>
-      <script>
-          function display(data) {
-              var p = document.getElementById('people');
-              for (var x = 0; data.length > x; x++) {
-                  var e = data[x];
-                  var id = 'person-' + e.id;
-                  var r = document.getElementById(id);
-                  if (r == null) {
-                      r = document.createElement('tr');
-                      r.id = id;
-                      p.appendChild(r);
-                  } else {
-                      while (r.firstChild) {
-                          r.removeChild(r.firstChild);
-                      }
-                  }
-
-                  var d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
-                  a.className = 'model-link inside';
-                  var i = document.createElement('img');
-                  i.src = e.avatar;
-                  i.className = 'icon${iconSize}';
-                  a.appendChild(i);
-                  d.appendChild(a);
-                  r.appendChild(d);
-
-                  d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
-                  a.appendChild(document.createTextNode(e.id));
-                  d.appendChild(a);
-                  r.appendChild(d);
-
-                  d = document.createElement('td');
-                  var a = document.createElement('a');
-                  a.href = '${rootURL}/' + e.url;
-                  a.appendChild(document.createTextNode(e.fullName));
-                  d.appendChild(a);
-                  r.appendChild(d);
-
-                  d = document.createElement('td');
-                  d.setAttribute('data', e.timeSortKey);
-                  d.appendChild(document.createTextNode(e.lastChangeTimeString));
-                  r.appendChild(d);
-
-                  d = document.createElement('td');
-                  if (e.projectUrl != null) {
-                      a = document.createElement('a');
-                      a.href = '${rootURL}/' + e.projectUrl;
-                      a.className = 'model-link inside';
-                      a.appendChild(document.createTextNode(e.projectFullDisplayName));
-                      d.appendChild(a);
-                  }
-                  r.appendChild(d);
-
-                  ts_refresh(p);
-              }
-          }
-      </script>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1>
+            ${%People}
+            <j:set var="viewType" value="${it.parent.class.simpleName}"/>
+            <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
+            <j:if test="${!isAll}">- ${it.parent.displayName}</j:if>
+          </h1>
+        </div>
+      </div>
+        <p class="jenkins-description">${%blurb}</p>
+      <st:adjunct includes="hudson.model.View.AsynchPeople.people-resources" />
       <l:progressiveRendering handler="${it}" callback="display"/>
-      <table class="sortable pane bigtable" id="people">
-        <tr>
-          <th class="minimum-width" data-sort-disable="true" />
-          <th>${%User ID}</th>
-          <th>${%Name}</th>
-          <th initialSortDir="up">${%Last Commit Activity}</th>
-          <th>${%On}</th>
-        </tr>
+
+      <!-- cloned from JS -->
+      <span id="person-circle-outline" class="default-hidden">
+        <l:ionicon name="person-circle-outline" />
+      </span>
+
+      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people">
+        <thead>
+          <tr>
+            <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>
+            <th>${%User ID}</th>
+            <th>${%Name}</th>
+            <th initialSortDir="up">${%Last Commit Activity}</th>
+            <th>${%On}</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
       </table>
       <t:iconSize>
         <j:if test="${!isAll}">

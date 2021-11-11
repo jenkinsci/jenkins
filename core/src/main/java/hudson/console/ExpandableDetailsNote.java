@@ -25,7 +25,6 @@ package hudson.console;
 
 import hudson.Extension;
 import hudson.MarkupText;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

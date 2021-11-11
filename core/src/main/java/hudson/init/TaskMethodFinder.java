@@ -1,16 +1,9 @@
 package hudson.init;
 
+import static java.util.logging.Level.WARNING;
+
 import com.google.inject.Injector;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import org.jvnet.hudson.annotation_indexer.Index;
-import org.jvnet.hudson.reactor.Milestone;
-import org.jvnet.hudson.reactor.MilestoneImpl;
-import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.Task;
-import org.jvnet.hudson.reactor.TaskBuilder;
-import org.jvnet.localizer.ResourceBundleHolder;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +16,14 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
+import org.jvnet.hudson.annotation_indexer.Index;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.MilestoneImpl;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.Task;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.localizer.ResourceBundleHolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -51,6 +50,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     protected abstract Milestone beforeOf(T i);
     protected abstract boolean fatalOf(T i);
 
+    @Override
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
         List<Task> result = new ArrayList<>();
         for (Method e : Index.list(type, cl, Method.class)) {
@@ -83,7 +83,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
                     c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
             return rb.format(key);
         } catch (ClassNotFoundException x) {
-            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+e.toString(),x);
+            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+ e,x);
             return key;
         } catch (MissingResourceException x) {
             LOGGER.log(WARNING, "Could not find key '" + key + "' in " + c.getPackage().getName() + ".Messages", x);
@@ -155,26 +155,32 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
             return e;
         }
 
+        @Override
         public Collection<Milestone> requires() {
             return requires;
         }
 
+        @Override
         public Collection<Milestone> attains() {
             return attains;
         }
 
+        @Override
         public String getDisplayName() {
             return getDisplayNameOf(e, i);
         }
 
+        @Override
         public boolean failureIsFatal() {
             return fatalOf(i);
         }
 
+        @Override
         public void run(Reactor session) {
             invoke(e);
         }
 
+        @Override
         public String toString() {
             return e.toString();
         }

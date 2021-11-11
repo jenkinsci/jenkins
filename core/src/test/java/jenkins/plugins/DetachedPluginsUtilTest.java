@@ -1,15 +1,5 @@
 package jenkins.plugins;
 
-import hudson.util.VersionNumber;
-import jenkins.util.java.JavaUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -17,6 +7,15 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import hudson.util.VersionNumber;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
 
 public class DetachedPluginsUtilTest {
     @Test

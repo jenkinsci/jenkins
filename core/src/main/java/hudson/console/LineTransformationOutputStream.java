@@ -24,7 +24,6 @@
 package hudson.console;
 
 import hudson.util.ByteArrayOutputStream2;
-
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -51,6 +50,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      */
     protected abstract void eol(byte[] b, int len) throws IOException;
 
+    @Override
     public void write(int b) throws IOException {
         buf.write(b);
         if (b==LF) eol();

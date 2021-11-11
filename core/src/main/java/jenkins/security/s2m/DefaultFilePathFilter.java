@@ -26,16 +26,15 @@ package jenkins.security.s2m;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.remoting.ChannelBuilder;
-import jenkins.ReflectiveFilePathFilter;
-import jenkins.security.ChannelConfigurator;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.ReflectiveFilePathFilter;
+import jenkins.security.ChannelConfigurator;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Blocks agents from writing to files on the master by default (and also provide the kill switch.)
@@ -54,6 +53,7 @@ import java.util.logging.Logger;
     @Override
     public void onChannelBuilding(ChannelBuilder builder, Object context) {
         new ReflectiveFilePathFilter() {
+            @Override
             protected boolean op(String op, File f) throws SecurityException {
                 if (BYPASS) {
                     LOGGER.log(Level.FINE, "agent allowed to {0} {1}", new Object[] {op, f});

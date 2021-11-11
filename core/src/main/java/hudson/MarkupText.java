@@ -64,6 +64,7 @@ public class MarkupText extends AbstractMarkupText {
             this.markup = markup;
         }
 
+        @Override
         public int compareTo(Tag that) {
             return this.pos-that.pos;
         }
@@ -249,6 +250,7 @@ public class MarkupText extends AbstractMarkupText {
      * @param end
      *      If negative, -N means "trim the last N-1 chars". That is, (s,-1) is the same as (s,length)
      */
+    @Override
     public SubText subText(int start, int end) {
         return new SubText(start, end<0 ? text.length()+1+end : end);
     }

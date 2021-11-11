@@ -25,14 +25,13 @@
 package jenkins.model.item_category;
 
 import hudson.model.TopLevelItem;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Represents an {@link ItemCategory} and its {@link TopLevelItem}s.

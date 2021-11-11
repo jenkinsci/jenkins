@@ -55,6 +55,7 @@ public abstract class ToolProperty<T extends ToolInstallation> implements Descri
         this.tool = tool;
     }
 
+    @Override
     public ToolPropertyDescriptor getDescriptor() {
         return (ToolPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

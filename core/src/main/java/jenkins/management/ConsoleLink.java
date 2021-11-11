@@ -24,13 +24,12 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -43,6 +42,7 @@ public class ConsoleLink extends ManagementLink {
         return "notepad.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ConsoleLink_DisplayName();
     }

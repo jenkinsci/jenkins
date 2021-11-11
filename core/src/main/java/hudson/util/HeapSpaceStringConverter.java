@@ -33,7 +33,7 @@ import com.thoughtworks.xstream.converters.basic.StringConverter;
  * 
  * Since XStream 1.3 it use a WeakHashMap cache to always use the same String instances, but
  * this has also major problems with a single long living XStream instance (as we have in Jenkins)
- * See http://jira.codehaus.org/browse/XSTR-604
+ * See https://x-stream.github.io/jira/604/
  *
  * <p>
  * Use this to avoid that (instead those strings will
@@ -43,10 +43,12 @@ import com.thoughtworks.xstream.converters.basic.StringConverter;
  */
 public class HeapSpaceStringConverter extends AbstractSingleValueConverter {
 
+    @Override
     public boolean canConvert(Class type) {
         return type.equals(String.class);
     }
 
+    @Override
     public Object fromString(String str) {
         return str;
     }

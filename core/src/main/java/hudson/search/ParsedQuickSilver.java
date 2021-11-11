@@ -23,14 +23,14 @@
  */
 package hudson.search;
 
+import java.beans.Introspector;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.beans.Introspector;
 
 /**
  * Parsed {@link QuickSilver}s so that {@link SearchIndex} can be easily created.
@@ -118,6 +118,7 @@ final class ParsedQuickSilver {
             this.method = method;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return method.invoke(obj);
@@ -142,6 +143,7 @@ final class ParsedQuickSilver {
             this.field = field;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return field.get(obj);
@@ -160,14 +162,17 @@ final class ParsedQuickSilver {
     public void addTo(SearchIndexBuilder builder, final Object instance) {
         for (final Getter getter : getters)
             builder.add(new SearchItem() {
+                @Override
                 public String getSearchName() {
                     return getter.searchName;
                 }
 
+                @Override
                 public String getSearchUrl() {
                     return getter.url;
                 }
 
+                @Override
                 public SearchIndex getSearchIndex() {
                     Object child = getter.get(instance);
                     if(child==null) return SearchIndex.EMPTY;
