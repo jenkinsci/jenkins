@@ -36,7 +36,7 @@ THE SOFTWARE.
         <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
-            <local:tabBar xmlns:local="/hudson/PluginManager" page="advanced"/>
+            <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
 
             <section class="jenkins-section">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
