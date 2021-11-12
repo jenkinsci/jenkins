@@ -1,4 +1,4 @@
-[*.{jelly, js, less, css}]
+[*.{jelly, js, css, hbs}]
 indent_style = tab
 indent_size = 4
 trim_trailing_whitespace = true

@@ -61,7 +61,6 @@ THE SOFTWARE.
 								</th>
 							</l:isAdmin>
 							<th initialSortDir="down">${%Name}</th>
-							<th>${%Version}</th>
 							<th>${%Released}</th>
 							<j:if test="${isUpdates}">
 								<th>${%Installed}</th>
