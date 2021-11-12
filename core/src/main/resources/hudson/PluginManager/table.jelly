@@ -68,7 +68,6 @@ THE SOFTWARE.
 								</th>
 							</l:isAdmin>
 							<th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
-							<th>${%Version}</th>
 							<th>${%Released}</th>
 							<j:if test="${isUpdates}">
 								<th>${%Installed}</th>
@@ -107,6 +106,10 @@ THE SOFTWARE.
 										<div>
 											<a href="${p.wiki}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">
 												<st:out value="${p.displayName}"/>
+												<span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
+													<span class="jenkins-visually-hidden">${%Version}</span>
+													${p.version}
+												</span>
 											</a>
 										</div>
 										<j:if test="${!p.categories.isEmpty()}">
@@ -209,9 +212,6 @@ THE SOFTWARE.
 											</div>
 										</j:if>
 									</td>
-									<td>
-										<st:out value="${p.version}"/>
-									</td>
 									<td data="${p.releaseTimestamp.time}">
 										<j:if test="${p.releaseTimestamp != null}">
 											<time datetime="${h.iso8601DateTime(p.releaseTimestamp)}"
@@ -251,6 +251,10 @@ THE SOFTWARE.
 												<div>
 													<a href="${p.wiki}" rel="noopener noreferrer" target="_blank">
 														<st:out value="${p.displayName}"/>
+														<span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
+															<span class="jenkins-visually-hidden">${%Version}</span>
+															${p.latest}
+														</span>
 													</a>
 													<span class="unavailable-label">${%unavailable}</span>
 												</div>
@@ -277,7 +281,6 @@ THE SOFTWARE.
 													</div>
 												</j:if>
 											</td>
-											<td>${p.latest}</td>
 											<td><!-- timestamp --></td>
 											<td>
 												<j:choose>
