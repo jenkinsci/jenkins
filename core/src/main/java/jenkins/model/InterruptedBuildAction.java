@@ -43,11 +43,11 @@ public class InterruptedBuildAction extends InvisibleAction {
     private final List<CauseOfInterruption> causes;
 
     public InterruptedBuildAction(Collection<? extends CauseOfInterruption> causes) {
-        this.causes = Collections.unmodifiableList(new ArrayList<>(causes));
+        this.causes = new ArrayList<>(causes);
     }
 
     @Exported
     public List<CauseOfInterruption> getCauses() {
-        return causes;
+        return Collections.unmodifiableList(causes);
     }
 }
