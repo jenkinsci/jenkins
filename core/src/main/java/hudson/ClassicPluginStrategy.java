@@ -641,9 +641,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
-                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
-                        if (c!=null)    return c;
-                        return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
+                        return ClassLoaderReflectionToolkit.loadClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
                         //not found. try next
                     }
