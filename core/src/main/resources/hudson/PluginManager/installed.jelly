@@ -107,7 +107,7 @@ THE SOFTWARE.
                         </span>
                       </a>
                     </div>
-                    <div class="excerpt jenkins-!-margin-top-1">
+                    <div class="jenkins-!-margin-top-1">
                       <j:set var="indexPage" value="${p.indexPage.toString()}"/>
                       <j:set var="excerpt"
                              value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
