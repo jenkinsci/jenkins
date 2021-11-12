@@ -50,8 +50,7 @@ THE SOFTWARE.
       <st:adjunct includes="hudson.PluginManager._table"/>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-        <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}
-        </div>
+        <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
 
       <div class="plugins i18n"
@@ -66,7 +65,7 @@ THE SOFTWARE.
            data-detached-possible-dependents="${%detached-possible-dependents}"
       />
 
-      <local:tabBar xmlns:local="/hudson/PluginManager" page="installed"/>
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
