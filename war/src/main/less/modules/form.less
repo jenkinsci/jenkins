@@ -377,17 +377,33 @@
 	clip: rect(0 0 0 0);
 	clip-path: inset(50%);
 
-	&:checked + label:before {
+	&:disabled {
+		& + label {
+			cursor: default;
+
+			&::before {
+				opacity: 0.25!important;
+				background-color: var(--input-border)!important;
+				box-shadow: none!important;
+			}
+
+			&::after {
+				opacity: 0.5!important;
+			}
+		}
+	}
+
+	&:checked + label::before {
 		background-color: var(--focus-input-border);
 	}
 
-	&:checked + label:after {
+	&:checked + label::after {
 		left: 25px;
 		color: var(--focus-input-border);
 		transform: rotate(0deg);
 	}
 
-	&:active + label:before, &:focus + label:before {
+	&:active + label::before, &:focus + label::before {
 		box-shadow: 0 0 0 5px var(--focus-input-glow);
 	}
 }

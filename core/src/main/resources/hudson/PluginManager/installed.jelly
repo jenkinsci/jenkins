@@ -228,18 +228,9 @@ THE SOFTWARE.
 							<!-- failed ones -->
 							<j:forEach var="p" items="${it.failedPlugins}">
 								<tr class="hoverback">
-									<td class="center enable">
-										<span class="jenkins-toggle-switch">
-											<input type="checkbox" checked="${state}" onclick="flip(event)"
-												   url="plugin/${p.shortName}"
-												   disabled="${readOnlyMode ? 'true' : null}"
-												   original="${p.active?'true':'false'}"/>
-											<label class="attach-previous"></label>
-										</span>
-									</td>
 									<td>
 										<j:if test="${p.pluginWrapper != null}">
-											<div class="plugin-name failed-plugin with-plugin-wrapper">
+											<div class="plugin-name failed-plugin with-plugin-wrapper jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
 												<a href="${p.pluginWrapper.url}" target="_blank" rel="noopener noreferrer"
 												   class="display-name">
 													${p.pluginWrapper.updateInfo.displayName?:p.pluginWrapper.displayName}
@@ -255,7 +246,12 @@ THE SOFTWARE.
 											<pre>${p.cause.message}</pre>
 										</div>
 									</td>
-									<td/>
+									<td class="center enable">
+										<span class="jenkins-toggle-switch">
+											<input type="checkbox" disabled="disabled" />
+											<label class="attach-previous"></label>
+										</span>
+									</td>
 									<td/>
 									<td/>
 								</tr>
