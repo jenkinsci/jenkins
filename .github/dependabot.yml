@@ -24,8 +24,6 @@ updates:
       - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
       # see https://github.com/jenkinsci/jenkins/pull/4224 can't be updated without breaking api
       - dependency-name: "org.jfree:jfreechart"
-      # needs guava upgrades first https://github.com/jenkinsci/jenkins/pull/5200#pullrequestreview-579741619
-      - dependency-name: "com.google.inject:guice"
       # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
       - dependency-name: "javax.servlet:javax.servlet-api"
       # log4j 1.2.17 is the final 1.x release

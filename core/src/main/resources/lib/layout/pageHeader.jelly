@@ -30,13 +30,13 @@
         <div class="page-header__brand">
             <div class="logo">
                 <a id="jenkins-home-link" href="${rootURL}/">
-                    <img id="jenkins-head-icon" src="${imagesURL}/jenkins-header-logo-v2.svg" alt="[${logoAlt}]" />
+                    <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" alt="[${logoAlt}]" />
                     <img id="jenkins-name-icon" src="${imagesURL}/title.svg" alt="${title}" width="139" height="34" />
                 </a>
             </div>
 
             <a class="page-header__brand-link" href="${rootURL}/">
-                <img src="${imagesURL}/jenkins-header-logo-v2.svg"
+                <img src="${imagesURL}/svgs/logo.svg"
                      alt="[${logoAlt}]"
                      class="page-header__brand-image" />
                 <span class="page-header__brand-name">Jenkins</span>
