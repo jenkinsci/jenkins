@@ -37,7 +37,7 @@ THE SOFTWARE.
           type="search"
           id="filter-box"
           value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+          placeholder="${%Search}"/>
         <div class="jenkins-search__icon">
           <l:ionicon name="search-outline"/>
         </div>
@@ -50,15 +50,13 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
       <form method="post" action="install">
-        <local:tabBar xmlns:local="/hudson/PluginManager" page="${page}"/>
+        <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager"/>
         <table id="plugins" class="jenkins-table sortable"
                data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
             <tr>
               <l:isAdmin>
-                <th tooltip="${%Check to install the plugin}"
-                    width="32">${%Install}
-                </th>
+                <th width="32">${%Install}</th>
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
