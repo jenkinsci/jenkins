@@ -26,10 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
 	<st:documentation>
 		<st:attribute name="title" use="required">
-			TODO
+			The title for the application bar
 		</st:attribute>
-		TODO
-	</st:documentation>
+    Generates a row containing the page title and an optional set of controls
+  </st:documentation>
 
 	<j:if test="${mode=='app-bar'}">
 		<div class="jenkins-app-bar">
