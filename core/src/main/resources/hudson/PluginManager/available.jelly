@@ -57,12 +57,11 @@ THE SOFTWARE.
 					<thead>
 						<tr>
 							<l:isAdmin>
-								<th initialSortDir="${isUpdates?null:'up'}"
-									tooltip="${%Check to install the plugin}"
+								<th tooltip="${%Check to install the plugin}"
 									width="32">${%Install}
 								</th>
 							</l:isAdmin>
-							<th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
+							<th initialSortDir="down">${%Name}</th>
 							<th>${%Version}</th>
 							<th>${%Released}</th>
 							<j:if test="${isUpdates}">

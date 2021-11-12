@@ -230,7 +230,7 @@ THE SOFTWARE.
 								<tr class="hoverback">
 									<td>
 										<j:if test="${p.pluginWrapper != null}">
-											<div class="plugin-name failed-plugin with-plugin-wrapper jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
+											<div class="plugin-name failed-plugin with-plugin-wrapper">
 												<a href="${p.pluginWrapper.url}" target="_blank" rel="noopener noreferrer"
 												   class="display-name">
 													${p.pluginWrapper.updateInfo.displayName?:p.pluginWrapper.displayName}
@@ -242,7 +242,7 @@ THE SOFTWARE.
 												${p.name}
 											</div>
 										</j:if>
-										<div class="alert alert-danger">
+										<div class="alert alert-danger jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
 											<pre>${p.cause.message}</pre>
 										</div>
 									</td>
