@@ -81,16 +81,9 @@ THE SOFTWARE.
 		  	  <l:ionicon name="search-outline" />
 			</div>
           </div>
-          <j:if test="${page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information">
-              No builds
-            </div>
-          </j:if>
-          <j:if test="${!page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information" style="display: none;">
-              No builds
-            </div>
-          </j:if>
+          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() ? '' : 'display: none;'}">
+            ${%No builds}
+          </div>
         </td>
       </tr>
 
