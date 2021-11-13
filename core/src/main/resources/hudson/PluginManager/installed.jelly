@@ -96,7 +96,6 @@ THE SOFTWARE.
                 <tr
                   class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}"
                   data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
-                  <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="details">
                     <div class="plugin-name success-plugin">
                       <a href="${p.url}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
@@ -154,7 +153,8 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                   </td>
-                  <td class="jenkins-table__cell--tight" data="${state}">
+                  <j:set var="state" value="${p.enabled?'true':null}"/>
+                  <td class="jenkins-table__cell--tight enable" data="${state}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
                         <input type="checkbox" checked="${state}" onclick="flip(event)"
@@ -182,7 +182,7 @@ THE SOFTWARE.
                         </j:if>
                       </div>
                     </td>
-                    <td class="jenkins-table__cell--tight">
+                    <td class="jenkins-table__cell--tight uninstall">
                       <div class="jenkins-table__cell__button-wrapper">
                         <j:choose>
                           <j:when test="${p.isDeleted()}">
@@ -217,7 +217,7 @@ THE SOFTWARE.
                               </div>
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-table__button--red" tooltip="${%Uninstall}">
+                              <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall}">
                                 <l:ionicon name="close-circle-outline"/>
                               </button>
                             </form>
