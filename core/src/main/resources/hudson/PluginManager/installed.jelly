@@ -217,7 +217,7 @@ THE SOFTWARE.
                               </div>
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall}">
+                              <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
                                 <l:ionicon name="close-circle-outline"/>
                               </button>
                             </form>
