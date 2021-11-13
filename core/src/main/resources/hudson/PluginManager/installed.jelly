@@ -185,14 +185,6 @@ THE SOFTWARE.
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
                         <j:choose>
-                          <j:when test="${p.hasMandatoryDependents()}">
-                            <j:set var="uninstallPossible" value="true"/>
-                          </j:when>
-                          <j:otherwise>
-                            <j:set var="uninstallPossible" value="false"/>
-                          </j:otherwise>
-                        </j:choose>
-                        <j:choose>
                           <j:when test="${p.isDeleted()}">
                             <p>${%Uninstallation pending}</p>
                           </j:when>
