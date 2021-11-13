@@ -8,11 +8,6 @@
 }
 
 /* ========================= plugin manager ========================= */
-#plugins {
-  margin-top: 0;
-  border-top: none;
-}
-
 #plugins tr.already-upgraded {
   background-color: var(--plugin-manager-bg-color-already-upgraded);
 }
@@ -26,10 +21,10 @@
 
 #plugins tr.has-dependents input,
 #plugins tr.has-disabled-dependency .enable input,
-#plugins tr.has-disabled-dependency button,
+#plugins tr.has-dependents button,
 #plugins tr.has-disabled-dependency .enable button {
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.25;
 }
 
 #plugins tr.has-dependents-but-disabled .enable input,
