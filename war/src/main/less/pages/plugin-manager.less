@@ -1,93 +1,94 @@
-.app-plugin-manager__categories {
-  margin: 0.5rem 0;
+#plugins {
+  .app-plugin-manager__categories {
+    margin: 0.5rem 0;
 
-  a {
-    margin: 0 1.25rem 0 0 !important;
-    font-size: 0.75rem;
+    a {
+      margin: 0 1.25rem 0 0 !important;
+      font-size: 0.75rem;
+    }
   }
-}
+  
+  tr.already-upgraded {
+    background-color: var(--plugin-manager-bg-color-already-upgraded);
+  }
 
-/* ========================= plugin manager ========================= */
-#plugins tr.already-upgraded {
-  background-color: var(--plugin-manager-bg-color-already-upgraded);
-}
+  tr.all-dependents-disabled .enable input,
+  tr.all-dependents-disabled .enable button {
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+  }
 
-#plugins tr.all-dependents-disabled .enable input,
- #plugins tr.all-dependents-disabled .enable button {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
+  tr.has-dependents input,
+  tr.has-disabled-dependency .enable input,
+  tr.has-dependents button,
+  tr.has-disabled-dependency .enable button {
+    pointer-events: none;
+    opacity: 0.25;
+  }
 
-#plugins tr.has-dependents input,
-#plugins tr.has-disabled-dependency .enable input,
-#plugins tr.has-dependents button,
-#plugins tr.has-disabled-dependency .enable button {
-  pointer-events: none;
-  opacity: 0.25;
-}
+  tr.has-dependents-but-disabled .enable input,
+  tr.has-dependents-but-disabled .enable button {
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+  }
 
-#plugins tr.has-dependents-but-disabled .enable input,
- #plugins tr.has-dependents-but-disabled .enable button {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
+  tr.has-disabled-dependency .enable input,
+  tr.has-disabled-dependency .enable button {
+    opacity: 0.4;
+  }
 
-#plugins tr.has-disabled-dependency .enable input,
- #plugins tr.has-disabled-dependency .enable button {
-  opacity: 0.4;
-}
+  tr.deleted input,
+  tr.deleted button {
+    visibility: hidden !important;
+  }
 
-#plugins tr.deleted input,
- #plugins tr.deleted button {
-  visibility: hidden !important;
-}
+  .dependent-list,
+  .dependency-list {
+    display: none;
+  }
 
-#plugins .dependent-list,
-#plugins .dependency-list {
-  display: none;
-}
+  .enable-state-info,
+  .uninstall-state-info {
+    padding: 5px 20px;
+    max-width: 70%;
+    border: solid 1px var(--warning);
+    border-radius: 3px;
+    text-align: center;
+  }
 
-#plugins .enable-state-info,
-#plugins .uninstall-state-info {
-  padding: 5px 20px;
-  max-width: 70%;
-  border: solid 1px var(--warning);
-  border-radius: 3px;
-  text-align: center;
-}
+  .enable-state-info {
+    float: left;
+  }
 
-#plugins .enable-state-info {
-  float: left;
-}
+  .uninstall-state-info {
+    float: right;
+  }
 
-#plugins .uninstall-state-info {
-  float: right;
-}
+  .plugin-dependency-info .title,
+  .plugin-dependency-info .subtitle {
+    opacity: 0.7;
+  }
 
-#plugins .plugin-dependency-info .title,
-#plugins .plugin-dependency-info .subtitle {
-  opacity: 0.7;
-}
+  .plugin-dependency-info .title {
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bolder;
+  }
 
-#plugins .plugin-dependency-info .title {
-  margin-bottom: 5px;
-  font-size: larger;
-  font-weight: bolder;
-}
-
-#plugins .plugin-dependency-info span {
-  margin: 5px 5px 0 0;
-  background-color: var(--primary);
-  display: inline-block;
-  padding: 0.2em 0.6em 0.3em;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--white);
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: 0.25em;
+  .plugin-dependency-info span {
+    margin: 5px 5px 0 0;
+    background-color: var(--primary);
+    display: inline-block;
+    padding: 0.2em 0.6em 0.3em;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25em;
+  }
 }
