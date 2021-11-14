@@ -51,8 +51,6 @@ THE SOFTWARE.
               </f:entry>
             </div>
 
-<!--          TODO  REMEMBER TO DELETE THIS LINE-->
-
             <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
 
             <!-- additional entries from derived classes -->
