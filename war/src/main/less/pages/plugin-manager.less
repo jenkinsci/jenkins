@@ -13,7 +13,8 @@
   }
 
   tr.all-dependents-disabled .enable input,
-  tr.all-dependents-disabled .enable button {
+  tr.all-dependents-disabled .enable button,
+  tr.all-dependents-disabled .enable .jenkins-toggle-switch label {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;
@@ -21,26 +22,31 @@
 
   tr.has-dependents input,
   tr.has-disabled-dependency .enable input,
+  tr.has-disabled-dependency .enable .jenkins-toggle-switch label,
   tr.has-dependents button,
-  tr.has-disabled-dependency .enable button {
+  tr.has-dependents .enable button,
+  tr.has-dependents .enable .jenkins-toggle-switch label {
     pointer-events: none;
     opacity: 0.25;
   }
 
   tr.has-dependents-but-disabled .enable input,
-  tr.has-dependents-but-disabled .enable button {
+  tr.has-dependents-but-disabled .enable button,
+  tr.has-dependents-but-disabled .enable .jenkins-toggle-switch label {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;
   }
 
   tr.has-disabled-dependency .enable input,
-  tr.has-disabled-dependency .enable button {
+  tr.has-disabled-dependency .enable button,
+  tr.has-disabled-dependency .enable .jenkins-toggle-switch label {
     opacity: 0.4;
   }
 
   tr.deleted input,
-  tr.deleted button {
+  tr.deleted button,
+  tr.deleted .jenkins-toggle-switch label {
     visibility: hidden !important;
   }
 
