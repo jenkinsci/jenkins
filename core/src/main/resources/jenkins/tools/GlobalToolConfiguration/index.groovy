@@ -16,12 +16,10 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
     }
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
-        div(class:"jenkins-app-bar") {
-            div(class: "jenkins-app-bar__content") {
-                h1 {
-                    text(my.displayName)
-                }
-            }
+        h1 {
+            l.icon(class: 'icon-setting icon-xlg')
+            // TODO more appropriate icon
+            text(my.displayName)
         }
 
         p()
@@ -33,12 +31,9 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
-
-                div(class: "row-set-start row-group-start tr", style: "display:none", name: descriptor.jsonSafeClassName)
-                div(name:descriptor.jsonSafeClassName, class: "jenkins-section") {
+                f.rowSet(name:descriptor.jsonSafeClassName) {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
-                div(class: "row-set-end row-group-end tr")
             }
 
             l.isAdmin() {
