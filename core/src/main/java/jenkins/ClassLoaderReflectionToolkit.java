@@ -70,6 +70,7 @@ public class ClassLoaderReflectionToolkit {
     /**
      * Calls {@link ClassLoader#findLoadedClass} while holding {@link ClassLoader#getClassLoadingLock}.
      * @since 1.553
+     * @deprecated use {@link #loadClass(ClassLoader, String)}
      */
     public static @CheckForNull Class<?> _findLoadedClass(ClassLoader cl, String name) {
         synchronized (getClassLoadingLock(cl, name)) {
@@ -100,6 +101,7 @@ public class ClassLoaderReflectionToolkit {
     /**
      * Calls {@link ClassLoader#findClass} while holding {@link ClassLoader#getClassLoadingLock}.
      * @since 1.553
+     * @deprecated use {@link #loadClass(ClassLoader, String)}
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(cl, name)) {
@@ -124,6 +126,48 @@ public class ClassLoaderReflectionToolkit {
         }
     }
 
+    /**
+     * Load the class with the specified binary name. This method searches for classes in the
+     * following order:
+     *
+     * <ol>
+     *   <li>
+     *       <p>Invoke {@link ClassLoader#findLoadedClass(String)} to check if the class has already
+     *       been loaded.
+     *   <li>
+     *       <p>Invoke the {@link ClassLoader#findClass(String)} method to find the class.
+     * </ol>
+     *
+     * <p>This method synchronizes on the result of {@link ClassLoader#getClassLoadingLock(String)}
+     * during the entire class loading process.
+     *
+     * @param cl The {@link ClassLoader} to use.
+     * @param name The binary name of the class.
+     * @return The resulting {@link Class} object.
+     * @throws ClassNotFoundException If the class could not be found.
+     * @since 2.TODO
+     */
+    public static @NonNull Class<?> loadClass(ClassLoader cl, String name) throws ClassNotFoundException {
+        synchronized (getClassLoadingLock(cl, name)) {
+            // First, check if the class has already been loaded.
+            Class<?> c;
+            if (cl instanceof JenkinsClassLoader) {
+                c = ((JenkinsClassLoader) cl).findLoadedClass2(name);
+            } else {
+                c = (Class) invoke(FindLoadedClass.FIND_LOADED_CLASS, RuntimeException.class, cl, name);
+            }
+            if (c != null) {
+                return c;
+            }
+
+            // Find the class.
+            if (cl instanceof JenkinsClassLoader) {
+                return ((JenkinsClassLoader) cl).findClass(name);
+            } else {
+                return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
+            }
+        }
+    }
 
     /**
      * Calls {@link ClassLoader#findResource}.
