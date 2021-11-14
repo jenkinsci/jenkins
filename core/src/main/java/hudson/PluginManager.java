@@ -2197,15 +2197,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
-                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
-                        if (c != null) {
-                            synchronized (loaded) {
-                                loaded.put(name, c);
-                            }
-                            return c;
-                        }
-                        // calling findClass twice appears to cause LinkageError: duplicate class def
-                        c = ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
+                        Class<?> c = ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                         synchronized (loaded) {
                             loaded.put(name, c);
                         }
