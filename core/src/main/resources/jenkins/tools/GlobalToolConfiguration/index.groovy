@@ -34,9 +34,11 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
                 set("descriptor",descriptor)
                 set("instance",descriptor)
 
-                f.rowSet(name:descriptor.jsonSafeClassName) {
+                div(class: "row-set-start row-group-start tr", style: "display:none", name: descriptor.jsonSafeClassName)
+                div(name:descriptor.jsonSafeClassName, class: "jenkins-section") {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
+                div(class: "row-set-end row-group-end tr")
             }
 
             l.isAdmin() {
