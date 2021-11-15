@@ -1507,7 +1507,7 @@ function rowvgStartEachRow(recursive,f) {
             }
         }
 
-        var settingName = findSettingName(labelParent.parentNode);
+        var settingName = findSettingName(labelParent.parentNode.parentNode);
         if (settingName == undefined) return
         var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
         var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
@@ -1517,7 +1517,7 @@ function rowvgStartEachRow(recursive,f) {
             labelParent.appendChild(helpLink);
         }
 
-        labelParent.parentNode.removeChild(settingName);
+        labelParent.parentNode.parentNode.removeChild(settingName);
 
         // Copy setting-name text and append it to the checkbox label
         var labelText = settingName.innerText;
