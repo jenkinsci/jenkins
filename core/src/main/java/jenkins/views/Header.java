@@ -1,7 +1,6 @@
 package jenkins.views;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -13,8 +12,8 @@ import hudson.ExtensionPoint;
 /**
  * Extension point that provides capabilities to render a specific header
  * 
- * @author Ildefonso Montero
  * @see JenkinsHeader
+ * @since TODO
  */
 public abstract class Header implements ExtensionPoint {
     
@@ -22,15 +21,12 @@ public abstract class Header implements ExtensionPoint {
      * Checks if header is enabled.
      * @return if header is enabled
      */
-    public abstract boolean isHeaderEnabled();
+    public abstract boolean isEnabled();
 
     @Restricted(NoExternalUse.class)
     @CheckForNull
     public static Header get() {
-        List<Header> headers = ExtensionList.lookup(Header.class).stream().filter(header -> header.isHeaderEnabled()).collect(Collectors.toList());
-        if (headers.isEmpty()) {
-            return new JenkinsHeader();
-        }
-        return headers.get(0);
+        Optional<Header> header = ExtensionList.lookup(Header.class).stream().filter(Header::isEnabled).findFirst();
+        return header.orElseGet(() -> new JenkinsHeader());
     }
 }
