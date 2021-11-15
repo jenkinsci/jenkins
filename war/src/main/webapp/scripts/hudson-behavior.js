@@ -1208,8 +1208,10 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
-        // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.down().down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
+
+        // Set start.ref to checkbox in preparation of row-set-end processing
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     });
 
