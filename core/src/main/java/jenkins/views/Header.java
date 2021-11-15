@@ -25,7 +25,7 @@ public abstract class Header implements ExtensionPoint {
      * Checks if header is enabled.
      * @return if header is enabled
      */
-    abstract boolean isHeaderEnabled();
+    public abstract boolean isHeaderEnabled();
 
     @Restricted(NoExternalUse.class)
     @CheckForNull
