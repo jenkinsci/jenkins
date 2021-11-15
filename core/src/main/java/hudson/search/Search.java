@@ -96,7 +96,7 @@ public class Search implements StaplerProxy {
         }
 
         // Search for builds
-        List<AbstractProject> projects = Util.createSubList(Jenkins.get().getAllItems(), AbstractProject.class);
+        Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
         for (AbstractProject p: projects){
             SearchableModelObject smo = p;
             SearchIndex index = smo.getSearchIndex();
@@ -187,7 +187,7 @@ public class Search implements StaplerProxy {
         }
 
         // Search for builds
-        List<AbstractProject> projects = Util.createSubList(Jenkins.get().getAllItems(), AbstractProject.class);
+        Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
         for (AbstractProject p: projects){
             SearchIndex index = p.getSearchIndex();
             for (SuggestedItem i: suggest(index, query, smo)) {

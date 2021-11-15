@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Level;
@@ -496,6 +497,58 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
+    /**
+     * Search the build by build name. This will find the build name which complete matches the token.
+     *
+     * @param token The keyword which is entered in the search box
+     * @param result Result list that will show on the page
+     */
+    void findByBuildName(String token, List<SearchItem> result) {
+        boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
+        if (isCaseSensitive) {
+            token = token.toLowerCase(Locale.ROOT);
+        }
+
+        SortedMap<Integer, ? extends RunT> runs = _getRuns();
+        final String finalToken = token; // Variable in lambda should be final
+
+        // Search the build and put them into result-list
+        runs.values()
+                .stream()
+                .filter(run -> isCaseSensitive ?
+                        run.getDisplayName().equalsIgnoreCase(finalToken) :
+                        run.getDisplayName().equals(finalToken)
+                )
+                .limit(20)
+                .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
+    }
+
+    /**
+     * Search the build by build name. This will find the build name which contains the token.
+     *
+     * @param token The keyword which is entered in the search box
+     * @param result Result list that will show on the page
+     */
+    void suggestByBuildName(String token, List<SearchItem> result) {
+        boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
+        if (isCaseSensitive) {
+            token = token.toLowerCase(Locale.ROOT);
+        }
+
+        SortedMap<Integer, ? extends RunT> runs = _getRuns();
+        final String finalToken = token; // Variable in lambda should be final
+
+        // Search the build and put them to result-list
+        runs.values()
+                .stream()
+                .filter(run -> isCaseSensitive ?
+                        run.getDisplayName().toLowerCase(Locale.ROOT).contains(finalToken) :
+                        run.getDisplayName().contains(finalToken)
+                )
+                .limit(20)
+                .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
+    }
+
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
@@ -504,22 +557,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                 if (token.startsWith("#")) { // Search by build number
                     searchByBuildNumber(token, result);
+                    findByBuildName(token, result);
                 } else { // Search by build display name
-                    boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
-                    if (isCaseSensitive)
-                        token = token.toLowerCase();
-
-                    SortedMap<Integer, ? extends RunT> runs = _getRuns();
-                    final String finalToken = token; // Variable in lambda should be final
-
-                    // Search the build and put them into result-list
-                    runs.values()
-                            .stream()
-                            .filter(run -> isCaseSensitive ?
-                                    run.getDisplayName().toLowerCase().equals(finalToken) :
-                                    run.getDisplayName().equals(finalToken)
-                            )
-                            .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
+                    findByBuildName(token, result);
                 }
             }
 
@@ -528,22 +568,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                 if (token.startsWith("#")) { // Search by build number
                     searchByBuildNumber(token, result);
+                    suggestByBuildName(token, result);
                 } else { // Search by build display name
-                    boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
-                    if (isCaseSensitive)
-                        token = token.toLowerCase();
-
-                    SortedMap<Integer, ? extends RunT> runs = _getRuns();
-                    final String finalToken = token; // Variable in lambda should be final
-
-                    // Search the build and put them to result-list
-                    runs.values()
-                            .stream()
-                            .filter(run -> isCaseSensitive ?
-                                            run.getDisplayName().toLowerCase().contains(finalToken) :
-                                            run.getDisplayName().contains(finalToken)
-                                    )
-                            .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
+                    suggestByBuildName(token, result);
                 }
             }
         }).add("configure", "config", "configure");
