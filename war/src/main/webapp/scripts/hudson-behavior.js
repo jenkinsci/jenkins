@@ -1209,7 +1209,7 @@ function rowvgStartEachRow(recursive,f) {
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.down().down();
+        var checkbox = e.down().down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     });
 
