@@ -1044,6 +1044,13 @@ function rowvgStartEachRow(recursive,f) {
         e.parentNode.parentNode.addClassName('has-help');
     });
 
+    // legacy class name
+    Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
+        e.onclick = helpButtonOnClick;
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
+        e.parentNode.parentNode.addClassName('has-help');
+    });
+
     // Script Console : settings and shortcut key
     Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
