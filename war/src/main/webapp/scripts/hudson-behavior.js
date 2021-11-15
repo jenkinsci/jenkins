@@ -1499,7 +1499,7 @@ function rowvgStartEachRow(recursive,f) {
      * @param {HTMLLabelElement} label
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
-        var labelParent = label.parentElement;
+        var labelParent = label.parentElement.parentElement;
 
         if (!labelParent.classList.contains('setting-main')) return;
 
@@ -1510,17 +1510,18 @@ function rowvgStartEachRow(recursive,f) {
             }
         }
 
-        var settingName = findSettingName(labelParent.parentNode.parentNode);
+        var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
         var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
         var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
+            labelParent.classList.add('jenkins-checkbox-help-wrapper');
             labelParent.appendChild(helpLink);
         }
 
-        labelParent.parentNode.parentNode.removeChild(settingName);
+        labelParent.parentNode.removeChild(settingName);
 
         // Copy setting-name text and append it to the checkbox label
         var labelText = settingName.innerText;
