@@ -1284,7 +1284,8 @@ function rowvgStartEachRow(recursive,f) {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
         updateOptionalBlock(checkbox,false);
     });
 
