@@ -24,7 +24,6 @@ public abstract class Header implements ExtensionPoint {
     public abstract boolean isEnabled();
 
     @Restricted(NoExternalUse.class)
-    @CheckForNull
     public static Header get() {
         Optional<Header> header = ExtensionList.lookup(Header.class).stream().filter(Header::isEnabled).findFirst();
         return header.orElseGet(() -> new JenkinsHeader());
