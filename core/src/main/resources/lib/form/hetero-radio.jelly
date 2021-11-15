@@ -47,8 +47,8 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${d}" />
         <j:set var="instance" value="${currentDescriptor==d?currentInstance:null}" />
         <st:include from="${d}" page="${d.configPage}" optional="true" />
+        <f:class-entry descriptor="${d}" />
       </f:radioBlock>
-      <f:class-entry descriptor="${d}" />
     </j:forEach>
   </div>
   <!-- TODO consider customizedFields -->
