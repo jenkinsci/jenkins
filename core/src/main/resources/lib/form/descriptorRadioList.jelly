@@ -53,7 +53,7 @@ THE SOFTWARE.
         title="${d.displayName}" checked="${instance.descriptor==d}">
         <j:set var="descriptor" value="${d}" />
 	      <j:set var="instance" value="${instance.descriptor==d?instance:null}" />
-          <f:class-entry descriptor="${descriptor}" />
+	      <f:class-entry descriptor="${descriptor}" />
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:radioBlock>
 	  </j:forEach>

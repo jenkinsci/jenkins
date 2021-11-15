@@ -23,29 +23,29 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-    <st:documentation>
-        Expandable section that shows "advanced..." button by default.
-        Upon clicking it, a section unfolds, and the HTML rendered by the body of this tag
-        appears.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Expandable section that shows "advanced..." button by default.
+    Upon clicking it, a section unfolds, and the HTML rendered by the body of this tag
+    appears.
 
-        <st:attribute name="title" use="optional">
-            Caption of the button. By default "Advanced"
-        </st:attribute>
-        <st:attribute name="style" use="optional">
-            Additional styles
-        </st:attribute>
-        <st:attribute name="align" use="optional">
-            'left' or 'center' to align the button to left or center.
-        </st:attribute>
-    </st:documentation>
+    <st:attribute name="title" use="optional">
+      Caption of the button. By default "Advanced"
+    </st:attribute>
+    <st:attribute name="style" use="optional">
+      Additional styles
+    </st:attribute>
+    <st:attribute name="align" use="optional">
+      'left' or 'center' to align the button to left or center.
+    </st:attribute>
+  </st:documentation>
 
 	<div class='jenkins-form-item tr'>
         <st:adjunct includes="lib.form.advanced.advanced"/>
 
-        <div class="advancedLink">
-            <j:set var="id" value="${h.generateId()}"/>
-            <span style="display: none" id="${id}">
+	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
+              <j:set var="id" value="${h.generateId()}"/>
+              <span style="display: none" id="${id}">
                 <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
               </span>
               <st:nbsp />
