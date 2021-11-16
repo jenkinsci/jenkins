@@ -25,6 +25,6 @@
             Text for the logout link
         </st:attribute>
     </st:documentation>
-	<j:invokeStatic var="header" className="jenkins.views.Header" method="get"/>
-	<st:include it="${header}" page="headerContent.jelly"/>
+    <j:invokeStatic var="header" className="jenkins.views.Header" method="get"/>
+    <st:include it="${header}" page="headerContent.jelly"/>
 </j:jelly>
