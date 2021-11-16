@@ -237,6 +237,7 @@ THE SOFTWARE.
           <configuration>
             <quiet>true</quiet>
             <doclint>all,-missing</doclint>
+            <splitindex>true</splitindex>
           </configuration>
         </plugin>
         <plugin>
