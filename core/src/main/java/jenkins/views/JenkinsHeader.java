@@ -7,7 +7,6 @@ import hudson.Extension;
  * 
  * @see Header
  */
-@Extension(ordinal = Integer.MIN_VALUE)
 public class JenkinsHeader extends Header {
     
     @Override
