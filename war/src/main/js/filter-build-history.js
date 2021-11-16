@@ -1,20 +1,20 @@
 import debounce from 'lodash/debounce'
 
 const buildHistoryContainer = document.getElementById("buildHistory")
-const pageSearchInputContainer = document.getElementsBySelector('#buildHistory .build-search-row .jenkins-search')[0]
-const pageSearchInput = document.getElementsBySelector('#buildHistory .build-search-row input')[0]
+const pageSearchInputContainer = buildHistoryContainer.querySelector('.build-search-row .jenkins-search')
+const pageSearchInput = buildHistoryContainer.querySelector('.build-search-row input')
 const buildHistoryPage = document.getElementById("buildHistoryPage")
 const properties = document.getElementById("properties")
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax")
 const nextBuild = properties.getAttribute("page-next-build")
 const noBuildsBanner = document.getElementById("no-builds")
 
-const sidePanel = $('side-panel');
-const buildHistoryPageNav = $('buildHistoryPageNav');
+const sidePanel = document.getElementById('side-panel');
+const buildHistoryPageNav = document.getElementById('buildHistoryPageNav');
 
-const pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
-const pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
-const pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
+const pageOne = buildHistoryPageNav.querySelectorAll('.pageOne')[0];
+const pageUp = buildHistoryPageNav.querySelectorAll('.pageUp')[0];
+const pageDown = buildHistoryPageNav.querySelectorAll('.pageDown')[0];
 
 const leftRightPadding = 4;
 const updateBuildsRefreshInterval = 5000;
@@ -27,12 +27,19 @@ function updateBuilds() {
                 var dataTable = getDataTable(buildHistoryContainer);
                 var rows = dataTable.rows;
 
+                // Check there are no existing rows (except the search bar) before showing the no builds banner
+                if (rows.length <= 1 && rsp.responseText === "<table class=\"pane\"></table>") {
+                    noBuildsBanner.style.display = "block";
+                } else {
+                    noBuildsBanner.style.display = "none";
+                }
+
                 //delete rows with transitive data
                 var firstBuildRow = 0;
                 if (rows[firstBuildRow].classList.contains('build-search-row')) {
                     firstBuildRow++;
                 }
-                while (rows.length > 0 && rows[firstBuildRow].classList.contains('transitive')) {
+                while (rows.length > 1 && rows[firstBuildRow].classList.contains('transitive')) {
                     Element.remove(rows[firstBuildRow]);
                 }
 
@@ -51,7 +58,7 @@ function updateBuilds() {
                     } else {
                         // The data table has no rows.  In this case, we just add all new rows directly to the
                         // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-                        dataTable.appendChild(newRows[0]);
+                        dataTable.getElementsByTagName("tbody")[0].appendChild(newRows[0]);
                     }
                 }
 
