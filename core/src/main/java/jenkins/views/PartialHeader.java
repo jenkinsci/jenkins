@@ -14,7 +14,7 @@ import hudson.util.VersionNumber;
  * partial replacements.
  * 
  * Given this kind of header is not independent, compatibility should be managed by the
- * specific {@link Header#compatibilityHeaderVersion} value
+ * specific {@link Header} compatibility header version value
  * 
  * @see Header
  */
