@@ -7,7 +7,8 @@ import org.apache.log4j.Logger;
 import hudson.ExtensionList;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.util.VersionNumber;
+import hudson.util.AdministrativeError;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Header} that relies on core resources (images, CSS, JS, etc.) to perform
@@ -23,22 +24,23 @@ public abstract class PartialHeader extends Header {
     private static Logger LOGGER = Logger.getLogger(PartialHeader.class.getName());
     
     /** When an incompatible change is made in the header (like the search form API), compatibility header version should be increased */
-    private static final VersionNumber compatibilityHeaderVersion = new VersionNumber("1.0");
+    private static final int compatibilityHeaderVersion = 1;
     
     @Override
     public boolean isCompatible() {
-        return compatibilityHeaderVersion.isOlderThanOrEqualTo(getVersion());
+        return compatibilityHeaderVersion == getSupportedHeaderVersion();
     }
     
     /**
-     * @return the header version
+     * @return the supported header version
      */
-    public abstract VersionNumber getVersion();
+    public abstract int getSupportedHeaderVersion();
     
     @Initializer(after = InitMilestone.JOB_LOADED, before = InitMilestone.JOB_CONFIG_ADAPTED)
     public static void incompatibleHeaders() {
         for (PartialHeader header: ExtensionList.lookup(PartialHeader.class).stream().filter(h -> !h.isCompatible()).collect(Collectors.toList())) {
-            LOGGER.warn(String.format("%s:%s not compatible with %s", header.getClass().getName(), header.getVersion(), compatibilityHeaderVersion));
+            LOGGER.warn(String.format("%s:%s not compatible with %s", header.getClass().getName(), header.getSupportedHeaderVersion(), compatibilityHeaderVersion));
+            new AdministrativeError(header.getClass().getName(), "Incompatible Header", String.format("The plugin %s is attempting to replace the Header but is not compatible with this version of Jenkins.  The plugin should be updated or can be removed.", Jenkins.get().getPluginManager().whichPlugin(header.getClass())), null);
         }
     }
 }
