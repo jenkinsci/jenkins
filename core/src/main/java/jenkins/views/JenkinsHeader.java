@@ -5,7 +5,7 @@ package jenkins.views;
  * 
  * @see Header
  */
-public class JenkinsHeader extends Header {
+public class JenkinsHeader extends FullHeader {
     
     @Override
     public boolean isEnabled() {
