@@ -1,8 +1,6 @@
 package jenkins.views;
 
-import java.util.stream.Collectors;
-
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 import hudson.ExtensionList;
 import hudson.init.InitMilestone;
@@ -44,7 +42,7 @@ public abstract class PartialHeader extends Header {
     @SuppressWarnings("unused")
     public static void incompatibleHeaders() {
         ExtensionList.lookup(PartialHeader.class).stream().filter(h -> !h.isCompatible()).forEach(header -> {
-            LOGGER.warn(String.format("%s:%s not compatible with %s", header.getClass().getName(), header.getSupportedHeaderVersion(), compatibilityHeaderVersion));
+            LOGGER.warning(String.format("%s:%s not compatible with %s", header.getClass().getName(), header.getSupportedHeaderVersion(), compatibilityHeaderVersion));
             new AdministrativeError(header.getClass().getName(), "Incompatible Header", String.format("The plugin %s is attempting to replace the Jenkins header but is not compatible with this version of Jenkins. The plugin should be updated or removed.", Jenkins.get().getPluginManager().whichPlugin(header.getClass())), null);
         });
     }
