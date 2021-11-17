@@ -9,7 +9,9 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 /**
- * Extension point that provides capabilities to render a specific header
+ * Extension point that provides capabilities to render a specific header.
+ *
+ * Extend {@link PartialHeader} or {@link FullHeader} depending on the use case.
  * 
  * @see JenkinsHeader
  * @since TODO

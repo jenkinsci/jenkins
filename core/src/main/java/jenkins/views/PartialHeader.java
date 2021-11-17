@@ -23,11 +23,15 @@ public abstract class PartialHeader extends Header {
 
     private static Logger LOGGER = Logger.getLogger(PartialHeader.class.getName());
     
-    /** When an incompatible change is made in the header (like the search form API), compatibility header version should be increased */
+    /**
+     * The current compatibility version of the Header API.
+     * 
+     * Increment this number when an incompatible change is made to the header (like the search form API).
+     */
     private static final int compatibilityHeaderVersion = 1;
     
     @Override
-    public boolean isCompatible() {
+    public final boolean isCompatible() {
         return compatibilityHeaderVersion == getSupportedHeaderVersion();
     }
     
@@ -37,10 +41,11 @@ public abstract class PartialHeader extends Header {
     public abstract int getSupportedHeaderVersion();
     
     @Initializer(after = InitMilestone.JOB_LOADED, before = InitMilestone.JOB_CONFIG_ADAPTED)
+    @SuppressWarnings("unused")
     public static void incompatibleHeaders() {
-        for (PartialHeader header: ExtensionList.lookup(PartialHeader.class).stream().filter(h -> !h.isCompatible()).collect(Collectors.toList())) {
+        ExtensionList.lookup(PartialHeader.class).stream().filter(h -> !h.isCompatible()).forEach(header -> {
             LOGGER.warn(String.format("%s:%s not compatible with %s", header.getClass().getName(), header.getSupportedHeaderVersion(), compatibilityHeaderVersion));
-            new AdministrativeError(header.getClass().getName(), "Incompatible Header", String.format("The plugin %s is attempting to replace the Header but is not compatible with this version of Jenkins.  The plugin should be updated or can be removed.", Jenkins.get().getPluginManager().whichPlugin(header.getClass())), null);
-        }
+            new AdministrativeError(header.getClass().getName(), "Incompatible Header", String.format("The plugin %s is attempting to replace the Jenkins header but is not compatible with this version of Jenkins. The plugin should be updated or removed.", Jenkins.get().getPluginManager().whichPlugin(header.getClass())), null);
+        });
     }
 }
