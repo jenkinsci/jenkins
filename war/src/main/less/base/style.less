@@ -712,27 +712,17 @@ table.parameters > tbody:hover {
   display: none;
   margin-left: 20px;
   padding: 0;
+  --table-border-radius: 7px;
 
-  table * {
-    font-size: 0.8rem;
-    border-top: none!important;
-    border-bottom: none!important;
+  table {
+    border-radius: 0;
+    min-width: 450px;
   }
-}
-
-.healthReport:hover,
-.healthReport.hover { /* fix IE6 bug with :hover */
-    background: transparent;
 }
 
 .healthReport:hover div.healthReportDetails,
 .healthReport.hover div.healthReportDetails {
   display: block;
-}
-
-.healthReport div.healthReportDetails table {
-    border-collapse: collapse;
-    width: 450px; /* fix IE bug with width */
 }
 
 /* ========================= build history ========================= */
