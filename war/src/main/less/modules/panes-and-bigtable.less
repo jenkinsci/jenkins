@@ -2,7 +2,7 @@
 
 .pane-frame {
   border: var(--pane-border-width) solid var(--pane-border-color);
-  border-radius: 4px;
+  border-radius: var(--table-border-radius);
 }
 
 .pane-header,
@@ -145,19 +145,6 @@ table.bigtable {
 }
 
 /* ========================= sortable table ========================= */
-table.sortable a.sortheader {
-  text-decoration: none;
-  display: block;
-  color: var(--pane-header-text-color);
-  font-weight: var(--pane-header-font-weight);  // Should we use the bigtable one here?
-}
-
-table.sortable span.sortarrow {
-  text-decoration: none;
-  color: var(--pane-header-text-color);
-  font-weight: var(--pane-header-font-weight); // Should we use the bigtable one here?
-}
-
 table.bigtable.sortable a.sortheader,
 table.bigtable.sortable span.sortarrow {
   color: var(--bigtable-header-text-color);

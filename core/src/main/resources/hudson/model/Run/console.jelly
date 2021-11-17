@@ -51,8 +51,8 @@ THE SOFTWARE.
         <!-- Do progressive console output -->
         <j:when test="${it.isLogUpdated()}">
           <pre id="out" class="console-output" />
-            <div id="spinner" style="margin-top: 1rem;">
-              <l:spinner />
+            <div id="spinner">
+              <l:progressAnimation/>
             </div>
           <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner"
                startOffset="${offset}" onFinishEvent="jenkins:consoleFinished"/>

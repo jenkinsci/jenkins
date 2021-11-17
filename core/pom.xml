@@ -106,16 +106,6 @@ THE SOFTWARE.
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
     </dependency>
-    <!--
-      For compatibility only; not included into the BOM for the same reason. TODO once
-      https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this
-      dependency can be dropped.
-    -->
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>asm5</artifactId>
-      <version>5.0.1</version>
-    </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
