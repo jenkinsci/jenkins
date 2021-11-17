@@ -5,6 +5,7 @@ package jenkins.views;
  * 
  * @see Header
  */
+@Extension(ordinal = Integer.MIN_VALUE)
 public class JenkinsHeader extends FullHeader {
     
     @Override
