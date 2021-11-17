@@ -1,5 +1,7 @@
 package jenkins.views;
 
+import hudson.Extension;
+
 /**
  * Default {@link Header} provided by Jenkins
  * 
