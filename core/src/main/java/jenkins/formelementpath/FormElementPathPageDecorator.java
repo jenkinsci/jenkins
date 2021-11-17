@@ -6,5 +6,4 @@ import hudson.model.PageDecorator;
 @Extension
 public class FormElementPathPageDecorator extends PageDecorator {
 
-
 }
