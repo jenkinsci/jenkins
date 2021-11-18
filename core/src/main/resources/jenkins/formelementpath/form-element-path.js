@@ -1,52 +1,6 @@
-(function () {
-    function pack(n, v) {
-        var o = {};
-        o[n] = v;
-        return o;
-    }
-
-    function pre(selector, behavior) {
-        if (Behaviour.specify) {
-            Behaviour.specify(selector, "form-element-path", -200, behavior);
-        } else {
-            Behaviour.list.unshift(pack(selector, behavior));
-        }
-    }
-
-    function post(selector, behavior) {
-        if (Behaviour.specify) {
-            Behaviour.specify(selector, "form-element-path", 200, behavior);
-        } else {
-            Behaviour.list.shift(pack(selector, behavior));
-        }
-    }
-
-
-    // patch hetero-list-container handling to capture name before hudson-behavior.js kicks in
-    // in Jenkins 1.473 and newer the suffix is already set in hetero-list.js
-    pre(".hetero-list-container", function (e) {
-        var proto = $(e).down("DIV.prototypes");
-        var d = proto.down();
-        if (!proto.next().hasAttribute('suffix')) {
-            proto.next().setAttribute('suffix', d.getAttribute("name"));
-        }
-    });
-
-    // then post process to add @suffix to the button
-    post(".hetero-list-container", function (e) {
-        var b = $(e.lastChild);
-        var button = b.getElementsByTagName("button")[0]
-        if (!button.hasAttribute('suffix')) {
-            button.setAttribute("suffix", b.getAttribute("suffix"));
-        }
-    });
-})();
-
-Behaviour.addLoadEvent(function () {
+document.addEventListener("DOMContentLoaded", function(){
+    // most of this is copied from hudson-behaviour.js
     function buildFormTree(form) {
-        // I initially tried to use an associative array with DOM elements as keys
-        // but that doesn't seem to work neither on IE nor Firefox.
-        // so I switch back to adding a dynamic property on DOM.
         form.formDom = {}; // root object
 
         var doms = []; // DOMs that we added 'formDom' for.
@@ -105,24 +59,26 @@ Behaviour.addLoadEvent(function () {
                         element = e
                     } else {
                         p = findParent(e);
-                        element = $(e.parentNode.parentNode); // YUI's surrounding <SPAN> that has interesting classes
+                        element = e.parentNode.parentNode; // YUI's surrounding <SPAN> that has interesting classes
                     }
                     var name = null;
                     ["repeatable-add", "repeatable-delete", "hetero-list-add", "expand-button", "advanced-button", "apply-button", "validate-button"]
                         .forEach(function (clazz) {
-                            if (element.hasClassName(clazz)) {
+                            if (element.classList.contains(clazz)) {
                                 name = clazz;
                             }
                         });
                     if (name == null) {
                         if (name == null) {
                             element = element.parentNode.previousSibling;
-                            if (element != null && (typeof ($(element).hasClassName) == "function") && $(element).hasClassName('repeatable-insertion-point'))
+                            if (element != null && element.classList.contains('repeatable-insertion-point')) {
                                 name = "hetero-list-add";
+                            }
                         }
                     }
-                    if (name != null)
+                    if (name != null) {
                         addProperty(p, name, e);
+                    }
                     break;
                 case "submit":
                     break;
@@ -148,9 +104,6 @@ Behaviour.addLoadEvent(function () {
                             addProperty(p, e.name, e);
                         }
                     }
-                    // switch to multipart/form-data to support file submission
-                    // @enctype is the standard, but IE needs @encoding.
-                    form.enctype = form.encoding = "multipart/form-data";
                     break;
                 // otherwise fall through
                 default:
@@ -189,7 +142,7 @@ Behaviour.addLoadEvent(function () {
 
                 if (v instanceof Array) {
                     var i = 0;
-                    $A(v)._each(function (v) {
+                    v.forEach(function (v) {
                         child(v, i++)
                     })
                 } else {
@@ -209,7 +162,7 @@ Behaviour.addLoadEvent(function () {
     }
 
     function applyAll() {
-        $$("FORM")._each(function (e) {
+        document.querySelectorAll("FORM").forEach(function (e) {
             buildFormTree(e);
         })
     }
@@ -219,10 +172,7 @@ Behaviour.addLoadEvent(function () {
     // run this periodically to cope with DOM changes
     window.setInterval(applyAll, 1000);
 
-    // in Jenkins 1.452 and onward, there's a callback available when DOM changes
-    if (typeof (layoutUpdateCallback) != "undefined") {
-        layoutUpdateCallback.add(applyAll)
-    }
+    layoutUpdateCallback.add(applyAll)
 
     // expose this globally so that Selenium can call it
     window.recomputeFormElementPath = applyAll;
