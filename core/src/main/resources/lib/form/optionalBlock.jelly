@@ -66,7 +66,7 @@ THE SOFTWARE.
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <div class="optionalBlock-container jenkins-form-item">
+      <div class="optionalBlock-container jenkins-form-item jenkins-form-item--tight">
         <div class="help-sibling tr optional-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
           <div class="jenkins-checkbox-help-wrapper">
             <f:checkbox name="${attrs.name}" class="optional-block-control block-control" onclick="javascript:updateOptionalBlock(this,true)"
@@ -87,7 +87,8 @@ THE SOFTWARE.
     </j:when>
 
     <j:otherwise>
-      <f:rowSet name="${attrs.name}">
+      hello
+      <f:rowSet name="${attrs.name}" class="jenkins-form-item--tight">
         <d:invokeBody />
       </f:rowSet>
     </j:otherwise>
