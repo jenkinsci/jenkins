@@ -37,7 +37,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * forged by a third party.
  *
  * @author dty
- * @see <a href="http://en.wikipedia.org/wiki/XSRF">Wikipedia: Cross site request forgery</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery">Wikipedia: Cross site request forgery</a>
  */
 @ExportedBean
 @StaplerAccessibleType

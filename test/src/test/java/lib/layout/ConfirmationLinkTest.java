@@ -87,9 +87,6 @@ public class ConfirmationLinkTest {
         testParams.paramPost = "true";
         assertMethodPostAfterClick();
     
-        testParams.paramPost = "TruE";
-        assertMethodPostAfterClick();
-    
         testParams.paramPost = false;
         assertMethodGetAfterClick();
     

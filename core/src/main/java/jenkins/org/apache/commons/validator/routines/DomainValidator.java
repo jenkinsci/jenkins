@@ -34,8 +34,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * </p>
  *
  * <p>Domain names are evaluated according
- * to the standards <a href="http://www.ietf.org/rfc/rfc1034.txt">RFC1034</a>,
- * section 3, and <a href="http://www.ietf.org/rfc/rfc1123.txt">RFC1123</a>,
+ * to the standards <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC1034</a>,
+ * section 3, and <a href="https://www.ietf.org/rfc/rfc1123.txt">RFC1123</a>,
  * section 2.1. No accommodation is provided for the specialized needs of
  * other applications; if the domain name has been URL-encoded, for example,
  * validation will fail even though the equivalent plaintext version of the
@@ -269,12 +269,12 @@ public class DomainValidator implements Serializable {
     // ---------------------------------------------
     // ----- TLDs defined by IANA
     // ----- Authoritative and comprehensive list at:
-    // ----- http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    // ----- https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     
     // Note that the above list is in UPPER case.
     // The code currently converts strings to lower case (as per the tables below)
     
-    // IANA also provide an HTML list at http://www.iana.org/domains/root/db
+    // IANA also provide an HTML list at https://www.iana.org/domains/root/db
     // Note that this contains several country code entries which are NOT in
     // the text file. These all have the "Not assigned" in the "Sponsoring Organisation" column
     // For example (as of 2015-01-02):

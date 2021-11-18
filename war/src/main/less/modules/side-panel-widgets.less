@@ -225,10 +225,10 @@
   &__information {
     text-align: center;
     line-height: 80px;
-    background-color: rgba(204, 204, 204, 0.2);
+    background-color: var(--panel-header-bg-color);
     margin-top: 10px;
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: var(--form-input-border-radius);
   }
 
   .build-row {
@@ -241,5 +241,16 @@
 
   &--loading .build-row {
     opacity: 0.5;
+  }
+}
+
+.jenkins-pane__header--build-history {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  font-weight: bold!important;
+
+  .jenkins-table__cell--tight {
+    width: auto;
+    margin-right: 1rem;
   }
 }

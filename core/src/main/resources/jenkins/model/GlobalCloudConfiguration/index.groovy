@@ -25,7 +25,9 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()
-            div(class:"behavior-loading", _("LOADING"))
+            div(class:"behavior-loading") {
+                l.spinner(text: _("LOADING"))
+            }
 
             f.form(method:"post",name:"config",action:"configure") {
                 f.block {

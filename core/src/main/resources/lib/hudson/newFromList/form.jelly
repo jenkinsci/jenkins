@@ -34,6 +34,9 @@ THE SOFTWARE.
     <st:attribute name="descriptors" use="required">
       Collection of Descriptors to be rendered.
     </st:attribute>
+    <st:attribute name="title" use="required">
+      Title for the form
+    </st:attribute>
     <st:attribute name="nameTitle" use="required">
       Caption of the text box to receive the name of the newly created item. Something like "Job name"
     </st:attribute>
@@ -49,72 +52,65 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
-  <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
+  <div class="jenkins-app-bar">
+    <div class="jenkins-app-bar__content">
+      <h1>${attrs.title}</h1>
+    </div>
+  </div>
+
+  <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
     <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
-    <j:forEach var="descriptor" items="${descriptors}">
-      <s:block>
-        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
-      </s:block>
-      <s:entry>
-        <st:set var="instance" value="${descriptor}" />
-        <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
-      </s:entry>
-    </j:forEach>
-    <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
-      <s:block>
-        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-        <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
-      </s:block>
-      <s:entry>
-        ${%Copy from}
-        <j:choose>
-          <j:when test="${attrs.copyNames}">
-            <!-- deprecated as of 1.402. -->
-            <s:editableComboBox id="from" name="from" items="${attrs.copyNames}" />
-          </j:when>
-          <j:otherwise>
-            <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
-          </j:otherwise>
-        </j:choose>
-      </s:entry>
-    </j:if>
+    <div class="jenkins-form-item">
+      <fieldset class="jenkins-fieldset">
+        <legend class="jenkins-form-label">
+          ${%View type}
+        </legend>
 
-    <s:bottomButtonBar>
+        <j:forEach var="descriptor" items="${descriptors}">
+          <div class="jenkins-radio">
+            <input class="jenkins-radio__input" type="radio" name="mode" id="${descriptor.id}" value="${descriptor.id}" onchange="updateOk()" onclick="updateOk()" />
+            <label for="${descriptor.id}" class="jenkins-radio__label">
+              ${descriptor.displayName}
+            </label>
+            <div class="jenkins-radio__description">
+              <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
+            </div>
+          </div>
+        </j:forEach>
+
+        <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
+          <div class="jenkins-radio">
+            <input class="jenkins-radio__input" type="radio" id="copy" name="mode" value="copy" onchange="updateOk()" onclick="updateOk()" />
+            <label class="jenkins-radio__label" for="copy">${attrs.copyTitle}</label>
+            <div class="jenkins-radio__children">
+              <j:set var="descriptor" value="${it.descriptor}" />
+              <div class="jenkins-search">
+                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input"  name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
+                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+              </div>
+            </div>
+          </div>
+        </j:if>
+      </fieldset>
+    </div>
+
+    <div class="jenkins-form-item">
       <!--
         when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
         So always force non-empty array
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <input type="submit" name="Submit" value="${%OK}" id="ok" style="margin-left:5em" />
-    </s:bottomButtonBar>
+      <input type="submit" name="Submit" value="${%Create}" id="ok" />
+    </div>
+
+    <st:adjunct includes="lib.hudson.newFromList.validation" />
   </s:form>
-  <script><![CDATA[
-    var okButton = makeButton($('ok'),null);
-
-    function updateOk(form) {
-      function state() {
-        if($('name').value.length==0)   return true;
-        var radio = form.elements['mode'];
-        if (radio.length==2)  return false; // this means we only have dummy checkboxes
-        for(i=0;i<radio.length;i++)
-          if(radio[i].checked)
-            return false;
-        return true;
-      }
-
-      okButton.set('disabled',state(),false);
-    }
-    updateOk(okButton.getForm());
-  ]]></script>
 </j:jelly>

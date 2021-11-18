@@ -188,7 +188,7 @@ public class ChartUtil {
      * by making everything look virtually 0.
      *
      * <p>
-     * The algorithm is based on <a href="http://en.wikipedia.org/wiki/Chebyshev%27s_inequality">Chebyshev's inequality</a>,
+     * The algorithm is based on <a href="https://en.wikipedia.org/wiki/Chebyshev%27s_inequality">Chebyshev's inequality</a>,
      * which states that given any number sequence, nore more than 1/(N^2) values are more than N x stddev away
      * from the average.
      *
