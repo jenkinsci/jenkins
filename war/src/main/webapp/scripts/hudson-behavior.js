@@ -2346,6 +2346,15 @@ var hoverNotification = (function() {
     };
 })();
 
+// Decrease vertical padding for checkboxes
+window.addEventListener('load', function () {
+    document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
+        if (element.querySelector("input[type='checkbox']") != null && element.querySelector(".advancedLink") == null) {
+            element.classList.add("jenkins-form-item--tight")
+        }
+    });
+})
+
 /**
  * Loads the script specified by the URL.
  *
