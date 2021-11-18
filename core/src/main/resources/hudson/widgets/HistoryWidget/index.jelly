@@ -29,10 +29,16 @@ THE SOFTWARE.
     <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
       <j:arg value="hudson.model.Job"/>
     </j:invoke>
-    <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-      <div style="float:right;margin-left:1rem;"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
-      <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
-    </j:if>
+
+    <div class="jenkins-pane__header--build-history">
+      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
+        <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
+      </j:if>
+      ${it.displayName}
+      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
+        <a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>
+      </j:if>
+    </div>
   </j:parse>
 
   <j:parse var="paneFooter">
@@ -52,7 +58,7 @@ THE SOFTWARE.
   </j:parse>
 
   <j:set var="page" value="${it.historyPageFilter}" />
-  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
+  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
     <div id="buildHistoryPageNav">
       <div class="buildHistoryPageNav__item buildHistoryPageNav__item--page-one pageOne" title="Page 1 (Newest/Latest Builds)">
         <div class="buildHistoryPageNav__item-page-one-top"></div>
@@ -66,29 +72,25 @@ THE SOFTWARE.
       </div>
     </div>
 
-    <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
+    <l:pane width="3" title="${h.runScript(paneTitle)}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
       <tr class="build-search-row">
         <td>
           <div class="jenkins-search">
             <input type="search" placeholder="${%find}" class="jenkins-search__input" />
             <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
           </div>
-          <j:if test="${page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information">
-              No builds
-            </div>
-          </j:if>
-          <j:if test="${!page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information" style="display: none;">
-              No builds
-            </div>
-          </j:if>
+          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() ? '' : 'display: none;'}">
+            ${%No builds}
+          </div>
         </td>
       </tr>
 
       <st:include page="entries.jelly" it="${page}" />
+
+      <!--The value for `page-next-build` is modified inside of `entries.jelly` on render, so set the attribute-->
+      <!--after that component has been rendered to get the correct value to use in `filter-build-history.js`-->
+      <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
     </l:pane>
   </div>
-
   <script src="${resURL}/jsbundles/filter-build-history.js" type="text/javascript"/>
 </j:jelly>

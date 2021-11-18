@@ -63,7 +63,7 @@ THE SOFTWARE.
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
       This attribute specifies the mode of CodeMirror, such as "text/x-java".
-      See http://codemirror.net/ for more details.
+      See https://codemirror.net/ for more details.
     </st:attribute>
     <st:attribute name="codemirror-config">
       Specifies additional key/value pairs in the JSON format (except the start and end bracket)

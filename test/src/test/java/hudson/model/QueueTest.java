@@ -102,6 +102,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,7 +111,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -177,7 +177,7 @@ public class QueueTest {
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -197,7 +197,7 @@ public class QueueTest {
      */
     @LocalData
     @Test
-    public void recover_from_legacy_list() throws Exception {
+    public void recover_from_legacy_list() {
         Queue q = r.jenkins.getQueue();
 
         // loaded the legacy queue.xml from test LocalData located in
@@ -268,7 +268,7 @@ public class QueueTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 seq.phase(0);   // first, we let one build going
 
                 seq.phase(2);
@@ -292,7 +292,7 @@ public class QueueTest {
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
         private static final long serialVersionUID = 1L;
-        @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setContentType("text/html");
             resp.getWriter().println(
                     "<html><body><form action='/' method=post name=main enctype='multipart/form-data'>" +
@@ -301,7 +301,7 @@ public class QueueTest {
             );
         }
 
-        @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
             try {
                 ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
                 List<?> v = f.parseRequest(req);
@@ -353,7 +353,7 @@ public class QueueTest {
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 buildStarted.signal();
                 buildShouldComplete.block();
                 return true;
@@ -386,7 +386,7 @@ public class QueueTest {
         CauseAction ca = build.getAction(CauseAction.class);
         assertNotNull(ca);
         StringBuilder causes = new StringBuilder();
-        for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
+        for (Cause c : ca.getCauses()) causes.append(c.getShortDescription()).append("\n");
         assertEquals("Build causes should have all items, even duplicates",
                 "Started by user SYSTEM\nStarted by user SYSTEM\n"
                 + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
@@ -488,7 +488,7 @@ public class QueueTest {
     }
 
     @Issue("JENKINS-41127")
-    @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
+    @Test public void flyweightTasksUnwantedConcurrency() {
         Label label = r.jenkins.getSelfLabel();
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task1 = new TestFlyweightTask(cnt, label);
@@ -623,7 +623,7 @@ public class QueueTest {
         @Override public String getDisplayName() {return "Test";}
         @Override public ResourceList getResourceList() {return new ResourceList();}
         protected void doRun() {}
-        @Override public Executable createExecutable() throws IOException {
+        @Override public Executable createExecutable() {
             return new Executable() {
                 @Override public SubTask getParent() {return TestTask.this;}
                 @Override public long getEstimatedDuration() {return -1;}
@@ -640,7 +640,7 @@ public class QueueTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 ev.block();
                 return true;
             }
@@ -665,7 +665,7 @@ public class QueueTest {
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
@@ -692,7 +692,7 @@ public class QueueTest {
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
@@ -731,7 +731,7 @@ public class QueueTest {
         }
     }
 
-    @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, ExecutionException, InterruptedException{
+    @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException{
         FreeStyleProject project1 = r.createFreeStyleProject();
         FreeStyleProject project2 = r.createFreeStyleProject();
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){

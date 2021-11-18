@@ -46,7 +46,7 @@ import org.junit.Test;
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenterTest {
-    @Test public void data() throws Exception {
+    @Test public void data() {
         try {
             doData("https://updates.jenkins.io/update-center.json?version=build");
             doData("https://updates.jenkins.io/stable/update-center.json?version=build");

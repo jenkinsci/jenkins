@@ -24,6 +24,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
@@ -151,6 +152,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     /**
      * Can be used to disable workspace clean up.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean disabled = SystemProperties.getBoolean(WorkspaceCleanupThread.class.getName()+".disabled");
 
     /**
@@ -161,5 +163,6 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     /**
      * Number of days workspaces should be retained.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static int retainForDays = SystemProperties.getInteger(WorkspaceCleanupThread.class.getName()+".retainForDays", 30);
 }

@@ -51,6 +51,9 @@ THE SOFTWARE.
 
       This content is HTML (unless the boolean variable escapeEntryTitleAndDescription is set). Use h.escape if necessary.
     </st:attribute>
+    <st:attribute name="class">
+      Classes to apply to the form
+    </st:attribute>
     <st:attribute name="help">
       URL to the HTML page. When this attribute is specified, the entry gets
       a (?) icon on the right, and if the user clicks it, the contents of the
@@ -69,10 +72,10 @@ THE SOFTWARE.
   <!-- expose this so that we can look up the @field value later from prepareDatabinding.jelly -->
   <j:set var="entry" value="${attrs}" />
   <j:set var="possiblyEscapedTitle" value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
-  <div class='tr form-group'>
+  <div class="jenkins-form-item ${attrs.class}">
     <j:choose>
       <j:when test="${possiblyEscapedTitle!=null}">
-        <div class="setting-name help-sibling">
+        <div class="jenkins-form-label help-sibling">
           <j:out value="${possiblyEscapedTitle}" />
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>

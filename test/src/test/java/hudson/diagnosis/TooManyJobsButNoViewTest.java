@@ -34,7 +34,7 @@ public class TooManyJobsButNoViewTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     private TooManyJobsButNoView mon;
 
-    @Before public void setUp() throws Exception {
+    @Before public void setUp() {
         mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
     }
 

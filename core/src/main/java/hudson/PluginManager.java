@@ -34,6 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -75,6 +76,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -481,7 +483,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                                 LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root=" + q + ", deactivating all involved) " + cycle.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
                                                 for (PluginWrapper pluginWrapper : cycle) {
                                                     pluginWrapper.setHasCycleDependency(true);
-                                                    failedPlugins.add(new FailedPlugin(pluginWrapper.getShortName(), new CycleDetectedException(cycle)));
+                                                    failedPlugins.add(new FailedPlugin(pluginWrapper, new CycleDetectedException(cycle)));
                                                 }
                                             }
 
@@ -534,12 +536,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     p.resolvePluginDependencies();
                                     strategy.load(p);
                                 } catch (MissingDependencyException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -559,7 +561,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 try {
                                     p.getPluginOrFail().postInitialize();
                                 } catch (Exception e) {
-                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     throw e;
@@ -1733,6 +1735,51 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return new HttpRedirect("advanced");
     }
 
+    interface PluginCopier {
+        void copy(File target) throws Exception;
+        void cleanup();
+    }
+
+    class FileUploadPluginCopier implements PluginCopier {
+        private FileItem fileItem;
+
+        FileUploadPluginCopier(FileItem fileItem) {
+            this.fileItem = fileItem;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            fileItem.write(target);
+        }
+
+        @Override
+        public void cleanup() {
+            fileItem.delete();
+        }
+    }
+
+    class UrlPluginCopier implements PluginCopier {
+        private String url;
+
+        UrlPluginCopier(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void copy(File target) throws Exception {
+            try(InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
+                Files.copy(input, target.toPath());
+            } catch(Exception e) {
+                throw e;
+            }
+        }
+
+        @Override
+        public void cleanup() {
+
+        }
+    }
+
     /**
      * Uploads a plugin.
      */
@@ -1741,11 +1788,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
+            String fileName = "";
+            PluginCopier copier;
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            List<FileItem> items = upload.parseRequest(req);
+            if(StringUtils.isNotBlank(items.get(1).getString())) {
+                // this is a URL deployment
+                fileName = items.get(1).getString();
+                copier = new UrlPluginCopier(fileName);
+            } else {
+                // this is a file upload
+                FileItem fileItem = items.get(0);
+                fileName = Util.getFileName(fileItem.getName());
+                copier = new FileUploadPluginCopier(fileItem);
+            }
 
-            // Parse the request
-            FileItem fileItem = upload.parseRequest(req).get(0);
-            String fileName = Util.getFileName(fileItem.getName());
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
             }
@@ -1761,12 +1818,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
                 t.delete();
 
-                fileItem.write(t);
+                copier.copy(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
                 throw new ServletException(e);
             }
-            fileItem.delete();
+            copier.cleanup();
 
             final String baseName = identifyPluginShortName(t);
 
@@ -1807,6 +1864,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
+        if(StringUtils.isNotBlank(value)) {
+            try {
+                URL url = new URL(value);
+                if(!url.getProtocol().startsWith("http")) {
+                    return FormValidation.error(Messages.PluginManager_invalidUrl());
+                }
+
+                if(!url.getProtocol().equals("https")) {
+                    return FormValidation.warning(Messages.PluginManager_insecureUrl());
+                }
+            } catch(MalformedURLException e) {
+                return FormValidation.error(e.getMessage());
+            }
+        }
+        return FormValidation.ok();
     }
 
     @Restricted(NoExternalUse.class)
@@ -2121,15 +2197,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
-                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
-                        if (c != null) {
-                            synchronized (loaded) {
-                                loaded.put(name, c);
-                            }
-                            return c;
-                        }
-                        // calling findClass twice appears to cause LinkageError: duplicate class def
-                        c = ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
+                        Class<?> c = ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                         synchronized (loaded) {
                             loaded.put(name, c);
                         }
@@ -2210,10 +2278,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static final class FailedPlugin {
         public final String name;
         public final Exception cause;
+        @Nullable
+        public final PluginWrapper pluginWrapper;
 
+        /**
+         * Constructor for FailedPlugin when we do not have an associated PluginWrapper
+         */
         public FailedPlugin(String name, Exception cause) {
             this.name = name;
             this.cause = cause;
+            this.pluginWrapper = null;
+        }
+
+        /**
+         * Constructor for FailedPlugin when we know which PluginWrapper failed
+         */
+        public FailedPlugin(PluginWrapper pluginWrapper, Exception cause) {
+            this.name = pluginWrapper.getShortName();
+            this.cause = cause;
+            this.pluginWrapper = pluginWrapper;
         }
 
         public String getExceptionString() {

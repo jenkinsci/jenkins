@@ -49,7 +49,7 @@ THE SOFTWARE.
       <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.5.2</version>
+        <version>5.5.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -66,7 +66,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.11</version>
+        <version>1.10.12</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -81,7 +81,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-httpclient</groupId>
         <artifactId>commons-httpclient</artifactId>
-        <version>3.1-jenkins-2</version>
+        <version>3.1-jenkins-3</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
@@ -91,12 +91,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>31.0.1-jre</version>
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0</version>
+        <version>5.0.1</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -176,12 +176,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.5</version>
+        <version>1.6</version>
       </dependency>
       <dependency>
         <groupId>org.connectbot.jbcrypt</groupId>
@@ -191,7 +191,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.10</version>
+        <version>3.1.11</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -206,7 +206,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.5</version>
+        <version>1.6</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -256,12 +256,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.9.0</version>
+        <version>5.10.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>

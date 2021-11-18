@@ -45,7 +45,7 @@ public class PeriodicWorkTest {
         }
 
         @Override
-        protected void doRun() throws Exception {
+        protected void doRun() {
             doneSignal.countDown();
         }
     }

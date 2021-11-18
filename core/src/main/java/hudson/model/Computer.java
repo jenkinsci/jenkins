@@ -613,21 +613,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new BuildTimelineWidget(getBuilds());
     }
 
-    @Override
-    public void taskAccepted(Executor executor, Queue.Task task) {
-        // dummy implementation
-    }
-
-    @Override
-    public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
-        // dummy implementation
-    }
-
-    @Override
-    public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
-        // dummy implementation
-    }
-
     @Exported
     public boolean isOffline() {
         return temporarilyOffline || getChannel()==null;
@@ -1822,11 +1807,4 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
-
-    static {
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-sm", "16x16/computer-user-offline.png", Icon.ICON_SMALL_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-md", "24x24/computer-user-offline.png", Icon.ICON_MEDIUM_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-lg", "32x32/computer-user-offline.png", Icon.ICON_LARGE_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-xlg", "48x48/computer-user-offline.png", Icon.ICON_XLARGE_STYLE));
-    }
 }

@@ -32,7 +32,6 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${%Timeline}</h1>
       <st:include page="control.jelly" it="${it.timeline}" />
-      <div class="spacer" />
 
       <h1>${%Build Time Trend}</h1>
           <div align="center">

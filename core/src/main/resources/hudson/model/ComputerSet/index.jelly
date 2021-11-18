@@ -32,25 +32,48 @@ THE SOFTWARE.
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-    <table id="computers" class="sortable pane bigtable">
-      <tr>
-        <th width="32">S</th>
-        <th initialSortDir="down" align="left">${%Name}</th>
-        <j:forEach var="m" items="${monitors}">
-          <j:if test="${m.columnCaption!=null}">
-            <j:set var="tableWidth" value="${tableWidth+1}"/>
-            <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
-          </j:if>
-        </j:forEach>
-        <th />
-      </tr>
+
+    <div class="jenkins-app-bar">
+      <div class="jenkins-app-bar__content">
+        <h1>${%Manage nodes and clouds}</h1>
+      </div>
+      <l:hasAdministerOrManage>
+        <div class="jenkins-app-bar__controls">
+          <form method="post" action="updateNow">
+            <s:submit value="${%Refresh status}"/>
+          </form>
+        </div>
+      </l:hasAdministerOrManage>
+    </div>
+
+    <table id="computers" class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th class="jenkins-table__cell--tight">S</th>
+          <th initialSortDir="down">${%Name}</th>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <j:set var="tableWidth" value="${tableWidth+1}"/>
+              <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
+            </j:if>
+          </j:forEach>
+          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+        </tr>
+      </thead>
+      <tbody>
 
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
-          <td width="32" data="${c.icon}">
-            <l:icon class="${c.iconClassName} icon-lg" alt="${c.iconAltText}"/>
+          <td data="${c.icon}" class="jenkins-table__cell--tight">
+            <div class="jenkins-table__cell__button-wrapper">
+              <l:icon class="${c.iconClassName} icon-lg" alt="${c.iconAltText}"/>
+            </div>
           </td>
-          <td><a href="${rootURL}/${c.url}" class="model-link inside">${c.displayName}</a></td>
+
+          <td>
+            <a href="${rootURL}/${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
+          </td>
+
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
               <j:set var="data" value="${m.data(c)}"/>
@@ -58,11 +81,13 @@ THE SOFTWARE.
             </j:if>
           </j:forEach>
 
-          <td><!-- config link -->
+          <td class="jenkins-table__cell--tight">
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
-              <a href="${rootURL}/${c.url}configure">
-                <l:icon class="icon-gear icon-lg" tooltip="${c.hasPermission(c.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
-              </a>
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
+                  <l:ionicon name="settings-outline" />
+                </a>
+              </div>
             </j:if>
           </td>
         </tr>
@@ -85,15 +110,8 @@ THE SOFTWARE.
         </j:forEach>
         <th />
       </tr>
-
+      </tbody>
     </table>
-    <l:hasAdministerOrManage>
-      <div align="right" style="margin-top:0.5em">
-        <form method="post" action="updateNow">
-          <s:submit value="${%Refresh status}"/>
-        </form>
-      </div>
-    </l:hasAdministerOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>

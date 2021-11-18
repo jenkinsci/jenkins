@@ -1477,7 +1477,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>
      * This form of identifier is weak in that it can be impersonated by others. See
-     * https://wiki.jenkins-ci.org/display/JENKINS/Instance+Identity for more modern form of instance ID
+     * https://github.com/jenkinsci/instance-identity-plugin for more modern form of instance ID
      * that can be challenged and verified.
      *
      * @since 1.498
@@ -2239,14 +2239,38 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * but we also call this periodically to self-heal any data out-of-sync issue.
      */
     /*package*/ void trimLabels() {
+        trimLabels((Set) null);
+    }
+
+    /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param nodes the nodes taken as reference to update labels
+     */
+    void trimLabels(Node... nodes) {
+        Set<LabelAtom> includedLabels = new HashSet<>();
+        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        trimLabels(includedLabels);
+    }
+
+    /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param includedLabels the labels taken as reference to update labels. If {@code null}, all labels are considered.
+     */
+    private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
         Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
-                resetLabel(l);
-            } else {
-                itr.remove();
+            if (includedLabels == null || includedLabels.contains(l)) {
+                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
+                    // there is at least one static agent or one cloud that currently claims it can handle the label.
+                    // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
+                    // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.
+                    // not checking `cloud.canProvision()` here prevents a potential call that will only be repeated later
+                    resetLabel(l);
+                } else {
+                    itr.remove();
+                }
             }
         }
     }
@@ -2454,7 +2478,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>Please note that this will not work in all cases if Jenkins is running behind a
      * reverse proxy which has not been fully configured.
      * Specifically the {@code Host} and {@code X-Forwarded-Proto} headers must be set.
-     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache">Running Jenkins behind Apache</a>
+     * <a href="https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/">Reverse proxy - Apache</a>
      * shows some examples of configuration.
      * @since 1.263
      */
@@ -4162,6 +4186,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
+        if (SystemProperties.getBoolean(NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP, true)) {
+            // SECURITY-2424 on Windows the trailing dot can be used to create ambiguity
+            if (name.trim().endsWith(".")) {
+                throw new Failure(Messages.Hudson_TrailingDot());
+            }
+        }
+        
         // looks good
     }
 
@@ -4456,8 +4487,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                     LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
-                    for (RestartListener listener : RestartListener.all())
-                        listener.onRestart();
+                    for (RestartListener listener : RestartListener.all()) { 
+                        try {
+                            listener.onRestart();
+                        } catch (Throwable t) {
+                            LOGGER.log(Level.WARNING, 
+                                       "RestartListener failed, ignoring and continuing with restart, this indicates a bug in the associated plugin or Jenkins code",
+                                       t);
+                        }
+                    }
                     lifecycle.restart();
                 } catch (InterruptedException | InterruptedIOException e) {
                     LOGGER.log(Level.WARNING, "Interrupted while trying to restart Jenkins", e);
@@ -5099,6 +5137,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();
@@ -5413,6 +5452,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Switch to enable people to use a shorter workspace name.
      */
     private static final String WORKSPACE_DIRNAME = SystemProperties.getString(Jenkins.class.getName() + "." + "workspaceDirName", "workspace");
+
+    /**
+     * Name of the system property escape hatch for SECURITY-2424. It allows to have back the legacy (and vulnerable)
+     * behavior allowing a "good name" to end with a dot. This could be used to exploit two names colliding in the file
+     * system to extract information. The files ending with a dot are only a problem on Windows.
+     * 
+     * The default value is true.
+     * 
+     * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
+     * @see #checkGoodName(String)
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP = Jenkins.class.getName() + "." + "nameValidationRejectsTrailingDot";
 
     /**
      * Default value of job's builds dir.

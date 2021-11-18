@@ -13,13 +13,13 @@
   // Color palette
   --white: #fff;
   --very-light-grey: #f8f8f8;
-  --light-grey: #eaeff2;
+  --light-grey: #f2f2f2;
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
   --black: #333;
 
   // branding
-  --primary: #0b6aa2;
+  --primary: #024cb6;
   --secondary: #4d545d;
   --success: #138347;
   --danger: #cc0003;
@@ -28,7 +28,7 @@
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
   --focus-btn-danger: fade(#cc0003, 50%);
-  --focus-input-border: fade(#093853, 100%);
+  --focus-input-border: #063F61;
   --focus-input-glow: fade(#0b6aa2, 25%);
 
   // State colors
@@ -140,9 +140,9 @@
   --btn-large-font-size: var(--font-size-sm);
   --btn-large-line-height: 1.25rem;
   // Button primary
-  --btn-primary-bg: var(--primary);
-  --btn-primary-bg-hover: var(--primary-hover);
-  --btn-primary-bg-active: var(--primary-active);
+  --btn-primary-bg: #063F61;
+  --btn-primary-bg-hover: lighten(#063F61, 7.5%);
+  --btn-primary-bg-active: lighten(#063F61, 12%);
   // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
@@ -169,6 +169,14 @@
   --configure-job-help-area-bg-color: var(--medium-translucent);
 
   // Table
+  --table-background: var(--panel-header-bg-color);
+  --table-header-foreground: black;
+  --table-body-background: white;
+  --table-body-foreground: black;
+  --table-border-radius: 10px;
+  --table-body-radius: 6px;
+
+  // Deprecated
   --even-row-color: var(--very-light-grey);
   --bigtable-border-width: var(--pane-border-width);
   --bigtable-header-bg: var(--dark-grey);
@@ -189,6 +197,12 @@
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
   --link-font-weight: 600;
+
+  // Tooltips
+  --tooltip-background-color: var(--background);
+  --tooltip-foreground-color: var(--text-color);
+  --tooltip-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.2);
+
   // Dark link
   --link-dark-color: var(--text-color);
   --link-dark-visited-color: var(--link-dark-color);
@@ -210,8 +224,20 @@
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
-  // TabBar links
-  --tab-link-border-radius: 4px;
+  // Tab bar
+  --tabs-background: var(--panel-header-bg-color);
+  --tabs-item-background: transparent;
+  --tabs-item-foreground: var(--text-color);
+  --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
+  --tabs-item-foreground--hover: var(--text-color);
+  --tabs-item-background--active: rgba(0, 0, 0, 0.1);
+  --tabs-item-foreground--active: var(--text-color);
+  --tabs-item-background--selected: white;
+  --tabs-item-foreground--selected: var(--link-color);
+  --tabs-border-radius: calc((10px + 2rem) / 2);
+
+  // Deprecated
+  --tab-link-border-radius: 10px;
   --tab-link-border-width: 2px;
   --tab-link-padding-x: 0.75rem;
   --tab-link-padding-y: 0.375rem;
@@ -242,9 +268,20 @@
 
   // Form
   --input-color: var(--white);
-  --input-border: #ccc;
-  --input-border-hover: #888;
+  --input-border: #C3CCD1;
+  --input-border-hover: #5C7889;
   --input-hidden-password-bg-color: #f9f9f9;
+  --form-item-max-width: 650px;
+  --form-item-max-width--small: 300px;
+  --form-item-max-width--medium: 450px;
+  --form-label-font-weight: bold;
+  --form-input-padding: 8px;
+  --form-input-border-radius: 6px;
+  --form-input-glow: 0 0 0 10px transparent;
+  --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
+
+  // Animations
+  --standard-transition: 0.2s ease;
 
   // Pop out menus
   --menu-text-color: black;
@@ -283,4 +320,8 @@
   // Call to action
   --call-to-action-link-color: #000;
   --call-to-action-text-color: var(--alert-info-text-color);
+
+  // Colors
+  --green: #1c9146;
+  --red: #df001c;
 }

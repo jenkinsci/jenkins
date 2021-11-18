@@ -23,12 +23,18 @@
  */
 package org.jenkins.ui.icon;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.jelly.JellyContext;
 
 /**
  * An icon set.
@@ -37,13 +43,16 @@ import org.apache.commons.jelly.JellyContext;
  */
 public class IconSet {
 
+
     public static final IconSet icons = new IconSet();
+    private static final Map<String, String> IONICONS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
     private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
 
+    private static final String PLACEHOLDER_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><title>Ellipse</title><circle cx=\"256\" cy=\"256\" r=\"192\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\"/></svg>";
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
     public IconSet() {
@@ -55,6 +64,43 @@ public class IconSet {
 
     public static void initPageVariables(JellyContext context) {
         context.setVariable("icons", icons);
+    }
+
+    private static String prependTitleIfRequired(String icon, String title) {
+        if (StringUtils.isNotBlank(title)) {
+            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+        }
+        return icon;
+    }
+
+    public static String getIonicon(String name, String title) {
+        if (IONICONS.containsKey(name)) {
+            String icon = IONICONS.get(name);
+            return prependTitleIfRequired(icon, title);
+        }
+
+        // Load icon if it exists
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
+        String ionicon = null;
+
+        try {
+            if (inputStream != null) {
+                ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            // ignored
+        }
+        if (ionicon == null) {
+            ionicon = PLACEHOLDER_SVG;
+        }
+
+        ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+
+        IONICONS.put(name, ionicon);
+
+        return prependTitleIfRequired(ionicon, title);
     }
 
     public IconSet addIcon(Icon icon) {

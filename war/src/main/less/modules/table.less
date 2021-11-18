@@ -1,0 +1,224 @@
+.jenkins-table {
+  width: calc(100% - 10px);
+  background: var(--table-background);
+  border-collapse: collapse;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 0 5px var(--table-background);
+  margin: 5px;
+  --table-padding: 0.55rem;
+
+  * {
+    -webkit-border-horizontal-spacing: 0;
+    -webkit-border-vertical-spacing: 0;
+  }
+
+  & > thead {
+    & > tr {
+      & > th {
+        color: var(--table-header-foreground);
+        text-align: left;
+        padding-top: calc((var(--table-padding) * 2) - 5px);
+        padding-bottom: calc(var(--table-padding) * 2);
+        padding-left: var(--table-padding);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.75rem;
+
+        &[align="center"] {
+          text-align: center;
+        }
+
+        &[align="right"] {
+          text-align: right;
+        }
+
+        &:first-of-type {
+          padding-left: calc(var(--table-padding) * 2);
+        }
+
+        &:last-of-type {
+          padding-right: var(--table-padding);
+        }
+
+        a {
+          color: var(--table-header-foreground);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  & > tbody {
+    & > tr {
+      background: var(--table-body-background);
+      color: var(--table-body-foreground);
+      border-bottom: 2px solid var(--table-background);
+
+      & > td {
+        vertical-align: middle;
+        padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
+        font-weight: 500;
+        height: 50px;
+
+        &:first-of-type {
+          border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
+          padding-left: calc(var(--table-padding) * 2);
+        }
+
+        &:last-of-type {
+          border-radius: 0 var(--table-body-radius) var(--table-body-radius) 0;
+          padding-right: var(--table-padding);
+        }
+      }
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+    }
+
+    & > tr:first-of-type {
+      & > td:first-of-type {
+        border-radius: var(--table-border-radius) 0 0 var(--table-body-radius);
+      }
+      & > td:last-of-type {
+        border-radius: 0 var(--table-border-radius) var(--table-body-radius) 0;
+      }
+    }
+
+    & > tr:last-of-type {
+      & > td:first-of-type {
+        border-radius: var(--table-body-radius) 0 0 var(--table-border-radius);
+      }
+      & > td:last-of-type {
+        border-radius: 0 var(--table-body-radius) var(--table-border-radius) 0;
+      }
+    }
+  }
+
+  &__cell__button-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__cell--tight {
+    padding-left: 0!important;
+    text-align: center!important;
+    white-space: nowrap;
+    width: 60px;
+  }
+
+  &__button {
+    display: inline-flex;
+  }
+
+  &__link, .sortheader {
+    display: inline-flex;
+  }
+
+  &__button, &__link, &__icon {
+    svg, .build-status-icon__wrapper, img {
+      width: 24px!important;
+      height: 24px!important;
+    }
+  }
+
+  &--medium {
+    --table-padding: 0.4rem!important;
+
+    tbody > tr > td {
+      height: 40px;
+    }
+
+    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
+      svg, .build-status-icon__wrapper, img {
+        width: 20px!important;
+        height: 20px!important;
+      }
+    }
+  }
+
+  &--small {
+    --table-padding: 0.2rem;
+
+    tbody > tr > td {
+      height: 34px;
+    }
+
+    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
+      svg, .build-status-icon__wrapper, img {
+        width: 16px!important;
+        height: 16px!important;
+      }
+    }
+  }
+
+  &__button, .sortheader, &__link {
+    align-items: center;
+    justify-content: center;
+    appearance: none;
+    position: relative;
+    outline: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    z-index: 0;
+    cursor: pointer;
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    background: transparent;
+    text-decoration: none!important;
+    line-height: 1!important;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: -10px;
+      bottom: -7px;
+      right: -10px;
+      border-radius: 5px;
+      background: var(--text-color);
+      z-index: -1;
+      opacity: 0;
+      transition: 0.2s ease;
+    }
+
+    &:hover {
+      &::before {
+        opacity: 0.05!important;
+        border-radius: 5px;
+        background: var(--text-color);
+      }
+    }
+
+    &:focus, &:active {
+      &::before {
+        opacity: 0.1!important;
+        border-radius: 5px;
+        background: var(--text-color);
+      }
+    }
+
+    &--green {
+      color: var(--green)!important;
+    }
+  }
+
+  &__badge {
+    margin-left: 1rem!important;
+
+    &::before {
+      top: -5px;
+      left: -8px;
+      bottom: -5px;
+      right: -8px;
+      border-radius: 13px;
+      background: var(--link-color);
+      opacity: 0.05;
+    }
+  }
+}
