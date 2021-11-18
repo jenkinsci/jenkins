@@ -27,9 +27,9 @@ package jenkins.telemetry.impl;
 import hudson.Extension;
 import hudson.Functions;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.security.s2m.DefaultFilePathFilter;
 import jenkins.telemetry.Telemetry;
@@ -44,7 +44,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class SlaveToMasterFileCallableUsage extends Telemetry {
 
-    private List<String> traces = new ArrayList<>();
+    private Set<String> traces = new TreeSet<>();
 
     @Override
     public String getDisplayName() {
@@ -69,7 +69,7 @@ public class SlaveToMasterFileCallableUsage extends Telemetry {
     }
 
     public synchronized void recordTrace(Throwable trace) {
-        traces.add(Functions.printThrowable(trace));
+        traces.add(Functions.printThrowable(trace).replaceAll("@[a-f0-9]+", "@…"));
     }
 
 }
