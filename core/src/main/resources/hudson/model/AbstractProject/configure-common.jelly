@@ -28,39 +28,37 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
-  <div class="jenkins-section">
-    <p:config-disableBuild/>
-    <p:config-concurrentBuild />
+  <p:config-disableBuild/>
+  <p:config-concurrentBuild />
 
-    <j:set var="jdks" value="${app.JDKs}" />
-    <j:if test="${jdks.size() gt 1}">
-      <!-- if there's only one JDK configured, always use that. -->
-      <f:entry title="JDK"
-               description="${%JDK to be used for this project}">
-        <select class="jenkins-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
-          <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
-          <option>${DEFAULT_NAME}</option>
-          <j:forEach var="inst" items="${jdks}">
-            <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-    </j:if>
+  <j:set var="jdks" value="${app.JDKs}" />
+  <j:if test="${jdks.size() gt 1}">
+    <!-- if there's only one JDK configured, always use that. -->
+    <f:entry title="JDK"
+             description="${%JDK to be used for this project}">
+      <select class="jenkins-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
+        <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
+        <option>${DEFAULT_NAME}</option>
+        <j:forEach var="inst" items="${jdks}">
+          <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
+        </j:forEach>
+      </select>
+    </f:entry>
+  </j:if>
 
-    <p:config-assignedLabel />
+  <p:config-assignedLabel />
 
-    <f:advanced>
-      <p:config-quietPeriod />
-      <p:config-retryCount />
-      <p:config-blockWhenUpstreamBuilding />
-      <p:config-blockWhenDownstreamBuilding />
-      <st:include page="configure-advanced.jelly" optional="true" />
-      <f:entry title="${%Display Name}" field="displayNameOrNull">
-        <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
-      </f:entry>
-      <f:optionalBlock name="keepDependencies" checked="${it.keepDependencies}" title="${%Keep the build logs of dependencies}" help="/help/tasks/fingerprint/keepDependencies.html"/>
-    </f:advanced>
-  </div>
+  <f:advanced>
+    <p:config-quietPeriod />
+    <p:config-retryCount />
+    <p:config-blockWhenUpstreamBuilding />
+    <p:config-blockWhenDownstreamBuilding />
+    <st:include page="configure-advanced.jelly" optional="true" />
+    <f:entry title="${%Display Name}" field="displayNameOrNull">
+      <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
+    </f:entry>
+    <f:optionalBlock name="keepDependencies" checked="${it.keepDependencies}" title="${%Keep the build logs of dependencies}" help="/help/tasks/fingerprint/keepDependencies.html"/>
+  </f:advanced>
 
   <this:configure-scm/>
 </j:jelly>

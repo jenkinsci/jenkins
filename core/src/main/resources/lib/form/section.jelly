@@ -39,7 +39,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.section_" />
 
   <f:rowSet name="${attrs.name}">
-    <div class="jenkins-section">
+    <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
           ${title}

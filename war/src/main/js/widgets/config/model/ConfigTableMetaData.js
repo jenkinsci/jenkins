@@ -54,14 +54,13 @@ function fromConfigTable(configTable) {
     // See the next block of code.
     
     if(!firstRow.hasClass('section-header-row')){
-      var td, tr;
+      var tr;
       if (configTable[0].nodeName === 'TR') {
         tr = 'tr';
-        td = 'td';
       } else {
-        tr = td = 'div';
+        tr = 'div';
       }
-      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><'+td+' colspan="4"><div class="jenkins-section__header"><a class="section-anchor">#</a>General</div></+'+td+'></'+tr+'>');
+      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><div class="jenkins-section__header"><a class="section-anchor">#</a>General</div></'+tr+'>');
       firstRow.before(generalRow);
       firstRow = configTableMetadata.getFirstRow();
       var newArray = $.makeArray(topRows);
@@ -112,7 +111,6 @@ function ConfigTableMetaData(configForm, configTable) {
 
 ConfigTableMetaData.prototype.getTopRows = function() {
     var topRows = this.configTableBody.find('tr, .tr');
-    topRows.addClass('config-table-top-row');
     return topRows;
 };
 
