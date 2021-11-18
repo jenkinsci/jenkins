@@ -26,10 +26,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends RoleChecker {
-    /**
-     * Context parameter given to {@link ChannelConfigurator#onChannelBuilding(ChannelBuilder, Object)}.
-     */
-    private final Object context;
 
     private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
 
@@ -44,10 +40,6 @@ public class CallableDirectionChecker extends RoleChecker {
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
-    private CallableDirectionChecker(Object context) {
-        this.context = context;
-    }
-
     @Override
     public void check(RoleSensitive subject, @NonNull Collection<Role> expected) throws SecurityException {
         final String name = subject.getClass().getName();
@@ -60,6 +52,11 @@ public class CallableDirectionChecker extends RoleChecker {
         if (expected.isEmpty() && SystemProperties.getBoolean(ALLOW_ANY_ROLE_PROP, true)) {
             // TODO Is this even something we want to support, or should all infrastructure callables be exempted from the required role check?
             LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for any role", name);
+            return;
+        }
+
+        if (BYPASS) {
+            LOGGER.log(Level.FINE, "Allowing {0} to be sent from agent to controller because bypass is set", name);
             return;
         }
 
@@ -80,7 +77,7 @@ public class CallableDirectionChecker extends RoleChecker {
                 builder.withRemoteClassLoadingAllowed(false);
             }
             // In either of the above cases, the check method will return normally, but may log things.
-            builder.withRoleChecker(new CallableDirectionChecker(context));
+            builder.withRoleChecker(new CallableDirectionChecker());
         }
     }
 

@@ -13,8 +13,10 @@ import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.agents.AgentComputerUtil;
+import jenkins.security.s2m.CallableDirectionChecker;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Rule;
@@ -103,6 +105,43 @@ public class AgentToControllerSecurityTest {
         @Override
         public Void call() throws Exception {
             assertTrue(JenkinsJVM.isJenkinsJVM());
+            return null;
+        }
+    }
+
+    // ----- Agent to controller access control can be disabled using system property (but really shouldn't)
+    @Test
+    public void ensureBypass() throws Exception {
+        CallableDirectionChecker.BYPASS = true;
+        try {
+            Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new InvokeControllerToAgentCallables());
+        } finally {
+            CallableDirectionChecker.BYPASS = false;
+        }
+    }
+
+    private static class InvokeControllerToAgentCallables extends MasterToSlaveCallable<Void, Exception> {
+        @Override
+        public Void call() throws Exception {
+            assertFalse(JenkinsJVM.isJenkinsJVM());
+            final VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+            assertNotNull(channelToController);
+            channelToController.call(new NoopMasterToSlaveCallable());
+            new FilePath(channelToController, "foo").act(new NoopMasterToSlaveFileCallable());
+            return null;
+        }
+    }
+
+    private static class NoopMasterToSlaveCallable extends MasterToSlaveCallable<Void, Exception> {
+        @Override
+        public Void call() throws Exception {
+            return null;
+        }
+    }
+
+    private static class NoopMasterToSlaveFileCallable extends MasterToSlaveFileCallable<Void> {
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return null;
         }
     }
