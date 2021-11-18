@@ -48,14 +48,16 @@ THE SOFTWARE.
             <th>${%Description}</th>
           </tr>
         </thead>
-        <j:forEach items="${h.getCLICommands()}" var="command">
-          <tbody>
+        <tbody>
+          <j:forEach items="${h.getCLICommands()}" var="command">
             <tr>
-              <td><a href="command/${command.name}">${command.name}</a></td>
+              <td>
+                <a href="command/${command.name}" class="jenkins-table__link">${command.name}</a>
+              </td>
               <td>${command.shortDescription}</td>
             </tr>
-          </tbody>
-        </j:forEach>
+          </j:forEach>
+        </tbody>
       </table>
     </l:main-panel>
   </l:layout>
