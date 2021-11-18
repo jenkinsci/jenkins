@@ -72,7 +72,7 @@ THE SOFTWARE.
               <td>
                 <j:if test="${user.canDelete()}">
                   <div class="jenkins-table__cell__button-wrapper">
-                    <a href="${user.url}/delete" class="jenkins-table__button">
+                    <a href="${user.url}/delete" class="jenkins-table__button jenkins-table__button--red">
                       <l:ionicon name="trash-outline" />
                     </a>
                   </div>
