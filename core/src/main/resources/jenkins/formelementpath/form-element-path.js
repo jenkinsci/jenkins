@@ -1,3 +1,10 @@
+/**
+ * Adds a 'path' attribute to form elements in the DOM.
+ * This is useful for providing stable selectors for UI testing.
+ *
+ * Instead of selecting by xpath with something like div/span/input[text() = 'Name']
+ * You can use the path attribute: /org-jenkinsci-plugins-workflow-libs-FolderLibraries/libraries/name
+ */
 document.addEventListener("DOMContentLoaded", function(){
     // most of this is copied from hudson-behaviour.js
     function buildFormTree(form) {
