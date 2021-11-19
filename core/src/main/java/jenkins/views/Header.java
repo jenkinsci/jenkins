@@ -10,9 +10,22 @@ import hudson.ExtensionPoint;
 
 /**
  * Extension point that provides capabilities to render a specific header.
- *
+ *  
  * Extend {@link PartialHeader} or {@link FullHeader} depending on the use case.
  * 
+ * The default Jenkins header is provided as an implementation of a {@link FullHeader} 
+ * named {@link JenkinsHeader}.
+ * 
+ * All headers will provide a prioritization technique, via the usual ordinal field of 
+ * the {@link Extension} annotation.
+ * 
+ * The header content will be injected inside the pageHeader.jelly, based on the header
+ * retrieved by the {@link Header#get()} method. That header content will be provided
+ * inside a resource called headerContent.jelly. It performs a full replacement
+ * of the header.
+ * 
+ * @see PartialHeader
+ * @see FullHeader
  * @see JenkinsHeader
  * @since TODO
  */
