@@ -41,7 +41,7 @@ THE SOFTWARE.
           <tr>
             <td><a href="${user.url}/" class="model-link inside"><img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32" /></a></td>
             <td><a href="${user.url}/">${user.id}</a></td>
-            <td><a href="${user.url}/">${user}</a></td>
+            <td><a href="${user.url}/">${user.fullName}</a></td>
             <td>
               <a href="${user.url}/configure"><l:icon class="icon-gear icon-md" /></a>
               <j:if test="${user.canDelete()}">
