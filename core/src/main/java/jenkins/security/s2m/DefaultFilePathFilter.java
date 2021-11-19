@@ -71,7 +71,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
                         createdAt.setAccessible(true);
                         Throwable trace = (Throwable) createdAt.get(((ThreadLocal) current.get(null)).get());
                         ExtensionList.lookupSingleton(SlaveToMasterFileCallableUsage.class).recordTrace(trace);
-                        LOGGER.log(Level.WARNING, "Permitting agent-to-controller " + op + " on " + f, trace);
+                        LOGGER.log(Level.WARNING, "Permitting agent-to-controller '" + op + "' on '" + f + "'. This is deprecated and will soon be rejected. Learn more: https://www.jenkins.io/redirect/permitted-agent-to-controller-file-access", trace);
                     } catch (Exception x) {
                         LOGGER.log(Level.WARNING, null, x);
                     }

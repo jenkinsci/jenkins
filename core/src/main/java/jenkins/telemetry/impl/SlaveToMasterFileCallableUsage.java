@@ -58,7 +58,7 @@ public class SlaveToMasterFileCallableUsage extends Telemetry {
 
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2022, 1, 4); // 2mo?
+        return LocalDate.of(2022, 3, 1);
     }
 
     @Override
