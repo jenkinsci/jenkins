@@ -176,9 +176,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
     applyAll();
 
-    // run this periodically to cope with DOM changes
-    window.setInterval(applyAll, 1000);
-
     layoutUpdateCallback.add(applyAll)
 
     // expose this globally so that Selenium can call it
