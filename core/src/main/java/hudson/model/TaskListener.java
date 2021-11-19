@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
 import hudson.remoting.Channel;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -36,6 +35,7 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
+import org.apache.commons.io.output.NullPrintStream;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -155,5 +155,5 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link TaskListener} that discards the output.
      */
-    TaskListener NULL = new StreamTaskListener(new NullStream());
+    TaskListener NULL = NullPrintStream::new;
 }
