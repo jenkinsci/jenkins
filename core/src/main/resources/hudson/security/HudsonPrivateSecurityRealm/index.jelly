@@ -60,7 +60,7 @@ THE SOFTWARE.
                 <a href="${user.url}/" class="jenkins-table__link">${user.id}</a>
               </td>
               <td>
-                <a href="${user.url}/" class="jenkins-table__link">${user}</a>
+                <a href="${user.url}/" class="jenkins-table__link">${user.fullName}</a>
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
