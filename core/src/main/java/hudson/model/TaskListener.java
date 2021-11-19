@@ -65,6 +65,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
  *
  * @author Kohsuke Kawaguchi
  */
+@FunctionalInterface
 public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * This writer will receive the output of the build
