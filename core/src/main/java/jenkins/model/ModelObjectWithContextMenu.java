@@ -161,7 +161,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             Computer c = n.toComputer();
             return add(new MenuItem()
                 .withDisplayName(n.getDisplayName())
-                .withStockIcon(c == null ? "computer.png" : c.getIcon())
+                .withStockIcon(c == null ? "computer.svg" : c.getIcon())
                 .withContextRelativeUrl(n.getSearchUrl()));
         }
 
