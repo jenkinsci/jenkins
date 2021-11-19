@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     if (name == null) {
                         if (name == null) {
                             element = element.parentNode.previousSibling;
-                            if (element != null && element.classList.contains('repeatable-insertion-point')) {
+                            if (element != null && element.classList && element.classList.contains('repeatable-insertion-point')) {
                                 name = "hetero-list-add";
                             }
                         }
