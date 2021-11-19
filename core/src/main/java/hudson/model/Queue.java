@@ -3103,7 +3103,12 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
-        h.getQueue().load();
+        Queue queue = h.getQueue();
+        Item[] items = queue.getItems();
+        if (items.length > 0) {
+            LOGGER.warning(() -> "Loading queue will discard previously scheduled items: " + Arrays.toString(items));
+        }
+        queue.load();
     }
 
     /**
