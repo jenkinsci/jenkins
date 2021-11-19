@@ -37,7 +37,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * @since TODO
+     * @since 2.310
      */
     public boolean getAgentToControllerAccessControl() {
         return !rule.getMasterKillSwitch();
