@@ -24,15 +24,18 @@
 
 package jenkins.security.s2m;
 
-import hudson.ExtensionList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
@@ -46,9 +49,6 @@ import java.util.logging.Level;
 import javax.inject.Inject;
 import jenkins.SoloFilePathFilter;
 import jenkins.telemetry.impl.SlaveToMasterFileCallableUsage;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
