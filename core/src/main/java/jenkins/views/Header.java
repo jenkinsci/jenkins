@@ -16,8 +16,7 @@ import hudson.ExtensionPoint;
  * The default Jenkins header is provided as an implementation of a {@link FullHeader} 
  * named {@link JenkinsHeader}.
  * 
- * All headers will provide a prioritization technique, via the usual ordinal field of 
- * the {@link Extension} annotation.
+ * The first header located will be used, set the ordinal field on {@link Extension} to have a higher priority.
  * 
  * The header content will be injected inside the pageHeader.jelly, based on the header
  * retrieved by the {@link Header#get()} method. That header content will be provided
