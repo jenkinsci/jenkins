@@ -47,7 +47,7 @@ public class ShutdownLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "system-log-out.png";
+        return "system-log-out.svg";
     }
 
     @Override

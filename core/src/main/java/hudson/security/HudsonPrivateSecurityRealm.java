@@ -843,7 +843,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         @Override
         public String getIconFileName() {
             if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
-                return "user.png";
+                return "user.svg";
             else
                 return null;    // not applicable now
         }

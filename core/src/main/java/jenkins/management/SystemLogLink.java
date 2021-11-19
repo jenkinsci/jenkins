@@ -39,7 +39,7 @@ public class SystemLogLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "clipboard.png";
+        return "clipboard.svg";
     }
 
     @Override

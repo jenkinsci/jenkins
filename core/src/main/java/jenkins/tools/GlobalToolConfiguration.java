@@ -50,7 +50,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.png";
+        return "setting.svg";
     }
 
     @Override
