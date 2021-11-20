@@ -32,7 +32,7 @@ function fromConfigTable(configTable) {
     // Mark the ancestor <tr>s of the section headers and add a title
     sectionHeaders.each(function () {
         var sectionHeader = $(this);
-        var sectionRow = closestTR(sectionHeader);
+        var sectionRow = sectionHeader;
         var sectionTitle = sectionRow.text();
 
         // Remove leading hash from accumulated text in title (from <a> element).
@@ -110,7 +110,7 @@ function ConfigTableMetaData(configForm, configTable) {
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
-    var topRows = this.configTableBody.find('tr, .tr');
+    var topRows = this.configTableBody.find('tr, .tr, .jenkins-section > .jenkins-section__title');
     return topRows;
 };
 
