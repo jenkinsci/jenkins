@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <slf4jVersion>1.7.32</slf4jVersion>
     <stapler.version>1593.v0e838714faae</stapler.version>
-    <groovy.version>2.4.12</groovy.version>
+    <groovy.version>2.4.21</groovy.version>
   </properties>
 
   <dependencyManagement>
