@@ -396,6 +396,12 @@
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
 
+  &:focus + label:before, &:active + label:before {
+    border-width: 5px;
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+
   &:checked + label:before {
     border: 11px solid var(--focus-input-border);
   }
