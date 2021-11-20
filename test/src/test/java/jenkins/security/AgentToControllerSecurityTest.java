@@ -2,6 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -12,6 +13,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Objects;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
@@ -22,6 +24,7 @@ import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class AgentToControllerSecurityTest {
@@ -144,6 +147,45 @@ public class AgentToControllerSecurityTest {
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return null;
         }
+    }
+
+    // --- Ensure local FilePath operations work inside a Callable
+
+    @Test
+    @Issue("JENKINS-67189")
+    public void controllerToControllerTest() throws Exception {
+        // Send a callable to the agent, which sends a callable to the controller, which invokes a method of a local FilePath
+        Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new BackToControllerCallable());
+    }
+
+    private static class BackToControllerCallable extends MasterToSlaveCallable<String, Exception> {
+        @Override
+        public String call() throws Exception {
+            assertFalse(JenkinsJVM.isJenkinsJVM());
+            return Objects.requireNonNull(AgentComputerUtil.getChannelToController()).call(new LocalFileOpCallable(true));
+        }
+    }
+
+    // Used for both agent-to-agent and controller-to-controller, so make it S2MC
+    private static class LocalFileOpCallable extends SlaveToMasterCallable<String, Exception> {
+        private final boolean executesOnJenkinsJVM;
+
+        LocalFileOpCallable(boolean executesOnJenkinsJVM) {
+            this.executesOnJenkinsJVM = executesOnJenkinsJVM;
+        }
+
+        @Override
+        public String call() throws Exception {
+            assertEquals(executesOnJenkinsJVM, JenkinsJVM.isJenkinsJVM());
+            final File tempFile = Files.createTempFile("jenkins-test", null).toFile();
+            return new FilePath(tempFile).readToString();
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-67189") // but this test works even in 2.319 because no agent side filtering
+    public void agentToAgentTest() throws Exception {
+        Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new LocalFileOpCallable(false));
     }
 
     // ----- Utility methods
