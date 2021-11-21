@@ -195,6 +195,11 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(asJob().getQuietPeriod(), TimeUnit.SECONDS));
         }
 
+        if (asJob().isDisabled())
+        {
+            throw HttpResponses.forwardToPreviousPage();
+        }
+
         if (!asJob().isBuildable()) {
             throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable"));
         }
@@ -231,6 +236,11 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
+        if (asJob().isDisabled())
+        {
+            throw HttpResponses.forwardToPreviousPage();
+        }
+        
         if (!asJob().isBuildable()) {
             throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable!"));
         }
