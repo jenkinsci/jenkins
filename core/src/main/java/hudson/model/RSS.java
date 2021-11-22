@@ -52,7 +52,7 @@ public final class RSS {
      * @param adapter
      *      Controls how to render entries to RSS.
      */
-    public static <E> void forwardToRss(String title, String url, Iterable<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+    public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
         req.setAttribute("adapter",adapter);
         req.setAttribute("title",title);
         req.setAttribute("url",url);
