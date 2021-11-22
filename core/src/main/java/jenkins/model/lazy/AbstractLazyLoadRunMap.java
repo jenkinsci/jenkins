@@ -106,8 +106,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private volatile Index index = new Index();
     private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<>(this);
 
-    private transient Set<Integer> keySet;
-    private transient Collection<R> values;
+    private transient volatile Set<Integer> keySet;
+    private transient volatile Collection<R> values;
 
     @Override
     public Set<Integer> keySet() {
