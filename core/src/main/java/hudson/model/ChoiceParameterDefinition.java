@@ -8,6 +8,7 @@ import hudson.Util;
 import hudson.util.FormValidation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -36,26 +37,26 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     private /* quasi-final */ List<String> choices;
     private final String defaultValue;
 
-    public static boolean areValidChoices(String choices) {
+    public static boolean areValidChoices(@NonNull String choices) {
         String strippedChoices = choices.trim();
         return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
-    public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, @CheckForNull String description) {
         super(name, description);
         setChoicesText(choices);
         defaultValue = null;
     }
 
-    public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, @CheckForNull String description) {
         super(name, description);
         this.choices = Stream.of(choices).map(Util::fixNull).collect(Collectors.toCollection(ArrayList::new));
         defaultValue = null;
     }
 
-    private ChoiceParameterDefinition(@NonNull String name, @NonNull List<String> choices, String defaultValue, String description) {
+    private ChoiceParameterDefinition(@NonNull String name, @NonNull List<String> choices, String defaultValue, @CheckForNull String description) {
         super(name, description);
-        this.choices = choices;
+        this.choices = Util.fixNull(choices);
         this.defaultValue = defaultValue;
     }
 
@@ -110,7 +111,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         throw new IllegalArgumentException("expected String or List, but got " + choices.getClass().getName());
     }
 
-    private void setChoicesText(String choices) {
+    private void setChoicesText(@NonNull String choices) {
         this.choices = Arrays.asList(choices.split(CHOICES_DELIMITER));
     }
 
@@ -124,6 +125,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
+    @NonNull
     @Exported
     public List<String> getChoices() {
         return choices;
