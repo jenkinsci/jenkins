@@ -35,7 +35,6 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
-import org.apache.commons.io.output.NullPrintStream;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -65,7 +64,6 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
  *
  * @author Kohsuke Kawaguchi
  */
-@FunctionalInterface
 public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * This writer will receive the output of the build
@@ -156,5 +154,5 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link TaskListener} that discards the output.
      */
-    TaskListener NULL = NullPrintStream::new;
+    TaskListener NULL = new NullTaskListener();
 }
