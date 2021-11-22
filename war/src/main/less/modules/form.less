@@ -54,9 +54,10 @@
 
 .jenkins-form-description {
   display: block;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
+  margin: -0.2rem 0 0.8rem 0;
   color: var(--text-color-secondary);
+  line-height: 1.66;
 }
 
 .jenkins-quote {
@@ -564,16 +565,16 @@
 
 .jenkins-help-button {
   position: relative;
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  min-height: 18px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   margin-left: 1ch;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  line-height: 20px;
   color: var(--text-color)!important;
-  line-height: 18px;
   border-radius: 100%;
 
   &::before {
@@ -596,6 +597,7 @@
     left: 0;
     bottom: 0;
     right: 0;
+    border: 1px solid rgba(125, 125, 125, 0.35);
     box-shadow: var(--form-input-glow);
     border-radius: inherit;
     opacity: 0.1;
