@@ -135,8 +135,14 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.24-rc301.b358e327c0ec</version> <!-- TODO https://github.com/jenkinsci/structs-plugin/pull/112 -->
+      <version>1.23</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion> <!-- TODO https://github.com/jenkinsci/structs-plugin/pull/112 -->
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>symbol-annotation</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
