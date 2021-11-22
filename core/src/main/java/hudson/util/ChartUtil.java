@@ -261,7 +261,7 @@ public class ChartUtil {
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.TODO")
+    @RestrictedSince("2.301")
     public static final double CHEBYSHEV_N = 3;
 
     static {

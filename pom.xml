@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.321</revision>
+    <revision>2.322</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -129,7 +129,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-inline</artifactId>
-        <version>4.0.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -170,7 +170,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
-      <version>1.3</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
@@ -237,6 +237,7 @@ THE SOFTWARE.
           <configuration>
             <quiet>true</quiet>
             <doclint>all,-missing</doclint>
+            <splitindex>true</splitindex>
           </configuration>
         </plugin>
         <plugin>

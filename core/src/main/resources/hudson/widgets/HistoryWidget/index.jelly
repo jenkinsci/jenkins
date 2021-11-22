@@ -79,16 +79,9 @@ THE SOFTWARE.
             <input type="search" placeholder="${%find}" class="jenkins-search__input" />
             <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
           </div>
-          <j:if test="${page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information">
-              No builds
-            </div>
-          </j:if>
-          <j:if test="${!page.runs.isEmpty()}">
-            <div id="no-builds" class="jenkins-pane__information" style="display: none;">
-              No builds
-            </div>
-          </j:if>
+          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() ? '' : 'display: none;'}">
+            ${%No builds}
+          </div>
         </td>
       </tr>
 

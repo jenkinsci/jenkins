@@ -99,7 +99,6 @@ THE SOFTWARE.
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
-    <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>

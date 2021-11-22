@@ -86,16 +86,6 @@ td.center-align {
   border-collapse: collapse;
 }
 
-#top-panel {
-  margin-bottom: 3pt;
-  height: 34px;
-  background: url(../../images/topbar.png) repeat-x;
-}
-
-#top-panel a {
-  text-decoration: none;
-}
-
 .skiplink {
     position: absolute;
     left: -20000px;
@@ -1192,15 +1182,22 @@ div.to-be-removed { display: none; }
 
 textarea {
     margin-bottom: 0;
+    resize: vertical;
 }
 
+// Remove styling + textarea-handle.gif when IE11 is no longer supported
 div.textarea-handle {
-    height: 5px;
+    height: 6px;
     font-size: 0;
     background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
     border: 1px solid var(--medium-grey);
     border-top: none;
     cursor: s-resize;
+
+    // Hide .textarea-handle on devices that support native textarea resizing
+    @supports (resize: both) {
+        display: none;
+    }
 }
 
 textarea.rich-editor {

@@ -411,7 +411,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * plugin</a>. *
      * 
      * @throws Exception if the File could not be inserted into the classpath for some reason.
-     * @since TODO
+     * @since 2.313
      */
     @Restricted(Beta.class)
     public void injectJarsToClasspath(File... jars) throws Exception {
