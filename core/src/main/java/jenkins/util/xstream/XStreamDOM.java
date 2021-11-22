@@ -564,6 +564,6 @@ public class XStreamDOM {
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.TODO")
+    @RestrictedSince("2.301")
     public static final XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }
