@@ -145,7 +145,7 @@ public class ClassLoaderReflectionToolkit {
      * @param name The binary name of the class.
      * @return The resulting {@link Class} object.
      * @throws ClassNotFoundException If the class could not be found.
-     * @since 2.TODO
+     * @since 2.321
      */
     public static @NonNull Class<?> loadClass(ClassLoader cl, String name) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(cl, name)) {
