@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -172,15 +171,6 @@ public class RunList<R extends Run> extends AbstractList<R> {
     @Override
     public Spliterator<R> spliterator() {
         return base.spliterator();
-    }
-
-    @Override
-    public Stream<R> stream() {
-        if (base instanceof Collection) {
-            return ((Collection) base).stream();
-        } else {
-            return super.stream();
-        }
     }
 
     @Override
