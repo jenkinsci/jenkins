@@ -88,11 +88,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -327,7 +329,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     // implementation is minimal --- just enough to run XStream
     // and load plugin-contributed classes.
-    public final ClassLoader uberClassLoader = new UberClassLoader();
+    public final ClassLoader uberClassLoader = new UberClassLoader(activePlugins);
 
     /**
      * Once plugin is uploaded, this flag becomes true.
@@ -2171,12 +2173,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public final class UberClassLoader extends ClassLoader {
-        /** Cache of loaded, or known to be unloadable, classes. */
-        private final Map<String,Class<?>> loaded = new HashMap<>();
+    public static final class UberClassLoader extends ClassLoader {
+        private final List<PluginWrapper> activePlugins;
 
-        public UberClassLoader() {
+        /** Cache of loaded, or known to be unloadable, classes. */
+        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
+
+        static {
+            registerAsParallelCapable();
+        }
+
+        public UberClassLoader(List<PluginWrapper> activePlugins) {
             super(PluginManager.class.getClassLoader());
+            this.activePlugins = activePlugins;
         }
 
         @Override
@@ -2184,57 +2193,36 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
                 throw new ClassNotFoundException("ignoring " + name);
             }
-            synchronized (loaded) {
-                if (loaded.containsKey(name)) {
-                    Class<?> c = loaded.get(name);
-                    if (c != null) {
-                        return c;
+            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
+        }
+
+        private Optional<Class<?>> computeValue(String name) {
+            for (PluginWrapper p : activePlugins) {
+                try {
+                    if (FAST_LOOKUP) {
+                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
                     } else {
-                        throw new ClassNotFoundException("cached miss for " + name);
+                        return Optional.of(p.classLoader.loadClass(name));
                     }
+                } catch (ClassNotFoundException e) {
+                    // Not found. Try the next class loader.
                 }
             }
-            if (FAST_LOOKUP) {
-                for (PluginWrapper p : activePlugins) {
-                    try {
-                        Class<?> c = ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
-                        synchronized (loaded) {
-                            loaded.put(name, c);
-                        }
-                        return c;
-                    } catch (ClassNotFoundException e) {
-                        //not found. try next
-                    }
-                }
-            } else {
-                for (PluginWrapper p : activePlugins) {
-                    try {
-                        return p.classLoader.loadClass(name);
-                    } catch (ClassNotFoundException e) {
-                        //not found. try next
-                    }
-                }
-            }
-            synchronized (loaded) {
-                loaded.put(name, null);
-            }
-            // not found in any of the classloader. delegate.
-            throw new ClassNotFoundException(name);
+            // Not found in any of the class loaders. Delegate.
+            return Optional.empty();
         }
 
         @Override
         protected URL findResource(String name) {
-            if (FAST_LOOKUP) {
-                    for (PluginWrapper p : activePlugins) {
-                        URL url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
-                        if(url!=null)
-                            return url;
-                    }
-            } else {
-                for (PluginWrapper p : activePlugins) {
-                    URL url = p.classLoader.getResource(name);
-                    if(url!=null)
-                        return url;
+            for (PluginWrapper p : activePlugins) {
+                URL url;
+                if (FAST_LOOKUP) {
+                    url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
+                } else {
+                    url = p.classLoader.getResource(name);
+                }
+                if (url != null) {
+                    return url;
                 }
             }
             return null;
@@ -2243,12 +2231,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             List<URL> resources = new ArrayList<>();
-            if (FAST_LOOKUP) {
-                    for (PluginWrapper p : activePlugins) {
-                        resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));
-                    }
-            } else {
-                for (PluginWrapper p : activePlugins) {
+            for (PluginWrapper p : activePlugins) {
+                if (FAST_LOOKUP) {
+                    resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));
+                } else {
                     resources.addAll(Collections.list(p.classLoader.getResources(name)));
                 }
             }
