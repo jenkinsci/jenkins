@@ -18,9 +18,9 @@ import hudson.ExtensionPoint;
  *
  * The first header located will be used, set the ordinal field on Extension to have a higher priority.
  *
- * The header content will be injected inside the pageHeader.jelly, based on the header
+ * The header content will be injected inside the {@code pageHeader.jelly}, based on the header
  * retrieved by the {@link Header#get()} method. That header content will be provided
- * inside a resource called headerContent.jelly. It performs a full replacement
+ * inside a resource called {@code headerContent.jelly}. It performs a full replacement
  * of the header.
  *
  * @see PartialHeader
