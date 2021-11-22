@@ -35,13 +35,18 @@ f.section(title: _("Administrative monitors configuration")) {
             p(class: "jenkins-form-description", _("blurb"))
             for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                     .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
-                div(class: "jenkins-checkbox-help-wrapper", style: "margin-bottom: 0.75rem;") {
+                div(class: "jenkins-checkbox-help-wrapper") {
                     f.checkbox(name: "administrativeMonitor",
                             title: am.displayName,
                             checked: am.enabled,
                             json: am.id)
                     if (am.isSecurity()) {
                         span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
+                    }
+                }
+                div(class: "tr") {
+                    div(class: "jenkins-checkbox__description") {
+                        st.include(from: am, page: "description", optional: true)
                     }
                 }
             }
