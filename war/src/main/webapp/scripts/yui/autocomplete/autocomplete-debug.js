@@ -2110,7 +2110,7 @@ YAHOO.widget.AutoComplete.prototype._typeAhead = function(elListItem, sQuery) {
                 // Bug 2528552: Store as a selection
                 oSelf._sCurQuery = elListItem._sResultMatch;
                 oSelf.typeAheadEvent.fire(oSelf,sQuery,sPrefill);
-                YAHOO.log("Typeahead occured with prefill string \"" + sPrefill + "\"", "info", oSelf.toString());
+                YAHOO.log("Typeahead occurred with prefill string \"" + sPrefill + "\"", "info", oSelf.toString());
             },(this.typeAheadDelay*1000));            
     }
 };
