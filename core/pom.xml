@@ -479,10 +479,9 @@ THE SOFTWARE.
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
     </dependency>
-    <dependency> <!-- Not included into BOM, plugins should use one from structs-plugin -->
+    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
-      <version>1.1</version>
     </dependency>
 
     <dependency>
