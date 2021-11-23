@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "acceptance-test-harness-1.105"
+  athRevision: "acceptance-test-harness-1.106"
   athImage: "jenkins/ath:1.97-pre"
   tests:
     - '*'
