@@ -176,6 +176,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
     applyAll();
 
+    // JavaScript sometimes re-arranges the DOM and doesn't call layout callback
+    // known cases: YUI buttons, Pipeline CodeMirror
+    // we run apply before this as well to have the general case work immediately
+    setTimeout(function () {
+        applyAll();
+    }, 1000);
+
     layoutUpdateCallback.add(applyAll)
 
     // expose this globally so that Selenium can call it
