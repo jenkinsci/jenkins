@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ModelObject;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,11 +99,13 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
          * Text to be displayed to user.
          */
         @Exported
+        @NonNull
         public String name;
         /**
          * The value that gets sent to the server when the form is submitted.
          */
         @Exported
+        @NonNull
         public String value;
 
         /**
@@ -111,15 +114,15 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         @Exported
         public boolean selected;
 
-        public Option(String name, String value) {
+        public Option(@NonNull String name, @NonNull String value) {
             this(name,value,false);
         }
 
-        public Option(String name) {
+        public Option(@NonNull String name) {
             this(name,name,false);
         }
 
-        public Option(String name, String value, boolean selected) {
+        public Option(@NonNull String name, @NonNull String value, boolean selected) {
             this.name = name;
             this.value = value;
             this.selected = selected;
@@ -146,18 +149,18 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         super(Arrays.asList(data));
     }
 
-    public void add(String displayName, String value) {
+    public void add(@NonNull String displayName, @NonNull String value) {
         add(new Option(displayName,value));
     }
 
-    public void add(ModelObject usedForDisplayName, String value) {
+    public void add(ModelObject usedForDisplayName, @NonNull String value) {
         add(usedForDisplayName.getDisplayName(), value);
     }
 
     /**
      * A version of the {@link #add(String, String)} method where the display name and the value are the same. 
      */
-    public ListBoxModel add(String nameAndValue) {
+    public ListBoxModel add(@NonNull String nameAndValue) {
         add(nameAndValue,nameAndValue);
         return this;
     }
