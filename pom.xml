@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.322</revision>
+    <revision>2.323</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -129,7 +129,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-inline</artifactId>
-        <version>4.0.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -237,6 +237,7 @@ THE SOFTWARE.
           <configuration>
             <quiet>true</quiet>
             <doclint>all,-missing</doclint>
+            <splitindex>true</splitindex>
           </configuration>
         </plugin>
         <plugin>

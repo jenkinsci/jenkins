@@ -124,7 +124,7 @@ public class XStream2 extends XStream {
     }
 
     /**
-     * @since TODO
+     * @since 2.318
      */
     public XStream2(ReflectionProvider reflectionProvider, HierarchicalStreamDriver driver,
                     ClassLoaderReference classLoaderReference, Mapper mapper, ConverterLookup converterLookup,
