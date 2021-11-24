@@ -191,7 +191,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.11</version>
+        <version>3.1.12</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -287,6 +287,11 @@ THE SOFTWARE.
         <groupId>org.jvnet.robust-http-client</groupId>
         <artifactId>robust-http-client</artifactId>
         <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>symbol-annotation</artifactId>
+        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>com.sun.mail</groupId>

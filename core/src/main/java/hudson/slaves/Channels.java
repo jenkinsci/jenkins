@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Proc;
 import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
@@ -108,8 +109,10 @@ public class Channels {
         };
         cb.withHeaderStream(header);
 
+        Executor executor = Executor.currentExecutor();
+        Object context = executor != null ? executor.getOwner() : proc;
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+            cc.onChannelBuilding(cb, context);
         }
 
         return cb.build(in,out);
@@ -145,8 +148,10 @@ public class Channels {
         };
         cb.withHeaderStream(header);
 
+        Executor executor = Executor.currentExecutor();
+        Object context = executor != null ? executor.getOwner() : proc;
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+            cc.onChannelBuilding(cb, context);
         }
 
         return cb.build(proc.getInputStream(),proc.getOutputStream());

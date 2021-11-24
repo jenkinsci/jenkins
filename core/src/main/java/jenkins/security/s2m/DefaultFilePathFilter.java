@@ -26,12 +26,17 @@ package jenkins.security.s2m;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.Command;
+import hudson.remoting.Request;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;
+import jenkins.telemetry.impl.SlaveToMasterFileCallableUsage;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -59,6 +64,17 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
                     LOGGER.log(Level.FINE, "agent allowed to {0} {1}", new Object[] {op, f});
                     return true;
                 } else {
+                    try {
+                        Field current = Request.class.getDeclaredField("CURRENT");
+                        current.setAccessible(true);
+                        Field createdAt = Command.class.getDeclaredField("createdAt");
+                        createdAt.setAccessible(true);
+                        Throwable trace = (Throwable) createdAt.get(((ThreadLocal) current.get(null)).get());
+                        ExtensionList.lookupSingleton(SlaveToMasterFileCallableUsage.class).recordTrace(trace);
+                        LOGGER.log(Level.WARNING, "Permitting agent-to-controller '" + op + "' on '" + f + "'. This is deprecated and will soon be rejected. Learn more: https://www.jenkins.io/redirect/permitted-agent-to-controller-file-access", trace);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
                     return false;
                 }
             }
