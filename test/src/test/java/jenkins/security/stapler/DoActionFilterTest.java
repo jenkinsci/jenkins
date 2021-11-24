@@ -115,14 +115,14 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         public void doWithHttpResponse(HttpServletResponse response) { replyOk(); }
         
-        public void doWithThrowHttpResponseException() { replyOk(); }
+        public void doWithThrowHttpResponseException() throws HttpResponses.HttpResponseException { replyOk(); }
         
         // special cases, child of above classes, normally reachable, as it satisfies the contract 
         // that requires to throw an exception that is an HttpResponseException
-        public void doWithThrowHttpResponseExceptionChild() { replyOk(); }
+        public void doWithThrowHttpResponseExceptionChild() throws HttpResponseExceptionChild { replyOk(); }
         
         // the declared exception just has to implement HttpResponse
-        public void doWithThrowExceptionImplementingOnlyHttpResponse() { replyOk(); }
+        public void doWithThrowExceptionImplementingOnlyHttpResponse() throws ExceptionImplementingOnlyHttpResponse { replyOk(); }
         
         public void doWithThrowOtherException() throws IOException { replyOk(); }
         
