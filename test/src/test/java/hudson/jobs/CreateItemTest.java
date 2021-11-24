@@ -133,7 +133,7 @@ public class CreateItemTest {
     @TestExtension("vetoCreateItemFromCopy")
     public static class ItemListenerImpl extends ItemListener {
         @Override
-        public void onCheckCopy(Item src, ItemGroup parent) throws Failure {
+        public void onCheckCopy(Item src, ItemGroup parent) {
             if ("sourceJob".equals(src.getName())) {
                 throw new Failure("Go away I don't like you");
             }

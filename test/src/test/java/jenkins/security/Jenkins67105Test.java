@@ -54,7 +54,7 @@ public class Jenkins67105Test {
     private static class ArrayListMultimapCallable
             extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
         @Override
-        public Multimap<?, ?> call() throws RuntimeException {
+        public Multimap<?, ?> call() {
             return ArrayListMultimap.create();
         }
     }
@@ -62,7 +62,7 @@ public class Jenkins67105Test {
     private static class HashMultimapCallable
             extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
         @Override
-        public Multimap<?, ?> call() throws RuntimeException {
+        public Multimap<?, ?> call() {
             return HashMultimap.create();
         }
     }

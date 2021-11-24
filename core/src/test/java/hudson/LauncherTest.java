@@ -82,7 +82,7 @@ public class LauncherTest {
 
     private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
         @Override
-        public Object call() throws RuntimeException {
+        public Object call() {
             return null;
         }
     }

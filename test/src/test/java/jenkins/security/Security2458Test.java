@@ -67,7 +67,7 @@ public class Security2458Test {
             return null;
         }
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             // Deliberately empty
         }
     }
@@ -78,7 +78,7 @@ public class Security2458Test {
             return null;
         }
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             checker.check(this); // Never do this
         }
     }
@@ -89,7 +89,7 @@ public class Security2458Test {
             return null;
         }
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             checker.check(this, Roles.MASTER); // Manual S2M
         }
     }

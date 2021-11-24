@@ -84,7 +84,7 @@ public class DefaultFilePathFilterTest {
             return p.readToString();
         }
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
     }
@@ -100,7 +100,7 @@ public class DefaultFilePathFilterTest {
             return null;
         }
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
     }

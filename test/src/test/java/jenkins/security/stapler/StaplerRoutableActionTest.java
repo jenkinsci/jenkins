@@ -25,7 +25,7 @@ public class StaplerRoutableActionTest extends StaplerAbstractTest {
         // without annotation, returnType, parameter, exception => not a web method
         public void doWebMethod2() { replyOk(); }
 
-        public void doWebMethod3() throws HttpResponses.HttpResponseException {
+        public void doWebMethod3() {
             replyOk();
         }
 
