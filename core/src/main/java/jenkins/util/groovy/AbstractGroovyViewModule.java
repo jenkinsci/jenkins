@@ -25,7 +25,7 @@ public abstract class AbstractGroovyViewModule extends GroovyObjectSupport {
     public JenkinsTagLib t;
     public Namespace st;
 
-    public AbstractGroovyViewModule(JellyBuilder b) {
+    protected AbstractGroovyViewModule(JellyBuilder b) {
         builder = b;
         f = builder.namespace(FormTagLib.class);
         l = builder.namespace(LayoutTagLib.class);

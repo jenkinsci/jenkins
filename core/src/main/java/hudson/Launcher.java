@@ -97,7 +97,7 @@ public abstract class Launcher {
     @Restricted(Beta.class)
     protected EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper;
 
-    public Launcher(@NonNull TaskListener listener, @CheckForNull VirtualChannel channel) {
+    protected Launcher(@NonNull TaskListener listener, @CheckForNull VirtualChannel channel) {
         this.listener = listener;
         this.channel = channel;
     }

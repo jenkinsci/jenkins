@@ -18,12 +18,12 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
      */
     public final String freeSpaceThreshold;
 
-    public AbstractDiskSpaceMonitor(String threshold) throws ParseException {
+    protected AbstractDiskSpaceMonitor(String threshold) throws ParseException {
         this.freeSpaceThreshold = threshold;
         DiskSpace.parse(threshold); // make sure it parses
     }
 
-    public AbstractDiskSpaceMonitor() {
+    protected AbstractDiskSpaceMonitor() {
         this.freeSpaceThreshold = "1GB";
     }
 
