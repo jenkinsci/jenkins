@@ -249,7 +249,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 try {
                     a.annotate(parent.run, this, markup);
-                } catch(Exception e) {
+                } catch(RuntimeException e) {
                     LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
                 } catch(Error e) {
                     LOGGER.severe("ChangeLogAnnotator " + a + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());

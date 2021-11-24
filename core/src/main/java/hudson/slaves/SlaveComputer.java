@@ -304,7 +304,7 @@ public class SlaveComputer extends Computer {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;

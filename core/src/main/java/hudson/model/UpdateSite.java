@@ -1151,7 +1151,7 @@ public class UpdateSite {
             if (releaseTimestamp != null) {
                 try {
                     date = Date.from(Instant.parse(releaseTimestamp));
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
                 }
             }

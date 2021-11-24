@@ -70,7 +70,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
         for (SCMPollListener l : all()) {
             try {
                 l.onBeforePolling(project, listener);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 /* Make sure, that the listeners do not have any impact on the actual poll */
             }
         }
@@ -80,7 +80,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
 		for( SCMPollListener l : all() ) {
             try {
                 l.onPollingSuccess(project, listener, result);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 /* Make sure, that the listeners do not have any impact on the actual poll */
             }
 		}
@@ -90,7 +90,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
    		for( SCMPollListener l : all() ) {
                try {
                    l.onPollingFailed(project, listener, exception);
-               } catch (Exception e) {
+               } catch (RuntimeException e) {
                    /* Make sure, that the listeners do not have any impact on the actual poll */
                }
    		}

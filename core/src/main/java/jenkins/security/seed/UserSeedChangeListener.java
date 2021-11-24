@@ -57,7 +57,7 @@ public abstract class UserSeedChangeListener extends ExtensionPoint {
             try {
                 l.onUserSeedRenewed(user);
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 LOGGER.log(Level.WARNING, "Exception caught during onUserSeedRenewed event", e);
             }
         }

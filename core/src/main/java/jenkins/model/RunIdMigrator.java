@@ -283,7 +283,7 @@ public final class RunIdMigrator {
             Files.move(src.toPath(), dest.toPath());
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }

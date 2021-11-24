@@ -460,7 +460,7 @@ public class Util {
                 try {
                     ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
                     return rb.getString("error"+m.group(1));
-                } catch (Exception ignored) {
+                } catch (RuntimeException ignored) {
                     // silently recover from resource related failures
                 }
             }
@@ -1429,7 +1429,7 @@ public class Util {
             return null;
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }

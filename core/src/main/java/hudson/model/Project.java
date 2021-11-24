@@ -240,28 +240,28 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         for (BuildStep step : getBuildersList()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading build step.", e);
             }
         }
         for (BuildStep step : getPublishersList()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading publisher.", e);
             }
         }
         for (BuildWrapper step : getBuildWrappers().values()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading build wrapper.", e);
             }
         }
         for (Trigger trigger : triggers()) {
             try {
                 r.addAll(trigger.getProjectActions());
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading trigger.", e);
             }
         }
