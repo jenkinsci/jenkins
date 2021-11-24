@@ -162,7 +162,7 @@ public class SimpleJobTest {
         }
 
         @Override
-        public int assignBuildNumber() {
+        public synchronized int assignBuildNumber() {
             return i++;
         }
 

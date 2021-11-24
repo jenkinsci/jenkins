@@ -816,7 +816,7 @@ public class Executor extends Thread implements ModelObject {
      * @see #start(WorkUnit)
      */
     @Override
-    public void start() {
+    public synchronized void start() {
         throw new UnsupportedOperationException();
     }
 

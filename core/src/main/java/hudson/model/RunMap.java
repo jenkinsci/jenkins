@@ -127,7 +127,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     @Override
-    public boolean removeValue(R run) {
+    public synchronized boolean removeValue(R run) {
         run.dropLinks();
         runIdMigrator.delete(dir, run.getId());
         return super.removeValue(run);

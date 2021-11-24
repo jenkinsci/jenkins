@@ -50,7 +50,7 @@ import java.io.IOException;
     }
 
     @Override
-    public void rewind() throws IOException {
+    public synchronized void rewind() throws IOException {
         super.rewind();
         for (int i=size-1;i>=0;i--) {
             File fi = getNumberedFileName(i);

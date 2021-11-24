@@ -98,7 +98,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     // causing the field to be persisted and overwritten on the load method.
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void load() {
+    public synchronized void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;
         super.load();
         if (repositoryBrowser!=rb) { // XStream may overwrite even the final field.
