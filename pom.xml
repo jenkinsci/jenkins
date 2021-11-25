@@ -84,7 +84,6 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
@@ -641,33 +640,6 @@ THE SOFTWARE.
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
         <hudson.sign.storepass>jenkins</hudson.sign.storepass>
       </properties>
-    </profile>
-    <profile>
-      <id>sorcerer</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>release</id>
