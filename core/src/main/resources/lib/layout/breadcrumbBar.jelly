@@ -34,12 +34,12 @@ THE SOFTWARE.
     use the &lt;l:breadcrumb> tag.
   </st:documentation>
 
-  <tr id="top-nav">
-    <td id="left-top-nav" colspan="2">
+<!--  <tr id="top-nav">-->
+<!--    <td id="left-top-nav" colspan="2">-->
       <st:adjunct includes="lib.layout.breadcrumbs" />
       <div class="top-sticker noedge">
         <div class="top-sticker-inner">
-          <div class="breadcrumbs__wrapper">
+          <div class="jenkins-breadcrumbs">
             <ul id="breadcrumbs">
               <j:forEach var="anc" items="${request.ancestors}">
                 <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
@@ -78,6 +78,6 @@ THE SOFTWARE.
           </div>
         </div>
       </div>
-    </td>
-  </tr>
+<!--    </td>-->
+<!--  </tr>-->
 </j:jelly>

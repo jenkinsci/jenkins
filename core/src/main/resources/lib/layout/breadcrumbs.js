@@ -238,25 +238,14 @@ var breadcrumbs = (function() {
         return false;
     }
 
-//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-//        // when the mouse hovers over LI, activate the menu
-//        if (e.hasClassName("no-context-menu"))  return;
-//        e.observe("mouseover", function () { handleHover(e.firstChild) });
-//    });
-
-    Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
-        // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
-        // $(a).observe("mouseover", function () { handleHover(a,500); });
-
-        a.observe("mouseover",function () {
-            logger("mouse entered model-link %s",this.href);
-            menuSelector.canceller.cancel();
-            menuSelector.show(this);
-        });
-        a.observe("mouseout",function () {
-            logger("mouse left model-link %s",this.href);
-            menuSelector.canceller.schedule();
-        });
+    Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (link) {
+        const dropdownChevron = document.createElement("button")
+        dropdownChevron.className = "jenkins-menu-dropdown-chevron"
+        dropdownChevron.addEventListener("click", function(e) {
+            e.preventDefault();
+            invokeContextMenu(link, null);
+        })
+        link.appendChild(dropdownChevron)
     });
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {

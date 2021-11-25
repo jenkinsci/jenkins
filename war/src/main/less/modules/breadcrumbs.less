@@ -1,0 +1,159 @@
+.jenkins-breadcrumbs {
+
+}
+
+#left-top-nav {
+  text-align: left;
+  color: #222;
+}
+
+#left-top-nav a {
+  color: black;
+}
+
+#top-nav .a {
+  color: white;
+}
+
+.jenkins-breadcrumbs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 2.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0 0.7rem;
+}
+
+#breadcrumbs {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  min-height: 2.5rem;
+  display: block;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  border-bottom: none;
+  flex-wrap: wrap;
+}
+
+#breadcrumbs LI {
+  display: inline-block;
+}
+
+#breadcrumbs LI A {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem;
+  font-weight: 500;
+  //font-size: 0.75rem;
+  border-radius: 6px;
+}
+
+#breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
+  background-color: var(--breadcrumbs-item-bg-color--hover);
+}
+
+
+#breadcrumbs LI A, #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
+  /* is this still needed? */
+  max-width: 1330px;
+
+  text-overflow: ellipsis;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: bold;
+
+  display: inline-block;
+  display: inline-flex;
+  color: var(--breadcrumbs-text-color);
+}
+
+#breadcrumbs LI.children, #breadcrumbs LI.separator { /* '>' separator between two items */
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
+  margin: 6px;
+}
+
+#breadcrumbs LI.children {
+  cursor: pointer;
+}
+
+#breadcrumbs LI.children:hover:after {
+  border-left-color: var(--breadcrumbs-text-color);
+}
+
+#breadcrumbs LI.separator:last-child { /* separators are for in-between only */
+  display: none;
+}
+
+#menuSelector { /* used for showing 'v' on the right of the anchor */
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  visibility: hidden;
+  cursor: pointer;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  &:active {
+    transform: translateY(2px);
+    opacity: 0.5;
+  }
+}
+
+#menuSelector.inverse:after {
+  border-top-color: #bcbcbc;
+}
+
+.jenkins-menu-dropdown-chevron {
+  display: inline;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  margin-left: 1ch;
+  border: none;
+  outline: none;
+  background: var(--text-color);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1 !important;
+  }
+
+  &:active {
+    transform: translateY(2px);
+    opacity: 0.5;
+  }
+}
+
+A.model-link.inside, #breadcrumbs A.inside { /* additional 'inside' class allows pre-allocation of the context menu space */
+  transition: 0.2s ease;
+  margin-right: 20px;
+
+  &:hover {
+    .jenkins-menu-dropdown-chevron {
+      opacity: 0.5;
+    }
+  }
+}
+
+.jenkins-table__link.model-link {
+  margin-right: 30px;
+}
+
+#breadcrumb-menu .header {
+  font-weight: bold;
+  font-size: 0.875rem;
+}
