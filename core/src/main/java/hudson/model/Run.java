@@ -2233,9 +2233,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             case FIXED :
                 return new Summary(false, Messages.Run_Summary_BackToNormal());
                 
+            default:
+                return new Summary(false, Messages.Run_Summary_Unknown());
         }
-        
-        return new Summary(false, Messages.Run_Summary_Unknown());
     }
 
     /**
