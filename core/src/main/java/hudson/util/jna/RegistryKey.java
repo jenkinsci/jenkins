@@ -60,8 +60,8 @@ public class RegistryKey implements AutoCloseable {
      * Converts a Windows buffer to a Java String.
      *
      * @param buf buffer
-     * @throws java.io.UnsupportedEncodingException on error
      * @return String
+     * @throws java.io.UnsupportedEncodingException on error
      */
     static String convertBufferToString(byte[] buf) {
         return new String(buf, 0, buf.length - 2, StandardCharsets.UTF_16LE);

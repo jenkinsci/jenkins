@@ -91,7 +91,7 @@ public class OldDataMonitorTest {
 
     /**
      * Note that this doesn't actually run slowly, it just ensures that
-     * the {@link OldDataMonitor#changeListener's onChange()} can complete
+     * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
      * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
      * is still running.
      *

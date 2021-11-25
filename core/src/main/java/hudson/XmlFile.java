@@ -263,8 +263,8 @@ public final class XmlFile {
      * Opens a {@link Reader} that loads XML.
      * This method uses {@link #sniffEncoding() the right encoding},
      * not just the system default encoding.
-     * @throws IOException Encoding issues
      * @return Reader for the file. should be close externally once read.
+     * @throws IOException Encoding issues
      */
     public Reader readRaw() throws IOException {
         try {
@@ -304,10 +304,10 @@ public final class XmlFile {
     /**
      * Parses the beginning of the file and determines the encoding.
      *
-     * @throws IOException
-     *      if failed to detect encoding.
      * @return
      *      always non-null.
+     * @throws IOException
+     *      if failed to detect encoding.
      */
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {

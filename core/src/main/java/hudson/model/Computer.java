@@ -462,10 +462,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      *
      * @param force
      *      If true cancel any currently pending connect operation and retry from scratch
+     *
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      */
     @Deprecated
     public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
@@ -524,10 +525,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
      */
     @Deprecated
     public void cliDisconnect(String cause) throws ExecutionException, InterruptedException {
@@ -536,10 +537,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
      */
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
