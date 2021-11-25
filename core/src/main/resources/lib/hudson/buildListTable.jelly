@@ -44,7 +44,7 @@ THE SOFTWARE.
                   insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
                       insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
-                  insert(new Element('a', {class: 'jenkins-table__link model-link inside', href: '${rootURL}/' + e.parentUrl}).
+                  insert(new Element('a', {class: 'jenkins-table__link model-link', href: '${rootURL}/' + e.parentUrl}).
                       update(e.parentFullDisplayName)).
                   insert(new Element('a', {class: 'jenkins-table__link jenkins-table__badge model-link inside', href: '${rootURL}/' + e.url}).
                       update(e.displayName.escapeHTML())));

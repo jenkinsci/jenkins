@@ -120,13 +120,17 @@
   width: 14px;
   height: 14px;
   opacity: 0;
-  margin-left: 1ch;
   border: none;
   outline: none;
   background: var(--text-color);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  mask-position: center;
+  transition: 0.2s ease;
   cursor: pointer;
+  padding: 0;
+  margin-left: -14px;
+  pointer-events: none;
+  vertical-align: middle;
 
   &:hover {
     opacity: 1 !important;
@@ -138,19 +142,26 @@
   }
 }
 
-A.model-link.inside, #breadcrumbs A.inside { /* additional 'inside' class allows pre-allocation of the context menu space */
-  transition: 0.2s ease;
-  margin-right: 20px;
+.model-link {
+  transition: var(--standard-transition) !important;
 
   &:hover {
     .jenkins-menu-dropdown-chevron {
+      margin-left: 1ch;
       opacity: 0.5;
+      pointer-events: all;
+    }
+
+    & + a.model-link {
+      margin-right: calc((14px + 1ch) * -1) !important;
     }
   }
 }
 
-.jenkins-table__link.model-link {
-  margin-right: 30px;
+.inside {
+  &:hover {
+    margin-right: calc((14px + 1ch) * -1) !important;
+  }
 }
 
 #breadcrumb-menu .header {
