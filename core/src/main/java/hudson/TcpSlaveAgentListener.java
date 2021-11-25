@@ -429,7 +429,7 @@ public final class TcpSlaveAgentListener extends Thread {
                                     new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?
                                         new String(response, 0, responseLength, StandardCharsets.UTF_8) :
-                                        "bad response length " + responseLength
+                                        "bad response length " + responseLength,
                             });
                             return false;
                         }
