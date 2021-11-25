@@ -37,7 +37,7 @@ THE SOFTWARE.
     </j:if>
 
     <l:main-panel>
-      <div class="jenkins-app-bar jenkins-app-bar--no-border">
+      <div class="jenkins-app-bar">
         <h1>${%Manage Jenkins}</h1>
       </div>
 

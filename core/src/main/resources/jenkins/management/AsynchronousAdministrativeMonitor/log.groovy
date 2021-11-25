@@ -33,7 +33,7 @@ l.layout {
         if (my.isFixingActive()) {
             pre(id: "out")
             div(id: "spinner") {
-                l.spinner()
+                l.progessAnimation()
             }
             t.progressiveText(spinner: "spinner", href: "logText/progressiveHtml", idref: "out")
         } else {

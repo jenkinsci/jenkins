@@ -29,7 +29,7 @@ THE SOFTWARE.
  
   <st:adjunct includes="org.kohsuke.stapler.simile.timeline" />
 
-  <div id="resizeContainer" style="height: 300px; border:1px solid black; padding-bottom: 5px;">
+  <div id="resizeContainer" style="height: 300px; border-radius: 10px; padding-bottom: 5px; margin-bottom: 2rem; overflow: hidden;">
     <div id="tl" style="height:100%;"/>
   </div>
   <div id="status" />

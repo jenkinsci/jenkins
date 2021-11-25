@@ -86,16 +86,6 @@ td.center-align {
   border-collapse: collapse;
 }
 
-#top-panel {
-  margin-bottom: 3pt;
-  height: 34px;
-  background: url(../../images/topbar.png) repeat-x;
-}
-
-#top-panel a {
-  text-decoration: none;
-}
-
 .skiplink {
     position: absolute;
     left: -20000px;
@@ -226,10 +216,6 @@ td.tab {
   vertical-align: middle;
   border: 1px #090 solid;
   background: #f0f0f0;
-}
-
-.dashboard td {
-  padding: 4px 4px 4px 4px;
 }
 
 pre {
@@ -745,11 +731,6 @@ table.parameters > tbody:hover {
 }
 
 /* ========================= build history ========================= */
-#buildHistory .healthReport {
-    display: inline;
-    margin-right: 1em;
-}
-
 #buildHistory a:visited {
   color: fuchsia;
 }
@@ -1196,15 +1177,22 @@ div.to-be-removed { display: none; }
 
 textarea {
     margin-bottom: 0;
+    resize: vertical;
 }
 
+// Remove styling + textarea-handle.gif when IE11 is no longer supported
 div.textarea-handle {
-    height: 5px;
+    height: 6px;
     font-size: 0;
     background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
     border: 1px solid var(--medium-grey);
     border-top: none;
     cursor: s-resize;
+
+    // Hide .textarea-handle on devices that support native textarea resizing
+    @supports (resize: both) {
+        display: none;
+    }
 }
 
 textarea.rich-editor {
@@ -1665,7 +1653,7 @@ svg.icon-xlg {
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2em;
+  height: 2rem;
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */

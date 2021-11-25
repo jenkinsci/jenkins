@@ -27,10 +27,13 @@ THE SOFTWARE.
   <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-terminal icon-xlg"/>
-        ${%Jenkins CLI}
-      </h1>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1>
+            ${%Jenkins CLI}
+          </h1>
+        </div>
+      </div>
       <p>
         ${%blurb(rootURL)}
       </p>
@@ -38,13 +41,23 @@ THE SOFTWARE.
       <st:include page="example.jelly"/>
 
       <h2>${%Available Commands}</h2>
-      <table>
-        <j:forEach items="${h.getCLICommands()}" var="command">
+      <table class="jenkins-table sortable">
+        <thead>
           <tr>
-            <td><a href="command/${command.name}">${command.name}</a></td>
-            <td>${command.shortDescription}</td>
+            <th initialSortDir="down">${%Name}</th>
+            <th>${%Description}</th>
           </tr>
-        </j:forEach>
+        </thead>
+        <tbody>
+          <j:forEach items="${h.getCLICommands()}" var="command">
+            <tr>
+              <td>
+                <a href="command/${command.name}" class="jenkins-table__link">${command.name}</a>
+              </td>
+              <td>${command.shortDescription}</td>
+            </tr>
+          </j:forEach>
+        </tbody>
       </table>
     </l:main-panel>
   </l:layout>

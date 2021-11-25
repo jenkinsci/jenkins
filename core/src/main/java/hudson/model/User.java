@@ -149,7 +149,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * accesses a /user/arbitraryName URL.
      * <p>
      * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
-     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.44 / 2.32.2.
      * <p>
      * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
      * is not recommended.
