@@ -1,118 +1,85 @@
 .jenkins-breadcrumbs {
-
-}
-
-#left-top-nav {
-  text-align: left;
-  color: #222;
-}
-
-#left-top-nav a {
-  color: black;
-}
-
-#top-nav .a {
-  color: white;
-}
-
-.jenkins-breadcrumbs {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 2.5rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  padding: 0 0.7rem;
-}
-
-#breadcrumbs {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  min-height: 2.5rem;
-  display: block;
   display: flex;
   align-items: center;
-  flex: 1;
-  border-bottom: none;
-  flex-wrap: wrap;
-}
+  padding: 0.5rem 0.7rem 0.5rem 0.75rem;
+  background: var(--table-background);
 
-#breadcrumbs LI {
-  display: inline-block;
-}
+  & > ul {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    flex-wrap: wrap;
 
-#breadcrumbs LI A {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem;
-  font-weight: 500;
-  //font-size: 0.75rem;
-  border-radius: 6px;
-}
+    & > li {
+      & > a {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.2rem 0.4rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        color: var(--text-color);
+        z-index: 0;
+        text-decoration: none;
 
-#breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
-  background-color: var(--breadcrumbs-item-bg-color--hover);
-}
+        &::before {
+          content: "";
+          position: absolute;
+          top: -2px;
+          left: -4px;
+          bottom: -2px;
+          right: 0;
+          border-radius: 6px;
+          background: var(--text-color);
+          z-index: -1;
+          opacity: 0;
+          transition: 0.2s ease;
+        }
 
+        &:hover {
+          &::before {
+            opacity: 0.05 !important;
+            background: var(--text-color);
+          }
+        }
 
-#breadcrumbs LI A, #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
-  /* is this still needed? */
-  max-width: 1330px;
+        &:focus, &:active {
+          &::before {
+            opacity: 0.1 !important;
+            background: var(--text-color);
+          }
+        }
+      }
+    }
 
-  text-overflow: ellipsis;
-  text-decoration: none;
-  overflow: hidden;
-  white-space: nowrap;
-  font-weight: bold;
+    // '>' separator between two items
+    .children,
+    .separator {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+      background: var(--text-color);
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
+      margin: 6px;
+      opacity: 0.5;
+      transition: var(--standard-transition);
 
-  display: inline-block;
-  display: inline-flex;
-  color: var(--breadcrumbs-text-color);
-}
+      &:hover {
+        opacity: 1;
+        transform: rotate(90deg);
+      }
 
-#breadcrumbs LI.children, #breadcrumbs LI.separator { /* '>' separator between two items */
-  width: 14px;
-  height: 14px;
-  background: currentColor;
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
-  margin: 6px;
-}
-
-#breadcrumbs LI.children {
-  cursor: pointer;
-}
-
-#breadcrumbs LI.children:hover:after {
-  border-left-color: var(--breadcrumbs-text-color);
-}
-
-#breadcrumbs LI.separator:last-child { /* separators are for in-between only */
-  display: none;
-}
-
-#menuSelector { /* used for showing 'v' on the right of the anchor */
-  width: 14px;
-  height: 14px;
-  position: absolute;
-  visibility: hidden;
-  cursor: pointer;
-  z-index: 2000;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: currentColor;
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
-  transition: transform 0.2s ease, opacity 0.2s ease;
-
-  &:active {
-    transform: translateY(2px);
-    opacity: 0.5;
+      &:active {
+        transform: translateY(2px) rotate(90deg);
+        opacity: 0.5;
+      }
+    }
   }
-}
-
-#menuSelector.inverse:after {
-  border-top-color: #bcbcbc;
 }
 
 .jenkins-menu-dropdown-chevron {
@@ -125,7 +92,7 @@
   background: var(--text-color);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
   mask-position: center;
-  transition: 0.2s ease;
+  transition: var(--standard-transition);
   cursor: pointer;
   padding: 0;
   margin-left: -14px;
@@ -152,7 +119,10 @@
       pointer-events: all;
     }
 
+    // For links with badges next to them, eg build monitor page, we need to shrink the margins of
+    // the badge so that it doesn't cause a table column resize, yet doesn't change in appearance
     & + a.model-link {
+      transform: translateX(10px);
       margin-right: calc((14px + 1ch) * -1) !important;
     }
   }
@@ -164,7 +134,10 @@
   }
 }
 
+// TODO: Remove when YUI dropdowns are removed
+
 #breadcrumb-menu .header {
   font-weight: bold;
   font-size: 0.875rem;
+  pointer-events: none;
 }

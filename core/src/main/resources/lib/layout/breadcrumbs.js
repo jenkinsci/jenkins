@@ -100,84 +100,6 @@ var breadcrumbs = (function() {
     }
 
     /**
-     * '>' control used to launch context menu.
-     */
-    var menuSelector = (function() {
-        var menuSelector = $(document.createElement("div"));
-        var menuSelectorTarget;
-        var parentToUpdate;
-
-        document.body.appendChild(menuSelector);
-        menuSelector.id = 'menuSelector';
-
-        /**
-         * @param target
-         *      DOM node to attach this selector to.
-         */
-        menuSelector.show = function(target) {
-            var xy = Dom.getXY(target);
-
-            if ($(target).hasClassName("inside"))
-                xy[0] -= this.offsetWidth;  // show the menu selector inside the text
-
-            if ($(target).hasClassName("inverse")) {
-                menuSelector.addClassName("inverse");
-            } else {
-                menuSelector.removeClassName("inverse");
-            }
-
-            xy[0] += target.offsetWidth;
-            xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
-            Dom.setXY(this, xy);
-            this.target = target;
-
-            this.style.visibility = "visible";
-
-            menuSelectorTarget = target;
-            var updateParentSelector = menuSelectorTarget.getAttribute('update-parent-class');
-            if (updateParentSelector) {
-                parentToUpdate = $(menuSelectorTarget).up(updateParentSelector);
-            }
-        };
-        menuSelector.hide = function() {
-            this.style.visibility = "hidden";
-            menuSelectorTarget = undefined;
-            parentToUpdate = undefined;
-        };
-        menuSelector.observe("click",function () {
-            invokeContextMenu(this.target);
-        });
-
-        // if the mouse leaves the selector, hide it
-        canceller = new Delayed(function () {
-            logger("hiding 'v'");
-            menuSelector.hide();
-        }.bind(menuSelector), 750);
-
-        menuSelector.observe("mouseover",function () {
-            if (menuSelectorTarget) {
-                if (parentToUpdate) {
-                    parentToUpdate.addClassName('model-link-active');
-                }
-                menuSelectorTarget.addClassName('mouseIsOverMenuSelector');
-            }
-            canceller.cancel();
-        });
-        menuSelector.observe("mouseout",function () {
-            canceller.schedule();
-            if (menuSelectorTarget) {
-                if (parentToUpdate) {
-                    parentToUpdate.removeClassName('model-link-active');
-                }
-                menuSelectorTarget.removeClassName('mouseIsOverMenuSelector');
-            }
-        });
-        menuSelector.canceller = canceller;
-
-        return menuSelector;
-    })();
-
-    /**
      * Called when the user clicks a mouse to show a context menu.
      *
      * If the mouse stays there for a while, a context menu gets displayed.
@@ -249,10 +171,7 @@ var breadcrumbs = (function() {
     });
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
-        a.observe("mouseover",function() {
-            menuSelector.hide();
-        });
-        a.observe("click",function() {
+        a.observe("click", function() {
             invokeContextMenu(this,"childrenContextMenu");
         })
     });
