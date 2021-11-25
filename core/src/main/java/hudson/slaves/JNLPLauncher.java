@@ -92,6 +92,7 @@ public class JNLPLauncher extends ComputerLauncher {
      *                        If {@code null}, {@link RemotingWorkDirSettings#getEnabledDefaults()}
      *                        will be used to enable work directories by default in new agents.
      * @since 2.68
+     * @deprecated use {@link #JNLPLauncher(String, String)} and {@link #setWorkDirSettings(RemotingWorkDirSettings)}
      */
     @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @CheckForNull RemotingWorkDirSettings workDirSettings) {

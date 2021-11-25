@@ -435,8 +435,9 @@ THE SOFTWARE.
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
-                  <module name="MissingOverride" />
                   <module name="AnnotationUseStyle" />
+                  <module name="MissingDeprecated" />
+                  <module name="MissingOverride" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
