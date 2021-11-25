@@ -10,9 +10,9 @@
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
   font-weight: 500;
-  text-decoration: none!important;
+  text-decoration: none !important;
   background: transparent;
-  color: var(--text-color)!important;
+  color: var(--text-color) !important;
   z-index: 0;
   border-radius: 6px;
   cursor: pointer;
@@ -21,7 +21,8 @@
   white-space: nowrap;
   gap: 0.8ch;
 
-  &::before, &::after {
+  &::before,
+  &::after {
     content: "";
     position: absolute;
     top: 0;
@@ -48,7 +49,8 @@
     }
   }
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     &::before {
       opacity: 0.15;
     }
@@ -65,11 +67,12 @@
 }
 
 .jenkins-button--primary {
-  color: var(--button-foreground--primary)!important;
+  color: var(--button-foreground--primary) !important;
   font-weight: 600;
   text-shadow: none;
 
-  &::before, &::after {
+  &::before,
+  &::after {
     color: var(--primary);
   }
 
@@ -87,7 +90,8 @@
     }
   }
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     &::before {
       opacity: 0.8;
     }
@@ -98,10 +102,14 @@
   &::before {
     opacity: 0;
   }
+
   &::after {
     color: transparent;
   }
-  &:hover, &:active, &:focus {
+
+  &:hover,
+  &:active,
+  &:focus {
     &::after {
       color: currentColor;
     }
@@ -114,7 +122,7 @@
 
 each(@variants, {
   .jenkins-button--@{key} {
-    color: @value!important;
+    color: @value !important;
 
     &::after {
       background: rgba(125, 125, 125, 0.25);
@@ -127,16 +135,16 @@ each(@variants, {
   display: flex;
 
   .jenkins-button {
-    margin-left: 0!important;
-    margin-right: 0.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
   }
 
   &--invert {
     justify-content: flex-end;
 
     .jenkins-button {
-      margin-left: 0.5rem!important;
-      margin-right: 0!important;
+      margin-left: 0.5rem !important;
+      margin-right: 0 !important;
     }
   }
 
@@ -147,8 +155,19 @@ each(@variants, {
   }
 }
 
-// YUI backwards compat
-// TODO: Remove this when YUI buttons are removed completely
+// TODO: Remove this styling when YUI buttons are removed completely/plugins are updated
 .jenkins-yui-compat-button {
   display: inline-flex;
+}
+
+// TODO: Remove this styling when YUI buttons are removed completely/plugins are updated
+.yui-button,
+input[type="button"] {
+  .jenkins-button();
+}
+
+input[type="button"] {
+  background: rgb(125, 125, 125);
+  color: white !important;
+  text-shadow: none;
 }
