@@ -26,7 +26,6 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +53,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
