@@ -357,7 +357,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         for (ExtensionListListener listener : listeners) {
             try {
                 listener.onChange();
-            } catch (RuntimeException e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Error firing ExtensionListListener.onChange().", e);
             }
         }

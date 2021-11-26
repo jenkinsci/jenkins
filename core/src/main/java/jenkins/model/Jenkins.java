@@ -4596,7 +4596,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     cleanUp();
                     System.exit(0);
-                } catch (RuntimeException e) {
+            } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to shut down Jenkins", e);
                 }
             }

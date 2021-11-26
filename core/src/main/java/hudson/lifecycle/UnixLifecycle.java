@@ -68,7 +68,7 @@ public class UnixLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (RuntimeException e) {
+            } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 
