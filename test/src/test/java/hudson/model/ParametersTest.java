@@ -15,6 +15,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
@@ -116,13 +117,16 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
+        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "path", "/parameter/name")).get(0).getParentNode();
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='jenkins-form-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
-        HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-description')]")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-label')]")).getTextContent());
+
+        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "path", "/parameter/value").get(0);
+
+        HtmlOption opt = DomNodeUtil.selectSingleNode(choiceSelect, "option[@value='Choice <2>']");
         assertNotNull(opt);
-        assertEquals("Choice <2>", opt.asText());
+        assertEquals("Choice <2>", opt.asNormalizedText());
         opt.setSelected(true);
 
         j.submit(form);
