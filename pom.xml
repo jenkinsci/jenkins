@@ -431,6 +431,11 @@ THE SOFTWARE.
             <checkstyleRules>
               <module name="Checker">
                 <module name="UniqueProperties" />
+                <module name="LineLength">
+                  <property name="fileExtensions" value="java" />
+                  <property name="max" value="300" />
+                  <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
+                </module>
                 <module name="TreeWalker">
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html

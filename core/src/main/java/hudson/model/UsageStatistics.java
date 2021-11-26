@@ -290,7 +290,12 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     /**
      * Public key to encrypt the usage statistics
      */
-    private static final String DEFAULT_KEY_BYTES = "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b0203010001";
+    private static final String DEFAULT_KEY_BYTES =
+            "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e"
+                + "4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a"
+                + "169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f"
+                + "4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b020301"
+                + "0001";
 
     private static final long DAY = DAYS.toMillis(1);
 
