@@ -52,11 +52,6 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>ant</artifactId>
-        <version>1.12</version>
-      </dependency>
-      <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
@@ -91,9 +86,9 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-test-harness-tools</artifactId>
-      <version>2.2</version>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
