@@ -23,21 +23,20 @@
  */
 package hudson.scheduler;
 
-import antlr.ANTLRException;
-
-import java.io.StringReader;
-import java.util.Calendar;
-import java.util.TimeZone;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
+
+import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.StringReader;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Table for driving scheduled tasks.

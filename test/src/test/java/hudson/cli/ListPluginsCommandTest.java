@@ -23,17 +23,17 @@
  */
 package hudson.cli;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ListPluginsCommandTest {
     
@@ -41,7 +41,7 @@ public class ListPluginsCommandTest {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
-    public void listPluginsExpectedUsage() throws Exception {
+    public void listPluginsExpectedUsage() {
         assertNull(j.jenkins.getPluginManager().getPlugin("token-macro"));
         CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
                 .invoke();
@@ -64,7 +64,7 @@ public class ListPluginsCommandTest {
     
     @Test
     @Issue("SECURITY-771")
-    public void onlyAccessibleForAdmin() throws Exception {
+    public void onlyAccessibleForAdmin() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
                 .authorizedTo(Jenkins.READ)
                 .invoke();

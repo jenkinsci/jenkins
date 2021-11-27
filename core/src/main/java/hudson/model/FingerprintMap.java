@@ -23,15 +23,14 @@
  */
 package hudson.model;
 
-import hudson.Util;
-import hudson.util.KeyedDataStorage;
-import jenkins.fingerprints.FingerprintStorage;
-import jenkins.model.Jenkins;
-
-import java.io.IOException;
-import java.util.Locale;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
+import hudson.util.KeyedDataStorage;
+import java.io.IOException;
+import java.util.Locale;
+import jenkins.fingerprints.FingerprintStorage;
+import jenkins.model.Jenkins;
 
 /**
  * Cache of {@link Fingerprint}s.

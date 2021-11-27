@@ -25,14 +25,13 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import java.util.logging.Logger;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
 import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.logging.Logger;
 
 /**
  * Scans the fingerprint database and remove old records

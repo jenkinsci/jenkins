@@ -23,16 +23,15 @@
  */
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Util;
 import hudson.model.User;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import jenkins.model.GlobalConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 @Restricted(NoExternalUse.class)
 public class BasicApiTokenHelper {

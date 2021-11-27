@@ -3,7 +3,6 @@ package jenkins.model;
 import static org.junit.Assert.assertEquals;
 
 import hudson.model.Node.Mode;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

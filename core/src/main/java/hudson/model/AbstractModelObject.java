@@ -23,18 +23,16 @@
  */
 package hudson.model;
 
+import hudson.search.Search;
 import hudson.search.SearchFactory;
+import hudson.search.SearchIndex;
+import hudson.search.SearchIndexBuilder;
+import hudson.search.SearchableModelObject;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-
-import hudson.search.SearchableModelObject;
-import hudson.search.Search;
-import hudson.search.SearchIndexBuilder;
-import hudson.search.SearchIndex;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**

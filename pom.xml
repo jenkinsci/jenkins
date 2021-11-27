@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.65</version>
+    <version>1.67</version>
     <relativePath />
   </parent>
 
@@ -66,11 +66,11 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.307</revision>
+    <revision>2.323</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -91,19 +91,17 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.10</remoting.version>
+    <remoting.version>4.11.1</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
-    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
-    <findbugs.effort>Max</findbugs.effort>
-    <findbugs.threshold>High</findbugs.threshold>
-    <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+    <spotbugs.effort>Max</spotbugs.effort>
+    <spotbugs.threshold>Medium</spotbugs.threshold>
+    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.24</access-modifier.version>
-    <junit.jupiter.version>5.7.2</junit.jupiter.version>
-    <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.12.2</spotless.version>
+    <access-modifier.version>1.25</access-modifier.version>
+    <junit.jupiter.version>5.8.1</junit.jupiter.version>
+    <spotless.version>2.17.4</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -130,19 +128,8 @@ THE SOFTWARE.
 
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>3.11.2</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermock.version}</version>
+        <artifactId>mockito-inline</artifactId>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -183,7 +170,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
-      <version>1.3</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
@@ -250,6 +237,7 @@ THE SOFTWARE.
           <configuration>
             <quiet>true</quiet>
             <doclint>all,-missing</doclint>
+            <splitindex>true</splitindex>
           </configuration>
         </plugin>
         <plugin>
@@ -273,6 +261,7 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
             <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
+            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
@@ -431,13 +420,12 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.45.1</version>
+              <version>9.1</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
           <configuration>
             <consoleOutput>true</consoleOutput>
-            <failsOnError>true</failsOnError>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
@@ -458,6 +446,7 @@ THE SOFTWARE.
                   -->
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
+                  <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
@@ -508,6 +497,7 @@ THE SOFTWARE.
           <configuration>
             <java>
               <endWithNewline />
+              <importOrder />
               <removeUnusedImports />
             </java>
           </configuration>
@@ -770,7 +760,7 @@ THE SOFTWARE.
     <profile>
       <id>jdk11</id>
       <properties>
-        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported

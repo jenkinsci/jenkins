@@ -23,11 +23,23 @@
  */
 package jenkins.security.stapler;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
+import java.awt.Point;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URL;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -36,19 +48,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.WebMethod;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.awt.Point;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.URL;
-
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 public abstract class StaplerAbstractTest {
     @ClassRule

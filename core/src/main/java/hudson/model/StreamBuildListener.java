@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.util.StreamTaskListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

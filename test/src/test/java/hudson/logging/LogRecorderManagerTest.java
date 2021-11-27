@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,26 +23,29 @@
  */
 package hudson.logging;
 
-import jenkins.security.MasterToSlaveCallable;
-import org.jvnet.hudson.test.Url;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import hudson.model.Computer;
-import hudson.remoting.VirtualChannel;
-import java.util.List;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Computer;
+import hudson.remoting.VirtualChannel;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.Url;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -72,21 +75,21 @@ public class LogRecorderManagerTest {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
         LogRecorder r1 = new LogRecorder("r1");
-        mgr.logRecorders.put("r1", r1);
+        mgr.getRecorders().add(r1);
         LogRecorder.Target t = new LogRecorder.Target("ns1", Level.FINE);
-        r1.targets.add(t);
+        r1.getLoggers().add(t);
         r1.save();
         t.enable();
         Computer c = j.createOnlineSlave().toComputer();
         assertNotNull(c);
         t = new LogRecorder.Target("ns2", Level.FINER);
-        r1.targets.add(t);
+        r1.getLoggers().add(t);
         r1.save();
         t.enable();
         LogRecorder r2 = new LogRecorder("r2");
-        mgr.logRecorders.put("r2", r2);
+        mgr.getRecorders().add(r2);
         t = new LogRecorder.Target("ns3", Level.FINE);
-        r2.targets.add(t);
+        r2.getLoggers().add(t);
         r2.save();
         t.enable();
         VirtualChannel ch = c.getChannel();
@@ -118,6 +121,42 @@ public class LogRecorderManagerTest {
         assertFalse(text, text.contains("msg #4"));
         assertTrue(text, text.contains("LambdaLog @FINE"));
         assertFalse(text, text.contains("LambdaLog @FINER"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void addingLogRecorderToLegacyMapAddsToRecordersList() throws IOException {
+        LogRecorderManager log = j.jenkins.getLog();
+
+        assertThat(log.logRecorders.size(), is(0));
+        assertThat(log.getRecorders().size(), is(0));
+
+        LogRecorder logRecorder = new LogRecorder("dummy");
+        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
+
+        log.logRecorders.put("dummy", logRecorder);
+        logRecorder.save();
+
+        assertThat(log.logRecorders.size(), is(1));
+        assertThat(log.getRecorders().size(), is(1));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void addingLogRecorderToListAddsToLegacyRecordersMap() throws IOException {
+        LogRecorderManager log = j.jenkins.getLog();
+
+        assertThat(log.logRecorders.size(), is(0));
+        assertThat(log.getRecorders().size(), is(0));
+
+        LogRecorder logRecorder = new LogRecorder("dummy");
+        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
+
+        log.getRecorders().add(logRecorder);
+        logRecorder.save();
+
+        assertThat(log.logRecorders.size(), is(1));
+        assertThat(log.getRecorders().size(), is(1));
     }
 
     private static final class Log extends MasterToSlaveCallable<Boolean,Error> {

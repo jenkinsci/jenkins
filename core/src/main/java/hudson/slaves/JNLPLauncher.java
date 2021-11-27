@@ -23,15 +23,15 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
@@ -126,7 +126,8 @@ public class JNLPLauncher extends ComputerLauncher {
                 ? RemotingWorkDirSettings.getEnabledDefaults() 
                 : RemotingWorkDirSettings.getDisabledDefaults());
     }
-    
+
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "workDirSettings in readResolve is needed for data migration.")
     protected Object readResolve() {
         if (workDirSettings == null) {
             // For the migrated code agents are always disabled
@@ -204,6 +205,7 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
@@ -267,7 +269,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * This enables using a private address for inbound tcp agents,
      * separate from Jenkins root URL.
      *
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-63222">JENKINS-63222</a>
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {

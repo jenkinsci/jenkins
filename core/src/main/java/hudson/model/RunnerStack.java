@@ -23,12 +23,11 @@
  */
 package hudson.model;
 
-import hudson.model.Run.RunExecution;
-
-import java.util.Stack;
-import java.util.Map;
-import java.util.WeakHashMap;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.model.Run.RunExecution;
+import java.util.Map;
+import java.util.Stack;
+import java.util.WeakHashMap;
 
 /**
  * Keeps track of {@link RunExecution}s that are currently executing on the given thread

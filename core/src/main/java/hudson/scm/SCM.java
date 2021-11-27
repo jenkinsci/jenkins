@@ -23,6 +23,9 @@
  */
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -56,9 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
@@ -80,7 +80,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <p>
  * If you are interested in writing a subclass in a plugin,
- * also take a look at <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+an+SCM+plugin">
+ * also take a look at <a href="https://www.jenkins.io/doc/developer/plugin-development/writing-an-scm-plugin/">
  * "Writing an SCM plugin"</a> wiki article.
  *
  * @author Kohsuke Kawaguchi

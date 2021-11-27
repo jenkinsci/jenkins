@@ -1,10 +1,9 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.concurrent.TimeUnit;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Represents a length of something, like {@code 3sec}.

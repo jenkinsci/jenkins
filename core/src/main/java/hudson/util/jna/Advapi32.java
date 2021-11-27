@@ -15,13 +15,13 @@ Lesser General Public License for more details.
  */
 package hudson.util.jna;
 
-import com.sun.jna.Structure;
 import com.sun.jna.Native;
-import com.sun.jna.WString;
 import com.sun.jna.Pointer;
-import com.sun.jna.win32.StdCallLibrary;
-import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.Structure;
+import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.win32.StdCallLibrary;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +33,7 @@ import java.util.List;
  */
 @SuppressWarnings("UnusedReturnValue")
 public interface Advapi32  extends StdCallLibrary {
-  Advapi32 INSTANCE = (Advapi32) Native.loadLibrary("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);
+  Advapi32 INSTANCE = (Advapi32) Native.load("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);
 
     /**
      * Retrieves the name of the user associated with the current thread.

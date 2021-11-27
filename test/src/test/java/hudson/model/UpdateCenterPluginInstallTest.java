@@ -23,19 +23,19 @@
  */
 package hudson.model;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.junit.Assert;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeNoException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

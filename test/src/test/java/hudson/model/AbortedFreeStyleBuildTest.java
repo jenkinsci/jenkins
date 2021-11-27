@@ -10,8 +10,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.TestBuildWrapper;
 import org.jvnet.hudson.test.TestBuilder;
 
-import java.io.IOException;
-
 public class AbortedFreeStyleBuildTest {
 
     @Rule
@@ -37,7 +35,7 @@ public class AbortedFreeStyleBuildTest {
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 Executor.currentExecutor().interrupt(Result.FAILURE);
                 throw new InterruptedException();
             }
@@ -49,7 +47,7 @@ public class AbortedFreeStyleBuildTest {
 
     private static class AbortingBuilder extends TestBuilder {
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
             throw new InterruptedException();
         }
     }

@@ -18,7 +18,7 @@
     min-height: 2.5rem;
     font-size: 1rem;
     line-height: 1.5;
-    padding: 0 1.25rem;
+    padding: 0 0.7rem;
     background-color: #F8F8F8;
     background-color: var(--breadcrumbs-bg);
 }
@@ -100,7 +100,7 @@
 #breadcrumbs LI.children:after, #breadcrumbs LI.separator:after {
     /* Right arrow */
     content: "";
-    border-left: 0.25em solid #bcbcbc;
+    border-left: 0.25em solid currentColor;
     border-top: 0.25em solid transparent;
     border-bottom: 0.25em solid transparent;
     border-right: 0;

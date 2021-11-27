@@ -2,14 +2,13 @@ package jenkins.security.s2m;
 
 import hudson.CopyOnWrite;
 import hudson.util.TextFile;
-import jenkins.model.Jenkins;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.stream.Stream;
+import jenkins.model.Jenkins;
 
 /**
  * Abstraction of a line-by-line configuration text file that gets parsed into some in-memory data form.
@@ -56,7 +55,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
         COL result = create();
 
         if (exists()) {
-            try (Stream<String> stream = lines2()) {
+            try (Stream<String> stream = lines()) {
                 stream.forEach(line -> {
                     if (line.startsWith("#")) return;   // comment
                     T r = parse(line);

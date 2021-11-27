@@ -30,18 +30,7 @@ import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.Secret;
-import jenkins.model.Jenkins;
-import jenkins.util.xml.XMLUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -50,7 +39,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.xml.XMLUtils;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.xml.sax.SAXException;
 
@@ -101,12 +99,7 @@ public abstract class ItemGroupMixIn {
     public static <K,V extends Item> Map<K,V> loadChildren(ItemGroup parent, File modulesDir, Function1<? extends K,? super V> key) {
         modulesDir.mkdirs(); // make sure it exists
 
-        File[] subdirs = modulesDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File child) {
-                return child.isDirectory();
-            }
-        });
+        File[] subdirs = modulesDir.listFiles(File::isDirectory);
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
         for (File subdir : subdirs) {
             try {
@@ -135,12 +128,7 @@ public abstract class ItemGroupMixIn {
     /**
      * {@link Item} → name function.
      */
-    public static final Function1<String,Item> KEYED_BY_NAME = new Function1<String, Item>() {
-        @Override
-        public String call(Item item) {
-            return item.getName();
-        }
-    };
+    public static final Function1<String,Item> KEYED_BY_NAME = Item::getName;
 
     /**
      * Creates a {@link TopLevelItem} for example from the submission of the {@code /lib/hudson/newFromList/form} tag

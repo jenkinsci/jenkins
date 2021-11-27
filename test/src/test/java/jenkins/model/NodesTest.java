@@ -24,26 +24,31 @@
 
 package jenkins.model;
 
-import hudson.ExtensionList;
-import hudson.model.Descriptor;
-import hudson.model.Node;
-import hudson.model.Slave;
-import hudson.slaves.ComputerLauncher;
-import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+
+import hudson.ExtensionList;
+import hudson.model.Descriptor;
+import hudson.model.Failure;
+import hudson.model.Node;
+import hudson.model.Slave;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.DumbSlave;
+import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 public class NodesTest {
 
@@ -54,14 +59,10 @@ public class NodesTest {
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomically() throws Exception {
         InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(node));
+        String className = InvalidNode.class.getName();
+        assertThat("The exception should be from failing to serialize the node",
+                e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
         assertThat("The node should not exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), nullValue());
     }
@@ -72,14 +73,10 @@ public class NodesTest {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(newNode);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(newNode));
+        String className = InvalidNode.class.getName();
+        assertThat("The exception should be from failing to serialize the node",
+                e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
         assertThat("The old node should still exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), sameInstance(oldNode));
     }
@@ -142,6 +139,62 @@ public class NodesTest {
 
         InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_withoutOtherNode() throws Exception {
+        assertThat(r.jenkins.getNodes(), hasSize(0));
+
+        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        try {
+            r.jenkins.addNode(node);
+            fail("Adding the node should have thrown an exception during checkGoodName");
+        } catch (Failure e) {
+            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
+        }
+
+        assertThat(r.jenkins.getNodes(), hasSize(0));
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_withExistingNode() throws Exception {
+        assertThat(r.jenkins.getNodes(), hasSize(0));
+        r.createSlave("nodeA", "", null);
+        assertThat(r.jenkins.getNodes(), hasSize(1));
+
+        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        try {
+            r.jenkins.addNode(node);
+            fail("Adding the node should have thrown an exception during checkGoodName");
+        } catch (Failure e) {
+            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
+        }
+
+        assertThat(r.jenkins.getNodes(), hasSize(1));
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            assertThat(r.jenkins.getNodes(), hasSize(0));
+
+            DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+            r.jenkins.addNode(node);
+
+            assertThat(r.jenkins.getNodes(), hasSize(1));
+        } finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
         }
     }
 }

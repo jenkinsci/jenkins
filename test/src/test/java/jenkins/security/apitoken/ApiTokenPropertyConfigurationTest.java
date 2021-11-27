@@ -23,6 +23,10 @@
  */
 package jenkins.security.apitoken;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.Messages;
@@ -31,10 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ApiTokenPropertyConfigurationTest {
     

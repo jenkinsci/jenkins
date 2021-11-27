@@ -24,10 +24,11 @@
 package hudson.util;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.instanceOf;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -530,7 +530,7 @@ public class XStream2Test {
     }
 
     @Test
-    public void annotations() throws Exception {
+    public void annotations() {
         assertEquals("not registered, so sorry", "<hudson.util.XStream2Test_-C1/>", Jenkins.XSTREAM2.toXML(new C1()));
         assertEquals("manually registered", "<C-2/>", Jenkins.XSTREAM2.toXML(new C2()));
         assertEquals("manually processed", "<C-3/>", Jenkins.XSTREAM2.toXML(new C3()));

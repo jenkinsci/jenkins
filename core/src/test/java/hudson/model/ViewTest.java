@@ -3,27 +3,20 @@ package hudson.model;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import hudson.model.Descriptor.FormException;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.views.ViewsTabBar;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import javax.servlet.ServletException;
-
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
-import org.powermock.reflect.Whitebox;
 
 public class ViewTest {
 
@@ -130,62 +123,6 @@ public class ViewTest {
         return rootJob;
     }
 
-    @Test
-    public void buildQueueFiltering() throws Exception {
-        // Mimic a freestyle job
-        FreeStyleProject singleItemJob = Mockito.mock(FreeStyleProject.class);
-        Mockito.when(singleItemJob.getOwnerTask()).thenReturn(singleItemJob);
-        Queue.Item singleItemQueueItem = new MockItem(singleItemJob);
-
-        // Mimic pattern of a Matrix job, i.e. with root item in view and sub
-        // items in queue.
-        FreeStyleProject multiItemJob = Mockito.mock(FreeStyleProject.class);
-        Project multiItemSubJob = Mockito.mock(Project.class);
-        Mockito.when(multiItemSubJob.getRootProject()).thenReturn(multiItemJob);
-        Mockito.when(multiItemSubJob.getOwnerTask()).thenReturn(multiItemSubJob);
-        Queue.Item multiItemQueueItem = new MockItem(multiItemSubJob);
-
-        // Mimic pattern of a Pipeline job, i.e. with item in view and
-        // sub-steps in queue.
-        BuildableTopLevelItem multiStepJob
-                = Mockito.mock(BuildableTopLevelItem.class);
-        Mockito.when(multiStepJob.getOwnerTask()).thenReturn(multiStepJob);
-        BuildableItem multiStepSubStep = Mockito.mock(BuildableItem.class);
-        Mockito.when(multiStepSubStep.getOwnerTask()).thenReturn(multiStepJob);
-        Queue.Item multiStepQueueItem = new MockItem(multiStepSubStep);
-
-        // Construct the view
-        View view = Mockito.mock(View.class);
-        List<Queue.Item> queue = Arrays.asList(singleItemQueueItem,
-                multiItemQueueItem, multiStepQueueItem);
-        Mockito.when(view.isFilterQueue()).thenReturn(true);
-
-        // Positive test, ensure that queue items are included
-        List<TopLevelItem> viewJobs = Arrays.asList(singleItemJob, multiItemJob, multiStepJob);
-        Mockito.when(view.getItems()).thenReturn(viewJobs);
-        assertEquals(
-                Arrays.asList(singleItemQueueItem,
-                        multiItemQueueItem, multiStepQueueItem),
-                Whitebox.invokeMethod(view, "filterQueue", queue)
-        );
-
-        // Negative test, ensure that queue items are excluded
-        Mockito.when(view.getItems()).thenReturn(Collections.emptyList());
-        List<Queue.Item> expected = Arrays.asList(singleItemQueueItem,
-                multiItemQueueItem, multiStepQueueItem);
-        assertEquals(
-                Collections.emptyList(),
-                Whitebox.<List<Queue.Item>>invokeMethod(view, "filterQueue", queue)
-        );
-    }
-
-    /**
-     * This interface fulfills both TopLevelItem and BuildableItem interface,
-     * this allows it for being present in a view as well as the build queue!
-     */
-    private interface BuildableTopLevelItem extends TopLevelItem, BuildableItem {
-    }
-
     public static class CompositeView extends View implements ViewGroup {
 
         private View[] views;
@@ -217,7 +154,7 @@ public class ViewTest {
         }
 
         @Override
-        public void deleteView(View view) throws IOException {
+        public void deleteView(View view) {
         }
 
         @Override
@@ -250,7 +187,7 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
+        protected void submit(StaplerRequest req) {
         }
 
         @Override

@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -38,7 +39,6 @@ import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,17 +53,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-
+import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;

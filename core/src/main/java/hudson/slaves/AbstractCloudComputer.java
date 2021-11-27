@@ -23,14 +23,13 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Computer;
+import java.io.IOException;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Partial implementation of {@link Computer} to be used in conjunction with

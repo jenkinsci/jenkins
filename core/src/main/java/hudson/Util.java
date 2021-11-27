@@ -23,26 +23,14 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
-import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import jenkins.util.SystemProperties;
-
-import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -76,6 +64,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -110,15 +99,22 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
+import jenkins.util.io.PathRemover;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -241,9 +237,9 @@ public class Util {
     @NonNull
     public static String loadFile(@NonNull File logfile, @NonNull Charset charset) throws IOException {
         // Note: Until charset handling is resolved (e.g. by implementing
-        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
+        // https://issues.jenkins.io/browse/JENKINS-48923 ), this method
         // must be able to handle character encoding errors. As reported at
-        // https://issues.jenkins-ci.org/browse/JENKINS-49112 Run.getLog() calls
+        // https://issues.jenkins.io/browse/JENKINS-49112 Run.getLog() calls
         // loadFile() to fully read the generated log file. This file might
         // contain unmappable and/or malformed byte sequences. We need to make
         // sure that in such cases, no CharacterCodingException is thrown.
@@ -253,7 +249,7 @@ public class Util {
         // from a Charset and the reader returned by Files.newBufferedReader()
         // handle malformed and unmappable byte sequences for the specified
         // encoding; the latter is more picky and will throw an exception.
-        // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
         try {
             return FileUtils.readFileToString(logfile, charset);
         } catch (FileNotFoundException e) {
@@ -418,7 +414,7 @@ public class Util {
         // by default, the permissions of the created directory are 0700&(~umask)
         // whereas the old approach created a temporary directory with permissions
         // 0777&(~umask).
-        // To avoid permissions problems like https://issues.jenkins-ci.org/browse/JENKINS-48407
+        // To avoid permissions problems like https://issues.jenkins.io/browse/JENKINS-48407
         // we can pass POSIX file permissions as an attribute (see, for example,
         // https://github.com/jenkinsci/jenkins/pull/3161 )
         final Path tempPath;
@@ -890,6 +886,20 @@ public class Util {
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
 
+    private static final boolean[] fullUriMap = new boolean[123];
+    static {
+        String raw = "               0123456789       ABCDEFGHIJKLMNOPQRSTUVWXYZ      abcdefghijklmnopqrstuvwxyz";
+        //            !"#$%&'()*+,-./0123456789:;<=>?@                          [\]^_`                          {|}~
+        //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) fullUriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            fullUriMap[i] = raw.charAt(j) == ' ';
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
     /**
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and {@code "#%<>[\]^`{|}~})
@@ -901,6 +911,23 @@ public class Util {
      */
     @NonNull
     public static String rawEncode(@NonNull String s) {
+        return encode(s, uriMap);
+    }
+
+    /**
+     * Encode a single path component for use in an HTTP URL.
+     * Escapes all special characters including those outside
+     * of the characters specified in RFC1738.
+     * All characters outside numbers and letters without diacritic are encoded.
+     * Note that slash ({@code /}) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
+     */
+    @NonNull
+    public static String fullEncode(@NonNull String s){
+        return encode(s, fullUriMap);
+    }
+
+    private static String encode(String s, boolean[] map){
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -910,7 +937,7 @@ public class Util {
             int codePoint = Character.codePointAt(s, i);
             if((codePoint&0xffffff80)==0) { // 1 byte
                 c = s.charAt(i);
-                if (c > 122 || uriMap[c]) {
+                if (c > 122 || map[c]) {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);
@@ -1271,7 +1298,7 @@ public class Util {
             Path tempSymlinkPath = symlink.toPath();
             Files.createSymbolicLink(tempSymlinkPath, target);
             try {
-                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempSymlinkPath, pathForSymlink, StandardCopyOption.ATOMIC_MOVE);
                 return true;
             } catch (
                 UnsupportedOperationException |

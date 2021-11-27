@@ -6,8 +6,10 @@ import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
@@ -94,9 +96,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                StreamTaskListener l = createListener();
+                LazyTaskListener l = new LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
                 try {
-                    l.getLogger().printf("Started at %tc%n", new Date(startTime));
                     try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                         execute(l);
                     }
@@ -106,11 +107,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     Functions.printStackTrace(e, l.fatalError("aborted"));
                 } finally {
                     stopTime = System.currentTimeMillis();
-                    try {
-                        l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
-                    } finally {
-                        l.closeQuietly();
-                    }
+                    l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
                 logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
@@ -123,6 +120,38 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             lr.setParameters(new Object[]{name});
             logger.log(lr);
         }
+    }
+
+    static final class LazyTaskListener implements TaskListener {
+
+        private final Supplier<StreamTaskListener> supplier;
+        private final String openingMessage;
+        private StreamTaskListener delegate;
+
+        LazyTaskListener(Supplier<StreamTaskListener> supplier, String openingMessage) {
+            this.supplier = supplier;
+            this.openingMessage = openingMessage;
+        }
+
+        @Override
+        public synchronized PrintStream getLogger() {
+            if (delegate == null) {
+                delegate = supplier.get();
+                delegate.getLogger().println(openingMessage);
+            }
+            return delegate.getLogger();
+        }
+
+        synchronized void close(String closingMessage) {
+            if (delegate != null) {
+                try {
+                    delegate.getLogger().println(closingMessage);
+                } finally {
+                    delegate.closeQuietly();
+                }
+            }
+        }
+
     }
 
     protected StreamTaskListener createListener() {

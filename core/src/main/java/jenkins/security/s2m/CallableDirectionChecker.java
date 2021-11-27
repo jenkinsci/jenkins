@@ -1,23 +1,22 @@
 package jenkins.security.s2m;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.util.SystemProperties;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.Roles;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Inspects {@link Callable}s that run on the master.
@@ -33,6 +32,8 @@ public class CallableDirectionChecker extends RoleChecker {
     private final Object context;
 
     private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
+
+    private static final String ALLOW_ANY_ROLE_PROP = CallableDirectionChecker.class.getName()+".allowAnyRole";
 
     /**
      * Switch to disable all the defense mechanism completely.
@@ -54,6 +55,12 @@ public class CallableDirectionChecker extends RoleChecker {
         if (expected.contains(Roles.MASTER)) {
             LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the controller role", name);
             return;    // known to be safe
+        }
+
+        if (expected.isEmpty() && SystemProperties.getBoolean(ALLOW_ANY_ROLE_PROP, true)) {
+            // TODO Is this even something we want to support, or should all infrastructure callables be exempted from the required role check?
+            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for any role", name);
+            return;
         }
 
         if (isWhitelisted(subject,expected)) {

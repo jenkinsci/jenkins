@@ -24,9 +24,8 @@
 package jenkins;
 
 import hudson.Extension;
-import org.jenkinsci.Symbol;
-
 import java.net.Socket;
+import org.jenkinsci.Symbol;
 
 @Extension
 @Symbol("jnlp2")

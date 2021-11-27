@@ -27,19 +27,23 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <d:taglib uri="licenses">
     <d:tag name="dependencies">
-      <table class="pane sortable bigtable">
-        <tr>
-          <th class="pane-header">${%Name}</th>
-          <th class="pane-header">${%Maven ID}</th>
-          <th class="pane-header">${%License}</th>
-        </tr>
-        <d:invokeBody/>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th initialSortDir="down">${%Name}</th>
+            <th>${%Maven ID}</th>
+            <th>${%License}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <d:invokeBody/>
+        </tbody>
       </table>
     </d:tag>
     <d:tag name="dependency">
       <tr>
         <td>
-          <a href="${attrs.url}" rel="noopener noreferrer" target="_blank">${attrs.name}</a>
+          <a href="${attrs.url}" rel="noopener noreferrer" class="jenkins-table__link" target="_blank">${attrs.name}</a>
         </td>
         <td>
           ${attrs.groupId}:${attrs.artifactId}:${attrs.version}

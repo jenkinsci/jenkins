@@ -23,39 +23,41 @@
  */
 package hudson.bugs;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.model.User;
 import hudson.remoting.Channel;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
-import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import jenkins.security.s2m.AdminWhitelistRule;
-import org.dom4j.Document;
-import org.dom4j.io.DOMReader;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
-
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Locale;
+import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.s2m.AdminWhitelistRule;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.DOMReader;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 /**
  * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access. 
@@ -95,7 +97,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         URL baseUrl = jnlp.getUrl();
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         for( Object jar : dom.selectNodes("//jar") ) {
-            URL url = new URL(baseUrl,((org.dom4j.Element)jar).attributeValue("href"));
+            URL url = new URL(baseUrl,((Element)jar).attributeValue("href"));
             System.out.println(url);
             
             // now make sure that these URLs are unprotected
@@ -122,7 +124,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         // To watch it fail: secret = secret.replace('1', '2');
         File slaveJar = tmp.newFile();
         FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
-        Proc p = new hudson.Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().
+        Proc p = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().
             stdout(System.out).stderr(System.err).
             cmds(JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(), "-jnlpUrl", r.getURL() + "computer/test/jenkins-agent.jnlp", "-secret", secret).
             start();

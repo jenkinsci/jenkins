@@ -23,9 +23,16 @@
  */
 package jenkins.telemetry.impl;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import net.sf.json.JSONObject;
@@ -34,14 +41,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.EvaluationTrace;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Telemetry implementation gathering information about Stapler dispatch routes.

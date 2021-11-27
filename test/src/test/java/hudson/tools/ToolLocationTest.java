@@ -2,15 +2,14 @@ package hudson.tools;
 
 import static org.junit.Assert.assertEquals;
 
+import hudson.model.JDK;
+import hudson.tasks.Ant;
+import hudson.tasks.Maven;
+import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-import hudson.tasks.Maven;
-import hudson.tasks.Ant;
-import hudson.model.JDK;
-
-import java.util.Arrays;
 
 /**
  * @author huybrechts

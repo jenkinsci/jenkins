@@ -5,7 +5,6 @@ import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-
 import java.util.Collection;
 import java.util.Collections;
 

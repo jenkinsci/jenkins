@@ -6,12 +6,11 @@ import hudson.matrix.AxisList;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.Arrays;
-import java.util.TreeSet;
 
 /**
  * @author Kohsuke Kawaguchi

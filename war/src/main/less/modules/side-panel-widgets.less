@@ -11,7 +11,6 @@
 #side-panel .pane-header {
   font-size: var(--font-size-sm);
   display: inline-flex;
-  font-weight: bold;
 }
 
 #side-panel .pane-footer {
@@ -30,6 +29,11 @@
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
+  font-weight: bold;
+
+  & > div {
+    font-weight: normal;
+  }
 }
 
 #side-panel .pane-header .expand,
@@ -198,9 +202,9 @@
 
 .build-row.multi-line .build-row-cell .left-bar {
   position: absolute;
-  top: 19px;
-  bottom: 3px;
-  left: 14px;
+  top: 31px;
+  bottom: 10px;
+  left: 17px;
   border-left: 1px solid var(--medium-grey);
 }
 
@@ -215,4 +219,38 @@
 
 .build-row.overflow-checked .build-row-cell {
   visibility: visible;
+}
+
+.jenkins-pane {
+  &__information {
+    text-align: center;
+    line-height: 80px;
+    background-color: var(--panel-header-bg-color);
+    margin-top: 10px;
+    font-weight: 600;
+    border-radius: var(--form-input-border-radius);
+  }
+
+  .build-row {
+    transition: opacity 0.2s ease;
+
+    &-cell {
+      padding: 4px 8px;
+    }
+  }
+
+  &--loading .build-row {
+    opacity: 0.5;
+  }
+}
+
+.jenkins-pane__header--build-history {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  font-weight: bold!important;
+
+  .jenkins-table__cell--tight {
+    width: auto;
+    margin-right: 1rem;
+  }
 }

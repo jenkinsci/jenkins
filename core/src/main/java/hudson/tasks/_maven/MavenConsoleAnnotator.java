@@ -24,7 +24,6 @@
 package hudson.tasks._maven;
 
 import hudson.console.LineTransformationOutputStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;

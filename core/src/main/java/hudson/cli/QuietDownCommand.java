@@ -25,10 +25,9 @@
 package hudson.cli;
 
 import hudson.Extension;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Option;
-
-import java.util.logging.Logger;
 
 /**
  * Quiet down Jenkins - preparation for a restart

@@ -23,13 +23,12 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.util.Secret;
 import hudson.util.VariableResolver;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.Locale;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -65,12 +64,7 @@ public class PasswordParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            @Override
-            public String resolve(String name) {
-                return PasswordParameterValue.this.name.equals(name) ? Secret.toString(value) : null;
-            }
-        };
+        return name -> PasswordParameterValue.this.name.equals(name) ? Secret.toString(value) : null;
     }
 
     @Override

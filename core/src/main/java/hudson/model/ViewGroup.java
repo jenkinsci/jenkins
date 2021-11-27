@@ -24,16 +24,14 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.AccessControlled;
 import hudson.views.ViewsTabBar;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import jenkins.model.Jenkins;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Container of {@link View}s.

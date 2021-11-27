@@ -23,8 +23,6 @@
  */
 package hudson.util;
 
-import jenkins.util.SystemProperties;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
@@ -41,6 +39,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 
 /**
  * Buffered {@link FileWriter} that supports atomic operations.

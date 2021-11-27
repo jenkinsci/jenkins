@@ -23,10 +23,19 @@
  */
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.Hudson;
+import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
@@ -44,24 +53,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Future;
-
+import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,9 +69,12 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -110,6 +113,40 @@ public class PluginManagerTest {
 
         // uploaded legacy plugins get renamed to *.jpi
         assertTrue( new File(r.jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
+    }
+
+    @Test public void deployJpiFromUrl() throws Exception {
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        f.getInputByName("pluginUrl").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        r.submit(f);
+
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
+    }
+
+    @TestExtension("deployJpiFromUrl")
+    public static final class ReturnPluginJpiAction implements RootAction {
+
+        @Override
+        public String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "URL to retrieve a plugin jpi";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "pluginManagerGetPlugin";
+        }
+
+        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("application/octet");
+            staplerResponse.setStatus(200);
+            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+        }
     }
     
     /**
@@ -179,12 +216,7 @@ public class PluginManagerTest {
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);
         try {
-            try {
-                ucl.loadClass("No such class");
-                fail();
-            } catch (ClassNotFoundException e) {
-                // as expected
-            }
+            assertThrows(ClassNotFoundException.class, () -> ucl.loadClass("No such class"));
 
             ucl.loadClass(Hudson.class.getName());
         } finally {
@@ -272,11 +304,7 @@ public class PluginManagerTest {
         }
         
         // before load depender, of course failed to call Depender.getValue()
-        try {
-            callDependerValue();
-            fail();
-        } catch (ClassNotFoundException ex) {
-        }
+        assertThrows(ClassNotFoundException.class, this::callDependerValue);
         
         // No extensions exist.
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
@@ -308,17 +336,10 @@ public class PluginManagerTest {
         assertEquals("depender", callDependerValue());
         
         // before load dependee, of course failed to list extensions for dependee.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
         // Extension extending a dependee class can't be loaded either
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension");
-            fail();
-        } catch( NoClassDefFoundError ex ){}
-        
+        assertThrows(NoClassDefFoundError.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension"));
+
         // Load dependee.
         {
             dynamicLoad("dependee.hpi");
@@ -362,12 +383,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-21486")
@@ -383,11 +399,7 @@ public class PluginManagerTest {
         }
 
         // dependee is not loaded so we cannot list any extension for it.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
     }
 
     @Issue("JENKINS-21486")
@@ -398,12 +410,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
 
@@ -415,12 +422,7 @@ public class PluginManagerTest {
         }
 
         // Load depender 0.0.2, depending optionally on dependee 0.0.2
-        try {
-            dynamicLoad("depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThrows(IOException.class, () -> dynamicLoad("depender-0.0.2.hpi"));
     }
 
     @Issue("JENKINS-12753")
@@ -432,12 +434,7 @@ public class PluginManagerTest {
         File timestamp = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher/.timestamp2");
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
-        try {
-            r.jenkins.getPluginManager().dynamicLoad(jpi);
-            fail("should not have worked");
-        } catch (RestartRequiredException x) {
-            // good
-        }
+        assertThrows(RestartRequiredException.class, () -> r.jenkins.getPluginManager().dynamicLoad(jpi));
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
@@ -554,7 +551,7 @@ public class PluginManagerTest {
     @Issue("JENKINS-44898")
     @WithPlugin("plugin-first.hpi")
     @Test
-    public void findResourceForPluginFirstClassLoader() throws Exception {
+    public void findResourceForPluginFirstClassLoader() {
         PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
         assertNotNull(w);
 

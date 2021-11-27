@@ -24,6 +24,10 @@
 
 package jenkins.model.lazy;
 
+import static java.util.logging.Level.FINER;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
@@ -41,13 +45,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.RunIdMigrator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-
-import static java.util.logging.Level.FINER;
-import jenkins.model.RunIdMigrator;
 
 /**
  * Makes it easier to use a lazy {@link RunMap} from a {@link Job} implementation.

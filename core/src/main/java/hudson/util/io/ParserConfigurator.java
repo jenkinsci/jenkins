@@ -26,15 +26,14 @@ package hudson.util.io;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
-import jenkins.model.Jenkins;
-import jenkins.security.SlaveToMasterCallable;
-import org.dom4j.io.SAXReader;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.Jenkins;
+import jenkins.security.SlaveToMasterCallable;
+import org.dom4j.io.SAXReader;
 
 /**
  * Configures XML parsers to be used for various XML parsing activities inside Jenkins.

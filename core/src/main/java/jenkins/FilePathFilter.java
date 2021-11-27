@@ -1,12 +1,11 @@
 package jenkins;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import jenkins.security.ChannelConfigurator;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
+import jenkins.security.ChannelConfigurator;
 
 /**
  * Inspects {@link FilePath} access from remote channels.

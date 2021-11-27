@@ -1,35 +1,34 @@
 package jenkins.model;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.Functions;
 import hudson.init.InitMilestone;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.MockFolder;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Since JENKINS-50164, Jenkins#workspacesDir and Jenkins#buildsDir had their associated UI deleted.
@@ -105,12 +104,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             } // else perhaps running as root
 
             for (String badValue : badValues) {
-                try {
-                    Jenkins.checkRawBuildsDir(badValue);
-                    fail(badValue + " should have been rejected");
-                } catch (InvalidBuildsDir invalidBuildsDir) {
-                    // expected failure
-                }
+                assertThrows(badValue + " should have been rejected", InvalidBuildsDir.class, () -> Jenkins.checkRawBuildsDir(badValue));
             }
         });
     }

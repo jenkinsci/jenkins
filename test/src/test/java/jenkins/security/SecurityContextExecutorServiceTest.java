@@ -23,18 +23,17 @@
  */
 package jenkins.security;
 
-import hudson.model.User;
-import hudson.security.ACL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import hudson.model.User;
+import hudson.security.ACL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

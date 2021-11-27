@@ -24,11 +24,10 @@
 package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Lifecycle} for Hudson installed as SMF service.

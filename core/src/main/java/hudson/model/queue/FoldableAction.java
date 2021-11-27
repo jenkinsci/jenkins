@@ -23,10 +23,9 @@
  */
 package hudson.model.queue;
 
-import hudson.model.Queue.Task;
 import hudson.model.Action;
 import hudson.model.Queue;
-
+import hudson.model.Queue.Task;
 import java.util.List;
 
 /**

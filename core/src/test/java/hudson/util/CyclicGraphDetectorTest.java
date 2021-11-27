@@ -4,12 +4,11 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -78,7 +77,7 @@ public class CyclicGraphDetectorTest {
     }
 
     @Test
-    public void cycle2() throws Exception {
+    public void cycle2() {
         new Graph().e("A","B").e("B","C").e("C","C").mustContainCycle("C");
     }
 

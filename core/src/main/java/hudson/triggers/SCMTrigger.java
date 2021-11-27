@@ -24,6 +24,8 @@
  */
 package hudson.triggers;
 
+import static java.util.logging.Level.WARNING;
+
 import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -47,9 +49,6 @@ import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
-
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,6 +56,7 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -66,8 +66,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import jenkins.scm.SCMDecisionHandler;
@@ -87,11 +89,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.annotation.PostConstruct;
-
-import static java.util.logging.Level.WARNING;
-
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.

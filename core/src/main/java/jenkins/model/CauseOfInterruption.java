@@ -23,18 +23,17 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.User;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.Serializable;
 import java.util.Collections;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
@@ -129,7 +128,7 @@ public abstract class CauseOfInterruption implements Serializable {
             final User userInstance = getUser();
             listener.getLogger().println(
                 Messages.CauseOfInterruption_ShortDescription(
-                        userInstance != null ? ModelHyperlinkNote.encodeTo(userInstance) : user));
+                        ModelHyperlinkNote.encodeTo(userInstance)));
         }
 
         @Override

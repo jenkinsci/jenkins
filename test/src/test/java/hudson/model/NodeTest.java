@@ -23,6 +23,16 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -44,26 +54,13 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
-
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-
-import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -408,13 +405,11 @@ public class NodeTest {
             }
 
             // Gather information for failure message just in case.
-            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+            containsFailureMessage.append("{").append(entry.item).append(", ").append(entry.weight).append("}");
         }
 
         // If a label should be part of the cloud label then fail.
-        if (contains) {
-            fail(containsFailureMessage.toString() + "]");
-        }
+        assertFalse(containsFailureMessage + "]", contains);
     }
 
     /**

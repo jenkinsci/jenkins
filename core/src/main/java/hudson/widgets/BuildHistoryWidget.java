@@ -23,13 +23,12 @@
  */
 package hudson.widgets;
 
-import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import jenkins.widgets.HistoryPageFilter;
-
 import java.util.LinkedList;
 import java.util.List;
+import jenkins.model.Jenkins;
+import jenkins.widgets.HistoryPageFilter;
 
 /**
  * Displays the build history on the side panel.

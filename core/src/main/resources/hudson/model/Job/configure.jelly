@@ -39,7 +39,7 @@ THE SOFTWARE.
       <div class="row">
         <div class="col-md-offset-2 col-md-20">
 
-          <div class="behavior-loading">${%LOADING}</div>
+          <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
           <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
             <j:set var="descriptor" value="${it.descriptor}" />

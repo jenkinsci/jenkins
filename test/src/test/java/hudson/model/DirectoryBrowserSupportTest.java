@@ -23,6 +23,21 @@
  */
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -37,26 +52,6 @@ import hudson.Util;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import jenkins.model.ArtifactManager;
-import jenkins.model.ArtifactManagerConfiguration;
-import jenkins.model.ArtifactManagerFactory;
-import jenkins.model.ArtifactManagerFactoryDescriptor;
-import jenkins.model.Jenkins;
-import jenkins.util.VirtualFile;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -80,21 +75,27 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.ArtifactManagerFactoryDescriptor;
+import jenkins.model.Jenkins;
+import jenkins.util.VirtualFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -1054,6 +1055,62 @@ public class DirectoryBrowserSupportTest {
         }
         File resourceFile = new File(resourceUrl.toURI());
         return FileUtils.readFileToString(resourceFile, StandardCharsets.UTF_8);
+    }
+
+    @Test
+    @Issue("SECURITY-2481")
+    public void windows_cannotViewAbsolutePath() throws Exception {
+        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
+
+        File targetTmpFile = File.createTempFile("sec2481", "tmp");
+        String content = "random data provided as fixed value";
+        FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+
+        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(404));
+    }
+
+    @Test
+    @Issue("SECURITY-2481")
+    public void windows_canViewAbsolutePath_withEscapeHatch() throws Exception {
+        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
+
+        String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
+        System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
+        try {
+            File targetTmpFile = File.createTempFile("sec2481", "tmp");
+            String content = "random data provided as fixed value";
+            FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+
+            JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+            Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+
+            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
+            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+        } finally {
+            if (originalValue == null) {
+                System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
+            } else {
+                System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, originalValue);
+            }
+        }
+
+    }
+
+    @Test
+    public void canViewRelativePath() throws Exception {
+        File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
+        String content = "random data provided as fixed value";
+
+        FileUtils.writeStringToFile(testFile, content, StandardCharsets.UTF_8);
+
+        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.goTo("userContent/test.txt/*view*", null);
+
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
+        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
     }
 
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {

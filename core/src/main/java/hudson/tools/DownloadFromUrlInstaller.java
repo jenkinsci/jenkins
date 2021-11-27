@@ -5,15 +5,14 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
-import net.sf.json.JSONObject;
-
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.net.URL;
+import net.sf.json.JSONObject;
 
 /**
  * Partial convenience implementation of {@link ToolInstaller} that just downloads
@@ -104,7 +103,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @param root
      *      The directory that contains the extracted archive. This directory contains nothing but the
      *      extracted archive. For example, if the user installed
-     *      http://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip , this directory would contain
+     *      https://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip , this directory would contain
      *      a single directory "jakarta-ant".
      *
      * @return

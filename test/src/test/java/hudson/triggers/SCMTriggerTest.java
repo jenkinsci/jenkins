@@ -28,35 +28,35 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Item;
-import hudson.util.OneShotEvent;
-import hudson.util.StreamTaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
-import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.SCMTrigger.BuildAction;
+import hudson.triggers.SCMTrigger.SCMTriggerCause;
+import hudson.util.OneShotEvent;
+import hudson.util.StreamTaskListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 import jenkins.scm.SCMDecisionHandler;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.List;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
@@ -118,7 +118,7 @@ public class SCMTriggerTest {
         }
 
         @Override
-        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) {
             return myRev < 2;
         }
 
@@ -143,7 +143,7 @@ public class SCMTriggerTest {
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 buildStarted.signal();
                 buildShouldComplete.block();
                 return true;
@@ -180,7 +180,7 @@ public class SCMTriggerTest {
         Set<Item> blacklist = new HashSet<>();
 
         @Override
-        public boolean shouldPoll(Item item) {
+        public boolean shouldPoll(@NonNull Item item) {
             return !blacklist.contains(item);
         }
     }
