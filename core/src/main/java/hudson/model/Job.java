@@ -94,6 +94,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -134,6 +135,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
+
+    private static /* not final */ int RSS_LIMIT = SystemProperties.getInteger(Job.class.getName() + ".rssChangeLogLimit", 20);
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -1108,11 +1111,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + String.join(", ", scmNames);
         }
 
+
+        outerloop: // used to directly break out of loop
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
             int idx = 0;
             if (r instanceof RunWithSCM) {
                 for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
                     for (ChangeLogSet.Entry e : c) {
+                        if (entries.size() > RSS_LIMIT) {
+                            break outerloop;
+                        }
                         entries.add(new FeedItem(e, idx++));
                     }
                 }
