@@ -1195,6 +1195,10 @@ function rowvgStartEachRow(recursive,f) {
         applyTooltip(e,e.getAttribute("tooltip"));
     });
 
+    Behaviour.specify("[title]", "-title-", ++p, function(e) {
+        applyTooltip(e,e.getAttribute("title"));
+    });
+
     Behaviour.specify("INPUT.submit-button", "input-submit-button", ++p, function(e) {
         makeButton(e);
     });
