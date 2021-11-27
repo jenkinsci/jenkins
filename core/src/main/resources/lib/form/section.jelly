@@ -40,7 +40,7 @@ THE SOFTWARE.
   <f:rowSet name="${attrs.name}">
     <j:if test="${attrs.title!=null}">
       <f:block>
-        <div class="section-header">
+        <div class="jenkins-section__header">
           ${title}
         </div>
       </f:block>

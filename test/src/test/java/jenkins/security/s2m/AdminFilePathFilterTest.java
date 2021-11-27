@@ -24,11 +24,18 @@
 
 package jenkins.security.s2m;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.jvnet.hudson.test.LoggerRule.recorded;
 
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
@@ -37,18 +44,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.logging.Level;
 import javax.inject.Inject;
+import jenkins.SoloFilePathFilter;
+import jenkins.telemetry.impl.SlaveToMasterFileCallableUsage;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class AdminFilePathFilterTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(SoloFilePathFilter.class, Level.WARNING);
 
     @Inject
     AdminWhitelistRule rule;
@@ -98,6 +113,14 @@ public class AdminFilePathFilterTest {
         
             checkSlave_can_readFile(s, rootTargetPrivate);
         }
+
+        @SuppressWarnings("unchecked")
+        List<String> traces = (List) ExtensionList.lookupSingleton(SlaveToMasterFileCallableUsage.class).createContent().getJSONArray("traces");
+        assertThat(traces, hasSize(1));
+        assertThat(traces.get(0), allOf(containsString("Command UserRequest:hudson.FilePath$ReadToString@… created at"), containsString(ReadFileS2MCallable.class.getName() + ".call")));
+        @SuppressWarnings("unchecked")
+        List<String> cleared = (List) ExtensionList.lookupSingleton(SlaveToMasterFileCallableUsage.class).createContent().getJSONArray("traces");
+        assertThat(cleared, empty());
     }
     
     private static class ReadFileS2MCallable implements Callable<String,Exception> {
@@ -186,6 +209,7 @@ public class AdminFilePathFilterTest {
     
     private void checkSlave_cannot_readFile(Slave s, FilePath target) throws Exception {
         try {
+            logging.capture(10);
             s.getChannel().call(new ReadFileS2MCallable(target));
             fail("Slave should not be able to read file in " + target.getRemote());
         } catch (IOException e){
@@ -194,7 +218,9 @@ public class AdminFilePathFilterTest {
             SecurityException se = (SecurityException) t;
             StringWriter sw = new StringWriter();
             se.printStackTrace(new PrintWriter(sw));
-            assertTrue(sw.toString().contains("agent may not read"));
+            assertTrue(sw.toString().contains("Agent may not access a file path"));
+
+            assertThat(logging, recorded(containsString("Agent may not 'read' at")));
         }
     }
     

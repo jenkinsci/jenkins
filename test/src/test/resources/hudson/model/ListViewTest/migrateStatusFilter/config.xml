@@ -50,7 +50,7 @@
   </views>
   <primaryView>all</primaryView>
   <slaveAgentPort>0</slaveAgentPort>
-  <label/>
+  <label></label>
   <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
     <excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>
   </crumbIssuer>

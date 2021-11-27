@@ -78,7 +78,7 @@ public class OnlineNodeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
     }
 
-    @Test public void onlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void onlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -284,7 +284,7 @@ public class OnlineNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnMaster() throws Exception {
+    @Test public void onlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command

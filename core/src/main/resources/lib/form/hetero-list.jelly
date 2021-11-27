@@ -114,7 +114,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />

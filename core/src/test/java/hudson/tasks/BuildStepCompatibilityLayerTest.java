@@ -17,7 +17,7 @@ public class BuildStepCompatibilityLayerTest {
     @Issue("JENKINS-18734")
     @Test
     @SuppressWarnings("deprecation") /* testing deprecated variant */
-    public void testPerformExpectAbstractMethodError() throws InterruptedException, IOException {
+    public void testPerformExpectAbstractMethodError() {
 
         FreeStyleBuild mock = Mockito.mock(FreeStyleBuild.class, Mockito.CALLS_REAL_METHODS);
         BuildStepCompatibilityLayer bscl = new BuildStepCompatibilityLayer() {};
@@ -34,8 +34,7 @@ public class BuildStepCompatibilityLayerTest {
         BuildStepCompatibilityLayer bscl = new BuildStepCompatibilityLayer() {
 
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-                    throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 return true;
             }
         };

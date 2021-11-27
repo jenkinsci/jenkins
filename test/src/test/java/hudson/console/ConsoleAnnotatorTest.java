@@ -59,7 +59,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("---");
                 listener.getLogger().println("ooo");
                 listener.getLogger().println("ooo");
@@ -112,7 +112,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().print("abc\n");
                 listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/","def")+"\n");
                 return true;
@@ -173,7 +173,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 lock.phase(0);
                 // make sure the build is now properly started
                 lock.phase(2);
@@ -336,7 +336,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("<b>&amp;</b>");
                 return true;
             }
@@ -377,7 +377,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException {
             listener.annotate(new DollarMark());
             listener.getLogger().println("hello from polling");
             return new PollingResult(Change.NONE);

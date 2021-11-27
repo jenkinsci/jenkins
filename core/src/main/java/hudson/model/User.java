@@ -139,7 +139,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
      * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
      * <p>
-     * @see <a href="https://issues.jenkins.io/browse/JENKINS-22346">JENKINS-22346</a>.
+     * See <a href="https://issues.jenkins.io/browse/JENKINS-22346">JENKINS-22346</a>.
      */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
@@ -149,7 +149,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * accesses a /user/arbitraryName URL.
      * <p>
      * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
-     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.44 / 2.32.2.
      * <p>
      * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
      * is not recommended.

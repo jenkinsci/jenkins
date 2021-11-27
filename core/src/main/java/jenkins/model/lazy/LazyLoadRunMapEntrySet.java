@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 
 /**
@@ -89,6 +91,12 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
                 owner.removeValue(last);
             }
         };
+    }
+
+    @Override
+    public Spliterator<Map.Entry<Integer, R>> spliterator() {
+        return Spliterators.spliteratorUnknownSize(
+                iterator(), Spliterator.DISTINCT | Spliterator.ORDERED);
     }
 
     @Override

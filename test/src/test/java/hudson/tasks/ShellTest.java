@@ -12,10 +12,10 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,13 +36,13 @@ public class ShellTest {
     public JenkinsRule rule = new JenkinsRule();
 
     @Test
-    public void validateShellCommandEOL() throws Exception {
+    public void validateShellCommandEOL() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getCommand(), "echo A\necho B\necho C");
     }
 
     @Test
-    public void validateShellContents() throws Exception {
+    public void validateShellContents() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getContents(), "\necho A\necho B\necho C");
     }
@@ -54,7 +54,7 @@ public class ShellTest {
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
             @Override
-            public Proc onLaunch(ProcStarter p) throws IOException {
+            public Proc onLaunch(ProcStarter p) {
                 // test the command line argument.
                 List<String> cmds = p.cmds();
                 rule.assertStringContains("/bin/sh",cmds.get(0));
@@ -76,7 +76,7 @@ public class ShellTest {
         FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
 
         assertEquals(1,s.numLaunch);
-        assertTrue(FileUtils.readFileToString(b.getLogFile()).contains("Hudson was here"));
+        assertTrue(IOUtils.toString(b.getLogInputStream(), StandardCharsets.UTF_8).contains("Hudson was here"));
     }
 
     /* A FakeLauncher that just returns the specified error code */
@@ -89,7 +89,7 @@ public class ShellTest {
         }
 
         @Override
-        public Proc onLaunch(ProcStarter p) throws IOException {
+        public Proc onLaunch(ProcStarter p) {
             return new FinishedProc(this.code);
         }
     }
@@ -180,7 +180,7 @@ public class ShellTest {
 
     @Issue("JENKINS-23786")
     @Test
-    public void unixUnstableCodeZeroIsSameAsUnset() throws Exception {
+    public void unixUnstableCodeZeroIsSameAsUnset() {
         assumeFalse(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
@@ -190,10 +190,10 @@ public class ShellTest {
     @Issue("JENKINS-40894")
     @Test
     @LocalData
-    public void canLoadUnstableReturnFromDisk() throws Exception {
+    public void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("test");
         Shell shell = (Shell) p.getBuildersList().get(0);
-        assertEquals("unstable return", Integer.valueOf(1), shell.getUnstableReturn());
+        assertEquals("unstable return", (Integer) 1, shell.getUnstableReturn());
     }
 
 }

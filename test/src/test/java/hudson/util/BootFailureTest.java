@@ -46,7 +46,7 @@ public class BootFailureTest {
 
     static class CustomRule extends JenkinsRule {
         @Override
-        public void before() throws Throwable {
+        public void before() {
             env = new TestEnvironment(testDescription);
             env.pin();
             // don't let Jenkins start automatically

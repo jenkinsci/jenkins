@@ -52,7 +52,7 @@ var section = (function (){
 
                 for (var e=dom.firstChild; e!=null; e=e.nextSibling) {
                     if (e.nodeType==1) {
-                        if (e.className=="section-header" && isVisible(e)) {
+                        if (e.className=="jenkins-section__header" && isVisible(e)) {
                             var child = new SectionNode(e);
                             parent.children.push(child);
                             // The next line seems to be unnecessary, as there are no children inside the section header itself.

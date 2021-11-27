@@ -429,6 +429,7 @@ public class AbstractProjectTest {
         tpm.installDetachedPlugin("workflow-step-api");
         tpm.installDetachedPlugin("scm-api");
         tpm.installDetachedPlugin("workflow-api");
+        tpm.installDetachedPlugin("script-security");
         tpm.installDetachedPlugin("junit");
         tpm.installDetachedPlugin("matrix-project");
 

@@ -220,11 +220,11 @@ public class RunTest  {
     
     public static final class Mgr extends ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
-        @Override public boolean delete() throws IOException, InterruptedException {
+        @Override public boolean delete() {
             return !deleted.getAndSet(true);
         }
         @Override public void onLoad(Run<?, ?> build) {}
-        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException {}
+        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) {}
         @Override public VirtualFile root() {
             return VirtualFile.forFile(Jenkins.get().getRootDir()); // irrelevant
         }
