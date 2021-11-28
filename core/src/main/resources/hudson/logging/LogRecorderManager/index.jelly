@@ -59,7 +59,7 @@ THE SOFTWARE.
       </thead>
       <tbody>
         <local:row href="all" name="${%All Jenkins Logs}" />
-        <j:forEach var="lr" items="${it.logRecorders.values()}">
+        <j:forEach var="lr" items="${it.recorders}">
           <local:row name="${lr.name}" href="${lr.searchUrl}/">
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
@@ -74,7 +74,9 @@ THE SOFTWARE.
     </table>
     <l:isAdmin>
       <form method="get" action="new">
-        <f:submit value="${%Add new log recorder}" />
+        <p>
+          <f:submit value="${%Add new log recorder}" />
+        </p>
       </form>
     </l:isAdmin>
   </l:main-panel>
