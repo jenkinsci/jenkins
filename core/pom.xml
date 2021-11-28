@@ -454,10 +454,6 @@ THE SOFTWARE.
       <artifactId>jna</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
     </dependency>
