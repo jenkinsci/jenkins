@@ -187,10 +187,9 @@ THE SOFTWARE.
   <body id="jenkins" class="yui-skin-sam ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
 
     <j:if test="${layoutType!='full-screen'}">
-    <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
-    <a href="#skip2content" class="skiplink">Skip to content</a>
+      <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
+      <a href="#skip2content" class="skiplink">Skip to content</a>
 
-    <div id="page-head">
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
                     searchPlaceholder="${%search}"
@@ -203,7 +202,6 @@ THE SOFTWARE.
           <d:invokeBody/>
         </l:breadcrumbBar>
       </div>
-    </div>
     </j:if>
 
     <div id="page-body" class="clear">

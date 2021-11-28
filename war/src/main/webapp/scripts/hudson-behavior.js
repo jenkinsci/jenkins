@@ -1448,35 +1448,42 @@ function rowvgStartEachRow(recursive,f) {
      * @param {HTMLElement} sticker
      */
     Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
+        // If the browser is Internet Explorer, use a fallback for stickying the breadcrumb bar
+        var userAgent = window.navigator.userAgent;
+        var isIE = /MSIE|Trident/.test(userAgent);
 
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
+        if (isIE) {
+            var DOM = YAHOO.util.Dom;
 
-        var edge = document.createElement("div");
-        edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
+            var shadow = document.createElement("div");
+            sticker.parentNode.insertBefore(shadow, sticker);
 
-        var initialBreadcrumbPosition = DOM.getRegion(shadow);
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
+            var edge = document.createElement("div");
+            edge.className = "top-sticker-edge";
+            sticker.insertBefore(edge, sticker.firstElementChild);
 
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
+            var initialBreadcrumbPosition = DOM.getRegion(shadow);
 
-            sticker.style.position = "fixed";
-            if(pos.top <= initialBreadcrumbPosition.top) {
-                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            function adjustSticker() {
+                shadow.style.height = sticker.offsetHeight + "px";
+
+                var viewport = DOM.getClientRegion();
+                var pos = DOM.getRegion(shadow);
+
+                sticker.style.position = "fixed";
+                if (pos.top <= initialBreadcrumbPosition.top) {
+                    sticker.style.top = Math.max(0, pos.top - viewport.top) + "px"
+                }
+                sticker.style.left = Math.max(0, pos.left - viewport.left) + "px"
             }
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
 
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        adjustSticker();
+            // react to layout change
+            Element.observe(window, "scroll", adjustSticker);
+            Element.observe(window, "resize", adjustSticker);
+            // initial positioning
+            Element.observe(window, "load", adjustSticker);
+            adjustSticker();
+        }
     });
 
     /**
