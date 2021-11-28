@@ -56,7 +56,7 @@
                                 <j:set var="userName" value="${user.fullName}"/>
                             </j:otherwise>
                         </j:choose>
-                        <a href="${rootURL}/${user.url}" class="model-link inside inverse">
+                        <a href="${rootURL}/${user.url}" class="model-link">
                             <l:svgIcon
                                        class="am-monitor-icon" >
                                 <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>
