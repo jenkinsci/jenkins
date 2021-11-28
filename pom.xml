@@ -451,6 +451,7 @@ THE SOFTWARE.
                   -->
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
+                  <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
