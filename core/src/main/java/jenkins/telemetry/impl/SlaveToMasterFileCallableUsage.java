@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.security.s2m.DefaultFilePathFilter;
 import jenkins.telemetry.Telemetry;
@@ -69,7 +70,13 @@ public class SlaveToMasterFileCallableUsage extends Telemetry {
     }
 
     public synchronized void recordTrace(Throwable trace) {
-        traces.add(Functions.printThrowable(trace).replaceAll("@[a-f0-9]+", "@…"));
+        traces.add(generalize(Functions.printThrowable(trace)));
     }
 
+    protected static String generalize(String trace) {
+        return trace
+                .replaceAll("@[a-f0-9]+", "@…")
+                .replaceAll("]\\([0-9]+\\) created at", "](…) created at")
+                .replaceAll("com[.]sun[.]proxy[.][$]Proxy[0-9]+[.]", Matcher.quoteReplacement("com.sun.proxy.$Proxy…."));
+    }
 }
