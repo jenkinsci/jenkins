@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.322</revision>
+    <revision>2.323</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -435,8 +435,9 @@ THE SOFTWARE.
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
-                  <module name="MissingOverride" />
                   <module name="AnnotationUseStyle" />
+                  <module name="MissingDeprecated" />
+                  <module name="MissingOverride" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
@@ -446,6 +447,7 @@ THE SOFTWARE.
                   -->
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
+                  <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />

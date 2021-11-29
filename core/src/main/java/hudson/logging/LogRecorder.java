@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,8 +28,14 @@ import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.util.CopyOnWriteList;
+import hudson.util.HttpResponses;
+import java.util.Objects;
+import jenkins.util.MemoryReductionUtil;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
@@ -39,8 +45,6 @@ import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import hudson.util.CopyOnWriteList;
-import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import java.io.File;
@@ -66,9 +70,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
-import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -97,13 +99,54 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    public final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
+    /**
+     * No longer used.
+     *
+     * @deprecated use {@link #getLoggers()}
+     */
+    public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
+    private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
-    
+
+    @DataBoundConstructor
+    public LogRecorder(String name) {
+        this.name = name;
+        // register it only once when constructed, and when this object dies
+        // WeakLogHandler will remove it
+        new WeakLogHandler(handler,Logger.getLogger(""));
+    }
+
+    private Object readResolve() {
+        if (loggers == null) {
+            loggers = new ArrayList<>();
+        }
+
+        List<Target> tempLoggers = new ArrayList<>(loggers);
+
+        if (!targets.isEmpty()) {
+            loggers.addAll(targets.getView());
+        }
+        if (!tempLoggers.isEmpty() && !targets.getView().equals(tempLoggers)) {
+            targets.addAll(tempLoggers);
+        }
+        return this;
+    }
+
+    public List<Target> getLoggers() {
+        return loggers;
+    }
+
+    public void setLoggers(List<Target> loggers) {
+        this.loggers = loggers;
+    }
+
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {
         // will contain targets ordered by reverse name length (place specific targets at the beginning)
-        Target[] ts = targets.toArray(new Target[]{});
+        Target[] ts = loggers.toArray(new Target[]{});
 
         Arrays.sort(ts, TARGET_COMPARATOR);
 
@@ -220,6 +263,23 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return name;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Target target = (Target) o;
+            return level == target.level && Objects.equals(name, target.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, level);
+        }
+
         @Deprecated
         public boolean includes(LogRecord r) {
             if(r.getLevel().intValue() < level)
@@ -272,7 +332,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
     }
-    
+
     private static class TargetComparator implements Comparator<Target>, Serializable {
 
         private static final long serialVersionUID = 9285340752515798L;
@@ -316,19 +376,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders.values()) {
-                for (Target t : recorder.targets) {
+            for (LogRecorder recorder : Jenkins.get().getLog().getRecorders()) {
+                for (Target t : recorder.getLoggers()) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
             }
         }
-    }
-
-    public LogRecorder(String name) {
-        this.name = name;
-        // register it only once when constructed, and when this object dies
-        // WeakLogHandler will remove it
-        new WeakLogHandler(handler,Logger.getLogger(""));
     }
 
     @Override
@@ -364,16 +417,16 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
-            getParent().logRecorders.remove(name);
+            List<LogRecorder> recorders = getParent().getRecorders();
+            recorders.remove(new LogRecorder(name));
             this.name = newName;
-            getParent().logRecorders.put(name,this);
+            recorders.add(this);
+            getParent().setRecorders(recorders); // ensure that legacy logRecorders field is synced on save
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
-        List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
-        for (Target t : newTargets)
-            t.enable();
-        targets.replaceBy(newTargets);
+        List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
+        setLoggers(newTargets);
 
         save();
         if (oldFile!=null) oldFile.delete();
@@ -393,8 +446,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public synchronized void load() throws IOException {
         getConfigFile().unmarshal(this);
-        for (Target t : targets)
-            t.enable();
+        loggers.forEach(Target::enable);
     }
 
     /**
@@ -403,8 +455,47 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
+
+        handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
+        loggers.forEach(Target::enable);
+
         SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    @SuppressWarnings("deprecation") // this is for compatibility
+    private void handlePluginUpdatingLegacyLogManagerMap() {
+        if (getParent().logRecorders.size() > getParent().getRecorders().size()) {
+            for (LogRecorder logRecorder : getParent().logRecorders.values()) {
+                if (!getParent().getRecorders().contains(logRecorder)) {
+                    getParent().getRecorders().add(logRecorder);
+                }
+            }
+        }
+        if (getParent().getRecorders().size() > getParent().logRecorders.size()) {
+            for (LogRecorder logRecorder : getParent().getRecorders()) {
+                if (!getParent().logRecorders.containsKey(logRecorder.getName())) {
+                    getParent().logRecorders.put(logRecorder.getName(), logRecorder);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LogRecorder that = (LogRecorder) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 
     /**
@@ -415,14 +506,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         getConfigFile().delete();
-        getParent().logRecorders.remove(name);
+        getParent().getRecorders().remove(new LogRecorder(name));
         // Disable logging for all our targets,
         // then reenable all other loggers in case any also log the same targets
-        for (Target t : targets)
-            t.disable();
-        for (LogRecorder log : getParent().logRecorders.values())
-            for (Target t : log.targets)
-                t.enable();
+        loggers.forEach(Target::disable);
+
+        getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
         rsp.sendRedirect2("..");
     }
 
@@ -468,7 +557,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             List<LogRecord> recs = new ArrayList<>();
             try {
                 for (LogRecord rec : c.getLogRecords()) {
-                    for (Target t : targets) {
+                    for (Target t : loggers) {
                         if (t.includes(rec)) {
                             recs.add(rec);
                             break;
