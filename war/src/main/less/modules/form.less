@@ -372,10 +372,16 @@
   }
 }
 
+// Align help buttons correctly with checkboxes
+
 .jenkins-checkbox-help-wrapper {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+.jenkins-checkbox + a.jenkins-help-button {
+  vertical-align: top;
 }
 
 .jenkins-checkbox {

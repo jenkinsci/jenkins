@@ -96,7 +96,7 @@ THE SOFTWARE.
         </j:if>
       </j:when>
       <j:otherwise>
-        <div class="jenkins-checkbox-help-wrapper">
+        <div>
           <d:invokeBody />
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
