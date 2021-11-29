@@ -11,7 +11,7 @@ In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 1,700 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
 so that humans can spend their time doing things machines cannot.
 
-# What to Use Jenkins for and When to Use It
+# What to Use Jenkins for and When to Use It?
 
 Use Jenkins to automate your development workflow, so you can focus on work that matters most. Jenkins is commonly used for:
 
