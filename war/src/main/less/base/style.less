@@ -1107,54 +1107,6 @@ table.fingerprint-in-build td {
     border-radius: 0.25em;
 }
 
-/* ========================= repeatable elements ========================= */
-
-.repeated-chunk {
-    border: 2px dashed var(--input-border);
-    padding: 1rem;
-  border-radius: 6px;
-}
-
-.repeated-chunk.hover {
-    border-color: var(--medium-grey);
-}
-
-.repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/*
-    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
-    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
-    when the user does "Add".
-*/
-div.to-be-removed { display: none; }
-
 /* ========================= Other form related CSS ========================= */
 
 .radioBlock-container {
@@ -1224,31 +1176,6 @@ div.textarea-handle {
 
 textarea.rich-editor {
   visibility: hidden;
-}
-
-/* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container.with-drag-drop .repeated-chunk,
-.repeated-container.with-drag-drop .repeated-chunk {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-}
-
-// SortableJS drag & drop classes
-.repeated-chunk--sortable-ghost {
-  height: 100px;
-  width: 100%;
-  overflow: hidden;
-}
-.repeated-chunk--sortable-chosen {
-  height: 100px;
-  width: 100%;
-  background-color: transparent;
-  border: 2px solid var(--primary);
-
-  & > * {
-    display: none;
-  }
 }
 
 /* ========================= plugin update center ========================= */

@@ -1,43 +1,195 @@
+/* ========================= repeatable elements ========================= */
+
 .repeated-chunk {
+  position: relative;
+  border: 2px dashed var(--input-border);
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.repeated-chunk .show-if-last { visibility: hidden; }
+.repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .show-if-not-last { visibility: visible; }
+.repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested repeatable elements / 2 deep == */
+.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
+.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
+.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested repeatable elements / 3 deep == */
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/*
+    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
+    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
+    when the user does "Add".
+*/
+div.to-be-removed { display: none; }
+
+/* ========================= D&D support in heterogenous/repeatable lists = */
+
+.hetero-list-container.with-drag-drop .repeated-chunk,
+.repeated-container.with-drag-drop .repeated-chunk {
+  margin-bottom: 1rem;
+}
+
+// SortableJS drag & drop classes
+.repeated-chunk--sortable-ghost {
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.repeated-chunk--sortable-chosen {
+  width: 100%;
+  height: 100px;
+  background-color: transparent;
+  border: 2px solid var(--primary);
+
+  & > * {
+    display: none;
+  }
+}
+
+.repeated-chunk {
+  & > div > *:last-of-type {
+    margin-bottom: 0;
+  }
+
   &__header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     font-weight: bold;
+    margin-top: -0.4rem;
     margin-bottom: 0.75rem;
 
     .dd-handle {
       position: relative;
-      width: 22px;
-      height: 22px;
+      width: 30px;
+      height: 30px;
       overflow: hidden;
       margin-right: 0.75rem;
       cursor: move;
+      margin-left: -6px;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: var(--text-color);
+        border-radius: var(--form-input-border-radius);
+        opacity: 0;
+        transition: var(--standard-transition);
+      }
 
       &::after {
         content: "";
         position: absolute;
-        top: 1px;
+        top: 0;
         left: 4px;
+        bottom: 0;
         right: 4px;
-        height: 20px;
-        background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='9px' height='19px' viewBox='0 0 9 19' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3EShape%3C/title%3E%3Cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M2,15 C3.10456949,15 4,15.8954305 4,17 C4,18.1045695 3.10456949,19 2,19 C0.89543051,19 0,18.1045695 0,17 C0,15.8954305 0.89543051,15 2,15 Z M7,15 C8.10456949,15 9,15.8954305 9,17 C9,18.1045695 8.10456949,19 7,19 C5.89543051,19 5,18.1045695 5,17 C5,15.8954305 5.89543051,15 7,15 Z M2,16 C1.44771525,16 1,16.4477153 1,17 C1,17.5128358 1.38604019,17.9355072 1.88337887,17.9932723 L2,18 L2.11662113,17.9932723 C2.61395981,17.9355072 3,17.5128358 3,17 C3,16.4477153 2.55228475,16 2,16 Z M7,16 C6.44771525,16 6,16.4477153 6,17 C6,17.5128358 6.38604019,17.9355072 6.88337887,17.9932723 L7,18 L7.11662113,17.9932723 C7.61395981,17.9355072 8,17.5128358 8,17 C8,16.4477153 7.55228475,16 7,16 Z M2,10 C3.1045695,10 4,10.8954305 4,12 C4,13.1045695 3.1045695,14 2,14 C0.8954305,14 0,13.1045695 0,12 C0,10.8954305 0.8954305,10 2,10 Z M7,10 C8.1045695,10 9,10.8954305 9,12 C9,13.1045695 8.1045695,14 7,14 C5.8954305,14 5,13.1045695 5,12 C5,10.8954305 5.8954305,10 7,10 Z M2,11 C1.44771525,11 1,11.4477152 1,12 C1,12.5128358 1.38604019,12.9355072 1.88337887,12.9932723 L2,13 L2.11662113,12.9932723 C2.61395981,12.9355072 3,12.5128358 3,12 C3,11.4477152 2.55228475,11 2,11 Z M7,11 C6.44771525,11 6,11.4477152 6,12 C6,12.5128358 6.38604019,12.9355072 6.88337887,12.9932723 L7,13 L7.11662113,12.9932723 C7.61395981,12.9355072 8,12.5128358 8,12 C8,11.4477152 7.55228475,11 7,11 Z M2,5 C3.1045695,5 4,5.8954305 4,7 C4,8.1045695 3.1045695,9 2,9 C0.8954305,9 0,8.1045695 0,7 C0,5.8954305 0.8954305,5 2,5 Z M7,5 C8.1045695,5 9,5.8954305 9,7 C9,8.1045695 8.1045695,9 7,9 C5.8954305,9 5,8.1045695 5,7 C5,5.8954305 5.8954305,5 7,5 Z M2,6 C1.44771525,6 1,6.44771525 1,7 C1,7.51283584 1.38604019,7.93550716 1.88337887,7.99327227 L2,8 L2.11662113,7.99327227 C2.61395981,7.93550716 3,7.51283584 3,7 C3,6.44771525 2.55228475,6 2,6 Z M7,6 C6.44771525,6 6,6.44771525 6,7 C6,7.51283584 6.38604019,7.93550716 6.88337887,7.99327227 L7,8 L7.11662113,7.99327227 C7.61395981,7.93550716 8,7.51283584 8,7 C8,6.44771525 7.55228475,6 7,6 Z M2,0 C3.1045695,0 4,0.8954305 4,2 C4,3.1045695 3.1045695,4 2,4 C0.8954305,4 0,3.1045695 0,2 C0,0.8954305 0.8954305,0 2,0 Z M7,0 C8.1045695,0 9,0.8954305 9,2 C9,3.1045695 8.1045695,4 7,4 C5.8954305,4 5,3.1045695 5,2 C5,0.8954305 5.8954305,0 7,0 Z M2,1 C1.44771525,1 1,1.44771525 1,2 C1,2.51283584 1.38604019,2.93550716 1.88337887,2.99327227 L2,3 L2.11662113,2.99327227 C2.61395981,2.93550716 3,2.51283584 3,2 C3,1.44771525 2.55228475,1 2,1 Z M7,1 C6.44771525,1 6,1.44771525 6,2 C6,2.51283584 6.38604019,2.93550716 6.88337887,2.99327227 L7,3 L7.11662113,2.99327227 C7.61395981,2.93550716 8,2.51283584 8,2 C8,1.44771525 7.55228475,1 7,1 Z' id='Shape' fill='%23FFFFFF' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: left top;
+        background-color: var(--text-color);
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EReorder Three%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M96 256h320M96 176h320M96 336h320'/%3E%3C/svg%3E");
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-size: contain;
       }
 
       &:hover {
-        &::after {
-          opacity: 0.75;
+        &::before {
+          opacity: 0.1;
         }
       }
     }
+  }
 
-    .yui-button {
-      margin-left: auto;
+  // TODO: Update/remove when .jenkins-button PR is merged
+  .repeatable-delete {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    outline: none;
+    margin-left: auto;
+    color: var(--red);
+    z-index: 0;
+    background: transparent;
+    cursor: pointer;
 
-      * {
-        margin: 0;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: currentColor;
+      border-radius: 100px;
+      z-index: -1;
+      opacity: 0.075;
+      transition: var(--standard-transition);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      box-shadow: 0 0 0 10px transparent;
+      border-radius: 100px;
+      z-index: -1;
+      opacity: 0.075;
+      transition: var(--standard-transition);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      &::before {
+        opacity: 0.1;
+      }
+    }
+
+    &:active,
+    &:focus {
+      &::before {
+        opacity: 0.15;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 5px var(--red);
       }
     }
   }

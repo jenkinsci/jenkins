@@ -95,14 +95,13 @@ THE SOFTWARE.
           </j:if>
         </div>
 
-        <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
         <j:if test="${help!=null}">
           <f:helpArea />
         </j:if>
 
-        <d:invokeBody/>
-
         <f:class-entry descriptor="${descriptor}" />
+
+        <d:invokeBody/>
       </div>
     </d:tag>
   </d:taglib>
