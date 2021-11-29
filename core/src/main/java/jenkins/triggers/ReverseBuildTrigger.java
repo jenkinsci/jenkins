@@ -95,6 +95,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     /**
      * Legacy constructor used before {@link #threshold} was moved to a {@code @DataBoundSetter}. Kept around for binary
      * compatibility.
+     * @deprecated use {@link #ReverseBuildTrigger(String)} and {@link #setThreshold(Result)}
      */
     @Deprecated
     public ReverseBuildTrigger(String upstreamProjects, Result threshold) {

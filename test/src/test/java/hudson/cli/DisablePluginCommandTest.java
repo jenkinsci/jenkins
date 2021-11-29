@@ -104,7 +104,7 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i>all/i> strategy
+     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i>all</i> strategy
      */
     @Test
     @Issue("JENKINS-27177")
