@@ -919,15 +919,16 @@ table.parameters > tbody:hover {
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
-  border: 1px solid #000;
   overflow: visible;
-  background-color: white;
-  color: black;
+  background-color: var(--background);
+  color: var(--text-color);
+  border-radius: var(--form-input-border-radius);
+  box-shadow: 0 10px 20px rgba(black, 0.1);
 }
 
 .comboBoxSelectedItem {
-  background-color: Highlight;
-  color: HighlightText;
+  background-color: var(--primary);
+  color: var(--text-color);
 }
 
 .combobox-values {
