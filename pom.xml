@@ -420,7 +420,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.1</version>
+              <version>9.2</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
