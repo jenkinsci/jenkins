@@ -61,8 +61,9 @@ document.addEventListener("DOMContentLoaded", function(){
             switch (type.toLowerCase()) {
                 case "button":
                     var element
-                    // modern buttons aren't wrapped in spans
-                    if (e.classList.contains('jenkins-button')) {
+                    // Modern buttons aren't wrapped in spans
+                    // hetero-list-add buttons are still wrapped in spans for compatability, so ignore them
+                    if (e.classList.contains('jenkins-button') && !e.classList.contains('hetero-list-add')) {
                         element = e
                     } else {
                         p = findParent(e);

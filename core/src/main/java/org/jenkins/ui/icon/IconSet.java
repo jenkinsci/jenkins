@@ -529,7 +529,7 @@ public class IconSet {
 
             for (Map.Entry<String, String> imageEntry : materialIcons.entrySet()) {
                 icons.addIcon(new Icon(
-                                "icon-" + imageEntry.getKey() + " " + size.getKey(),
+                        "icon-" + imageEntry.getKey() + " " + size.getKey(),
                                 "material-icons/" + imageEntry.getValue(),
                                 size.getValue(),
                                 IconFormat.EXTERNAL_SVG_SPRITE
