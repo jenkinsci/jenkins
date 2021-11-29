@@ -24,8 +24,10 @@
 package jenkins.cli;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+
 
 import hudson.Functions;
 import hudson.cli.CLICommand;
@@ -156,11 +158,11 @@ public class StopBuildsCommandTest {
         project.scheduleBuild2(0).waitForStart();
 
         final String stdout = runWith(asList(TEST_JOB_NAME, TEST_JOB_NAME_2)).stdout();
-
-        assertThat(stdout,
-                equalTo("Exception occurred while trying to stop build '#1' for job 'jobName'. " +
-                        "Exception class: AccessDeniedException3, message: anonymous is missing the Job/Cancel permission" + LN +
-                        "Build '#1' stopped for job 'jobName2'" + LN));
+        List<String> testList = Arrays.asList(stdout.split(LN));
+        assertThat(testList,
+                contains("Exception occurred while trying to stop build '#1' for job 'jobName'. " +
+                        "Exception class: AccessDeniedException3, message: anonymous is missing the Job/Cancel permission",
+                        "Build '#1' stopped for job 'jobName2'"));
     }
 
     private CLICommandInvoker.Result runWith(final List<String> jobNames) throws Exception {
@@ -177,9 +179,10 @@ public class StopBuildsCommandTest {
         project2.scheduleBuild2(0).waitForStart();
 
         final String stdout = runWith(inputNames).stdout();
-
-        assertThat(stdout, equalTo("Build '#1' stopped for job 'jobName'" + LN +
-                "Build '#1' stopped for job 'jobName2'" + LN));
+        List<String> testList = Arrays.asList(stdout.split(LN));
+        assertThat(testList,
+                contains("Build '#1' stopped for job 'jobName'",
+                        "Build '#1' stopped for job 'jobName2'"));
 
         waitForLastBuildToStop(project);
         waitForLastBuildToStop(project2);
