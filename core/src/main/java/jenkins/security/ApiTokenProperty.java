@@ -658,13 +658,14 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     /**
-     * Only used for legacy API Token generation and change. After that token is revoked, it will be useless.
+     * @deprecated Only used for legacy API Token generation and change. After that token is revoked, it will be useless.
      */
     @Deprecated
     private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
+     * @deprecated only used for the migration of previous data
      */
     @Deprecated
     @Restricted(NoExternalUse.class)

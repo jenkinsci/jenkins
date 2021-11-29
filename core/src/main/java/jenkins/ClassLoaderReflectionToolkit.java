@@ -72,6 +72,7 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      * @deprecated use {@link #loadClass(ClassLoader, String)}
      */
+    @Deprecated
     public static @CheckForNull Class<?> _findLoadedClass(ClassLoader cl, String name) {
         synchronized (getClassLoadingLock(cl, name)) {
             Class<?> c;
@@ -103,6 +104,7 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      * @deprecated use {@link #loadClass(ClassLoader, String)}
      */
+    @Deprecated
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(cl, name)) {
             if (cl instanceof JenkinsClassLoader) {
