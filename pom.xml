@@ -450,6 +450,7 @@ THE SOFTWARE.
                   <module name="EqualsHashCode" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
+                  <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
