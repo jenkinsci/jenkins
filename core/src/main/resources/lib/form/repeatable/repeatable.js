@@ -121,8 +121,10 @@ var repeatableSupport = {
         a.onComplete.subscribe(function() {
             var p = n.parentNode;
             p.removeChild(n);
-            if (p.tag)
+            if (p.tag) {
                 p.tag.update();
+            }
+            layoutUpdateCallback.call();
         });
         a.animate();
     },
@@ -145,6 +147,7 @@ var repeatableSupport = {
                 updateOptionalBlock(input, false);
             }
         }
+        layoutUpdateCallback.call();
     }
 };
 
@@ -185,7 +188,7 @@ Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
         e = be = null; // avoid memory leak
     });
 
-    // radio buttons in repeatable content
+// radio buttons in repeatable content
 // Needs to run before the radioBlock behavior so that names are already unique.
 Behaviour.specify("DIV.repeated-chunk", 'repeatable', -200, function(d) {
         var inputs = d.getElementsByTagName('INPUT');

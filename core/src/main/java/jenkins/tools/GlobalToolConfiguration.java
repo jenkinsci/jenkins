@@ -107,7 +107,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.TODO")
+    @RestrictedSince("2.301")
     public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());

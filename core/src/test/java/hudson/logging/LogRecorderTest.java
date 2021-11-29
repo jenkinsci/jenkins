@@ -68,7 +68,7 @@ public class LogRecorderTest {
     @Test public void testClearing() throws IOException {
         LogRecorder lr = new LogRecorder("foo");
         LogRecorder.Target t = new LogRecorder.Target("", Level.FINE);
-        lr.targets.add(t);
+        lr.getLoggers().add(t);
 
         Jenkins j = Mockito.mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = Mockito.mockStatic(Jenkins.class)) {
@@ -92,9 +92,9 @@ public class LogRecorderTest {
         LogRecorder.Target targetLevel1 = new LogRecorder.Target("foo", Level.INFO);
         LogRecorder.Target targetLevel2 = new LogRecorder.Target("foo.bar", Level.SEVERE);
 
-        lr.targets.add(targetLevel1);
-        lr.targets.add(targetLevel2);
-        lr.targets.add(targetLevel0);
+        lr.getLoggers().add(targetLevel1);
+        lr.getLoggers().add(targetLevel2);
+        lr.getLoggers().add(targetLevel0);
 
         assertEquals(lr.orderedTargets()[0], targetLevel2);
         assertEquals(lr.orderedTargets()[1], targetLevel1);

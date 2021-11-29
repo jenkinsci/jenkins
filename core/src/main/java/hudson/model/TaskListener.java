@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
 import hudson.remoting.Channel;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -155,5 +154,5 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link TaskListener} that discards the output.
      */
-    TaskListener NULL = new StreamTaskListener(new NullStream());
+    TaskListener NULL = new NullTaskListener();
 }
