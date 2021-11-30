@@ -105,7 +105,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Deprecated see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     private transient Boolean statusFilter;
@@ -333,7 +333,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Status filter is now controlled via a JobViewFilter, see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     public Boolean getStatusFilter() {
@@ -488,7 +488,7 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     /**
-     * Deprecated see, {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     @DataBoundSetter

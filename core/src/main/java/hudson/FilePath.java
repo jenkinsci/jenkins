@@ -3076,7 +3076,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
                         return true;
                     } else {
-                        throw new InterruptedException("no matches found within " + bound);
+                        throw (InterruptedException)new InterruptedException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0;

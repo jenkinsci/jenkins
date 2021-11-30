@@ -289,7 +289,7 @@ public class UpdateSite {
 
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
-     * @param name, the name for the JSON signature Validator object.
+     * @param name the name for the JSON signature Validator object.
      *              if name is null, then the default name will be used,
      *              which is "update site" followed by the update site id
      * @return the signature validator.
@@ -493,7 +493,7 @@ public class UpdateSite {
 
     /**
      * URL which exposes the metadata location in a specific update site.
-     * @param downloadable, the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
+     * @param downloadable the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
      * @return the location
      * @since 2.20
      */

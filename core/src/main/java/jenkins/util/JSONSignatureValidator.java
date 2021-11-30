@@ -105,7 +105,9 @@ public class JSONSignatureValidator {
                         LOGGER.log(Level.INFO, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
                         break;
                     case OK:
-                        // fall through
+                        break;
+                    default:
+                        throw new AssertionError("Unknown form validation kind: " + resultSha512.kind);
                 }
             } catch (NoSuchAlgorithmException nsa) {
                 LOGGER.log(Level.WARNING, "Failed to verify potential SHA-512 digest/signature, falling back to SHA-1", nsa);
@@ -127,7 +129,9 @@ public class JSONSignatureValidator {
                         return FormValidation.error("No correct_signature or correct_signature512 entry found in '" + name + "'.");
                     }
                 case OK:
-                    // fall through
+                    break;
+                default:
+                    throw new AssertionError("Unknown form validation kind: " + resultSha1.kind);
             }
 
             if (warning!=null)  return warning;

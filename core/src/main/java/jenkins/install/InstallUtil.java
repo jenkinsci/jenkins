@@ -134,7 +134,7 @@ public class InstallUtil {
             try {
                 return InstallState.valueOf(stateOverride.toUpperCase());
             } catch (RuntimeException e) {
-                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
+                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.", e);
             }
         }
         

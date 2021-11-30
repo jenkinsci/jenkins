@@ -3351,7 +3351,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
                 tmp.delete();
             } catch (IOException e) {
-                throw new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+                throw (InvalidBuildsDir)new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead").initCause(e);
             }
         }
 
@@ -4027,7 +4027,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             return doQuietDown(false, 0, null);
         } catch (IOException | InterruptedException e) {
-            throw new AssertionError(); // impossible
+            throw new AssertionError(e); // impossible
         }
     }
 
@@ -4044,7 +4044,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             return doQuietDown(block, timeout, null);
         } catch (IOException | InterruptedException e) {
-            throw new AssertionError(); // impossible
+            throw new AssertionError(e); // impossible
         }
     }
 
@@ -4878,6 +4878,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Checks if container uses UTF-8 to decode URLs. See
      * http://wiki.jenkins-ci.org/display/JENKINS/Tomcat#Tomcat-i18n
+     * @deprecated use {@link URICheckEncodingMonitor#doCheckURIEncoding(StaplerRequest)}
      */
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.37")
@@ -4888,6 +4889,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Does not check when system default encoding is "ISO-8859-1".
+     * @deprecated use {@link URICheckEncodingMonitor#isCheckEnabled()}
      */
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.37")
