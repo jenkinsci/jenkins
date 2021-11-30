@@ -155,6 +155,8 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
                             variablesRemoved.add(variableName);
                             iterator.remove();
                             break;
+                        default:
+                            throw new AssertionError("Unknown process variables handling: " + processVariablesHandling);
                     }
                 }
             }
