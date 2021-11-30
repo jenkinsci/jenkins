@@ -52,7 +52,7 @@ THE SOFTWARE.
       This content is HTML (unless the boolean variable escapeEntryTitleAndDescription is set). Use h.escape if necessary.
     </st:attribute>
     <st:attribute name="class">
-      Classes to apply to the form
+      Classes to apply to the form item
     </st:attribute>
     <st:attribute name="help">
       URL to the HTML page. When this attribute is specified, the entry gets

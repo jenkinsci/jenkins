@@ -31,7 +31,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName, isFormItem: "false") {
+                f.rowSet(name:descriptor.jsonSafeClassName, class: "jenkins-!-margin-bottom-0") {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
             }

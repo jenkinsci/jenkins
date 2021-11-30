@@ -38,6 +38,9 @@ THE SOFTWARE.
     <st:attribute name="isFormItem">
       Removes the "jenkins-form-item" class if false
     </st:attribute>
+    <st:attribute name="class">
+      Classes to apply to the container (this will be the form item if 'isFormItem' is true)
+    </st:attribute>
   </st:documentation>
 
   <j:choose>
@@ -46,7 +49,7 @@ THE SOFTWARE.
       <d:invokeBody />
     </j:when>
     <j:otherwise>
-      <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'}">
+      <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${class}">
         <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
         <d:invokeBody />
         <div class="row-set-end row-group-end tr"></div>
