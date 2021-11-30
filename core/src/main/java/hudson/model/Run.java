@@ -1656,7 +1656,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         StandardCopyOption.ATOMIC_MOVE
                 );
             } catch (UnsupportedOperationException | SecurityException ex) {
-                throw new IOException(rootDir + " is in use");
+                throw new IOException(rootDir + " is in use", ex);
             }
             
             Util.deleteRecursive(tmp);
