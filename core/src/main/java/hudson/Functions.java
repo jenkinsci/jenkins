@@ -585,7 +585,7 @@ public class Functions {
             String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
             source,
             r.getLevel().getLocalizedName(),
-            x == null ? message : message + printThrowable(x) + "\n"
+            x == null ? message : message + printThrowable(x) + "\n",
         };
     }
 

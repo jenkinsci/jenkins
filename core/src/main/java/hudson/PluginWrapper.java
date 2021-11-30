@@ -767,6 +767,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
      * {@link #disable(PluginDisableStrategy)}
+     * @deprecated use {@link #disable(PluginDisableStrategy)}
      */
     @Deprecated //see https://issues.jenkins.io/browse/JENKINS-27177
     public void disable() throws IOException {
@@ -1190,6 +1191,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
+     * @deprecated removed without replacement
      */
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {

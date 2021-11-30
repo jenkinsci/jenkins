@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.323</revision>
+    <revision>2.324</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -84,14 +84,13 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.11.1</remoting.version>
+    <remoting.version>4.11.2</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -100,7 +99,7 @@ THE SOFTWARE.
     <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.25</access-modifier.version>
-    <junit.jupiter.version>5.8.1</junit.jupiter.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <spotless.version>2.17.4</spotless.version>
   </properties>
 
@@ -420,7 +419,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.1</version>
+              <version>9.2</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
@@ -431,12 +430,18 @@ THE SOFTWARE.
             <checkstyleRules>
               <module name="Checker">
                 <module name="UniqueProperties" />
+                <module name="LineLength">
+                  <property name="fileExtensions" value="java" />
+                  <property name="max" value="300" />
+                  <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
+                </module>
                 <module name="TreeWalker">
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
-                  <module name="MissingOverride" />
                   <module name="AnnotationUseStyle" />
+                  <module name="MissingDeprecated" />
+                  <module name="MissingOverride" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
@@ -444,14 +449,18 @@ THE SOFTWARE.
                   <!--
                     Coding: https://checkstyle.sourceforge.io/config_coding.html
                   -->
+                  <module name="ArrayTrailingComma" />
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
                   <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
+                  <module name="MissingSwitchDefault" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
+                  <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
+                  <module name="SuperClone" />
                   <module name="SuperFinalize" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
@@ -643,33 +652,6 @@ THE SOFTWARE.
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
         <hudson.sign.storepass>jenkins</hudson.sign.storepass>
       </properties>
-    </profile>
-    <profile>
-      <id>sorcerer</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>release</id>
