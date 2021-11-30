@@ -454,6 +454,7 @@ THE SOFTWARE.
                   <module name="CovariantEquals" />
                   <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
+                  <module name="MissingSwitchDefault" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
                   <module name="PackageDeclaration" />
