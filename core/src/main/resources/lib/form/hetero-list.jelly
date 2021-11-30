@@ -80,7 +80,7 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div style="width:100%">
+      <div class="help-sibling" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
 
         <div class="repeated-chunk__header">
