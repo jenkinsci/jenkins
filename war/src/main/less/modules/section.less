@@ -1,10 +1,10 @@
 :root {
-  --section-padding: 2rem;
+  --section-padding: 1.75rem;
 }
 
 .jenkins-section {
   border-top: 2px solid var(--panel-border-color);
-  padding: var(--section-padding) 0;
+  padding: var(--section-padding) 0 0 0;
   max-width: 1800px;
 
   &:first-of-type {
@@ -20,8 +20,8 @@
     display: none;
   }
 
-  .jenkins-form-item:last-of-type {
-    margin-bottom: 0;
+  &--bottom-padding {
+    padding-bottom: var(--section-padding);
   }
 }
 

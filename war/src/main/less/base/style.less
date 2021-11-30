@@ -1125,6 +1125,7 @@ table.fingerprint-in-build td {
   padding-left: 32px;
   transition: var(--standard-transition);
   margin-top: 0.66rem;
+  overflow: hidden;
 
   &::after {
     content: "";
@@ -1143,12 +1144,16 @@ table.fingerprint-in-build td {
   }
 }
 
+.dropdownList-container {
+  margin-bottom: 1.75rem;
+}
+
 .form-container--hidden {
-  visibility: hidden!important;
-  margin-top: 0!important;
-  opacity: 0!important;
-  max-height: 0!important;
-  height: 0!important;
+  visibility: hidden !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
   overflow: hidden;
 }
 
