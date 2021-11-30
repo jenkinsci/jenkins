@@ -460,6 +460,7 @@ THE SOFTWARE.
                   <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
+                  <module name="SuperClone" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
                   <module name="UnnecessarySemicolonInEnumeration" />
