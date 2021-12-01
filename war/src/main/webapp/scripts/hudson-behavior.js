@@ -2349,7 +2349,7 @@ var hoverNotification = (function() {
 // Decrease vertical padding for checkboxes
 window.addEventListener('load', function () {
     document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
-        if (element.querySelector(":scope > .optionalBlock-container > .row-group-start input[type='checkbox'], :scope > .optional-block-start input[type='checkbox'], :scope > div > .jenkins-checkbox") != null) {
+        if (element.querySelector(".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox") != null) {
             element.classList.add("jenkins-form-item--tight")
         }
     });

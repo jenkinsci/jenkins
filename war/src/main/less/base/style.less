@@ -928,7 +928,7 @@ table.parameters > tbody:hover {
 
 .comboBoxSelectedItem {
   background-color: var(--primary);
-  color: var(--text-color);
+  color: var(--background);
 }
 
 .combobox-values {
@@ -1111,7 +1111,7 @@ table.fingerprint-in-build td {
 /* ========================= Other form related CSS ========================= */
 
 .radioBlock-container {
-  margin-bottom: 0.66rem;
+  margin-bottom: calc(var(--section-padding) / 3);
 
   &:last-of-type {
     margin-bottom: 0;
@@ -1145,7 +1145,7 @@ table.fingerprint-in-build td {
 }
 
 .dropdownList-container {
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--section-padding);
 }
 
 .form-container--hidden {

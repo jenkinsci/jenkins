@@ -1,9 +1,10 @@
 .jenkins-form {
+  max-width: var(--form-item-max-width);
 }
 
 .jenkins-form-item {
   max-width: var(--form-item-max-width);
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--section-padding);
 
   // Workaround for float:right button controls
   // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
@@ -25,10 +26,6 @@
 
   &--medium {
     max-width: var(--form-item-max-width--medium);
-  }
-
-  &--full-width {
-    max-width: none;
   }
 }
 
@@ -278,7 +275,7 @@
   margin-top: 3px;
 
   &:not(:last-of-type) {
-    margin-bottom: 20px;
+    margin-bottom: calc(var(--section-padding) / 2);
   }
 
   &__input {

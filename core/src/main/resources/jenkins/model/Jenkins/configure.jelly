@@ -37,7 +37,7 @@ THE SOFTWARE.
       </div>
     </div>
     <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
-    <f:form method="post" name="config" action="configSubmit">
+    <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
