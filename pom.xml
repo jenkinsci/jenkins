@@ -458,6 +458,7 @@ THE SOFTWARE.
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
                   <module name="PackageDeclaration" />
+                  <module name="RequireThis" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
                   <module name="SuperClone" />
