@@ -32,7 +32,6 @@ import com.sun.jna.Pointer;
 import com.sun.jna.StringArray;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
-import org.jvnet.libpam.impl.CLibrary.passwd;
 
 /**
  * GNU C library.
@@ -60,8 +59,6 @@ public interface GNUCLibrary extends Library {
     int unsetenv(String name);
     void perror(String msg);
     String strerror(int errno);
-
-    passwd getpwuid(int uid);
 
     int fcntl(int fd, int command);
     int fcntl(int fd, int command, int flags);

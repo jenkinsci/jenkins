@@ -1131,7 +1131,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 metadata.put("iconClassName", iconClassName);
                 if (ctx != null) {
                     Icon icon = IconSet.icons
-                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
                     if (icon != null) {
                         metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
                     }

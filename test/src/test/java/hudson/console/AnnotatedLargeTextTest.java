@@ -74,7 +74,16 @@ public class AnnotatedLargeTextTest {
     @Test
     public void oldDeserialization() throws Exception {
         ByteBuffer buf = new ByteBuffer();
-        buf.write(("hello" + ConsoleNote.PREAMBLE_STR + "AAAAwR+LCAAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr3Lr3oJPwPt7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhEgpmyEy306Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMYqP3pw28/JnznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyFv3+utadQyH8B+aJxVM4AAAA=" + ConsoleNote.POSTAMBLE_STR + "there\n").getBytes());
+        buf.write(("hello"
+                        + ConsoleNote.PREAMBLE_STR
+                        + "AAAAwR+LCAAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr"
+                        + "3Lr3oJPwPt7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhE"
+                        + "gpmyEy306Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMY"
+                        + "qP3pw28/JnznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyF"
+                        + "v3+utadQyH8B+aJxVM4AAAA="
+                        + ConsoleNote.POSTAMBLE_STR
+                        + "there\n")
+                .getBytes());
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
@@ -82,7 +91,13 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
-        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation from \"\\u001B[8mha:AAAAwR+LCAAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr3Lr3oJPwPt7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhEgpmyEy306Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMYqP3pw28/JnznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyFv3+utadQyH8B+aJxVM4AAAA=\\u001B[0mthere\\n\"")); // TODO assert that this is IOException: Refusing to deserialize unsigned note from an old log.
+        assertThat(logging.getMessages(), hasItem(
+                "Failed to resurrect annotation from \"\\u001B[8mha:AAAAwR+LC"
+                        + "AAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr3Lr3oJPwP"
+                        + "t7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhEgpmyEy306"
+                        + "Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMYqP3pw28/J"
+                        + "nznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyFv3+utadQy"
+                        + "H8B+aJxVM4AAAA=\\u001B[0mthere\\n\"")); // TODO assert that this is IOException: Refusing to deserialize unsigned note from an old log.
         ConsoleNote.INSECURE = true;
         try {
             w = new StringWriter();
@@ -97,7 +112,16 @@ public class AnnotatedLargeTextTest {
     @Test
     public void badMac() throws Exception {
         ByteBuffer buf = new ByteBuffer();
-        buf.write(("Go back to " + ConsoleNote.PREAMBLE_STR + "////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcAAAA" + ConsoleNote.POSTAMBLE_STR + "your home.\n").getBytes());
+        buf.write(("Go back to "
+                        + ConsoleNote.PREAMBLE_STR
+                        + "////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAA"
+                        + "AAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1"
+                        + "oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VY"
+                        + "lqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4J"
+                        + "ABmN28qcAAAA"
+                        + ConsoleNote.POSTAMBLE_STR
+                        + "your home.\n")
+                .getBytes());
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
@@ -105,7 +129,13 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("Go back to your home.\n", w.toString());
-        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation from \"\\u001B[8mha:////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcAAAA\\u001B[0myour home.\\n\"")); // TODO assert that this is IOException: MAC mismatch
+        assertThat(logging.getMessages(), hasItem(
+                "Failed to resurrect annotation from \"\\u001B[8mha:////4ByIh"
+                        + "qPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b8"
+                        + "5aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEB"
+                        + "UT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXr"
+                        + "h9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcA"
+                        + "AAA\\u001B[0myour home.\\n\"")); // TODO assert that this is IOException: MAC mismatch
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

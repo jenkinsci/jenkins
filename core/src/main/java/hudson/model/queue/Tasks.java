@@ -53,7 +53,7 @@ public class Tasks {
         return t.getSameNodeConstraint();
     }
 
-    /** deprecated call {@link SubTask#getOwnerTask} directly */
+    /** @deprecated call {@link SubTask#getOwnerTask} directly */
     @Deprecated
     public static @NonNull Task getOwnerTaskOf(@NonNull SubTask t) {
         return t.getOwnerTask();

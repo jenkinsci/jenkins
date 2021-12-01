@@ -278,7 +278,7 @@ public class Items {
             }
             name.push(p[i]);
         }
-        return StringUtils.join(name, '/');
+        return String.join("/", name);
     }
 
     /**
@@ -312,7 +312,7 @@ public class Items {
                 newValue.add(relativeName);
             }
         }
-        return StringUtils.join(newValue, ",");
+        return String.join(",", newValue);
     }
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
