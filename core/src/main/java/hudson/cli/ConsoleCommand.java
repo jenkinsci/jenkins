@@ -56,13 +56,13 @@ public class ConsoleCommand extends CLICommand {
             if (p!=null) {
                 run = p.resolve(job);
                 if (run==null)
-                    throw new IllegalStateException("Permalink "+build+" produced no build");
+                    throw new IllegalStateException("Permalink "+build+" produced no build", e);
             } else {
                 Permalink nearest = job.getPermalinks().findNearest(build);
                 throw new IllegalArgumentException(nearest == null ?
                         String.format("Not sure what you meant by \"%s\".", build) :
                         String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?",
-                                build, nearest.getId()));
+                                build, nearest.getId()), e);
             }
         }
 
