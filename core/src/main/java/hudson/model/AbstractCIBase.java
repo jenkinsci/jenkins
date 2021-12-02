@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
@@ -219,13 +220,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
         createNewComputerForNode(n, automaticAgentLaunch);
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all()) {
-            try {
-                cl.onConfigurationChange();
-            } catch (Throwable t) {
-                LOGGER.log(Level.WARNING, null, t);
-            }
-        }
+        Listeners.notify(ComputerListener.class, ComputerListener::onConfigurationChange);
     }
 
     /**
@@ -278,13 +273,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             killComputer(c);
         }
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all()) {
-            try {
-                cl.onConfigurationChange();
-            } catch (Throwable t) {
-                LOGGER.log(Level.WARNING, null, t);
-            }
-        }
+        Listeners.notify(ComputerListener.class, ComputerListener::onConfigurationChange);
     }
 
 }

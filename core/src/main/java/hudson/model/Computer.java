@@ -103,6 +103,7 @@ import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
 import org.apache.commons.lang.StringUtils;
@@ -706,9 +707,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
-        for (ComputerListener cl : ComputerListener.all()) {
-            if (temporarilyOffline)     cl.onTemporarilyOffline(this,cause);
-            else                        cl.onTemporarilyOnline(this);
+        if (temporarilyOffline) {
+            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOffline(this, cause));
+        } else {
+            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOnline(this));
         }
     }
 
