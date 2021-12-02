@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.323</revision>
+    <revision>2.324</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -84,14 +84,13 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.11.1</remoting.version>
+    <remoting.version>4.11.2</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -100,8 +99,8 @@ THE SOFTWARE.
     <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.25</access-modifier.version>
-    <junit.jupiter.version>5.8.1</junit.jupiter.version>
-    <spotless.version>2.17.4</spotless.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    <spotless.version>2.17.5</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -352,7 +351,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.21</version>
+          <version>1.22</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -420,7 +419,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.1</version>
+              <version>9.2</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
@@ -431,12 +430,18 @@ THE SOFTWARE.
             <checkstyleRules>
               <module name="Checker">
                 <module name="UniqueProperties" />
+                <module name="LineLength">
+                  <property name="fileExtensions" value="java" />
+                  <property name="max" value="300" />
+                  <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
+                </module>
                 <module name="TreeWalker">
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
-                  <module name="MissingOverride" />
                   <module name="AnnotationUseStyle" />
+                  <module name="MissingDeprecated" />
+                  <module name="MissingOverride" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
@@ -444,13 +449,20 @@ THE SOFTWARE.
                   <!--
                     Coding: https://checkstyle.sourceforge.io/config_coding.html
                   -->
+                  <module name="ArrayTrailingComma" />
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
+                  <module name="DefaultComesLast" />
                   <module name="EqualsHashCode" />
+                  <module name="MissingSwitchDefault" />
                   <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
+                  <module name="PackageDeclaration" />
+                  <module name="RequireThis" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
+                  <module name="SuperClone" />
+                  <module name="SuperFinalize" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
                   <module name="UnnecessarySemicolonInEnumeration" />
@@ -462,6 +474,8 @@ THE SOFTWARE.
                   <module name="IllegalImport">
                     <!-- prevent the use of jsr-305 annotations -->
                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
+                    <!-- Prevent the expansion of Guava usages -->
+                    <property name="illegalPkgs" value="com.google.common.base, com.google.common.escape, com.google.common.eventbus, com.google.common.graph, com.google.common.hash, com.google.common.html, com.google.common.io, com.google.common.math, com.google.common.net, com.google.common.primitives, com.google.common.reflect, com.google.common.xml, com.google.thirdparty" />
                   </module>
                   <module name="RedundantImport" />
                   <!--
@@ -641,33 +655,6 @@ THE SOFTWARE.
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
         <hudson.sign.storepass>jenkins</hudson.sign.storepass>
       </properties>
-    </profile>
-    <profile>
-      <id>sorcerer</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>${sorcerer.version}</version>
-            <configuration>
-              <source>1.${java.level}</source>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>release</id>

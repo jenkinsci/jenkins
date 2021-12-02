@@ -241,7 +241,7 @@ public class ApiTokenStore {
         try {
             digest = MessageDigest.getInstance(HASH_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
+            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system", e);
         }
         return digest.digest(tokenBytes);
     }

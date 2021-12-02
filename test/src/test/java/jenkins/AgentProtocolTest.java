@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -84,9 +83,9 @@ public class AgentProtocolTest {
         if (!failedChecks.isEmpty()) {
             String message = String.format("Protocol(s) are not %s: %s. %sEnabled protocols: %s",
                     shouldBeEnabled ? "enabled" : "disabled",
-                    StringUtils.join(failedChecks, ','),
+                    String.join(",", failedChecks),
                     why != null ? "Reason: " + why + ". " : "",
-                    StringUtils.join(agentProtocols, ','));
+                    String.join(",", agentProtocols));
             fail(message);
         }
     }

@@ -997,6 +997,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
      * A plugin with multiple categories will appear multiple times in the list.
+     * @deprecated use {@link #getAvailables()}
      */
     @Deprecated
     public PluginEntry[] getCategorizedAvailables() {
@@ -2085,6 +2086,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:
                 throw new IOException("Unable to confirm integrity of downloaded file, refusing installation");
+            default:
+                throw new AssertionError("Unknown verification result: " + result1);
         }
     }
 

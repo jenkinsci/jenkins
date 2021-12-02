@@ -731,6 +731,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Called by tests in the JTH. Otherwise this shouldn't be called.
      * Even in the tests this usage is questionable.
+     * @deprecated removed without replacement
      */
     @Deprecated
     public static void clear() {
