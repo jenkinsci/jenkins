@@ -51,7 +51,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     public boolean onDoActionTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }
@@ -60,7 +60,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     public boolean onGetterTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node, String expression) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }
@@ -69,7 +69,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     public boolean onFieldTrigger(FieldRef f, StaplerRequest req, StaplerResponse staplerResponse, Object node, String expression) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }

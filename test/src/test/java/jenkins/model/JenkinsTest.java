@@ -247,7 +247,8 @@ public class JenkinsTest {
     @Test
     public void testDoCheckViewName_GoodName() throws Exception {
         String[] viewNames = new String[] {
-            "", "Jenkins"    
+            "",
+            "Jenkins",
         };
         
         Jenkins jenkins = Jenkins.get();
@@ -260,8 +261,16 @@ public class JenkinsTest {
     @Test
     public void testDoCheckViewName_NotGoodName() throws Exception {
         String[] viewNames = new String[] {
-            "Jenkins?", "Jenkins*", "Jenkin/s", "Jenkin\\s", "jenkins%", 
-            "Jenkins!", "Jenkins[]", "Jenkin<>s", "^Jenkins", ".."    
+            "Jenkins?",
+            "Jenkins*",
+            "Jenkin/s",
+            "Jenkin\\s",
+            "jenkins%",
+            "Jenkins!",
+            "Jenkins[]",
+            "Jenkin<>s",
+            "^Jenkins",
+            "..",
         };
         
         Jenkins jenkins = Jenkins.get();

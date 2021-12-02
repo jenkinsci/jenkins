@@ -854,6 +854,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Returns the manifest of a bundled but not-extracted plugin.
+     * @deprecated removed without replacement
      */
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public @CheckForNull Manifest getBundledPluginManifest(String shortName) {

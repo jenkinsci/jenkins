@@ -45,6 +45,7 @@ public class RingBufferLogHandler extends Handler {
     /**
      * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
      * as it's not legal to use it on remoting agents.
+     * @deprecated use {@link #RingBufferLogHandler(int)}
      */
     @Deprecated
     public RingBufferLogHandler() {

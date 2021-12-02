@@ -75,7 +75,7 @@ public class TimeDuration {
             }
             return new TimeDuration(Long.parseLong(delay.trim()) * unitMultiplier);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid time duration value: "+delay);
+            throw new IllegalArgumentException("Invalid time duration value: "+delay, e);
         }
     }
 

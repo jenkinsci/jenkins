@@ -54,8 +54,8 @@ public enum IconType {
             case PLUGIN: {
                 return resURL + "/plugin/" + url;
             }
+            default:
+                throw new AssertionError("Unknown icon type: " + this);
         }
-
-        return null;
     }
 }

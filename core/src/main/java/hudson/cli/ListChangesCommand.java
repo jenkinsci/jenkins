@@ -88,6 +88,8 @@ public class ListChangesCommand extends RunRangeCommand {
                 }
             }
             break;
+        default:
+            throw new AssertionError("Unknown format: " + format);
         }
 
         return 0;
