@@ -53,7 +53,7 @@ public class DefaultCrumbIssuerTest {
         "10.2.3.1",
         "10.2.3.1,10.20.30.40",
         "10.2.3.1,10.20.30.41",
-        "10.2.3.3,10.20.30.40,10.20.30.41"
+        "10.2.3.3,10.20.30.40,10.20.30.41",
     };
     private static final String HEADER_NAME = "X-Forwarded-For";
 

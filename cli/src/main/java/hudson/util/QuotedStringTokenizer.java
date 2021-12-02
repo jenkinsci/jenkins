@@ -269,6 +269,9 @@ public class QuotedStringTokenizer
                   else
                       _token.append(c);
                   continue;
+
+              default:
+                  break;
             }
         }
 

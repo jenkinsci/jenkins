@@ -226,7 +226,11 @@ public class AtomicFileWriter extends Writer {
 
     @Override
     protected void finalize() throws Throwable {
-        closeAndDeleteTempFile();
+        try {
+            closeAndDeleteTempFile();
+        } finally {
+            super.finalize();
+        }
     }
 
     private void closeAndDeleteTempFile() throws IOException {
