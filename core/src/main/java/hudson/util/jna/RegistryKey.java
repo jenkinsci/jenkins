@@ -105,8 +105,10 @@ public class RegistryKey implements AutoCloseable {
 
             case WINERROR.ERROR_SUCCESS:
                 return lpData;
+
+            default:
+                throw new JnaException(r);
             }
-            throw new JnaException(r);
         }
     }
 

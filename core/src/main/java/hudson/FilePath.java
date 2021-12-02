@@ -1639,7 +1639,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             } else {
                 s = new String[]{prefix, suffix};
             }
-            String name = StringUtils.join(s, ".");
+            String name = String.join(".", s);
             return new FilePath(this, act(new CreateTempDir(name)));
         } catch (IOException e) {
             throw new IOException("Failed to create a temp directory on "+remote,e);
@@ -3076,7 +3076,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
                         return true;
                     } else {
-                        throw new InterruptedException("no matches found within " + bound);
+                        throw (InterruptedException)new InterruptedException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0;

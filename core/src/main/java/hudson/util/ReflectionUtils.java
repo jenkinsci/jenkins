@@ -70,7 +70,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                 Field f = o.getClass().getField(p);
                 return f.get(o);
             } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("No such property "+p+" on "+o.getClass());
+                throw new IllegalArgumentException("No such property "+p+" on "+o.getClass(), e);
             }
         } else {
             return PropertyUtils.getProperty(o, p);

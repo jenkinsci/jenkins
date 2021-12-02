@@ -72,7 +72,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -169,7 +168,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
             String longerPrefix = null;
             for (int i = loggerNameParts.length; i > 0; i--) {
-                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i), ".");
+                String loggerNamePrefix = String.join(".", Arrays.copyOf(loggerNameParts, i));
                 seenPrefixes.put(loggerNamePrefix, seenPrefixes.getOrDefault(loggerNamePrefix, 0) + 1);
                 if (longerPrefix == null) {
                     relevantPrefixes.add(loggerNamePrefix); // actual logger name

@@ -264,11 +264,6 @@ THE SOFTWARE.
         <version>5.10.0</version>
       </dependency>
       <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>libpam4j</artifactId>
-        <version>1.11</version>
-      </dependency>
-      <dependency>
         <groupId>com.sun.solaris</groupId>
         <artifactId>embedded_su4j</artifactId>
         <version>1.1</version>
