@@ -197,7 +197,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                                 .ComputerLauncher_NoJavaFound(line));
                     }
                 } catch (NumberFormatException x) {
-                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line));
+                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line), x);
                 }
                 return;
             }
