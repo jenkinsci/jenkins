@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.21</version>
+      <version>1.22</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -454,10 +454,6 @@ THE SOFTWARE.
       <artifactId>jna</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
     </dependency>
@@ -479,10 +475,9 @@ THE SOFTWARE.
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
     </dependency>
-    <dependency> <!-- Not included into BOM, plugins should use one from structs-plugin -->
+    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
-      <version>1.1</version>
     </dependency>
 
     <dependency>

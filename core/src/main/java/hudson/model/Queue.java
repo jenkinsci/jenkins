@@ -2076,7 +2076,7 @@ public class Queue extends ResourceController implements Saveable {
          * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
          * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
          * @return a <em>distinct</em> executable (never {@code this}, unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
-         * @since TODO, but implementations can already implement this with a lower core dependency.
+         * @since 2.313, but implementations can already implement this with a lower core dependency.
          */
         default @CheckForNull Executable getParentExecutable() {
             return null;
@@ -3103,7 +3103,12 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
-        h.getQueue().load();
+        Queue queue = h.getQueue();
+        Item[] items = queue.getItems();
+        if (items.length > 0) {
+            LOGGER.warning(() -> "Loading queue will discard previously scheduled items: " + Arrays.toString(items));
+        }
+        queue.load();
     }
 
     /**

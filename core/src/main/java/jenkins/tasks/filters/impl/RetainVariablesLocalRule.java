@@ -155,18 +155,20 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
                             variablesRemoved.add(variableName);
                             iterator.remove();
                             break;
+                        default:
+                            throw new AssertionError("Unknown process variables handling: " + processVariablesHandling);
                     }
                 }
             }
         }
 
         if (!variablesRemoved.isEmpty()) {
-            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_RemovalMessage(getDescriptor().getDisplayName(), StringUtils.join(variablesRemoved.toArray(), ", ")));
+            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_RemovalMessage(getDescriptor().getDisplayName(), String.join(", ", variablesRemoved)));
         }
         if (!variablesReset.isEmpty()) {
             // reset the variables using the initial value from System
             variablesReset.forEach(variableName -> envVars.put(variableName, systemEnvVars.get(variableName)));
-            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_ResetMessage(getDescriptor().getDisplayName(), StringUtils.join(variablesReset.toArray(), ", ")));
+            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_ResetMessage(getDescriptor().getDisplayName(), String.join(", ", variablesReset)));
         }
     }
 

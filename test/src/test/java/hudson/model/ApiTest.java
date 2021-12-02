@@ -128,7 +128,14 @@ public class ApiTest {
 
     @Test
     public void unwrappedLongString() throws Exception {
-        j.jenkins.setSystemMessage("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+        j.jenkins.setSystemMessage(
+                "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+                    + " incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis"
+                    + " nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo"
+                    + " consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse"
+                    + " cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat"
+                    + " non proident, sunt in culpa qui officia deserunt mollit anim id est"
+                    + " laborum.");
         Page page = j.createWebClient().goTo("api/xml?xpath=/hudson/description", "application/xml");
         assertEquals(
                 "<description>"+j.jenkins.getSystemMessage()+"</description>",
