@@ -299,6 +299,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-jelly</groupId>
       <artifactId>commons-jelly-tags-fmt</artifactId>
+      <version>1.0.1</version>
     </dependency>
     <dependency>
       <groupId>commons-jelly</groupId>
