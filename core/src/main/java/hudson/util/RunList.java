@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.Predicate;
 
 /**
@@ -165,6 +166,11 @@ public class RunList<R extends Run> extends AbstractList<R> {
             r.add(itr.next());
         }
         return r;
+    }
+
+    @Override
+    public Spliterator<R> spliterator() {
+        return base.spliterator();
     }
 
     @Override
