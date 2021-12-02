@@ -173,7 +173,7 @@ Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
         e = null; // avoid memory leak
     });
 
-Behaviour.specify("BUTTON.repeatable-delete", 'repeatable', 0, function(e) {
+Behaviour.specify("BUTTON.repeatable-delete, INPUT.repeatable-delete", 'repeatable', 0, function(e) {
         e.addEventListener("click", function() {
             repeatableSupport.onDelete(e);
         })
