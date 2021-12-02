@@ -100,7 +100,7 @@ THE SOFTWARE.
 
     <access-modifier.version>1.25</access-modifier.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <spotless.version>2.17.4</spotless.version>
+    <spotless.version>2.17.5</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -351,7 +351,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.21</version>
+          <version>1.22</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -474,6 +474,8 @@ THE SOFTWARE.
                   <module name="IllegalImport">
                     <!-- prevent the use of jsr-305 annotations -->
                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
+                    <!-- Prevent the expansion of Guava usages -->
+                    <property name="illegalPkgs" value="com.google.common.base, com.google.common.escape, com.google.common.eventbus, com.google.common.graph, com.google.common.hash, com.google.common.html, com.google.common.io, com.google.common.math, com.google.common.net, com.google.common.primitives, com.google.common.reflect, com.google.common.xml, com.google.thirdparty" />
                   </module>
                   <module name="RedundantImport" />
                   <!--
