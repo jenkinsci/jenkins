@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.21</version>
+      <version>1.22</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
