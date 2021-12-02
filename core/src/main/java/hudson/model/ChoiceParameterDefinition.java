@@ -130,7 +130,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     public String getChoicesText() {
-        return StringUtils.join(choices, "\n");
+        return String.join("\n", choices);
     }
 
     @Override

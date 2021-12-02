@@ -58,7 +58,7 @@ public class InstallState implements ExtensionPoint {
      * because it is used for serialized state like "jenkins.install.InstallState$4" 
      * before the change from anonymous class to named class. If you need to add a new InstallState, you can just add a new inner named class but nothing to change in this list.
      * 
-     * @see #readResolve
+     * @deprecated see {@link #readResolve()}
      */
     @Deprecated
     @SuppressWarnings("MismatchedReadAndWriteOfArray")

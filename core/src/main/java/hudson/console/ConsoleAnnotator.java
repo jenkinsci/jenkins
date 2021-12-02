@@ -126,9 +126,8 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
         switch (all.size()) {
         case 0:     return null;    // none
         case 1:     return  cast(all.iterator().next()); // just one
+        default:    return new ConsoleAnnotatorAggregator<>(all);
         }
-
-        return new ConsoleAnnotatorAggregator<>(all);
     }
 
     /**

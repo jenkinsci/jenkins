@@ -687,8 +687,14 @@ public class NodeProvisioner {
                                     + "Qlen={2,number,#.###},available={3,number,#.###}&{4,number,integer},"
                                     + "online={5,number,integer},m={6,number,#.###})",
                             new Object[]{
-                                    excessWorkload, plannedCapacity, qlen, available, snapshot.getAvailableExecutors(),
-                                    snapshot.getOnlineExecutors(), m , snapshot.getConnectingExecutors()
+                                    excessWorkload,
+                                    plannedCapacity,
+                                    qlen,
+                                    available,
+                                    snapshot.getAvailableExecutors(),
+                                    snapshot.getOnlineExecutors(),
+                                    m,
+                                    snapshot.getConnectingExecutors(),
                             });
 
                     CLOUD:
