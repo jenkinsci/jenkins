@@ -154,7 +154,7 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
-     * Removed with no replacement.
+     * @deprecated Removed with no replacement.
      */
     @Deprecated
     private transient String userId;
