@@ -57,7 +57,6 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -159,7 +158,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
+        return String.join(", ", Jenkins.get().getAgentProtocols());
     }
 
     /**
