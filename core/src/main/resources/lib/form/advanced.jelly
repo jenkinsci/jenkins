@@ -48,10 +48,10 @@ THE SOFTWARE.
 
             <!-- advancedButton is legacy -->
             <button type="button" class="jenkins-button advanced-button advancedButton">
-                ${attrs.title?:'%Advanced'}...
                 <span id="${id}" tooltip="${%customizedFields}">
                     <l:ionicon name="asterisk-outline" />
                 </span>
+                ${attrs.title?:'%Advanced'}...
             </button>
 	    </div>
             <j:new var="customizedFields" className="java.util.TreeSet"/>
