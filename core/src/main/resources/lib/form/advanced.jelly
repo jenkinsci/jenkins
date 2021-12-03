@@ -44,15 +44,14 @@ THE SOFTWARE.
         <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
-              <j:set var="id" value="${h.generateId()}"/>
-              <span style="display: none" id="${id}">
-                <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
-              </span>
-              <st:nbsp />
+            <j:set var="id" value="${h.generateId()}"/>
 
             <!-- advancedButton is legacy -->
             <button type="button" class="jenkins-button advanced-button advancedButton">
                 ${attrs.title?:'%Advanced'}...
+                <span id="${id}" tooltip="${%customizedFields}">
+                    <l:ionicon name="asterisk-outline" />
+                </span>
             </button>
 	    </div>
             <j:new var="customizedFields" className="java.util.TreeSet"/>
