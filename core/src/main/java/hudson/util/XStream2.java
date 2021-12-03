@@ -492,7 +492,7 @@ public class XStream2 extends XStream {
     public abstract static class PassthruConverter<T> implements Converter {
         private Converter converter;
 
-        public PassthruConverter(XStream2 xstream) {
+        protected PassthruConverter(XStream2 xstream) {
             converter = xstream.reflectionConverter;
         }
 

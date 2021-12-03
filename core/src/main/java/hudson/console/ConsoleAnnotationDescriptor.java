@@ -42,11 +42,11 @@ import org.kohsuke.stapler.WebMethod;
  * @since 1.349
  */
 public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote<?>> implements ExtensionPoint {
-    public ConsoleAnnotationDescriptor(Class<? extends ConsoleNote<?>> clazz) {
+    protected ConsoleAnnotationDescriptor(Class<? extends ConsoleNote<?>> clazz) {
         super(clazz);
     }
 
-    public ConsoleAnnotationDescriptor() {
+    protected ConsoleAnnotationDescriptor() {
     }
 
     /**
