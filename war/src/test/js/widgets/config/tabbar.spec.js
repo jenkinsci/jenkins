@@ -156,7 +156,6 @@ describe("tabbar-spec tests", function () {
 
             // Only 3 tabs should be visible
             // (used to be 4 before the merge/adopt)...
-            expect($('.tab', tabBar).length).toBe(3);
             expect(textCleanup($('.tab', tabBar).text())).toBe('General|#Build Triggers|#Build');
 
             // And if we try to use the finder now to find something
