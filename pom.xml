@@ -489,7 +489,7 @@ THE SOFTWARE.
                     Javadoc Comments: https://checkstyle.sourceforge.io/config_javadoc.html
                   -->
                   <module name="AtclauseOrder">
-                    <property name="tagOrder" value="@param, @return, @serial, @serialData, @serialField, @throws, @version, @deprecated, @exception"/>
+                    <property name="tagOrder" value="@param, @return, @throws, @deprecated" />
                   </module>
                   <module name="InvalidJavadocPosition" />
                   <module name="JavadocMethod">
