@@ -215,9 +215,10 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@link TaskListener} for this SlaveComputer. Never null
+     * Offers a way to write to the log file for this agent.
      * @since 2.9
      */
+    @NonNull
     public TaskListener getListener() {
         return taskListener;
     }
