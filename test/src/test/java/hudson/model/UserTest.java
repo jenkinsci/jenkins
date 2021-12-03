@@ -78,6 +78,7 @@ import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -604,7 +605,7 @@ public class UserTest {
 
     private static class ExternalSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        public UserDetails loadUserByUsername2(String username) {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             if (username.equals("nonexistent")) {
                 throw new UsernameNotFoundException(username);
             } else if (username.equals("unknown")) {
@@ -620,11 +621,11 @@ public class UserTest {
             }
         }
         @Override
-        protected UserDetails authenticate2(String username, String password) {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return loadUserByUsername2(username); // irrelevant
         }
         @Override
-        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname); // irrelevant
         }
     }

@@ -47,8 +47,10 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.Stapler;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class WhoAmITest {
 
@@ -204,15 +206,15 @@ public class WhoAmITest {
     private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
         @Override
-        protected UserDetails authenticate2(String username, String password) {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return createUserDetails(username);
         }
 
-        @Override public UserDetails loadUserByUsername2(String username) {
+        @Override public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             return createUserDetails(username);
         }
 
-        @Override public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+        @Override public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             return null;
         }
 

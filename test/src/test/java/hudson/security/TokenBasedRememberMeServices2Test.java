@@ -30,6 +30,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -80,7 +81,7 @@ public class TokenBasedRememberMeServices2Test {
 
     private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate2(String username, String password) {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
                 return new org.springframework.security.core.userdetails.User(username, password, Collections.singleton(new SimpleGrantedAuthority("myteam")));
             }
@@ -88,12 +89,12 @@ public class TokenBasedRememberMeServices2Test {
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername2(String username) {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UsernameNotFoundException("intentionally not working");
         }
@@ -130,7 +131,7 @@ public class TokenBasedRememberMeServices2Test {
 
     private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
-        public UserDetails loadUserByUsername2(String username) {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UserMayOrMayNotExistException2("I cannot tell");
         }
@@ -314,7 +315,7 @@ public class TokenBasedRememberMeServices2Test {
         private int counter = 0;
 
         @Override
-        public synchronized UserDetails loadUserByUsername2(String username) {
+        public synchronized UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             ++counter;
             return super.loadUserByUsername2(username);
         }

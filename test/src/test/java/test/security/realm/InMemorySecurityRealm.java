@@ -57,7 +57,7 @@ public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     }
 
     @Override
-    protected UserDetails authenticate2(String username, String password) {
+    protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
         if (userStorage.containsKey(username)) {
             return userStorage.get(username);
         }
@@ -65,12 +65,12 @@ public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     }
 
     @Override
-    public UserDetails loadUserByUsername2(String username) {
+    public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
         return userStorage.get(username);
     }
 
     @Override
-    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
         return null;
     }
 

@@ -173,7 +173,7 @@ public class LogRecorderManagerTest {
             this.message = message;
             this.params = params;
         }
-        @Override public Boolean call() {
+        @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             if (params != null) {
                 log.log(level, message, params);
@@ -191,7 +191,7 @@ public class LogRecorderManagerTest {
             this.level = level;
             this.logger = logger;
         }
-        @Override public Boolean call() {
+        @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             log.log(level, () -> "LambdaLog @" + level);
             return log.isLoggable(level);

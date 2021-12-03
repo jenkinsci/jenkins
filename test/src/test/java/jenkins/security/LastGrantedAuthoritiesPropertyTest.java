@@ -15,10 +15,12 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -81,7 +83,7 @@ public class LastGrantedAuthoritiesPropertyTest {
      */
     private static class TestSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate2(String username, String password) {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (password.equals("error"))
                 throw new BadCredentialsException(username);
             String[] desiredAuthorities = password.split(":");
@@ -91,12 +93,12 @@ public class LastGrantedAuthoritiesPropertyTest {
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername2(String username) {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             throw new UserMayOrMayNotExistException2("fallback");
         }
     }

@@ -134,7 +134,7 @@ public class AdminFilePathFilterTest {
             return p.readToString();
         }
         @Override
-        public void checkRoles(RoleChecker checker) {
+        public void checkRoles(RoleChecker checker) throws SecurityException {
             // simulate legacy Callable impls
             throw new NoSuchMethodError();
         }
