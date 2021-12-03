@@ -254,7 +254,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      */
     public abstract class NodeSpecificInstallable extends Installable implements NodeSpecific<NodeSpecificInstallable> {
 
-        public NodeSpecificInstallable(Installable inst) {
+        protected NodeSpecificInstallable(Installable inst) {
             this.id = inst.id;
             this.name = inst.name;
             this.url = inst.url;

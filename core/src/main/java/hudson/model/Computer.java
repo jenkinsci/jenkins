@@ -251,7 +251,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new ArrayList<>(terminatedBy);
     }
 
-    public Computer(Node node) {
+    protected Computer(Node node) {
         setNode(node);
     }
 

@@ -97,7 +97,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @NonNull
     public final transient NodeProvisioner nodeProvisioner;
 
-    public Label(@NonNull String name) {
+    protected Label(@NonNull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
