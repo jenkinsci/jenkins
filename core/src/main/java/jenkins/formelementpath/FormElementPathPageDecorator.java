@@ -2,7 +2,6 @@ package jenkins.formelementpath;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.Main;
 import hudson.model.PageDecorator;
 import jenkins.util.SystemProperties;
 
