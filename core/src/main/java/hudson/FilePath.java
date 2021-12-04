@@ -1197,7 +1197,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         private final DelegatingCallable<T, IOException> callable;
 
-        public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
+        protected AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
             this.callable = callable;
         }
 
@@ -1674,8 +1674,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Deletes this file.
-     * @throws IOException if it exists but could not be successfully deleted
      * @return true, for a modicum of compatibility
+     * @throws IOException if it exists but could not be successfully deleted
      */
     public boolean delete() throws IOException, InterruptedException {
         act(new Delete());

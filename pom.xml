@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.67</version>
+    <version>1.69</version>
     <relativePath />
   </parent>
 
@@ -101,6 +101,7 @@ THE SOFTWARE.
     <access-modifier.version>1.25</access-modifier.version>
     <bridge-method-injector.version>1.22</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    <mockito.version>4.1.0</mockito.version>
     <spotless.version>2.17.5</spotless.version>
   </properties>
 
@@ -125,18 +126,6 @@ THE SOFTWARE.
   <dependencyManagement>
     <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
-
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-inline</artifactId>
-        <version>4.1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.objenesis</groupId>
-        <artifactId>objenesis</artifactId>
-        <version>3.2</version>
-      </dependency>
-
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
         <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
@@ -159,19 +148,6 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <!-- for JRE requirement check annotation -->
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>animal-sniffer-annotations</artifactId>
-      <scope>provided</scope>
-      <optional>true</optional><!-- no need to have this at runtime -->
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>test-annotations</artifactId>
-      <scope>test</scope>
-      <version>1.4</version>
-    </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
       <groupId>javax.servlet</groupId>
@@ -472,6 +448,11 @@ THE SOFTWARE.
                     Imports: https://checkstyle.sourceforge.io/config_imports.html
                   -->
                   <module name="AvoidStarImport" />
+                  <module name="CustomImportOrder">
+                    <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE" />
+                    <property name="sortImportsInGroupAlphabetically" value="true" />
+                    <property name="separateLineBetweenGroups" value="true" />
+                  </module>
                   <module name="IllegalImport">
                     <!-- prevent the use of jsr-305 annotations -->
                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
@@ -479,6 +460,21 @@ THE SOFTWARE.
                     <property name="illegalPkgs" value="com.google.common.base, com.google.common.escape, com.google.common.eventbus, com.google.common.graph, com.google.common.hash, com.google.common.html, com.google.common.io, com.google.common.math, com.google.common.net, com.google.common.primitives, com.google.common.reflect, com.google.common.xml, com.google.thirdparty" />
                   </module>
                   <module name="RedundantImport" />
+                  <module name="UnusedImports" />
+                  <!--
+                    Javadoc Comments: https://checkstyle.sourceforge.io/config_javadoc.html
+                  -->
+                  <module name="AtclauseOrder">
+                    <property name="tagOrder" value="@param, @return, @throws, @deprecated" />
+                  </module>
+                  <module name="InvalidJavadocPosition" />
+                  <module name="JavadocMethod">
+                    <property name="allowedAnnotations" value="Override, Test" />
+                    <property name="allowMissingParamTags" value="true" />
+                    <property name="allowMissingReturnTag" value="true" />
+                  </module>
+                  <module name="JavadocMissingWhitespaceAfterAsterisk" />
+                  <module name="NonEmptyAtclauseDescription" />
                   <!--
                     Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
                   -->

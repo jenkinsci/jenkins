@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
  */
 public abstract class AbstractCloudSlave extends Slave {
 
-    public AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
+    protected AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
             throws FormException, IOException {
         super(name, remoteFS, launcher);
     }
@@ -54,7 +54,7 @@ public abstract class AbstractCloudSlave extends Slave {
      * @deprecated since 2.184
      */
     @Deprecated
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
+    protected AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
                               Mode mode, String labelString, ComputerLauncher launcher,
                               RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
             throws FormException, IOException {
@@ -66,7 +66,7 @@ public abstract class AbstractCloudSlave extends Slave {
      * @deprecated since 2.184
      */
     @Deprecated
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,
                               Mode mode, String labelString, ComputerLauncher launcher,
                               RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
             throws FormException, IOException {

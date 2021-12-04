@@ -176,10 +176,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     /**
+     * @return the encrypted proxy password
+     *
      * @deprecated
      *      Use {@link #getSecretPassword()}
-     *
-     * @return the encrypted proxy password
      */
     @Deprecated
     public String getEncryptedPassword() {
