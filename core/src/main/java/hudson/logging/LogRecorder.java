@@ -98,14 +98,14 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     /**
      * No longer used.
      *
      * @deprecated use {@link #getLoggers()}
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();

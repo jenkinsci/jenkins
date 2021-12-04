@@ -100,10 +100,10 @@ public abstract class KeyedDataStorage<T,P> {
      * Atomically gets the existing data object if any, or if it doesn't exist
      * {@link #create(String,Object) create} it and return it.
      *
-     * @return
-     *      Item with the specified {@code key}.
      * @param createParams
      *      Additional parameters needed to create a new data object. Can be null.
+     * @return
+     *      Item with the specified {@code key}.
      * @throws IOException Loading error
      */
     public @NonNull T getOrCreate(String key, P createParams) throws IOException {

@@ -486,6 +486,20 @@ THE SOFTWARE.
                   <module name="RedundantImport" />
                   <module name="UnusedImports" />
                   <!--
+                    Javadoc Comments: https://checkstyle.sourceforge.io/config_javadoc.html
+                  -->
+                  <module name="AtclauseOrder">
+                    <property name="tagOrder" value="@param, @return, @throws, @deprecated" />
+                  </module>
+                  <module name="InvalidJavadocPosition" />
+                  <module name="JavadocMethod">
+                    <property name="allowedAnnotations" value="Override, Test" />
+                    <property name="allowMissingParamTags" value="true" />
+                    <property name="allowMissingReturnTag" value="true" />
+                  </module>
+                  <module name="JavadocMissingWhitespaceAfterAsterisk" />
+                  <module name="NonEmptyAtclauseDescription" />
+                  <!--
                     Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
                   -->
                   <module name="ArrayTypeStyle" />
