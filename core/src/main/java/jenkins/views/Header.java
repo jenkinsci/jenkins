@@ -1,12 +1,10 @@
 package jenkins.views;
 
-import java.util.Optional;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import java.util.Optional;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Extension point that provides capabilities to render a specific header.

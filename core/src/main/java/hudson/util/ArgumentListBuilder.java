@@ -45,7 +45,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public class ArgumentListBuilder implements Serializable, Cloneable {
-    private final List<String> args = new ArrayList<>();
+    private List<String> args = new ArrayList<>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
      */
@@ -265,10 +265,14 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     
     @Override
     public ArgumentListBuilder clone() {
-        ArgumentListBuilder r = new ArgumentListBuilder();
-        r.args.addAll(this.args);
-        r.mask = (BitSet) this.mask.clone();
-        return r;
+        try {
+            ArgumentListBuilder r = (ArgumentListBuilder) super.clone();
+            r.args = new ArrayList<>(this.args);
+            r.mask = (BitSet) this.mask.clone();
+            return r;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**

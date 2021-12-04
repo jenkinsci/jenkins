@@ -121,7 +121,7 @@ public abstract class LabelExpression extends Label {
     public abstract static class Binary extends LabelExpression {
         public final Label lhs,rhs;
 
-        public Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
+        protected Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
             super(combine(lhs, rhs, op));
             this.lhs = lhs;
             this.rhs = rhs;

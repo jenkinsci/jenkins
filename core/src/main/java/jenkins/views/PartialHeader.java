@@ -1,11 +1,10 @@
 package jenkins.views;
 
-import java.util.logging.Logger;
-
 import hudson.ExtensionList;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.AdministrativeError;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 /**

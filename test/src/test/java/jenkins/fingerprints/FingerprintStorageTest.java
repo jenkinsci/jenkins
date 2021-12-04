@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.Fingerprint;
 import hudson.model.FingerprintCleanupThreadTest;
@@ -62,7 +63,7 @@ public class FingerprintStorageTest {
         assertThat(fingerprintSaved.toString(), is(equalTo(fingerprintLoaded.toString())));
 
         // Ensure that the loaded fingerprint was deleted from local storage after being loaded.
-        fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+        fingerprintLoaded = ExtensionList.lookupSingleton(FileFingerprintStorage.class).load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
@@ -82,7 +83,7 @@ public class FingerprintStorageTest {
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         configureExternalStorage();
         Fingerprint.delete(id);
-        Fingerprint fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+        Fingerprint fingerprintLoaded = ExtensionList.lookupSingleton(FileFingerprintStorage.class).load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
@@ -115,7 +116,7 @@ public class FingerprintStorageTest {
         fingerprintSaved.add("test", 3);
         // This fingerprint is now implicitly saved without making a load call.
         // We want the file storage to not have this fingerprint now.
-        Fingerprint fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+        Fingerprint fingerprintLoaded = ExtensionList.lookupSingleton(FileFingerprintStorage.class).load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
 
     }

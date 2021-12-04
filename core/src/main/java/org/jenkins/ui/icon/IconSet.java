@@ -23,18 +23,17 @@
  */
 package org.jenkins.ui.icon;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * An icon set.

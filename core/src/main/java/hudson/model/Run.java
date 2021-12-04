@@ -1380,7 +1380,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         private String treeNodeId;
 
         /**
-         *length of this artifact for files.
+         * length of this artifact for files.
          */
         private String length;
 
@@ -1656,7 +1656,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         StandardCopyOption.ATOMIC_MOVE
                 );
             } catch (UnsupportedOperationException | SecurityException ex) {
-                throw new IOException(rootDir + " is in use");
+                throw new IOException(rootDir + " is in use", ex);
             }
             
             Util.deleteRecursive(tmp);
