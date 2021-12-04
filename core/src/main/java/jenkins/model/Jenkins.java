@@ -5597,14 +5597,24 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 2.266
      */
-    public static final Authentication ANONYMOUS2 = new AnonymousAuthenticationToken("anonymous", "anonymous", Collections.singleton(new SimpleGrantedAuthority("anonymous")));
+    public static final Authentication ANONYMOUS2 =
+            new AnonymousAuthenticationToken(
+                    "anonymous",
+                    "anonymous",
+                    Collections.singleton(new SimpleGrantedAuthority("anonymous")));
 
     /**
      * @deprecated use {@link #ANONYMOUS2}
      * @since 1.343
      */
     @Deprecated
-    public static final org.acegisecurity.Authentication ANONYMOUS = new org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken("anonymous", "anonymous", new org.acegisecurity.GrantedAuthority[] {new org.acegisecurity.GrantedAuthorityImpl("anonymous")});
+    public static final org.acegisecurity.Authentication ANONYMOUS =
+            new org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken(
+                    "anonymous",
+                    "anonymous",
+                    new org.acegisecurity.GrantedAuthority[] {
+                        new org.acegisecurity.GrantedAuthorityImpl("anonymous"),
+                    });
 
     static {
         try {
