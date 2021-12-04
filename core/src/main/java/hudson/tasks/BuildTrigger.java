@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -295,6 +296,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (AbstractProject p : getChildProjects(owner)) // only care about AbstractProject here
             graph.addDependency(new Dependency(owner, p) {
+                @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {

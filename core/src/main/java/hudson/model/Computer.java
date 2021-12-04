@@ -279,7 +279,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @SuppressWarnings({"ConstantConditions","deprecation"})
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void addAction(@NonNull Action a) {
         if (a == null) {
@@ -1605,7 +1604,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**

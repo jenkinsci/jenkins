@@ -41,7 +41,7 @@ public class CallableDirectionChecker extends RoleChecker {
      * This is an escape hatch in case the fix breaks something critical, to allow the user
      * to keep operation.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
     private CallableDirectionChecker(Object context) {
