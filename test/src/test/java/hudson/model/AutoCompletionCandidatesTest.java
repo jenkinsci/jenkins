@@ -25,7 +25,6 @@ public class AutoCompletionCandidatesTest {
         FreeStyleProject foo = j.createFreeStyleProject("foo");
         MatrixProject bar = j.jenkins.createProject(MatrixProject.class, "bar");
         bar.setAxes(new AxisList(new TextAxis("x","1","2","3")));
-        MatrixConfiguration x3 = bar.getItem("x=3");
 
         AutoCompletionCandidates c;
 
@@ -45,6 +44,7 @@ public class AutoCompletionCandidatesTest {
         c = AutoCompletionCandidates.ofJobNames(MatrixConfiguration.class, "bar/", foo, j.jenkins);
         assertContains(c, "bar/x=1", "bar/x=2", "bar/x=3");
 
+        MatrixConfiguration x3 = bar.getItem("x=3");
         c = AutoCompletionCandidates.ofJobNames(Item.class, "", x3, x3.getParent());
         assertContains(c, "x=1", "x=2", "x=3");
 

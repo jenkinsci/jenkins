@@ -187,7 +187,7 @@ public class PasswordTest {
             assertEquals(p.getConfigFile().asString(), pAdmin.getConfigFile().asString());
 
             // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
-            wc.withBasicApiToken(dev);
+            wc.withBasicApiToken(User.getById("dev", false));
             configure = wc.getPage(p, "configure");
             assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(false));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
