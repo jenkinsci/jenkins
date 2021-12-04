@@ -101,6 +101,7 @@ THE SOFTWARE.
     <access-modifier.version>1.25</access-modifier.version>
     <bridge-method-injector.version>1.22</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    <mockito.version>4.1.0</mockito.version>
     <spotless.version>2.17.5</spotless.version>
   </properties>
 
@@ -125,18 +126,6 @@ THE SOFTWARE.
   <dependencyManagement>
     <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
-
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-inline</artifactId>
-        <version>4.1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.objenesis</groupId>
-        <artifactId>objenesis</artifactId>
-        <version>3.2</version>
-      </dependency>
-
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
         <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
@@ -159,19 +148,6 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <!-- for JRE requirement check annotation -->
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>animal-sniffer-annotations</artifactId>
-      <scope>provided</scope>
-      <optional>true</optional><!-- no need to have this at runtime -->
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>test-annotations</artifactId>
-      <scope>test</scope>
-      <version>1.4</version>
-    </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
       <groupId>javax.servlet</groupId>

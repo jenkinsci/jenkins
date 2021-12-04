@@ -97,6 +97,11 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
       <version>6.16</version>
@@ -154,6 +159,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
