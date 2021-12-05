@@ -310,12 +310,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.289")
     /**
      * Used to be milliseconds, now is seconds since Jenkins 2.289.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.289")
     public static /* non-final for Groovy */ long CRON_THRESHOLD = SystemProperties.getLong(Trigger.class.getName() + ".CRON_THRESHOLD", 30L); // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());

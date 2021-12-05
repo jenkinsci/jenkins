@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class MarkFindingOutputStream extends OutputStream {
     private final OutputStream base;
 
-    public MarkFindingOutputStream(OutputStream base) {
+    protected MarkFindingOutputStream(OutputStream base) {
         this.base = base;
     }
 
