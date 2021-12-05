@@ -37,9 +37,13 @@ import org.acegisecurity.userdetails.UserDetails;
 @Deprecated
 public abstract class AbstractUserDetailsAuthenticationProvider implements AuthenticationProvider {
 
-    private final org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider delegate = new org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider() {
+    private final org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider delegate =
+            new org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider() {
         @Override
-        protected void additionalAuthenticationChecks(org.springframework.security.core.userdetails.UserDetails userDetails, org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication) throws org.springframework.security.core.AuthenticationException {
+        protected void additionalAuthenticationChecks(
+                org.springframework.security.core.userdetails.UserDetails userDetails,
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication)
+                throws org.springframework.security.core.AuthenticationException {
             try {
                 AbstractUserDetailsAuthenticationProvider.this.additionalAuthenticationChecks(UserDetails.fromSpring(userDetails), new UsernamePasswordAuthenticationToken(authentication));
             } catch (AcegiSecurityException x) {
@@ -47,7 +51,10 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
             }
         }
         @Override
-        protected org.springframework.security.core.userdetails.UserDetails retrieveUser(String username, org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication) throws org.springframework.security.core.AuthenticationException {
+        protected org.springframework.security.core.userdetails.UserDetails retrieveUser(
+                String username,
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication)
+                throws org.springframework.security.core.AuthenticationException {
             try {
                 return AbstractUserDetailsAuthenticationProvider.this.retrieveUser(username, new UsernamePasswordAuthenticationToken(authentication)).toSpring();
             } catch (AcegiSecurityException x) {

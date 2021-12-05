@@ -1464,7 +1464,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
-     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210. Use other methods giving various kinds of streams such as {@link Run#getLogReader()},  {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
+     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210.
+     *     Use other methods giving various kinds of streams such as {@link Run#getLogReader()}, {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
      */
     @Deprecated
     public @NonNull File getLogFile() {

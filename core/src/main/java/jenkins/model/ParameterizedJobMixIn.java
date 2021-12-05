@@ -132,7 +132,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * @param job a job which might be schedulable
      * @param quietPeriod seconds to wait before starting; use {@code -1} to use the job’s default settings
      * @param actions various actions to associate with the scheduling, such as {@link ParametersAction} or {@link CauseAction}
-     * @return a newly created, or reused, queue item if the job could be scheduled; null if it was refused for some reason (e.g., some {@link Queue.QueueDecisionHandler} rejected it), or if {@code job} is not a {@link ParameterizedJob} or it is not {@link Job#isBuildable})
+     * @return a newly created, or reused, queue item if the job could be scheduled;
+     *      null if it was refused for some reason (e.g., some {@link Queue.QueueDecisionHandler} rejected it),
+     *      or if {@code job} is not a {@link ParameterizedJob} or it is not {@link Job#isBuildable})
      * @since 1.621
      */
     public static @CheckForNull Queue.Item scheduleBuild2(final Job<?,?> job, int quietPeriod, Action... actions) {

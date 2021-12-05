@@ -188,7 +188,9 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
          */
         TROUBLESHOOTING(Messages._ManagementLink_Category_TROUBLESHOOTING()),
         /**
-         * Tools are specifically tools for administrators, such as the Jenkins CLI and Script Console, as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
+         * Tools are specifically tools for administrators,
+         * such as the Jenkins CLI and Script Console,
+         * as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
          * This has nothing to do with build tools or tool installers.
          */
         TOOLS(Messages._ManagementLink_Category_TOOLS()),
