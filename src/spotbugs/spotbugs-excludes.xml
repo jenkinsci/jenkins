@@ -636,10 +636,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="SR_NOT_CHECKED"/>
-        <Class name="hudson.org.apache.tools.tar.TarInputStream"/>
-      </And>
-      <And>
         <Bug pattern="STATIC_IV"/>
         <Or>
           <Class name="hudson.cli.Connection"/>
