@@ -71,8 +71,20 @@ public class InstallerTranslatorTest {
         String jdk2Path = Functions.isWindows() ? "C:\\jdk2" : "/opt/jdk2";
         Node slave1 = r.createSlave();
         Node slave2 = r.createSlave();
-        JDK jdk1 = new JDK("jdk1", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(Functions.isWindows() ? new BatchCommandInstaller(null, "echo installed jdk1", jdk1Path) : new CommandInstaller(null, "echo installed jdk1", jdk1Path)))));
-        JDK jdk2 = new JDK("jdk2", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(Functions.isWindows() ? new BatchCommandInstaller(null, "echo installed jdk2", jdk2Path) : new CommandInstaller(null, "echo installed jdk2", jdk2Path)))));
+        JDK jdk1 = new JDK(
+                "jdk1",
+                null,
+                Collections.singletonList(new InstallSourceProperty(Collections.singletonList(
+                        Functions.isWindows()
+                                ? new BatchCommandInstaller(null, "echo installed jdk1", jdk1Path)
+                                : new CommandInstaller(null, "echo installed jdk1", jdk1Path)))));
+        JDK jdk2 = new JDK(
+                "jdk2",
+                null,
+                Collections.singletonList(new InstallSourceProperty(Collections.singletonList(
+                        Functions.isWindows()
+                                ? new BatchCommandInstaller(null, "echo installed jdk2", jdk2Path)
+                                : new CommandInstaller(null, "echo installed jdk2", jdk2Path)))));
         r.jenkins.getJDKs().add(jdk1);
         r.jenkins.getJDKs().add(jdk2);
         FreeStyleProject p = r.createFreeStyleProject();
