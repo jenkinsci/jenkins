@@ -1738,7 +1738,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         void cleanup();
     }
 
-    class FileUploadPluginCopier implements PluginCopier {
+    static class FileUploadPluginCopier implements PluginCopier {
         private FileItem fileItem;
 
         FileUploadPluginCopier(FileItem fileItem) {
@@ -1756,7 +1756,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    class UrlPluginCopier implements PluginCopier {
+    static class UrlPluginCopier implements PluginCopier {
         private String url;
 
         UrlPluginCopier(String url) {

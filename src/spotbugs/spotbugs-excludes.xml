@@ -604,19 +604,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
-        <Or>
-          <Class name="hudson.diagnosis.MemoryUsageMonitor$MemoryGroup"/>
-          <Class name="hudson.FilePath$Unpack"/>
-          <Class name="hudson.FilePath$ValidateAntFileMask"/>
-          <Class name="hudson.model.Queue$StubItem"/>
-          <Class name="hudson.PluginManager$FileUploadPluginCopier"/>
-          <Class name="hudson.PluginManager$UrlPluginCopier"/>
-          <Class name="hudson.tasks.LogRotator$CollatedLogRotatorException"/>
-          <Class name="hudson.triggers.SlowTriggerAdminMonitor$Value"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="STATIC_IV"/>
         <Or>
           <Class name="hudson.cli.Connection"/>
