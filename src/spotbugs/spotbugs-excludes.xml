@@ -229,10 +229,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER"/>
-        <Class name="hudson.PluginManager"/>
-      </And>
-      <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
         <Or>
           <Class name="hudson.triggers.Trigger"/>

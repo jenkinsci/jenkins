@@ -911,9 +911,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             plugins.add(p);
             if (p.isActive())
                 activePlugins.add(p);
-            synchronized (((UberClassLoader) uberClassLoader).loaded) {
-                ((UberClassLoader) uberClassLoader).loaded.clear();
-            }
+            ((UberClassLoader) uberClassLoader).loaded.clear();
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
