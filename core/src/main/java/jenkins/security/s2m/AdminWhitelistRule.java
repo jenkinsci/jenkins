@@ -65,12 +65,16 @@ public class AdminWhitelistRule implements StaplerProxy {
         // overwrite 30-default.conf with what we think is the best from the core.
         // this file shouldn't be touched by anyone. For local customization, use other files in the conf dir.
         // 0-byte file is used as a signal from the admin to prevent this overwriting
-        placeDefaultRule(
-                new File(jenkins.getRootDir(), "secrets/whitelisted-callables.d/default.conf"),
-                getClass().getResourceAsStream("callable.conf"));
-        placeDefaultRule(
-                new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf"),
-                transformForWindows(getClass().getResourceAsStream("filepath-filter.conf")));
+        try (InputStream callable = getClass().getResourceAsStream("callable.conf")) {
+            placeDefaultRule(
+                    new File(jenkins.getRootDir(), "secrets/whitelisted-callables.d/default.conf"),
+                    callable);
+        }
+        try (InputStream filepathFilter = getClass().getResourceAsStream("filepath-filter.conf")) {
+            placeDefaultRule(
+                    new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf"),
+                    transformForWindows(filepathFilter));
+        }
 
         this.whitelisted = new CallableWhitelistConfig(
                 new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));

@@ -386,13 +386,6 @@
         <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor"/>
       </And>
       <And>
-        <Bug pattern="OBL_UNSATISFIED_OBLIGATION"/>
-        <Or>
-          <Class name="jenkins.security.s2m.AdminWhitelistRule"/>
-          <Class name="jenkins.slaves.StandardOutputSwapper$ChannelSwapper"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
         <Or>
           <Class name="hudson.ClassicPluginStrategy"/>
