@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -52,6 +53,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Restricted(NoExternalUse.class)
 public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
+    @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "This is a password parameter, not a password")
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
         // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly

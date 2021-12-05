@@ -181,10 +181,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="HARD_CODE_PASSWORD"/>
-        <Class name="hudson.security.AuthenticationProcessingFilter2"/>
-      </And>
-      <And>
         <Bug pattern="HTTP_PARAMETER_POLLUTION"/>
         <Class name="hudson.ProxyConfiguration$DescriptorImpl"/>
       </And>
