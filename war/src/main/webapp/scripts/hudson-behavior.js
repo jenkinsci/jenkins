@@ -923,8 +923,11 @@ function updateVisibility() {
             e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
         } else {
             if (display) {
+                e.style.display = ""
                 e.classList.remove("form-container--hidden")
             } else {
+                // TODO remove display once tab bar (ConfigTableMetaData) is able to handle hidden tabs via class and not just display
+                e.style.display = "none"
                 e.classList.add("form-container--hidden")
             }
         }
