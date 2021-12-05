@@ -649,13 +649,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="SE_NO_SERIALVERSIONID"/>
-        <Or>
-          <Class name="hudson.util.RemotingDiagnostics$Script"/>
-          <Class name="jenkins.security.NonSerializableSecurityContext"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
         <Or>
           <Class name="hudson.diagnosis.MemoryUsageMonitor$MemoryGroup"/>
