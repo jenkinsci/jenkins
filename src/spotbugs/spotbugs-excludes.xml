@@ -83,10 +83,6 @@
     <Confidence value="2"/>
     <Or>
       <And>
-        <Bug pattern="CO_COMPARETO_INCORRECT_FLOATING"/>
-        <Class name="jenkins.FilePathFilterAggregator$Entry"/>
-      </And>
-      <And>
         <Bug pattern="COMMAND_INJECTION"/>
         <Or>
           <Class name="hudson.Launcher$LocalLauncher"/>
