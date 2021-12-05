@@ -88,6 +88,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -647,7 +648,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
                 names.add(fileName);
-                copyBundledPlugin(url, fileName);
+                copyBundledPlugin(Objects.requireNonNull(url), fileName);
                 copiedPlugins.add(url);
                 try {
                     addDependencies(url, fromPath, dependencies);

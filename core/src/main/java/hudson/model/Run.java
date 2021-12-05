@@ -100,6 +100,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1911,7 +1912,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
 
                 // even if the main build fails fatally, try to run post build processing
-                job.post(listener);
+                job.post(Objects.requireNonNull(listener));
 
             } catch (ThreadDeath t) {
                 throw t;

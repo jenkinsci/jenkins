@@ -393,13 +393,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="NP_NULL_PARAM_DEREF"/>
-        <Or>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.PluginManager"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
         <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor"/>
       </And>
