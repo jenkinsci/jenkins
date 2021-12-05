@@ -117,12 +117,12 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "path", "/parameter/name")).get(0).getParentNode();
+        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "name", "name")).get(0).getParentNode();
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-description')]")).getTextContent());
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
-        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "path", "/parameter/value").get(0);
+        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "name", "value").get(0);
 
         HtmlOption opt = DomNodeUtil.selectSingleNode(choiceSelect, "option[@value='Choice <2>']");
         assertNotNull(opt);
