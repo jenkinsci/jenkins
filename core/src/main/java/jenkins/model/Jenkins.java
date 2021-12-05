@@ -2432,11 +2432,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public @Nullable String getRootUrl() throws IllegalStateException {
         final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
-        if (config == null) {
-            // Try to get standard message if possible
-            final Jenkins j = Jenkins.get();
-            throw new IllegalStateException("Jenkins instance " + j + " has been successfully initialized, but JenkinsLocationConfiguration is undefined.");
-        }
         String url = config.getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
@@ -2453,7 +2448,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CheckForNull
     public String getConfiguredRootUrl() {
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
-        return config != null ? config.getUrl() : null;
+        return config.getUrl();
     }
 
     /**

@@ -489,12 +489,7 @@
       </And>
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
-        <Or>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.tasks.Fingerprinter"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.lazy.LazyBuildMixIn$RunMixIn"/>
-        </Or>
+        <Class name="hudson.tasks.Fingerprinter"/>
       </And>
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"/>
