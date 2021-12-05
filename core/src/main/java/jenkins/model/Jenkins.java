@@ -277,6 +277,7 @@ import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.TypedFilter;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
@@ -4565,9 +4566,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             Computer computer = Jenkins.get().toComputer();
             if (computer == null) return;
             RestartCause cause = new RestartCause();
-            for (ComputerListener listener: ComputerListener.all()) {
-                listener.onOffline(computer, cause);
-            }
+            Listeners.notify(ComputerListener.class, l -> l.onOffline(computer, cause));
         }
 
         @Override

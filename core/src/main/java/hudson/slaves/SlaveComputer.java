@@ -85,6 +85,7 @@ import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpAgentReceiver;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 import org.kohsuke.accmod.Restricted;
@@ -896,8 +897,7 @@ public class SlaveComputer extends Computer {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
-            for (ComputerListener cl : ComputerListener.all())
-                cl.onOffline(this, offlineCause);
+            Listeners.notify(ComputerListener.class, l -> l.onOffline(this, offlineCause));
         }
     }
 
