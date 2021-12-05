@@ -92,13 +92,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
-        <Or>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.TcpSlaveAgentListener"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="DM_NUMBER_CTOR"/>
         <Class name="hudson.scheduler.CrontabLexer"/>
       </And>

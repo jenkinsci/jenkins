@@ -272,10 +272,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                 }
                 LOGGER.log(WARNING, String.format("Provided custom plugin manager [%s] does not provide any of the suitable constructors. Using default.", pmClassName));
-            } catch(NullPointerException e) {
-                // Class.forName and Class.getConstructor are supposed to never return null though a broken ClassLoader
-                // could break the contract. Just in case we introduce this specific catch to avoid polluting the logs with NPEs.
-                LOGGER.log(WARNING, String.format("Unable to instantiate custom plugin manager [%s]. Using default.", pmClassName));
             } catch(ClassCastException e) {
                 LOGGER.log(WARNING, String.format("Provided class [%s] does not extend PluginManager. Using default.", pmClassName));
             } catch(Exception e) {
