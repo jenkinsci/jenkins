@@ -419,13 +419,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="OS_OPEN_STREAM"/>
-        <Or>
-          <Class name="hudson.console.ConsoleNote"/>
-          <Class name="jenkins.slaves.DefaultJnlpSlaveReceiver"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
         <Or>
           <Class name="hudson.ClassicPluginStrategy"/>
