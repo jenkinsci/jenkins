@@ -444,6 +444,9 @@ THE SOFTWARE.
                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
                   <module name="UnnecessarySemicolonInEnumeration" />
                   <module name="UnnecessarySemicolonInTryWithResources" />
+                  <module name="VariableDeclarationUsageDistance">
+                    <property name="allowedDistance" value="10" />
+                  </module>
                   <!--
                     Imports: https://checkstyle.sourceforge.io/config_imports.html
                   -->
