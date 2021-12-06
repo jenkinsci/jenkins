@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.logging.Logger;
 import jenkins.util.Listeners;
 import org.jvnet.tiger_types.Types;
 
@@ -263,7 +262,4 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static ExtensionList<RunListener> all() {
         return ExtensionList.lookup(RunListener.class);
     }
-
-    private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
-
 }
