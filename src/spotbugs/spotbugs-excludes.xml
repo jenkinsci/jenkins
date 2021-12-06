@@ -203,10 +203,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="IC_INIT_CIRCULARITY"/>
-        <Class name="hudson.model.Computer"/>
-      </And>
-      <And>
         <Bug pattern="INSECURE_COOKIE"/>
         <Or>
           <Class name="hudson.security.SecurityRealm"/>
