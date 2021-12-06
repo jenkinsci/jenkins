@@ -25,6 +25,7 @@ package hudson.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import org.apache.tools.ant.types.Resource;
 
 /**
@@ -39,12 +40,32 @@ public class StreamResource extends Resource {
      *      Used for display purpose.
      */
     public StreamResource(String name, InputStream in) {
-        this.in = in;
+        this.in = Objects.requireNonNull(in);
         setName(name);
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
         return in;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        StreamResource resource = (StreamResource) o;
+        return Objects.equals(in, resource.in);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), in);
     }
 }

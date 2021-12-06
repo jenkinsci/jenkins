@@ -136,7 +136,6 @@
           <Class name="hudson.model.Run$SerializableArtifactList"/>
           <Class name="hudson.search.Search$SearchResultImpl"/>
           <Class name="hudson.slaves.NodeList"/>
-          <Class name="hudson.util.StreamResource"/>
         </Or>
       </And>
       <And>
