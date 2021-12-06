@@ -421,7 +421,8 @@ public class PasswordTest {
         // confirm the Secret getter/setter will not change encrypted value (keeps IV)
         assertEquals(secretWithSecretGetterSecretSetter.getEncryptedValue(), buildStep.secretWithSecretGetterSecretSetter.getEncryptedValue());
 
-        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work, but if they getter returns #getEncrytedValue (as implemented in the build step here), it does
+        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work,
+        // but if the getter returns #getEncrytedValue (as implemented in the build step here), it does.
         // While clever, would recommend fixing mismatched getters/setters here
         assertEquals(secretWithStringGetterSecretSetter.getEncryptedValue(), buildStep.secretWithStringGetterSecretSetter.getEncryptedValue());
 

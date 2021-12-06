@@ -55,7 +55,17 @@ public final class DumbSlave extends Slave {
      *      Use {@link #DumbSlave(String, String, ComputerLauncher)} and configure the rest through setters.
      */
     @Deprecated
-    public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Node.Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws IOException, FormException {
+    public DumbSlave(
+            String name,
+            String nodeDescription,
+            String remoteFS,
+            String numExecutors,
+            Node.Mode mode,
+            String labelString,
+            ComputerLauncher launcher,
+            RetentionStrategy retentionStrategy,
+            List<? extends NodeProperty<?>> nodeProperties)
+            throws IOException, FormException {
     	super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
     }
 

@@ -103,6 +103,7 @@ import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
 import org.apache.commons.lang.StringUtils;
@@ -707,9 +708,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
-        for (ComputerListener cl : ComputerListener.all()) {
-            if (temporarilyOffline)     cl.onTemporarilyOffline(this,cause);
-            else                        cl.onTemporarilyOnline(this);
+        if (temporarilyOffline) {
+            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOffline(this, cause));
+        } else {
+            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOnline(this));
         }
     }
 
@@ -1787,16 +1789,59 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.COMPUTER);
+    public static final Permission CONFIGURE =
+            new Permission(
+                    PERMISSIONS,
+                    "Configure",
+                    Messages._Computer_ConfigurePermission_Description(),
+                    Permission.CONFIGURE,
+                    PermissionScope.COMPUTER);
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
-    public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
-    public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
-    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+    public static final Permission EXTENDED_READ =
+            new Permission(
+                    PERMISSIONS,
+                    "ExtendedRead",
+                    Messages._Computer_ExtendedReadPermission_Description(),
+                    CONFIGURE,
+                    SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"),
+                    new PermissionScope[] {PermissionScope.COMPUTER});
+    public static final Permission DELETE =
+            new Permission(
+                    PERMISSIONS,
+                    "Delete",
+                    Messages._Computer_DeletePermission_Description(),
+                    Permission.DELETE,
+                    PermissionScope.COMPUTER);
+    public static final Permission CREATE =
+            new Permission(
+                    PERMISSIONS,
+                    "Create",
+                    Messages._Computer_CreatePermission_Description(),
+                    Permission.CREATE,
+                    PermissionScope.JENKINS);
+    public static final Permission DISCONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Disconnect",
+                    Messages._Computer_DisconnectPermission_Description(),
+                    Jenkins.ADMINISTER,
+                    PermissionScope.COMPUTER);
+    public static final Permission CONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Connect",
+                    Messages._Computer_ConnectPermission_Description(),
+                    DISCONNECT,
+                    PermissionScope.COMPUTER);
+    public static final Permission BUILD =
+            new Permission(
+                    PERMISSIONS,
+                    "Build",
+                    Messages._Computer_BuildPermission_Description(),
+                    Permission.WRITE,
+                    PermissionScope.COMPUTER);
 
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =

@@ -96,8 +96,10 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
+        <artifactId>guice-bom</artifactId>
         <version>5.0.1</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
