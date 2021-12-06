@@ -23,7 +23,7 @@ public final class SoloFilePathFilter extends FilePathFilter {
 
     private static final Logger LOGGER = Logger.getLogger(SoloFilePathFilter.class.getName());
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
     public static /* non-final for Groovy */ boolean REDACT_ERRORS = SystemProperties.getBoolean(SoloFilePathFilter.class.getName() + ".redactErrors", true);
 

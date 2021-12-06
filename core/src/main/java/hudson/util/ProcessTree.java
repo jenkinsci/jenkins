@@ -36,6 +36,7 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
@@ -1750,6 +1751,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     int argmax = argmaxRef.getValue();
 
+                    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
                     class StringArrayMemory extends Memory {
                         private long offset=0;
                         private long length=0;
@@ -1777,6 +1779,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             return getByte(offset);
                         }
 
+                        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
                         String readString() {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             byte ch;

@@ -25,7 +25,6 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,7 +146,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * <strong>Note: this method will always modify the actions</strong>
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@NonNull Action a) {
         if(a==null) {
             throw new IllegalArgumentException("Action must be non-null");
@@ -170,7 +168,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
      * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@NonNull Action a) {
         addOrReplaceAction(a);
     }
@@ -189,7 +186,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean addOrReplaceAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
@@ -247,7 +243,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@NonNull Class<? extends Action> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
@@ -279,7 +274,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
