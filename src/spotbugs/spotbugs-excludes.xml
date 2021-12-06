@@ -166,10 +166,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC"/>
-        <Class name="hudson.cli.BuildCommand$CLICause"/>
-      </And>
-      <And>
         <Bug pattern="FILE_UPLOAD_FILENAME"/>
         <Or>
           <Class name="hudson.model.FileParameterDefinition"/>
