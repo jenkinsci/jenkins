@@ -39,6 +39,7 @@ THE SOFTWARE.
 
 
   <properties>
+    <asm.version>9.2</asm.version>
     <slf4jVersion>1.7.32</slf4jVersion>
     <stapler.version>1593.v0e838714faae</stapler.version>
     <groovy.version>2.4.12</groovy.version>
@@ -95,8 +96,10 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
+        <artifactId>guice-bom</artifactId>
         <version>5.0.1</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -187,6 +190,31 @@ THE SOFTWARE.
         <groupId>org.connectbot.jbcrypt</groupId>
         <artifactId>jbcrypt</artifactId>
         <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-analysis</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-tree</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-util</artifactId>
+        <version>${asm.version}</version>
       </dependency>
       <dependency>
         <groupId>com.github.jnr</groupId>
