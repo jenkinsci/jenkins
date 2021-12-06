@@ -579,11 +579,7 @@
       </And>
       <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
-        <Or>
-          <Class name="hudson.model.queue.BackFiller"/>
-          <Class name="hudson.model.queue.CauseOfBlockage"/>
-          <Class name="hudson.security.AuthenticationProcessingFilter2"/>
-        </Or>
+        <Class name="hudson.model.queue.BackFiller"/>
       </And>
       <And>
         <Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION"/>
