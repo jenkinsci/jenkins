@@ -171,13 +171,13 @@ public class OldRemotingAgentTest {
 
     private static class NodeMonitorAssert extends NodeMonitor {
 
-        static void assertMonitors(Collection<NodeMonitor> toCheck, Computer c) throws AssertionError {
+        static void assertMonitors(Collection<NodeMonitor> toCheck, Computer c) {
             for (NodeMonitor monitor : toCheck) {
                 assertMonitor(monitor, c);
             }
         }
 
-        static void assertMonitor(NodeMonitor monitor, Computer c) throws AssertionError {
+        static void assertMonitor(NodeMonitor monitor, Computer c) {
             AbstractNodeMonitorDescriptor<?> descriptor = monitor.getDescriptor();
             final Method monitorMethod;
             try {

@@ -86,7 +86,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     /**
      * Creates a new project.
      */
-    public Project(ItemGroup parent,String name) {
+    protected Project(ItemGroup parent,String name) {
         super(parent,name);
     }
 

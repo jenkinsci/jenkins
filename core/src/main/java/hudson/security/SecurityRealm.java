@@ -395,10 +395,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Shortcut for {@link UserDetailsService#loadUserByUsername(String)}.
      *
-     * @throws UserMayOrMayNotExistException2
-     *      If the security realm cannot even tell if the user exists or not.
      * @return
      *      never null.
+     * @throws UserMayOrMayNotExistException2
+     *      If the security realm cannot even tell if the user exists or not.
      * @since 2.266
      */
     public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {

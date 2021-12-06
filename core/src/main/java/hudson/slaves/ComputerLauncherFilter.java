@@ -41,7 +41,7 @@ import java.io.IOException;
 public abstract class ComputerLauncherFilter extends ComputerLauncher {
     protected volatile ComputerLauncher core;
 
-    public ComputerLauncherFilter(ComputerLauncher core) {
+    protected ComputerLauncherFilter(ComputerLauncher core) {
         this.core = core;
     }
 

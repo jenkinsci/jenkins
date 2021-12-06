@@ -55,11 +55,11 @@ public class AgentProtocolTest {
         assertProtocols(true, "System protocols should be always enabled", "Ping");
     }
     
-    private void assertEnabled(String ... protocolNames) throws AssertionError {
+    private void assertEnabled(String ... protocolNames) {
         assertProtocols(true, null, protocolNames);    
     }
     
-    private void assertDisabled(String ... protocolNames) throws AssertionError {
+    private void assertDisabled(String ... protocolNames) {
         assertProtocols(false, null, protocolNames);    
     }
     
@@ -67,8 +67,7 @@ public class AgentProtocolTest {
         assertProtocols(j.jenkins, shouldBeEnabled, why, protocolNames);
     }
     
-    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) 
-            throws AssertionError {
+    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) {
         Set<String> agentProtocols = jenkins.getAgentProtocols();
         List<String> failedChecks = new ArrayList<>();
         for (String protocol : protocolNames) {

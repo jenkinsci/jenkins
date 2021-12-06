@@ -39,15 +39,37 @@ import org.jvnet.hudson.test.Issue;
 public class ComputerLauncherTest {
 
     @Test public void jdk7() {
-        assertThrows(IOException.class, () -> assertChecked("java version \"1.7.0_05\"\nJava(TM) SE Runtime Environment (build 1.7.0_05-b05)\nJava HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n", "1.7.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "java version \"1.7.0_05\"\n"
+                                    + "Java(TM) SE Runtime Environment (build 1.7.0_05-b05)\n"
+                                    + "Java HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n",
+                                "1.7.0"));
     }
 
     @Test public void openJDK7() {
-        assertThrows(IOException.class, () -> assertChecked("openjdk version \"1.7.0-internal\"\nOpenJDK Runtime Environment (build 1.7.0-internal-pkgsrc_2010_01_03_06_54-b00)\nOpenJDK 64-Bit Server VM (build 17.0-b04, mixed mode)\n", "1.7.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "openjdk version \"1.7.0-internal\"\n"
+                                    + "OpenJDK Runtime Environment (build"
+                                    + " 1.7.0-internal-pkgsrc_2010_01_03_06_54-b00)\n"
+                                    + "OpenJDK 64-Bit Server VM (build 17.0-b04, mixed mode)\n",
+                                "1.7.0"));
     }
 
     @Test public void jdk6() {
-        assertThrows(IOException.class, () -> assertChecked("java version \"1.6.0_33\"\nJava(TM) SE Runtime Environment (build 1.6.0_33-b03)\nJava HotSpot(TM) Server VM (build 20.8-b03, mixed mode)\n", "1.6.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "java version \"1.6.0_33\"\n"
+                                    + "Java(TM) SE Runtime Environment (build 1.6.0_33-b03)\n"
+                                    + "Java HotSpot(TM) Server VM (build 20.8-b03, mixed mode)\n",
+                                "1.6.0"));
     }
 
     @Test public void jdk5() {

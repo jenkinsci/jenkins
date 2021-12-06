@@ -223,7 +223,7 @@ public class BuildTriggerTest {
         j.waitUntilNoActivity();
         assertEquals(2, downstream.getLastBuild().number);
         FreeStyleProject simple = j.createFreeStyleProject("simple");
-        FreeStyleBuild b3 = j.buildAndAssertSuccess(simple);
+        j.buildAndAssertSuccess(simple);
         // Finally, in legacy mode we run as SYSTEM:
         grantedPermissions.clear(); // similar behavior but different message if DescriptorImpl removed
         downstream.removeProperty(amp);
@@ -236,7 +236,7 @@ public class BuildTriggerTest {
         j.assertLogContains(downstreamName, b);
         j.waitUntilNoActivity();
         assertEquals(3, downstream.getLastBuild().number);
-        b3 = j.buildAndAssertSuccess(simple);
+        j.buildAndAssertSuccess(simple);
     }
     private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;
