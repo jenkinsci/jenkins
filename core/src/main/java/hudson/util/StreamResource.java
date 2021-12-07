@@ -39,7 +39,7 @@ public class StreamResource extends Resource {
      * @param name
      *      Used for display purpose.
      */
-    public StreamResource(String name, InputStream in) {
+    public StreamResource(String name, @NonNull InputStream in) {
         this.in = Objects.requireNonNull(in);
         setName(name);
     }
