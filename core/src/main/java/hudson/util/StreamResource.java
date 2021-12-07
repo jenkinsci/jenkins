@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
