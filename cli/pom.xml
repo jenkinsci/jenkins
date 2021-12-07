@@ -14,6 +14,10 @@
   <description>Command line interface for Jenkins</description>
   <url>https://github.com/jenkinsci/jenkins</url>
 
+  <properties>
+    <mina-sshd.version>2.8.0</mina-sshd.version>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -68,7 +72,13 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <version>2.7.0</version>
+      <version>${mina-sshd.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-common</artifactId>
+      <version>${mina-sshd.version}</version>
       <optional>true</optional>
     </dependency>
     <!-- ed25519 algorithm, see JENKINS-45318 -->
