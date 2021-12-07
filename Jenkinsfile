@@ -18,8 +18,7 @@ properties([
     disableConcurrentBuilds(abortPrevious: true)
 ])
 
-// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-def buildTypes = ['Linux']
+def buildTypes = ['Linux', 'Windows']
 def jdks = [8, 11]
 
 def builds = [:]
@@ -29,7 +28,11 @@ for(j = 0; j < jdks.size(); j++) {
     def jdk = jdks[j]
     builds["${buildType}-jdk${jdk}"] = {
         // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
+        String agentContainerLabel = jdk == 8 ? 'maven' : 'maven-11'
+        if (buildType == 'Windows') {
+            agentContainerLabel += '-windows'
+        }
+        node(agentContainerLabel) {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -109,7 +112,6 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 // TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker-highmem") {
