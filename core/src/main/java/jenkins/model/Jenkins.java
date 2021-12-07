@@ -4499,15 +4499,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                     LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
-                    for (RestartListener listener : RestartListener.all()) { 
-                        try {
-                            listener.onRestart();
-                        } catch (Throwable t) {
-                            LOGGER.log(Level.WARNING, 
-                                       "RestartListener failed, ignoring and continuing with restart, this indicates a bug in the associated plugin or Jenkins code",
-                                       t);
-                        }
-                    }
+                    Listeners.notify(RestartListener.class, RestartListener::onRestart);
                     lifecycle.restart();
                 } catch (InterruptedException | InterruptedIOException e) {
                     LOGGER.log(Level.WARNING, "Interrupted while trying to restart Jenkins", e);
@@ -4544,8 +4536,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         LOGGER.info("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
                         LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
-                        for (RestartListener listener : RestartListener.all())
-                            listener.onRestart();
+                        Listeners.notify(RestartListener.class, RestartListener::onRestart);
                         lifecycle.restart();
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");
