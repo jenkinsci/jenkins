@@ -83,23 +83,12 @@
     <Confidence value="2"/>
     <Or>
       <And>
-        <Bug pattern="CO_COMPARETO_INCORRECT_FLOATING"/>
-        <Class name="jenkins.FilePathFilterAggregator$Entry"/>
-      </And>
-      <And>
         <Bug pattern="COMMAND_INJECTION"/>
         <Or>
           <Class name="hudson.Launcher$LocalLauncher"/>
           <Class name="hudson.Launcher$RemoteChannelLaunchCallable"/>
           <Class name="hudson.os.WindowsUtil"/>
           <Class name="jenkins.slaves.restarter.WinswSlaveRestarter"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
-        <Or>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.TcpSlaveAgentListener"/>
         </Or>
       </And>
       <And>
@@ -185,10 +174,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="HARD_CODE_PASSWORD"/>
-        <Class name="hudson.security.AuthenticationProcessingFilter2"/>
-      </And>
-      <And>
         <Bug pattern="HTTP_PARAMETER_POLLUTION"/>
         <Class name="hudson.ProxyConfiguration$DescriptorImpl"/>
       </And>
@@ -235,10 +220,6 @@
           <Class name="hudson.model.ListView"/>
           <Class name="hudson.model.ListView$Listener"/>
         </Or>
-      </And>
-      <And>
-        <Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER"/>
-        <Class name="hudson.PluginManager"/>
       </And>
       <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
@@ -401,29 +382,8 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="NP_NULL_PARAM_DEREF"/>
-        <Or>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.PluginManager"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
         <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor"/>
-      </And>
-      <And>
-        <Bug pattern="OBL_UNSATISFIED_OBLIGATION"/>
-        <Or>
-          <Class name="jenkins.security.s2m.AdminWhitelistRule"/>
-          <Class name="jenkins.slaves.StandardOutputSwapper$ChannelSwapper"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="OS_OPEN_STREAM"/>
-        <Or>
-          <Class name="hudson.console.ConsoleNote"/>
-          <Class name="jenkins.slaves.DefaultJnlpSlaveReceiver"/>
-        </Or>
       </And>
       <And>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
@@ -522,12 +482,7 @@
       </And>
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
-        <Or>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.tasks.Fingerprinter"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.lazy.LazyBuildMixIn$RunMixIn"/>
-        </Or>
+        <Class name="hudson.tasks.Fingerprinter"/>
       </And>
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"/>
@@ -624,11 +579,7 @@
       </And>
       <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
-        <Or>
-          <Class name="hudson.model.queue.BackFiller"/>
-          <Class name="hudson.model.queue.CauseOfBlockage"/>
-          <Class name="hudson.security.AuthenticationProcessingFilter2"/>
-        </Or>
+        <Class name="hudson.model.queue.BackFiller"/>
       </And>
       <And>
         <Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION"/>
@@ -647,30 +598,6 @@
           <Class name="hudson.util.ProcessTree$Remote$RemoteProcess"/>
           <Class name="hudson.util.ProcessTree$SerializedProcess"/>
         </Or>
-      </And>
-      <And>
-        <Bug pattern="SE_NO_SERIALVERSIONID"/>
-        <Or>
-          <Class name="hudson.util.RemotingDiagnostics$Script"/>
-          <Class name="jenkins.security.NonSerializableSecurityContext"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
-        <Or>
-          <Class name="hudson.diagnosis.MemoryUsageMonitor$MemoryGroup"/>
-          <Class name="hudson.FilePath$Unpack"/>
-          <Class name="hudson.FilePath$ValidateAntFileMask"/>
-          <Class name="hudson.model.Queue$StubItem"/>
-          <Class name="hudson.PluginManager$FileUploadPluginCopier"/>
-          <Class name="hudson.PluginManager$UrlPluginCopier"/>
-          <Class name="hudson.tasks.LogRotator$CollatedLogRotatorException"/>
-          <Class name="hudson.triggers.SlowTriggerAdminMonitor$Value"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="SR_NOT_CHECKED"/>
-        <Class name="hudson.org.apache.tools.tar.TarInputStream"/>
       </And>
       <And>
         <Bug pattern="STATIC_IV"/>

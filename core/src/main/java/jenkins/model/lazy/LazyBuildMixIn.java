@@ -43,6 +43,7 @@ import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunIdMigrator;
@@ -362,10 +363,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
 
                 if (r == null) {
                     // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                    JobT _parent = asRun().getParent();
-                    if (_parent == null) {
-                        throw new IllegalStateException("no parent for " + asRun().number);
-                    }
+                    JobT _parent = Objects.requireNonNull(asRun().getParent(), "no parent for " + asRun().number);
                     RunT pb = _parent.getLazyBuildMixIn()._getRuns().search(asRun().number - 1, AbstractLazyLoadRunMap.Direction.DESC);
                     if (pb != null) {
                         pb.getRunMixIn().nextBuildR = createReference();   // establish bi-di link

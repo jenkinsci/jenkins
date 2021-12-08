@@ -88,6 +88,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -271,10 +272,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                 }
                 LOGGER.log(WARNING, String.format("Provided custom plugin manager [%s] does not provide any of the suitable constructors. Using default.", pmClassName));
-            } catch(NullPointerException e) {
-                // Class.forName and Class.getConstructor are supposed to never return null though a broken ClassLoader
-                // could break the contract. Just in case we introduce this specific catch to avoid polluting the logs with NPEs.
-                LOGGER.log(WARNING, String.format("Unable to instantiate custom plugin manager [%s]. Using default.", pmClassName));
             } catch(ClassCastException e) {
                 LOGGER.log(WARNING, String.format("Provided class [%s] does not extend PluginManager. Using default.", pmClassName));
             } catch(Exception e) {
@@ -647,7 +644,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
                 names.add(fileName);
-                copyBundledPlugin(url, fileName);
+                copyBundledPlugin(Objects.requireNonNull(url), fileName);
                 copiedPlugins.add(url);
                 try {
                     addDependencies(url, fromPath, dependencies);
@@ -910,9 +907,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             plugins.add(p);
             if (p.isActive())
                 activePlugins.add(p);
-            synchronized (((UberClassLoader) uberClassLoader).loaded) {
-                ((UberClassLoader) uberClassLoader).loaded.clear();
-            }
+            ((UberClassLoader) uberClassLoader).loaded.clear();
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
@@ -1743,7 +1738,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         void cleanup();
     }
 
-    class FileUploadPluginCopier implements PluginCopier {
+    static class FileUploadPluginCopier implements PluginCopier {
         private FileItem fileItem;
 
         FileUploadPluginCopier(FileItem fileItem) {
@@ -1761,7 +1756,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    class UrlPluginCopier implements PluginCopier {
+    static class UrlPluginCopier implements PluginCopier {
         private String url;
 
         UrlPluginCopier(String url) {

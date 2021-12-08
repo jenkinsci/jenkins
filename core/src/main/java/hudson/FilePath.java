@@ -1035,7 +1035,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     // this reads from arbitrary URL
-    private final class Unpack extends MasterToSlaveFileCallable<Void> {
+    private static final class Unpack extends MasterToSlaveFileCallable<Void> {
         private final URL archive;
         Unpack(URL archive) {
             this.archive = archive;
@@ -2938,7 +2938,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public @CheckForNull String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
         return act(new ValidateAntFileMask(fileMasks, caseSensitive, bound));
     }
-    private class ValidateAntFileMask extends MasterToSlaveFileCallable<String> {
+    private static class ValidateAntFileMask extends MasterToSlaveFileCallable<String> {
         private final String fileMasks;
         private final boolean caseSensitive;
         private final int bound;
