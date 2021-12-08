@@ -9,6 +9,7 @@ import hudson.model.Node;
 import hudson.model.Queue.Task;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
+import java.util.Objects;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -45,7 +46,7 @@ public abstract class CauseOfBlockage {
      * Obtains a simple implementation backed by {@link Localizable}.
      */
     public static CauseOfBlockage fromMessage(@NonNull final Localizable l) {
-        l.getKey(); // null check
+        Objects.requireNonNull(l);
         return new CauseOfBlockage() {
             @Override
             public String getShortDescription() {
