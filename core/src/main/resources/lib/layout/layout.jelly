@@ -214,8 +214,8 @@ THE SOFTWARE.
 
           <!-- add YUI logger if debugging YUI -->
           <j:if test="${h.yuiSuffix=='debug'}">
-            <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
-            <div id="yui-logreader" style="margin-top:1em"/>
+          <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
+          <div id="yui-logreader" style="margin-top:1em"/>
           </j:if>
         </div>
       </j:if>
