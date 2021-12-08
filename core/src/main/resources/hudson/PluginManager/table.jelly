@@ -213,7 +213,7 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                   </td>
-                  <td data="${p.releaseTimestamp.time}">
+                  <td data="${p.releaseTimestamp.time}" class="jenkins-table__cell--no-wrap">
                     <j:if test="${p.releaseTimestamp != null}">
                       <time datetime="${h.iso8601DateTime(p.releaseTimestamp)}"
                             tooltip="${h.localDate(p.releaseTimestamp)}">
