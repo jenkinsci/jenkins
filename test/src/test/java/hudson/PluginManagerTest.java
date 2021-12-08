@@ -591,6 +591,7 @@ public class PluginManagerTest {
     @Issue("JENKINS-59136")
     @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
     public void testDeprecationNotices() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/deprecations-update-center.json");
@@ -654,6 +655,7 @@ public class PluginManagerTest {
 
     @Test @Issue("JENKINS-64840")
     public void searchMultipleUpdateSites() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
