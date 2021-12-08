@@ -82,7 +82,15 @@ public class DisablePluginCommand extends CLICommand {
         try {
             strategyToUse = PluginWrapper.PluginDisableStrategy.valueOf(strategy.toUpperCase());
         } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(hudson.cli.Messages.DisablePluginCommand_NoSuchStrategy(strategy, String.format("%s, %s, %s", PluginWrapper.PluginDisableStrategy.NONE, PluginWrapper.PluginDisableStrategy.MANDATORY, PluginWrapper.PluginDisableStrategy.ALL)));
+            throw new IllegalArgumentException(
+                    hudson.cli.Messages.DisablePluginCommand_NoSuchStrategy(
+                            strategy,
+                            String.format(
+                                    "%s, %s, %s",
+                                    PluginWrapper.PluginDisableStrategy.NONE,
+                                    PluginWrapper.PluginDisableStrategy.MANDATORY,
+                                    PluginWrapper.PluginDisableStrategy.ALL)),
+                    iae);
         }
 
         // disable...

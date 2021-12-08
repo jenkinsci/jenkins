@@ -300,6 +300,7 @@ public class Search implements StaplerProxy {
                 prefixMatch = i.getPath().startsWith(tokenList)?1:0;
             }
 
+            @SuppressFBWarnings(value = "EQ_COMPARETO_USE_OBJECT_EQUALS", justification = "TODO needs triage")
             @Override
             public int compareTo(Tag that) {
                 int r = this.prefixMatch -that.prefixMatch;
@@ -422,7 +423,7 @@ public class Search implements StaplerProxy {
     /**
      * Escape hatch for StaplerProxy-based access control
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 

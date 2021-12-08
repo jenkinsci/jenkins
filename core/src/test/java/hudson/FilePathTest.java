@@ -950,7 +950,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -966,6 +965,7 @@ public class FilePathTest {
         workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1014,7 +1014,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1028,6 +1027,7 @@ public class FilePathTest {
         createJunction(new File(root, "/workspace/_nonexistentUp"), new File(root, "/nonexistent"));
         createJunction(new File(root, "/workspace/_protected"), new File(root, "/protected"));
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1103,11 +1103,9 @@ public class FilePathTest {
         //      /protected
         //          secret.txt
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
-        FilePath wFolder = rootFolder.child("w");
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1125,10 +1123,12 @@ public class FilePathTest {
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
+        FilePath wFolder = rootFolder.child("w");
         wFolder.mkdirs();
         FilePath symbolicWorkspace = wFolder.child("_w");
         symbolicWorkspace.symlinkTo("../workspace", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 

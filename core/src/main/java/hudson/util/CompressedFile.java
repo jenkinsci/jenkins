@@ -25,6 +25,7 @@ package hudson.util;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -144,6 +145,7 @@ public class CompressedFile {
      */
     public void compress() {
         compressionThread.submit(new Runnable() {
+            @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
             @Override
             public void run() {
                 try {

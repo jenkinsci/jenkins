@@ -112,6 +112,7 @@ import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import net.jcip.annotations.GuardedBy;
@@ -2550,14 +2551,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             if (q.waitingList.add(this)) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onEnterWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, l -> l.onEnterWaiting(this));
             }
         }
 
@@ -2565,14 +2559,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = q.waitingList.remove(this);
             if (r) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, l -> l.onLeaveWaiting(this));
             }
             return r;
         }
@@ -2643,14 +2630,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBlocked(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, l -> l.onEnterBlocked(this));
         }
 
                     @Override
@@ -2658,14 +2638,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = blockedProjects.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBlocked(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, l -> l.onLeaveBlocked(this));
             }
             return r;
         }
@@ -2752,14 +2725,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             q.buildables.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBuildable(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, l -> l.onEnterBuildable(this));
         }
 
         @Override
@@ -2767,14 +2733,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = q.buildables.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBuildable(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, l -> l.onLeaveBuildable(this));
             }
             return r;
         }
@@ -2830,14 +2789,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         void enter(Queue q) {
             q.leftItems.put(getId(),this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onLeft(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, l -> l.onLeft(this));
         }
 
         @Override

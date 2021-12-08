@@ -32,15 +32,22 @@ import hudson.model.Run;
 import hudson.model.RunMap;
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractCollection;
 import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.TreeMap;
+import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.MemoryReductionUtil;
@@ -98,6 +105,145 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     private volatile Index index = new Index();
     private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<>(this);
+
+    private transient volatile Set<Integer> keySet;
+    private transient volatile Collection<R> values;
+
+    @Override
+    public Set<Integer> keySet() {
+        Set<Integer> ks = keySet;
+        if (ks == null) {
+            ks = new AbstractSet<Integer>() {
+                @Override
+                public Iterator<Integer> iterator() {
+                    return new Iterator() {
+                        private final Iterator<Entry<Integer, R>> it = entrySet().iterator();
+
+                        @Override
+                        public boolean hasNext() {
+                            return it.hasNext();
+                        }
+
+                        @Override
+                        public Integer next() {
+                            return it.next().getKey();
+                        }
+
+                        @Override
+                        public void remove() {
+                            it.remove();
+                        }
+                    };
+                }
+
+                @Override
+                public Spliterator<Integer> spliterator() {
+                    return new Spliterators.AbstractIntSpliterator(
+                            Long.MAX_VALUE,
+                            Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.SORTED) {
+                        private final Iterator<Integer> it = iterator();
+
+                        @Override
+                        public boolean tryAdvance(IntConsumer action) {
+                            if (action == null) {
+                                throw new NullPointerException();
+                            }
+                            if (it.hasNext()) {
+                                action.accept(it.next());
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        public Comparator<Integer> getComparator() {
+                            return Collections.reverseOrder();
+                        }
+                    };
+                }
+
+                @Override
+                public int size() {
+                    return AbstractLazyLoadRunMap.this.size();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return AbstractLazyLoadRunMap.this.isEmpty();
+                }
+
+                @Override
+                public void clear() {
+                    AbstractLazyLoadRunMap.this.clear();
+                }
+
+                @Override
+                public boolean contains(Object k) {
+                    return AbstractLazyLoadRunMap.this.containsKey(k);
+                }
+            };
+            keySet = ks;
+        }
+        return ks;
+    }
+
+    @Override
+    public Collection<R> values() {
+        Collection<R> vals = values;
+        if (vals == null) {
+            vals = new AbstractCollection<R>() {
+                @Override
+                public Iterator<R> iterator() {
+                    return new Iterator<R>() {
+                        private final Iterator<Entry<Integer, R>> it = entrySet().iterator();
+
+                        @Override
+                        public boolean hasNext() {
+                            return it.hasNext();
+                        }
+
+                        @Override
+                        public R next() {
+                            return it.next().getValue();
+                        }
+
+                        @Override
+                        public void remove() {
+                            it.remove();
+                        }
+                    };
+                }
+
+                @Override
+                public Spliterator<R> spliterator() {
+                    return Spliterators.spliteratorUnknownSize(
+                            iterator(), Spliterator.DISTINCT | Spliterator.ORDERED);
+                }
+
+                @Override
+                public int size() {
+                    return AbstractLazyLoadRunMap.this.size();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return AbstractLazyLoadRunMap.this.isEmpty();
+                }
+
+                @Override
+                public void clear() {
+                    AbstractLazyLoadRunMap.this.clear();
+                }
+
+                @Override
+                public boolean contains(Object v) {
+                    return AbstractLazyLoadRunMap.this.containsValue(v);
+                }
+            };
+            values = vals;
+        }
+        return vals;
+    }
 
     /**
      * Historical holder for map.

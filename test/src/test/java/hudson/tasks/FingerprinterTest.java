@@ -71,24 +71,24 @@ import org.jvnet.hudson.test.recipes.LocalData;
 @SuppressWarnings("rawtypes")
 public class FingerprinterTest {
     private static final String[] singleContents = {
-        "abcdef"
+        "abcdef",
     };
     private static final String[] singleFiles = {
-        "test.txt"
+        "test.txt",
     };
     private static final String[] singleContents2 = {
-        "ghijkl"
+        "ghijkl",
     };
     private static final String[] singleFiles2 = {
-        "test2.txt"
+        "test2.txt",
     };
     private static final String[] doubleContents = {
         "abcdef",
-        "ghijkl"
+        "ghijkl",
     };
     private static final String[] doubleFiles = {
         "test.txt",
-        "test2.txt"
+        "test2.txt",
     };
     
     private static final String renamedProject1 = "renamed project 1";

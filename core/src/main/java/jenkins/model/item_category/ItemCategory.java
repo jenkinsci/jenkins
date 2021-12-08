@@ -47,7 +47,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      * See <a href="https://issues.jenkins.io/browse/JENKINS-36593">JENKINS-36593</a> for more info.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
     public static int MIN_TOSHOW = 1;
 
     /**

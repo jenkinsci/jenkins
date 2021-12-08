@@ -68,12 +68,11 @@ public interface EnvironmentContributingAction extends Action {
     /**
      * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
      *
-     * @deprecated Use {@link #buildEnvironment} instead
-     *
      * @param build
      *      The calling build. Never null.
      * @param env
      *      Environment variables should be added to this map.
+     * @deprecated Use {@link #buildEnvironment} instead
      */
     @Deprecated
     @Restricted(ProtectedExternally.class)

@@ -72,7 +72,7 @@ public class FileParameterValue extends ParameterValue {
      * It's not recommended to enable for security reasons. That option is only present for backward compatibility.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE =
             SystemProperties.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
@@ -152,6 +152,7 @@ public class FileParameterValue extends ParameterValue {
     @Override
     public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
         return new BuildWrapper() {
+            @SuppressFBWarnings(value = {"FILE_UPLOAD_FILENAME", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"}, justification = "TODO needs triage")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
