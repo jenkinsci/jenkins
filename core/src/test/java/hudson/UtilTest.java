@@ -33,6 +33,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
@@ -55,7 +57,6 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -223,7 +224,7 @@ public class UtilTest {
 
     @Test
     public void testSymlink() throws Exception {
-        Assume.assumeFalse(Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
@@ -271,7 +272,7 @@ public class UtilTest {
 
     @Test
     public void testIsSymlink() throws IOException, InterruptedException {
-        Assume.assumeFalse(Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
@@ -301,7 +302,7 @@ public class UtilTest {
 
     @Test
     public void testIsSymlink_onWindows_junction() throws Exception {
-        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
         File targetDir = tmp.newFolder("targetDir");
         File d = tmp.newFolder("dir");
         File junction = WindowsUtil.createJunction(new File(d, "junction"), targetDir);
@@ -311,7 +312,7 @@ public class UtilTest {
     @Test
     @Issue("JENKINS-55448")
     public void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
-        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
         File targetDir = tmp.newFolder();
         File file = new File(targetDir, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
@@ -325,6 +326,7 @@ public class UtilTest {
     @Test
     @Issue("JENKINS-55448")
     public void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         File folder = tmp.newFolder();
         File file = new File(folder, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
@@ -592,6 +594,7 @@ public class UtilTest {
     @Test
     @Issue("SECURITY-904")
     public void resolveSymlinkToFile() throws Exception {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /a
         //          /aa

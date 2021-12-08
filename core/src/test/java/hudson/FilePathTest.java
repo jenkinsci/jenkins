@@ -478,7 +478,7 @@ public class FilePathTest {
     }
 
     @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse("Test uses POSIX-specific features", Functions.isWindows() || Platform.isDarwin());
+        assumeFalse(Functions.isWindows() || Platform.isDarwin());
         File tmp = temp.getRoot();
         File original = new File(tmp,"original");
         FilePath originalP = new FilePath(channels.french, original.getPath());
@@ -497,7 +497,7 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        assumeFalse("can't test on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
@@ -805,7 +805,7 @@ public class FilePathTest {
     }
 
     @Test public void deleteRecursiveOnUnix() throws Exception {
-        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
@@ -851,7 +851,7 @@ public class FilePathTest {
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
-        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
@@ -932,6 +932,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularSymlinks() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
         //          /a
@@ -1059,6 +1060,7 @@ public class FilePathTest {
 
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
+        assumeFalse(Functions.isWindows());
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
@@ -1086,6 +1088,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /w
         //          /_workspace => symlink to ../workspace
