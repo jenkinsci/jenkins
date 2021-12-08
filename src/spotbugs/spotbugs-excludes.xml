@@ -255,15 +255,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="MS_SHOULD_BE_FINAL"/>
-        <Or>
-          <Class name="hudson.Launcher"/>
-          <Class name="hudson.Main"/>
-          <Class name="hudson.model.UpdateSite"/>
-          <Class name="hudson.model.ViewJob"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
         <Or>
           <Class name="hudson.logging.LogRecorder$Target"/>
