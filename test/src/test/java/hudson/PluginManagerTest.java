@@ -194,7 +194,7 @@ public class PluginManagerTest {
                     // plugins should be already visible in the UberClassLoader
                     assertFalse(activePlugins.isEmpty());
 
-                    uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
+                    assertNotNull(uberClassLoader.loadClass("htmlpublisher.HtmlPublisher"));
 
                     super.startPlugin(plugin);
                 }
