@@ -1318,12 +1318,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Orderly terminates all the plugins.
      */
-    public void stop() {
+    public synchronized void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
+        }
+        List<PluginWrapper> pluginsCopy = new ArrayList<>(plugins);
+        for (PluginWrapper p : pluginsCopy) {
+            activePlugins.remove(p);
+            plugins.remove(p);
             p.releaseClassLoader();
         }
-        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
