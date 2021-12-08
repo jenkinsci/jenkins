@@ -263,7 +263,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
     }
     
     /** Allow script console access */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static String WHITELIST_PATH = SystemProperties.getString(StaticRoutingDecisionProvider.class.getName() + ".whitelist");
 
 }

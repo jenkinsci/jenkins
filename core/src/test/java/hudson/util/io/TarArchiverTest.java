@@ -24,7 +24,8 @@
 package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -38,7 +39,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,7 +53,7 @@ public class TarArchiverTest {
      */
     @Issue("JENKINS-9397")
     @Test public void permission() throws Exception {
-        assumeTrue(!Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         File tar = File.createTempFile("test","tar");
         File zip = File.createTempFile("test","zip");
@@ -107,13 +107,13 @@ public class TarArchiverTest {
         try {
             assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
         } catch (IOException x) { // perhaps restrict to x.message.contains("Cannot run program")? or "error=2, No such file or directory"?
-            Assume.assumeNoException("failed to run " + Arrays.toString(cmds), x);
+            assumeNoException("failed to run " + Arrays.toString(cmds), x);
         }
     }
 
     @Issue("JENKINS-14922")
     @Test public void brokenSymlinks() throws Exception {
-        assumeTrue(!Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File dir = tmp.getRoot();
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         new FilePath(dir).tar(new NullStream(), "**");

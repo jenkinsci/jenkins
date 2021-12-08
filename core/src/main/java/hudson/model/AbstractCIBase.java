@@ -48,7 +48,7 @@ import org.kohsuke.stapler.StaplerProxy;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean LOG_STARTUP_PERFORMANCE = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "logStartupPerformance", false);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());

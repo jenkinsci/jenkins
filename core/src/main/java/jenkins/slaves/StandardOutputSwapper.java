@@ -66,6 +66,7 @@ public class StandardOutputSwapper extends ComputerListener {
             }
         }
 
+        @SuppressFBWarnings(value = "OBL_UNSATISFIED_OBLIGATION", justification = "the obligation is satisfied with libc(7)")
         private void swap(StandardOutputStream stdout) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, UnsatisfiedLinkError {
             // duplicate the OS file descriptor and create FileOutputStream around it
             int out = GNUCLibrary.LIBC.dup(1);

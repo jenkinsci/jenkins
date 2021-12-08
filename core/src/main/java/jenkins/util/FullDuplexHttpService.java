@@ -59,14 +59,14 @@ public abstract class FullDuplexHttpService {
      * Set to true if the servlet container doesn't support chunked encoding.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean DIY_CHUNKING = SystemProperties.getBoolean("hudson.diyChunking");
 
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     protected final UUID uuid;

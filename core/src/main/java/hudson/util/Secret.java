@@ -308,7 +308,7 @@ public final class Secret implements Serializable {
     public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
 
     static {
