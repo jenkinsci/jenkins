@@ -120,7 +120,8 @@ public class WebAppMain implements ServletContextListener {
         }
     };
 
-    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+    /**
+     * This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
      * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
      * Written for the requirements of JENKINS-50669
      * @return int This returns DEFAULT_RING_BUFFER_SIZE
@@ -202,49 +203,18 @@ public class WebAppMain implements ServletContextListener {
                 throw new IncompatibleVMDetected(); // nope
             }
 
-//  JNA is no longer a hard requirement. It's just nice to have. See JENKINS-4820 for more context.
-//            // make sure JNA works. this can fail if
-//            //    - platform is unsupported
-//            //    - JNA is already loaded in another classloader
-//            // see http://wiki.jenkins-ci.org/display/JENKINS/JNA+is+already+loaded
-//            // TODO: or shall we instead modify Hudson to work gracefully without JNA?
-//            try {
-//                /*
-//                    java.lang.UnsatisfiedLinkError: Native Library /builds/apps/glassfish/domains/hudson-domain/generated/jsp/j2ee-modules/hudson-1.309/loader/com/sun/jna/sunos-sparc/libjnidispatch.so already loaded in another classloader
-//                        at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1743)
-//                        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1674)
-//                        at java.lang.Runtime.load0(Runtime.java:770)
-//                        at java.lang.System.load(System.java:1005)
-//                        at com.sun.jna.Native.loadNativeLibraryFromJar(Native.java:746)
-//                        at com.sun.jna.Native.loadNativeLibrary(Native.java:680)
-//                        at com.sun.jna.Native.<clinit>(Native.java:108)
-//                        at hudson.util.jna.GNUCLibrary.<clinit>(GNUCLibrary.java:86)
-//                        at hudson.Util.createSymlink(Util.java:970)
-//                        at hudson.model.Run.run(Run.java:1174)
-//                        at hudson.matrix.MatrixBuild.run(MatrixBuild.java:149)
-//                        at hudson.model.ResourceController.execute(ResourceController.java:88)
-//                        at hudson.model.Executor.run(Executor.java:123)
-//                 */
-//                String.valueOf(Native.POINTER_SIZE); // this meaningless operation forces the classloading and initialization
-//            } catch (LinkageError e) {
-//                if (e.getMessage().contains("another classloader"))
-//                    context.setAttribute(APP,new JNADoublyLoaded(e));
-//                else
-//                    context.setAttribute(APP,new HudsonFailedToLoad(e));
-//            }
-
             // make sure this is servlet 2.4 container or above
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleServletVersionDetected(ServletResponse.class);
+                throw (IncompatibleServletVersionDetected)new IncompatibleServletVersionDetected(ServletResponse.class).initCause(e);
             }
 
             // make sure that we see Ant 1.7
             try {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleAntVersionDetected(FileSet.class);
+                throw (IncompatibleAntVersionDetected)new IncompatibleAntVersionDetected(FileSet.class).initCause(e);
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
@@ -291,6 +261,7 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
+                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -354,7 +325,7 @@ public class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);

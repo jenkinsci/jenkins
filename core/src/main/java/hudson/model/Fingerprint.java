@@ -35,6 +35,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
@@ -745,7 +746,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 } catch (NumberFormatException e) {
                     if (!skipError)
                         throw new IllegalArgumentException(
-                                String.format("Unable to parse '%s', expected number", list));
+                                String.format("Unable to parse '%s', expected number", list), e);
                     // ignore malformed text
                 }
             }
@@ -1252,7 +1253,7 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         // Implementations are expected to invoke SaveableListener on their own if relevant
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins.io/browse/JENKINS-62543
@@ -1339,7 +1340,7 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         Fingerprint loaded = configuredFingerprintStorage.load(id);
 
@@ -1392,7 +1393,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         configuredFingerprintStorage.delete(id);
 
@@ -1415,7 +1416,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + (usages == null ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
+        return "Fingerprint[original="
+                + original
+                + ",hash="
+                + getHashString()
+                + ",fileName="
+                + fileName
+                + ",timestamp="
+                + DATE_CONVERTER.toString(timestamp)
+                + ",usages="
+                + (usages == null ? "null" : new TreeMap<>(getUsages()))
+                + ",facets="
+                + facets
+                + "]";
     }
     
     /**

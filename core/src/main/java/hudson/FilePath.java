@@ -1197,7 +1197,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         private final DelegatingCallable<T, IOException> callable;
 
-        public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
+        protected AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
             this.callable = callable;
         }
 
@@ -1639,7 +1639,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             } else {
                 s = new String[]{prefix, suffix};
             }
-            String name = StringUtils.join(s, ".");
+            String name = String.join(".", s);
             return new FilePath(this, act(new CreateTempDir(name)));
         } catch (IOException e) {
             throw new IOException("Failed to create a temp directory on "+remote,e);
@@ -1674,8 +1674,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Deletes this file.
-     * @throws IOException if it exists but could not be successfully deleted
      * @return true, for a modicum of compatibility
+     * @throws IOException if it exists but could not be successfully deleted
      */
     public boolean delete() throws IOException, InterruptedException {
         act(new Delete());
@@ -2687,6 +2687,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             scanner.scan(base, reading(new FileVisitor() {
                 private boolean exceptionEncountered;
                 private boolean logMessageShown;
+                @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
                     if (f.isFile()) {
@@ -2720,6 +2721,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 public boolean understandsSymlink() {
                     return true;
                 }
+                @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
                 @Override
                 public void visitSymlink(File link, String target, String relativePath) throws IOException {
                     try {
@@ -2917,7 +2919,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
@@ -3076,7 +3078,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
                         return true;
                     } else {
-                        throw new InterruptedException("no matches found within " + bound);
+                        throw (InterruptedException)new InterruptedException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0;
@@ -3298,7 +3300,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static final long serialVersionUID = 1L;
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
     public static int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());

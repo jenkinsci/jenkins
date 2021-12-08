@@ -6,15 +6,25 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Streams;
 import hudson.model.queue.QueueTaskFuture;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.Spliterator;
+import java.util.TreeMap;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 
 public class RunMapTest {
@@ -130,4 +140,72 @@ public class RunMapTest {
         assertEquals(0, runs.size());
     }
 
+    @Test
+    public void stream() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        SortedMap<Integer, FreeStyleBuild> builds = new TreeMap<>(Collections.reverseOrder());
+        for (int i = 0; i < 10; i++) {
+            FreeStyleBuild build = r.buildAndAssertSuccess(p);
+            builds.put(build.number, build);
+        }
+        RunMap<FreeStyleBuild> runMap = p._getRuns();
+
+        assertEquals(builds.size(), runMap.entrySet().size());
+        assertTrue(
+                runMap.entrySet().stream().spliterator().hasCharacteristics(Spliterator.DISTINCT));
+        assertTrue(
+                runMap.entrySet().stream().spliterator().hasCharacteristics(Spliterator.ORDERED));
+        assertFalse(runMap.entrySet().stream().spliterator().hasCharacteristics(Spliterator.SIZED));
+        assertFalse(
+                runMap.entrySet().stream().spliterator().hasCharacteristics(Spliterator.SORTED));
+        assertThrows(
+                IllegalStateException.class,
+                () -> runMap.entrySet().stream().spliterator().getComparator());
+
+        assertEquals(new ArrayList<>(builds.keySet()), new ArrayList<>(runMap.keySet()));
+        Comparator<? super Integer> comparator =
+                runMap.keySet().stream().spliterator().getComparator();
+        assertNotNull(comparator);
+        List<Integer> origOrder = new ArrayList<>(builds.keySet());
+        List<Integer> sorted = new ArrayList<>(origOrder);
+        sorted.sort(comparator);
+        assertEquals(origOrder, sorted);
+        assertTrue(runMap.keySet().stream().spliterator().hasCharacteristics(Spliterator.DISTINCT));
+        assertTrue(runMap.keySet().stream().spliterator().hasCharacteristics(Spliterator.ORDERED));
+        assertFalse(runMap.keySet().stream().spliterator().hasCharacteristics(Spliterator.SIZED));
+        assertTrue(runMap.keySet().stream().spliterator().hasCharacteristics(Spliterator.SORTED));
+
+        assertEquals(new ArrayList<>(builds.values()), new ArrayList<>(runMap.values()));
+        assertTrue(runMap.values().stream().spliterator().hasCharacteristics(Spliterator.DISTINCT));
+        assertTrue(runMap.values().stream().spliterator().hasCharacteristics(Spliterator.ORDERED));
+        assertFalse(runMap.values().stream().spliterator().hasCharacteristics(Spliterator.SIZED));
+        assertFalse(runMap.values().stream().spliterator().hasCharacteristics(Spliterator.SORTED));
+        assertThrows(
+                IllegalStateException.class,
+                () -> runMap.values().stream().spliterator().getComparator());
+    }
+
+    @Test
+    public void runLoadCounterFirst() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        RunLoadCounter.prepare(p);
+        for (int i = 0; i < 10; i++) {
+            r.buildAndAssertSuccess(p);
+        }
+        assertEquals(
+                10,
+                RunLoadCounter.assertMaxLoads(p, 2, () -> p.getBuilds().stream().findFirst().orElse(null).number).intValue());
+    }
+
+    @Test
+    public void runLoadCounterLimit() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        RunLoadCounter.prepare(p);
+        for (int i = 0; i < 10; i++) {
+            r.buildAndAssertSuccess(p);
+        }
+        assertEquals(
+                6,
+                RunLoadCounter.assertMaxLoads(p, 6, () -> Streams.findLast(p.getBuilds().stream().limit(5)).orElse(null).number).intValue());
+    }
 }

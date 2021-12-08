@@ -52,11 +52,11 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
     private RSAPrivateKey priv;
     private RSAPublicKey pub;
 
-    public RSAConfidentialKey(String id) {
+    protected RSAConfidentialKey(String id) {
         super(id);
     }
 
-    public RSAConfidentialKey(Class owner, String shortName) {
+    protected RSAConfidentialKey(Class owner, String shortName) {
         this(owner.getName() + '.' + shortName);
     }
 

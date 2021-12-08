@@ -31,6 +31,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -170,6 +171,23 @@ class MethodBinder {
         @Override
         public boolean hidden() {
             return base.hidden();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ArgumentImpl)) {
+                return false;
+            }
+            ArgumentImpl argument = (ArgumentImpl) o;
+            return Objects.equals(base, argument.base) && bias == argument.bias;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(base, bias);
         }
     }
 }

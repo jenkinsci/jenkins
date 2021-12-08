@@ -187,7 +187,7 @@ public class Functions {
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
@@ -585,7 +585,7 @@ public class Functions {
             String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
             source,
             r.getLevel().getLocalizedName(),
-            x == null ? message : message + printThrowable(x) + "\n"
+            x == null ? message : message + printThrowable(x) + "\n",
         };
     }
 
@@ -636,7 +636,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**

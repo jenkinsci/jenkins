@@ -39,7 +39,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     private boolean excludeClientIPFromCrumb;
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final: Groovy Console */ boolean EXCLUDE_SESSION_ID = SystemProperties.getBoolean(DefaultCrumbIssuer.class.getName() + ".EXCLUDE_SESSION_ID");
 
     @DataBoundConstructor

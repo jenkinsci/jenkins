@@ -129,7 +129,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(User.class.getName() + ".skipPermissionCheck");
 
     /**
@@ -141,7 +141,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * <p>
      * See <a href="https://issues.jenkins.io/browse/JENKINS-22346">JENKINS-22346</a>.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
@@ -149,7 +149,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * accesses a /user/arbitraryName URL.
      * <p>
      * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
-     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.44 / 2.32.2.
      * <p>
      * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
      * is not recommended.
@@ -157,7 +157,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * SECURITY-406.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
     /**
@@ -731,6 +731,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Called by tests in the JTH. Otherwise this shouldn't be called.
      * Even in the tests this usage is questionable.
+     * @deprecated removed without replacement
      */
     @Deprecated
     public static void clear() {

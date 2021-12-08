@@ -114,7 +114,7 @@ public class PluginManagerTest {
                 equalTo(jar.lastModified()));
     }
     
-    private static void assertAttribute(Manifest manifest, String attributeName, String value) throws AssertionError {
+    private static void assertAttribute(Manifest manifest, String attributeName, String value) {
         Attributes attributes = manifest.getMainAttributes();
         assertThat("Main attributes must not be empty", attributes, notNullValue());
         assertThat("Attribute '" + attributeName + "' does not match the sample", 

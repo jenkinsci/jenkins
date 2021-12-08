@@ -48,10 +48,10 @@ public class BasicHeaderProcessorTest {
         ApiTokenTestHelper.enableLegacyBehavior();
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.getById("foo", true);
-        User.getById("bar", true);
 
         wc = j.createWebClient();
+        User foo = User.getById("foo", true);
+        User.getById("bar", true);
 
         // call without authentication
         makeRequestAndVerify("anonymous");

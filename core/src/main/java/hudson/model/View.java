@@ -526,8 +526,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      * @return The items in the queue.
+     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      */
     @Deprecated
     public List<Queue.Item> getApproximateQueueItemsQuickly() {
@@ -1131,7 +1131,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 metadata.put("iconClassName", iconClassName);
                 if (ctx != null) {
                     Icon icon = IconSet.icons
-                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
                     if (icon != null) {
                         metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
                     }

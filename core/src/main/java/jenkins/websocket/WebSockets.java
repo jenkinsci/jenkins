@@ -100,7 +100,12 @@ public class WebSockets {
         if (factory == null) {
             staticInit();
             Class<?> webSocketPolicyClass = cl.loadClass("org.eclipse.jetty.websocket.api.WebSocketPolicy");
-            factory = cl.loadClass("org.eclipse.jetty.websocket.servlet.WebSocketServletFactory$Loader").getMethod("load", ServletContext.class, webSocketPolicyClass).invoke(null, Stapler.getCurrent().getServletContext(), webSocketPolicyClass.getMethod("newServerPolicy").invoke(null));
+            factory = cl.loadClass("org.eclipse.jetty.websocket.servlet.WebSocketServletFactory$Loader")
+                    .getMethod("load", ServletContext.class, webSocketPolicyClass)
+                    .invoke(
+                            null,
+                            Stapler.getCurrent().getServletContext(),
+                            webSocketPolicyClass.getMethod("newServerPolicy").invoke(null));
             webSocketServletFactoryClass.getMethod("start").invoke(factory);
             Class<?> webSocketCreatorClass = cl.loadClass("org.eclipse.jetty.websocket.servlet.WebSocketCreator");
             webSocketServletFactoryClass.getMethod("setCreator", webSocketCreatorClass).invoke(factory, Proxy.newProxyInstance(cl, new Class<?>[] {webSocketCreatorClass}, this::createWebSocket));

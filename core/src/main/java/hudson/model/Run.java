@@ -1380,7 +1380,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         private String treeNodeId;
 
         /**
-         *length of this artifact for files.
+         * length of this artifact for files.
          */
         private String length;
 
@@ -1464,7 +1464,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
-     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210. Use other methods giving various kinds of streams such as {@link Run#getLogReader()},  {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
+     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210.
+     *     Use other methods giving various kinds of streams such as {@link Run#getLogReader()}, {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
      */
     @Deprecated
     public @NonNull File getLogFile() {
@@ -1656,7 +1657,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         StandardCopyOption.ATOMIC_MOVE
                 );
             } catch (UnsupportedOperationException | SecurityException ex) {
-                throw new IOException(rootDir + " is in use");
+                throw new IOException(rootDir + " is in use", ex);
             }
             
             Util.deleteRecursive(tmp);
@@ -2233,9 +2234,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             case FIXED :
                 return new Summary(false, Messages.Run_Summary_BackToNormal());
                 
+            default:
+                return new Summary(false, Messages.Run_Summary_Unknown());
         }
-        
-        return new Summary(false, Messages.Run_Summary_Unknown());
     }
 
     /**
@@ -2651,7 +2652,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 

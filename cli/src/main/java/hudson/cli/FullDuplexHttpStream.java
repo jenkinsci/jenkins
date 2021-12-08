@@ -34,7 +34,6 @@ public class FullDuplexHttpStream {
      * A way to upload data to the server.
      * You will need to write to this and {@link OutputStream#flush} it to finish establishing a connection.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public OutputStream getOutputStream() {
         return output;
     }

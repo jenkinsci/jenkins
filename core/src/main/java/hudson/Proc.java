@@ -503,7 +503,7 @@ public abstract class Proc {
     /**
      * Debug switch to have the thread display the process it's waiting for.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean SHOW_PID = false;
     
     /**

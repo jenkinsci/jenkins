@@ -27,29 +27,60 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" title="${%Users}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Users}</h1>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1>
+            ${%Users}
+          </h1>
+        </div>
+      </div>
       <p>${%blurb}</p>
-      
-      <table class="sortable pane bigtable" id="people">
-        <tr>
-          <th class="minimum-width" data-sort-disable="true" />
-          <th>${%User ID}</th>
-          <th>${%Name}</th>
-          <th class="minimum-width" data-sort-disable="true" />
-        </tr>
-        <j:forEach var="user" items="${it.allUsers}">
+
+      <table class="jenkins-table sortable" id="people">
+        <thead>
           <tr>
-            <td><a href="${user.url}/" class="model-link inside"><img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32" /></a></td>
-            <td><a href="${user.url}/">${user.id}</a></td>
-            <td><a href="${user.url}/">${user}</a></td>
-            <td>
-              <a href="${user.url}/configure"><l:icon class="icon-gear icon-md" /></a>
-              <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><l:icon class="icon-edit-delete icon-md" /></a>
-              </j:if>
-            </td>
+            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+            <th initialSortDir="down">${%User ID}</th>
+            <th>${%Name}</th>
+            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
           </tr>
-        </j:forEach>
+        </thead>
+        <tbody>
+          <j:forEach var="user" items="${it.allUsers}">
+            <tr>
+              <td>
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="${user.url}/" class="jenkins-table__button model-link inside">
+                    <img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/>
+                  </a>
+                </div>
+              </td>
+              <td>
+                <a href="${user.url}/" class="jenkins-table__link">${user.id}</a>
+              </td>
+              <td>
+                <a href="${user.url}/" class="jenkins-table__link">${user.fullName}</a>
+              </td>
+              <td>
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="${user.url}/configure" class="jenkins-table__button">
+                    <l:ionicon name="settings-outline" />
+                  </a>
+                </div>
+              </td>
+              <td>
+                <j:if test="${user.canDelete()}">
+                  <div class="jenkins-table__cell__button-wrapper">
+                    <a href="${user.url}/delete" class="jenkins-table__button jenkins-table__button--red">
+                      <l:ionicon name="trash-outline" />
+                    </a>
+                  </div>
+                </j:if>
+              </td>
+            </tr>
+          </j:forEach>
+        </tbody>
       </table>
     </l:main-panel>
   </l:layout>
