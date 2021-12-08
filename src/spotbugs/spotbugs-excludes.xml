@@ -685,10 +685,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="VO_VOLATILE_INCREMENT"/>
-        <Class name="hudson.util.RingBufferLogHandler"/>
-      </And>
-      <And>
         <Bug pattern="WA_AWAIT_NOT_IN_LOOP"/>
         <Class name="hudson.model.Queue"/>
       </And>
