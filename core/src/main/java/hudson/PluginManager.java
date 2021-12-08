@@ -541,11 +541,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -566,6 +568,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -928,9 +931,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
             } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(sn, e));
+                failedPlugins.add(new FailedPlugin(p, e));
                 activePlugins.remove(p);
                 plugins.remove(p);
+                p.releaseClassLoader();
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
