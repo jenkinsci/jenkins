@@ -1,6 +1,5 @@
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.util.CompoundEnumeration;
 import java.io.IOException;
 import java.net.URL;
@@ -11,8 +10,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Class loader that consults the system class loader, the plugin's {@code WEB-INF/lib/*.jar} and
- * {@code WEB-INF/classes} directories, and the Jenkins core class loader (in that order).
+ * Class loader that consults the plugin's {@code WEB-INF/lib/*.jar} and {@code WEB-INF/classes}
+ * directories and the Jenkins core class loader (in that order).
  *
  * <p>To use this class loader, set {@code pluginFirstClassLoader} to {@code true} in the {@code
  * maven-hpi-plugin} configuration.
@@ -26,11 +25,8 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
         registerAsParallelCapable();
     }
 
-    @CheckForNull private final ClassLoader systemClassLoader;
-
     public PluginFirstClassLoader2(URL[] urls, ClassLoader parent) {
         super(Objects.requireNonNull(urls), Objects.requireNonNull(parent));
-        systemClassLoader = getSystemClassLoader();
     }
 
     /**
@@ -41,8 +37,6 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
      *   <li>
      *       <p>Invoke {@link #findLoadedClass(String)} to check if the class has already been
      *       loaded.
-     *   <li>
-     *       <p>Invoke {@link #loadClass(String)} on the system class loader.
      *   <li>
      *       <p>Invoke {@link #findClass(String)} to find the class.
      *   <li>
@@ -64,13 +58,6 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
             Class<?> c = findLoadedClass(name);
-            if (c == null && systemClassLoader != null) {
-                try {
-                    c = systemClassLoader.loadClass(name);
-                } catch (ClassNotFoundException e) {
-                    // ignore
-                }
-            }
             if (c == null) {
                 try {
                     c = findClass(name);
@@ -97,8 +84,6 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
      *
      * <ol>
      *   <li>
-     *       <p>Invoke {@link #getResource(String)} on the system class loader.
-     *   <li>
      *       <p>Invoke {@link #findResource(String)} to find the resource.
      *   <li>
      *       <p>Invoke {@link #getResource(String)} on the parent class loader.
@@ -114,15 +99,7 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
     @Override
     public URL getResource(String name) {
         Objects.requireNonNull(name);
-        URL url;
-        if (systemClassLoader != null) {
-            url = systemClassLoader.getResource(name);
-        } else {
-            url = null;
-        }
-        if (url == null) {
-            url = findResource(name);
-        }
+        URL url = findResource(name);
         if (url == null) {
             url = getParent().getResource(name);
         }
@@ -135,13 +112,11 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
      * code.
      *
      * <p>The name of a resource is a {@code /}-separated path name that identifies the resource.
-     * This method first invokes {@link #getResources(String)} on the system class loader (if
-     * available). It then invokes {@link #findResources(String)} to find the resources with the
-     * name in this class loader. Finally, it invokes {@link #getResources(String)} on the parent
-     * class loader. It returns an enumeration whose elements are the {@link URL}s found by
-     * searching the system class loader (if available), followed by the {@link URL}s found with
-     * {@link #findResources(String)}, followed by the {@link URL}s found by searching the parent
-     * class loader.
+     * This method first invokes {@link #findResources(String)} to find the resources with the name
+     * in this class loader. Finally, it invokes {@link #getResources(String)} on the parent class
+     * loader. It returns an enumeration whose elements are the {@link URL}s found by searching the
+     * {@link URL}s found with {@link #findResources(String)}, followed by the {@link URL}s found by
+     * searching the parent class loader.
      *
      * @param name The resource name
      * @return An enumeration of {@link URL} objects for the resource. If no resources could be
@@ -155,13 +130,6 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
         Objects.requireNonNull(name);
-        if (systemClassLoader != null) {
-            return new CompoundEnumeration<>(
-                    systemClassLoader.getResources(name),
-                    findResources(name),
-                    getParent().getResources(name));
-        } else {
-            return new CompoundEnumeration<>(findResources(name), getParent().getResources(name));
-        }
+        return new CompoundEnumeration<>(findResources(name), getParent().getResources(name));
     }
 }
