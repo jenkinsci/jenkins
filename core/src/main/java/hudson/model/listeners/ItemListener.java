@@ -203,7 +203,6 @@ public class ItemListener implements ExtensionPoint {
                 l.onCreated(item);
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
-
             }
         }
         Listeners.notify(ItemListener.class, l -> l.onCreated(item));
