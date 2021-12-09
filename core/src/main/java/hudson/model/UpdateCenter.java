@@ -70,6 +70,7 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -1882,12 +1883,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            bak.delete();
-            dst.renameTo(bak);
-            dst.delete(); // any failure up to here is no big deal
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
-            }
+            Files.move(dst.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         /**
@@ -2258,23 +2255,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
 
             File bak = Util.changeExtension(dst, ".bak");
-            bak.delete();
 
             final File legacy = getLegacyDestination();
-            if (legacy.exists()) {
-                if (!legacy.renameTo(bak)) {
-                    legacy.delete();
-                }
+            if (Files.exists(legacy.toPath())) {
+                Files.move(legacy.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             }
-            if (dst.exists()) {
-                if (!dst.renameTo(bak)) {
-                    dst.delete();
-                }
+            if (Files.exists(dst.toPath())) {
+                Files.move(dst.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             }
 
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
-            }
+            Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         void setBatch(List<PluginWrapper> batch) {
@@ -2419,10 +2409,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected void replace(File dst, File backup) throws IOException {
-            dst.delete(); // any failure up to here is no big deal
-            if(!backup.renameTo(dst)) {
-                throw new IOException("Failed to rename "+backup+" to "+dst);
-            }
+            Files.move(backup.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         @Override

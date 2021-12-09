@@ -77,6 +77,8 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1674,12 +1676,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Matcher m = logfile.matcher(f.getName());
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
-                newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessful=f.renameTo(newLocation);
-                if (relocationSuccessful) { // The operation will fail if mkdir fails
+                try {
+                    Files.createDirectories(newLocation.getParentFile().toPath());
+                    Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
-                } else {
-                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
             } else {
                 assert false;

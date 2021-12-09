@@ -475,7 +475,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Explodes the plugin into a directory, if necessary.
      */
     private static void explode(File archive, File destDir) throws IOException {
-        destDir.mkdirs();
+        Files.createDirectories(destDir.toPath());
 
         // timestamp check
         File explodeTime = new File(destDir,".timestamp2");
@@ -544,7 +544,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             };
             z.setProject(prj);
             z.setTaskType("zip");
-            classesJar.getParentFile().mkdirs();
+            Files.createDirectories(classesJar.getParentFile().toPath());
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();

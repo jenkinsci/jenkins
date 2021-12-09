@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -137,7 +138,7 @@ public class WindowsInstallerLink extends ManagementLink {
         try {
             // copy files over there
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"),         "jenkins.exe");
-            new File(dir, "jenkins.exe.config").delete();
+            Files.deleteIfExists(dir.toPath().resolve("jenkins.exe.config"));
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"),         "jenkins.xml");
             if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
                 copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");

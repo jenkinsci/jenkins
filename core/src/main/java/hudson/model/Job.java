@@ -72,6 +72,8 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -662,13 +664,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            if (!newBuildDir.getParentFile().isDirectory()) {
-                newBuildDir.getParentFile().mkdirs();
+        if (Files.isDirectory(oldBuildDir.toPath()) && !Files.isDirectory(newBuildDir.toPath())) {
+            if (!Files.isDirectory(newBuildDir.getParentFile().toPath())) {
+                Files.createDirectories(newBuildDir.getParentFile().toPath());
             }
-            if (!oldBuildDir.renameTo(newBuildDir)) {
-                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
-            }
+            Files.move(oldBuildDir.toPath(), newBuildDir.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 

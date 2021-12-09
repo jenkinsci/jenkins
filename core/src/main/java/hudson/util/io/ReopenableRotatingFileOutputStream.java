@@ -25,6 +25,9 @@ package hudson.util.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * {@link ReopenableFileOutputStream} that does log rotation upon rewind.
@@ -54,10 +57,10 @@ import java.io.IOException;
         super.rewind();
         for (int i=size-1;i>=0;i--) {
             File fi = getNumberedFileName(i);
-            if (fi.exists()) {
+            if (Files.exists(fi.toPath())) {
                 File next = getNumberedFileName(i+1);
-                next.delete();
-                fi.renameTo(next);
+                Files.move(fi.toPath(), next.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+
             }
         }
     }
@@ -67,7 +70,11 @@ import java.io.IOException;
      */
     public void deleteAll() {
         for (int i=0; i<=size; i++) {
-            getNumberedFileName(i).delete();
+            try {
+                Files.deleteIfExists(getNumberedFileName(i).toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 }

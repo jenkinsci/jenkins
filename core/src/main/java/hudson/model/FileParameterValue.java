@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -315,7 +316,11 @@ public class FileParameterValue extends ParameterValue {
 
         @Override
         public void delete() {
-            file.delete();
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
 
         @Override

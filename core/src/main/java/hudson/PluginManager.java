@@ -69,6 +69,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -77,6 +78,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -352,8 +354,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         this.context = context;
 
         this.rootDir = rootDir;
-        if(!rootDir.exists())
-            rootDir.mkdirs();
+        if (!Files.isDirectory(rootDir.toPath())) {
+            try {
+                Files.createDirectories(rootDir.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
         String workDir = SystemProperties.getString(PluginManager.class.getName()+".workDir");
         this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
@@ -1052,7 +1059,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(getModificationDate(src));
+            Files.setLastModifiedTime(file.toPath(), FileTime.fromMillis(getModificationDate(src)));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -1814,7 +1821,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             t.deleteOnExit();
             try {
                 // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                t.delete();
+                Files.delete(t.toPath());
 
                 copier.copy(t);
             } catch (Exception e) {

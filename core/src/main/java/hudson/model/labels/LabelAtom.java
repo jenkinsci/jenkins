@@ -46,6 +46,8 @@ import hudson.util.VariableResolver;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -195,12 +197,14 @@ public class LabelAtom extends Label implements Saveable {
 
     public void load() {
         XmlFile file = getConfigFile();
-        if(file.exists()) {
-            try {
+        try {
+            if (file.exists()) {
                 file.unmarshal(this);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load "+file, e);
             }
+        } catch (InvalidPathException e) {
+            LOGGER.log(Level.FINE, "Failed to load " + file, e);
+        } catch (IOException | UncheckedIOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load " + file, e);
         }
         properties.setOwner(this);
         updateTransientActions();

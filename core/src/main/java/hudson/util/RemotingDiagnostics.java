@@ -39,6 +39,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -161,7 +162,7 @@ public final class RemotingDiagnostics {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
-                hprof.delete();
+                Files.delete(hprof.toPath());
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
                     server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",

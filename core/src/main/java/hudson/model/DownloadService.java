@@ -46,6 +46,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -362,7 +364,7 @@ public class DownloadService {
         private FormValidation load(String json, long dataTimestamp) throws IOException {
             TextFile df = getDataFile();
             df.write(json);
-            df.file.setLastModified(dataTimestamp);
+            Files.setLastModifiedTime(df.file.toPath(), FileTime.fromMillis(dataTimestamp));
             LOGGER.info("Obtained the updated data file for "+id);
             return FormValidation.ok();
         }

@@ -48,6 +48,7 @@ import hudson.util.RingBufferLogHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -189,7 +190,11 @@ public class WebAppMain implements ServletContextListener {
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
-            home.mkdirs();
+            try {
+                Files.createDirectories(home.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             LOGGER.info("Jenkins home directory: "+ home +" found at: " + describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error

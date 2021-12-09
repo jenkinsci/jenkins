@@ -78,8 +78,7 @@ public class CompressedFile {
      * Gets the OutputStream to write to the file.
      */
     public OutputStream write() throws IOException {
-        if(gz.exists())
-            gz.delete();
+        Files.deleteIfExists(gz.toPath());
         try {
             return Files.newOutputStream(file.toPath());
         } catch (InvalidPathException e) {

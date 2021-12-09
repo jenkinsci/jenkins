@@ -199,7 +199,7 @@ public class Main {
                 }
             }
         } finally {
-            tmpFile.delete();
+            Files.delete(tmpFile.toPath());
         }
     }
 

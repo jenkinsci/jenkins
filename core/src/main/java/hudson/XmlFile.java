@@ -41,6 +41,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -243,15 +244,23 @@ public final class XmlFile {
     }
 
     public boolean exists() {
-        return file.exists();
+        return Files.exists(file.toPath());
     }
 
     public void delete() {
-        file.delete();
+        try {
+            Files.deleteIfExists(file.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
     
     public void mkdirs() {
-        file.getParentFile().mkdirs();
+        try {
+            Files.createDirectories(file.getParentFile().toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
