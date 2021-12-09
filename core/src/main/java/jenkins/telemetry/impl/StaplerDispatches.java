@@ -25,15 +25,12 @@ package jenkins.telemetry.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.PluginWrapper;
-import hudson.util.VersionNumber;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
-import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import net.sf.json.JSONObject;
 import org.kohsuke.MetaInfServices;
@@ -82,19 +79,6 @@ public class StaplerDispatches extends Telemetry {
         Set<String> currentTraces = new TreeSet<>(traces);
         traces.clear();
         return currentTraces;
-    }
-
-    private Object buildComponentInformation() {
-        Map<String, String> components = new TreeMap<>();
-        VersionNumber core = Jenkins.getVersion();
-        components.put("jenkins-core", core == null ? "" : core.toString());
-
-        for (PluginWrapper plugin : Jenkins.get().pluginManager.getPlugins()) {
-            if (plugin.isActive()) {
-                components.put(plugin.getShortName(), plugin.getVersion());
-            }
-        }
-        return components;
     }
 
     @MetaInfServices
