@@ -81,7 +81,6 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         String textLevelOne = "plain-2";
         String pwdLevelOneA = "secret-2";
-        String pwdLevelOneB = "pre-set secret"; // set in Jelly
         ((HtmlInput) page.getElementById("text-level-one")).setValueAttribute(textLevelOne);
         ((HtmlInput) page.getElementById("pwd-level-one-a")).setValueAttribute(pwdLevelOneA);
         
@@ -105,6 +104,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
                 )
         );
         
+        String pwdLevelOneB = "pre-set secret"; // set in Jelly
         JSONObject redactedJson = RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(rawJson);
         String redactedJsonToString = redactedJson.toString();
         assertThat(redactedJsonToString, containsString(textSimple));

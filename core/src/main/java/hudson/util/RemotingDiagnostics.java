@@ -148,6 +148,7 @@ public final class RemotingDiagnostics {
             }
             return out.toString();
         }
+        private static final long serialVersionUID = 1L;
     }
 
     /**

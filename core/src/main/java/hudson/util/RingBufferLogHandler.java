@@ -23,9 +23,10 @@
  */
 package hudson.util;
 
-import java.util.AbstractList;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
@@ -38,9 +39,15 @@ public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
+    private static final class LogRecordRef extends SoftReference<LogRecord> {
+        LogRecordRef(LogRecord referent) {
+            super(referent);
+        }
+    }
+
     private int start = 0;
-    private final LogRecord[] records;
-    private AtomicInteger size = new AtomicInteger(0);
+    private final LogRecordRef[] records;
+    private int size;
 
     /**
      * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
@@ -53,7 +60,7 @@ public class RingBufferLogHandler extends Handler {
     }
 
     public RingBufferLogHandler(int ringSize) {
-        records = new LogRecord[ringSize];
+        records = new LogRecordRef[ringSize];
     }
 
     /**
@@ -68,17 +75,16 @@ public class RingBufferLogHandler extends Handler {
     @Override
     public synchronized void publish(LogRecord record) {
         int len = records.length;
-        final int tempSize = size.get();
-        records[(start+ tempSize)%len]=record;
-        if(tempSize ==len) {
+        records[(start + size) % len] = new LogRecordRef(record);
+        if (size == len) {
             start = (start+1)%len;
         } else {
-            size.incrementAndGet();
+            size++;
         }
     }
 
     public synchronized void clear() {
-        size.set(0);
+        size = 0;
         start = 0;
     }
 
@@ -88,21 +94,16 @@ public class RingBufferLogHandler extends Handler {
      * <p>
      * New records are always placed early in the list.
      */
-    public List<LogRecord> getView() {
-        return new AbstractList<LogRecord>() {
-            @Override
-            public LogRecord get(int index) {
-                // flip the order
-                synchronized (RingBufferLogHandler.this) {
-                    return records[(start+(size.get()-(index+1)))%records.length];
-                }
+    public synchronized List<LogRecord> getView() {
+        List<LogRecord> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            LogRecord lr = records[(start + i) % records.length].get();
+            if (lr != null) {
+                result.add(lr);
             }
-
-            @Override
-            public int size() {
-                return size.get();
-            }
-        };
+        }
+        Collections.reverse(result);
+        return result;
     }
 
     // noop

@@ -47,7 +47,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
     private final String command;
     private final String toolHome;
 
-    public AbstractCommandInstaller(String label, String command, String toolHome) {
+    protected AbstractCommandInstaller(String label, String command, String toolHome) {
         super(label);
         this.command = command;
         this.toolHome = toolHome;

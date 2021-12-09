@@ -103,12 +103,12 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
     @Deprecated
-    public ToolInstallation(String name, String home) {
+    protected ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
     }
 
-    public ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+    protected ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         this.name = name;
         this.home = home;
         if(properties!=null) {
@@ -258,7 +258,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Subclasses can extend this for data migration from old field storing home directory.
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
-        public ToolConverter(XStream2 xstream) { super(xstream); }
+        protected ToolConverter(XStream2 xstream) { super(xstream); }
         @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;

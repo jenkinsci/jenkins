@@ -100,6 +100,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -814,6 +815,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return state ==State.NOT_STARTED;
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "see JENKINS-45892")
     @Override
     public String toString() {
         if (project == null) {
@@ -1380,7 +1382,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         private String treeNodeId;
 
         /**
-         *length of this artifact for files.
+         * length of this artifact for files.
          */
         private String length;
 
@@ -1464,7 +1466,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
-     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210. Use other methods giving various kinds of streams such as {@link Run#getLogReader()},  {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
+     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210.
+     *     Use other methods giving various kinds of streams such as {@link Run#getLogReader()}, {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
      */
     @Deprecated
     public @NonNull File getLogFile() {
@@ -1910,7 +1913,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
 
                 // even if the main build fails fatally, try to run post build processing
-                job.post(listener);
+                job.post(Objects.requireNonNull(listener));
 
             } catch (ThreadDeath t) {
                 throw t;
@@ -2651,7 +2654,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 

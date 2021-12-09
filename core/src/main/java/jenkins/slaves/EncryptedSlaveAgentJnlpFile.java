@@ -1,5 +1,6 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -68,6 +69,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         this.slaveName = slaveName;
     }
 
+    @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "TODO needs triage")
     @Override
     public void generateResponse(StaplerRequest req, final StaplerResponse res, Object node) throws IOException, ServletException {
         RequestDispatcher view = req.getView(it, viewName);

@@ -31,9 +31,9 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.security.ACL;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.Listeners;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -171,23 +171,8 @@ public class ItemListener implements ExtensionPoint {
         return ExtensionList.lookup(ItemListener.class);
     }
 
-    // TODO JENKINS-21224 generalize this to a method perhaps in ExtensionList and use consistently from all listeners
-    private static void forAll(final Consumer<ItemListener> consumer) {
-        for (ItemListener l : all()) {
-            try {
-                consumer.accept(l);
-            } catch (RuntimeException x) {
-                LOGGER.log(Level.WARNING, "failed to send event to listener of " + l.getClass(), x);
-            }
-        }
-    }
-
     public static void fireOnCopied(final Item src, final Item result) {
-        forAll(l -> {
-            if (l != null) {
-                l.onCopied(src, result);
-            }
-        });
+        Listeners.notify(ItemListener.class, l -> l.onCopied(src, result));
     }
 
     /**
@@ -212,28 +197,16 @@ public class ItemListener implements ExtensionPoint {
     }
 
     public static void fireOnCreated(final Item item) {
-        forAll(l -> {
-            if (l != null) {
-                l.onCreated(item);
-            }
-        });
+        Listeners.notify(ItemListener.class, l -> l.onCreated(item));
     }
 
     public static void fireOnUpdated(final Item item) {
-        forAll(l -> {
-            if (l != null) {
-                l.onUpdated(item);
-            }
-        });
+        Listeners.notify(ItemListener.class, l -> l.onUpdated(item));
     }
 
     /** @since 1.548 */
     public static void fireOnDeleted(final Item item) {
-        forAll(l -> {
-            if (l != null) {
-                l.onDeleted(item);
-            }
-        });
+        Listeners.notify(ItemListener.class, l -> l.onDeleted(item));
     }
 
     /**
@@ -254,28 +227,16 @@ public class ItemListener implements ExtensionPoint {
             final String oldName = oldFullName.substring(prefixS);
             final String newName = rootItem.getName();
             assert newName.equals(newFullName.substring(prefixS));
-            forAll(l -> {
-                if (l != null) {
-                    l.onRenamed(rootItem, oldName, newName);
-                }
-            });
+            Listeners.notify(ItemListener.class, l -> l.onRenamed(rootItem, oldName, newName));
         }
-        forAll(l -> {
-            if (l!= null) {
-                l.onLocationChanged(rootItem, oldFullName, newFullName);
-            }
-        });
+        Listeners.notify(ItemListener.class, l -> l.onLocationChanged(rootItem, oldFullName, newFullName));
         if (rootItem instanceof ItemGroup) {
             for (final Item child : Items.allItems2(ACL.SYSTEM2, (ItemGroup)rootItem, Item.class)) {
                 final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';
                 final String childOld = oldFullName + childNew.substring(newFullName.length());
-                forAll(l -> {
-                    if (l != null) {
-                        l.onLocationChanged(child, childOld, childNew);
-                    }
-                });
+                Listeners.notify(ItemListener.class, l -> l.onLocationChanged(child, childOld, childNew));
             }
         }
     }
