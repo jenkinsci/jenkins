@@ -18,7 +18,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * maven-hpi-plugin} configuration.
  *
  * @author Basil Crow
- * @since TODO
  */
 @Restricted(NoExternalUse.class)
 public class PluginFirstClassLoader2 extends URLClassLoader2 {
