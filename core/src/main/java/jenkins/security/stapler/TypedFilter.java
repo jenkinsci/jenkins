@@ -269,10 +269,10 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_TYPE_CHECK = SystemProperties.getBoolean(TypedFilter.class.getName() + ".skipTypeCheck");
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean PROHIBIT_STATIC_ACCESS = SystemProperties.getBoolean(TypedFilter.class.getName() + ".prohibitStaticAccess", true);
 }

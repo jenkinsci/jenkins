@@ -1371,11 +1371,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Returns the URL of the server that hosts the update-center.json
          * file.
          *
+         * @return
+         *      Absolute URL that ends with '/'.
          * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now moved to {@link UpdateSite}.
-         * @return
-         *      Absolute URL that ends with '/'.
          */
         @Deprecated
         public String getUpdateCenterUrl() {
@@ -2652,7 +2652,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
 
 

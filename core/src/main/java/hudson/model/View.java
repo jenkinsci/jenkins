@@ -29,6 +29,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -78,6 +79,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -526,8 +528,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      * @return The items in the queue.
+     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      */
     @Deprecated
     public List<Queue.Item> getApproximateQueueItemsQuickly() {
@@ -1317,6 +1319,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
     public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
     @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
     @Restricted(DoNotUse.class)
     public static void registerPermissions() {
@@ -1324,7 +1327,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // allowing plugins to adapt the system configuration, which may depend on these permissions
         // having been registered. Since this method is static and since it follows the above
         // construction of static permission objects (and therefore their calls to
-        // PermissionGroup#register), there is nothing further to do in this method.
+        // PermissionGroup#register), there is nothing further to do in this method. We call
+        // Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(PERMISSIONS, CREATE, DELETE, CONFIGURE, READ);
     }
 
     // to simplify access from Jelly

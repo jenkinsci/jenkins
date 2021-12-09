@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -52,6 +53,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Restricted(NoExternalUse.class)
 public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
+    @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "This is a password parameter, not a password")
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
         // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
@@ -59,6 +61,7 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
         setPasswordParameter("j_password");
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "request.getSession(true) does in fact have a side effect")
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {

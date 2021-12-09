@@ -170,7 +170,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * Configure the logging level.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     @RequirePOST
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -261,6 +261,6 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(LogRecorderManager.class.getName() + ".skipPermissionCheck");
 }

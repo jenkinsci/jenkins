@@ -3,14 +3,13 @@ package jenkins;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
-import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Variant of {@link FilePathFilter} that assumes it is the sole actor.
@@ -24,7 +23,7 @@ public final class SoloFilePathFilter extends FilePathFilter {
 
     private static final Logger LOGGER = Logger.getLogger(SoloFilePathFilter.class.getName());
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
     public static /* non-final for Groovy */ boolean REDACT_ERRORS = SystemProperties.getBoolean(SoloFilePathFilter.class.getName() + ".redactErrors", true);
 

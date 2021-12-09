@@ -44,7 +44,7 @@ public abstract class FullDuplexHttpChannel extends FullDuplexHttpService {
     private Channel channel;
     private final boolean restricted;
 
-    public FullDuplexHttpChannel(UUID uuid, boolean restricted) throws IOException {
+    protected FullDuplexHttpChannel(UUID uuid, boolean restricted) throws IOException {
         super(uuid);
         this.restricted = restricted;
     }
