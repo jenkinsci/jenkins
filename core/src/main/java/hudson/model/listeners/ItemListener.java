@@ -197,6 +197,15 @@ public class ItemListener implements ExtensionPoint {
     }
 
     public static void fireOnCreated(final Item item) {
+        // Do not use Listeners.notify here as impls in matrix-auth expect the Authentication to be retained.
+        for (ItemListener l : all()) {
+            try {
+                l.onCreated(item);
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+
+            }
+        }
         Listeners.notify(ItemListener.class, l -> l.onCreated(item));
     }
 
