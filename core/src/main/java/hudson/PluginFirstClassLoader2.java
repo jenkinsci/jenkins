@@ -1,5 +1,6 @@
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.CompoundEnumeration;
 import java.io.IOException;
 import java.net.URL;
@@ -25,7 +26,7 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
         registerAsParallelCapable();
     }
 
-    public PluginFirstClassLoader2(URL[] urls, ClassLoader parent) {
+    public PluginFirstClassLoader2(@NonNull URL[] urls, @NonNull ClassLoader parent) {
         super(Objects.requireNonNull(urls), Objects.requireNonNull(parent));
     }
 
