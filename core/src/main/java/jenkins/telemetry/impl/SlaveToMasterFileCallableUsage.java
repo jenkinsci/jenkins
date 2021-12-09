@@ -27,8 +27,9 @@ package jenkins.telemetry.impl;
 import hudson.Extension;
 import hudson.Functions;
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.security.s2m.DefaultFilePathFilter;
@@ -63,7 +64,10 @@ public class SlaveToMasterFileCallableUsage extends Telemetry {
 
     @Override
     public synchronized JSONObject createContent() {
-        JSONObject json = JSONObject.fromObject(Collections.singletonMap("traces", traces));
+        Map<String, Object> info = new TreeMap<>();
+        info.put("traces", traces);
+        info.put("components", buildComponentInformation());
+        JSONObject json = JSONObject.fromObject(info);
         traces.clear();
         return json;
     }
