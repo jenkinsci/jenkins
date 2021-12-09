@@ -52,7 +52,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.AbstractCloudSlave;
-import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
@@ -280,7 +279,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @SuppressWarnings({"ConstantConditions","deprecation"})
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void addAction(@NonNull Action a) {
         if (a == null) {
@@ -1607,7 +1605,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
@@ -1846,11 +1844,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =
             new Permission[] { EXTENDED_READ, CONNECT };
-
-    // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
-    // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,
-    // it might appear the permission does not exist. Referencing the permission from here to make sure it gets loaded.
-    private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

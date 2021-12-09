@@ -800,9 +800,9 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
-        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
         public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
-        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
         public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override

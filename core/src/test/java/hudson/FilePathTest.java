@@ -477,7 +477,7 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        assumeFalse("can't test on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
@@ -785,7 +785,7 @@ public class FilePathTest {
     }
 
     @Test public void deleteRecursiveOnUnix() throws Exception {
-        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
@@ -831,7 +831,7 @@ public class FilePathTest {
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
-        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
@@ -912,6 +912,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularSymlinks() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
         //          /a
@@ -930,7 +931,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -946,6 +946,7 @@ public class FilePathTest {
         workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -994,7 +995,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1008,6 +1008,7 @@ public class FilePathTest {
         createJunction(new File(root, "/workspace/_nonexistentUp"), new File(root, "/nonexistent"));
         createJunction(new File(root, "/workspace/_protected"), new File(root, "/protected"));
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1039,6 +1040,7 @@ public class FilePathTest {
 
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
+        assumeFalse(Functions.isWindows());
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
@@ -1066,6 +1068,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /w
         //          /_workspace => symlink to ../workspace
@@ -1083,11 +1086,9 @@ public class FilePathTest {
         //      /protected
         //          secret.txt
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
-        FilePath wFolder = rootFolder.child("w");
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1105,10 +1106,12 @@ public class FilePathTest {
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
+        FilePath wFolder = rootFolder.child("w");
         wFolder.mkdirs();
         FilePath symbolicWorkspace = wFolder.child("_w");
         symbolicWorkspace.symlinkTo("../workspace", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 

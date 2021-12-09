@@ -23,6 +23,7 @@
  */
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.model.Action;
 import hudson.model.Executor;
@@ -79,6 +80,7 @@ public final class WorkUnitContext {
         // +1 for the main task
         int workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
             @Override
             protected void onCriteriaMet() {
                 // on behalf of the member Executors,

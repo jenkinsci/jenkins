@@ -258,6 +258,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "TODO needs triage")
                     @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
@@ -313,7 +314,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Used to be milliseconds, now is seconds since Jenkins 2.289.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.289")
     public static /* non-final for Groovy */ long CRON_THRESHOLD = SystemProperties.getLong(Trigger.class.getName() + ".CRON_THRESHOLD", 30L); // Default threshold 30s
@@ -330,7 +331,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * @deprecated Use {@link jenkins.util.Timer#get()} instead.
      */
-    @SuppressWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
     @Deprecated
     public static @CheckForNull Timer timer;
 
