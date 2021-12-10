@@ -371,7 +371,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
 
-        data.keySet().removeAll(removed);
+        removed.forEach(data.keySet()::remove);
     }
 
     public HttpResponse doIndex(StaplerResponse rsp) throws IOException {

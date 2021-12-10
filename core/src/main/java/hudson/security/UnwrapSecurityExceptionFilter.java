@@ -60,7 +60,7 @@ public class UnwrapSecurityExceptionFilter implements Filter {
                     t = t.getCause();
                 }
             }
-            if (t != null && t instanceof JellyTagException) {
+            if (t instanceof JellyTagException) {
                 JellyTagException jte = (JellyTagException) t;
                 Throwable cause = jte.getCause();
                 if (cause instanceof AccessDeniedException || cause instanceof AuthenticationException) {
