@@ -1881,7 +1881,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Called when the download is completed to overwrite
          * the old file with the new file.
          */
-        protected void replace(File dst, File src) throws IOException {
+        protected synchronized void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
             Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
@@ -2254,17 +2254,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 verifyChecksums(this, plugin, src);
             }
 
-            File bak = Util.changeExtension(dst, ".bak");
+            synchronized (this) {
+                File bak = Util.changeExtension(dst, ".bak");
 
-            final File legacy = getLegacyDestination();
-            if (Files.exists(Util.fileToPath(legacy))) {
-                Files.move(Util.fileToPath(legacy), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            }
-            if (Files.exists(Util.fileToPath(dst))) {
-                Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            }
+                final File legacy = getLegacyDestination();
+                if (Files.exists(Util.fileToPath(legacy))) {
+                    Files.move(Util.fileToPath(legacy), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                }
+                if (Files.exists(Util.fileToPath(dst))) {
+                    Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                }
 
-            Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            }
         }
 
         void setBatch(List<PluginWrapper> batch) {
@@ -2408,7 +2410,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * current version with backup file
          */
         @Override
-        protected void replace(File dst, File backup) throws IOException {
+        protected synchronized void replace(File dst, File backup) throws IOException {
             Files.move(Util.fileToPath(backup), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
