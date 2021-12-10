@@ -52,7 +52,7 @@ public class HsErrPidFile {
     @RequirePOST
     public HttpResponse doDelete() throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        Files.deleteIfExists(file.toPath());
+        Files.deleteIfExists(Util.fileToPath(file));
         owner.files.remove(this);
         return HttpResponses.redirectTo("../..");
     }

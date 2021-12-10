@@ -2,7 +2,6 @@ package jenkins.util.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
@@ -36,7 +35,7 @@ public class FileBoolean {
      * Gets the current state. True if the file exists, false if it doesn't.
      */
     public boolean get() {
-        return state = Files.exists(file.toPath());
+        return state=file.exists();
     }
 
     /**
@@ -71,10 +70,10 @@ public class FileBoolean {
     public void off() {
         try {
             Files.deleteIfExists(file.toPath());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            get();  // update state
+        } catch (IOException | InvalidPathException e) {
+            LOGGER.log(Level.WARNING, "Failed to delete " + file);
         }
-        get();  // update state
     }
 
     private static final Logger LOGGER = Logger.getLogger(FileBoolean.class.getName());

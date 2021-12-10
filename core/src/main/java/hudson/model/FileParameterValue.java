@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import java.io.File;
@@ -36,7 +37,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.util.regex.Pattern;
 import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
@@ -261,11 +261,7 @@ public class FileParameterValue extends ParameterValue {
 
         @Override
         public InputStream getInputStream() throws IOException {
-            try {
-                return Files.newInputStream(file.toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newInputStream(Util.fileToPath(file));
         }
 
         @Override
@@ -294,8 +290,8 @@ public class FileParameterValue extends ParameterValue {
                 try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                     return IOUtils.toByteArray(inputStream);
                 }
-            } catch (IOException | InvalidPathException e) {
-                throw new Error(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -344,11 +340,7 @@ public class FileParameterValue extends ParameterValue {
         @Override
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
-            try {
-                return Files.newOutputStream(file.toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newOutputStream(Util.fileToPath(file));
         }
 
         @Override

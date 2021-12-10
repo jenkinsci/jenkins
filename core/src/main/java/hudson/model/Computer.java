@@ -78,6 +78,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1680,7 +1681,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     Files.createDirectories(newLocation.getParentFile().toPath());
                     Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
-                } catch (IOException e) {
+                } catch (IOException | InvalidPathException e) {
                     LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
             } else {

@@ -28,6 +28,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Util;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
@@ -162,7 +163,7 @@ public final class RemotingDiagnostics {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
-                Files.delete(hprof.toPath());
+                Files.delete(Util.fileToPath(hprof));
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
                     server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",

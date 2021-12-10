@@ -29,6 +29,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
+import hudson.Util;
 import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
@@ -138,7 +139,7 @@ public class WindowsInstallerLink extends ManagementLink {
         try {
             // copy files over there
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"),         "jenkins.exe");
-            Files.deleteIfExists(dir.toPath().resolve("jenkins.exe.config"));
+            Files.deleteIfExists(Util.fileToPath(dir).resolve("jenkins.exe.config"));
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"),         "jenkins.xml");
             if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
                 copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");

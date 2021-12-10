@@ -25,6 +25,7 @@ package hudson.init.impl;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
+import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.Messages;
 import java.io.File;
@@ -41,8 +42,8 @@ public class InitialUserContent {
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) throws IOException {
         File userContentDir = new File(h.getRootDir(), "userContent");
-        if (!Files.isDirectory(userContentDir.toPath())) {
-            Files.createDirectories(userContentDir.toPath());
+        if (!Files.isDirectory(Util.fileToPath(userContentDir))) {
+            Files.createDirectories(Util.fileToPath(userContentDir));
             FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
         }
     }

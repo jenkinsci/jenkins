@@ -33,7 +33,6 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -55,15 +54,11 @@ public class TextFile {
     }
 
     public boolean exists() {
-        return Files.exists(file.toPath());
+        return file.exists();
     }
 
-    public void delete() {
-        try {
-            Files.deleteIfExists(file.toPath());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
 
     /**
@@ -101,7 +96,7 @@ public class TextFile {
      * Overwrites the file by the given string.
      */
     public void write(String text) throws IOException {
-        Files.createDirectories(file.getParentFile().toPath());
+        Files.createDirectories(Util.fileToPath(file.getParentFile()));
         try (AtomicFileWriter w = new AtomicFileWriter(file)) {
             try {
                 w.write(text);

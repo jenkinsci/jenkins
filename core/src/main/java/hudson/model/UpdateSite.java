@@ -372,7 +372,11 @@ public class UpdateSite {
                 return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
+                try {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                } catch (IOException e2) {
+                    LOGGER.log(Level.SEVERE, "Failed to delete " + df, e2);
+                }
                 return null;
             }
         } else {

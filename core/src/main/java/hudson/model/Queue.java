@@ -79,6 +79,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -434,7 +435,7 @@ public class Queue extends ResourceController implements Saveable {
                 File bk = new File(queueFile.getPath() + ".bak");
                 Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();

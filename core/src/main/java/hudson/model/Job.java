@@ -664,11 +664,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (Files.isDirectory(oldBuildDir.toPath()) && !Files.isDirectory(newBuildDir.toPath())) {
-            if (!Files.isDirectory(newBuildDir.getParentFile().toPath())) {
-                Files.createDirectories(newBuildDir.getParentFile().toPath());
-            }
-            Files.move(oldBuildDir.toPath(), newBuildDir.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
+            Files.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 

@@ -684,7 +684,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             unzip(dir,tmpFile);
         }
         finally {
-            Files.delete(tmpFile.toPath());
+            Files.delete(Util.fileToPath(tmpFile));
         }
     }
 
@@ -719,7 +719,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
-                    Files.setLastModifiedTime(f.toPath(), e.getLastModifiedTime());
+                    Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
                 }
             }
         } finally {
@@ -2427,7 +2427,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if(!deleting(reading(child)).renameTo(writing(creating(target))))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
-                Files.deleteIfExists(deleting(tmp).toPath());
+                Files.deleteIfExists(Util.fileToPath(deleting(tmp)));
                 return null;
             }
     }
@@ -2855,7 +2855,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     } else {
                         IOUtils.copy(t, writing(f));
 
-                        Files.setLastModifiedTime(f.toPath(), FileTime.from(te.getModTime().toInstant()));
+                        Files.setLastModifiedTime(Util.fileToPath(f), FileTime.from(te.getModTime().toInstant()));
                         int mode = te.getMode() & 0777;
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);

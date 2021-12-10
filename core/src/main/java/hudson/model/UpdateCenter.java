@@ -1883,8 +1883,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            Files.move(dst.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         /**
@@ -2257,14 +2257,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             File bak = Util.changeExtension(dst, ".bak");
 
             final File legacy = getLegacyDestination();
-            if (Files.exists(legacy.toPath())) {
-                Files.move(legacy.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            if (Files.exists(Util.fileToPath(legacy))) {
+                Files.move(Util.fileToPath(legacy), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             }
-            if (Files.exists(dst.toPath())) {
-                Files.move(dst.toPath(), bak.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            if (Files.exists(Util.fileToPath(dst))) {
+                Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             }
 
-            Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         void setBatch(List<PluginWrapper> batch) {
@@ -2409,7 +2409,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected void replace(File dst, File backup) throws IOException {
-            Files.move(backup.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(Util.fileToPath(backup), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
 
         @Override

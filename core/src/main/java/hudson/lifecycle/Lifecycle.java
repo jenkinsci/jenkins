@@ -168,7 +168,7 @@ public abstract class Lifecycle implements ExtensionPoint {
         FileUtils.copyFile(by, dest);
         // we don't want to keep backup if we are downgrading
         if (by.equals(bak)) {
-            Files.deleteIfExists(bak.toPath());
+            Files.deleteIfExists(Util.fileToPath(bak));
         }
     }
 
