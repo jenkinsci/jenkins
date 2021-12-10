@@ -73,7 +73,6 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -666,7 +665,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File newBuildDir = getBuildDir();
         if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
             Files.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
-            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir));
         }
     }
 
