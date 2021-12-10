@@ -34,7 +34,7 @@ public class JenkinsLogRecordsTest {
         assertThat("Records are displayed in reverse order",
             logRecords.stream().map(LogRecord::getMessage).collect(Collectors.toList()),
             containsInRelativeOrder("Completed initialization", "Started initialization"));
-        if (new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))) { // TODO https://github.com/jenkinsci/jenkins-test-harness/pull/358
+        if (new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))) { // TODO https://github.com/jenkinsci/jenkins-test-harness/issues/359
             LogRecord lr = new LogRecord(Level.INFO, "collect me");
             Logger.getLogger(Jenkins.class.getName()).log(lr);
             WeakReference<LogRecord> ref = new WeakReference<>(lr);
