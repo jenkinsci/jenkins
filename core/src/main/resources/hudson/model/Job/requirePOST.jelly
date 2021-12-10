@@ -24,13 +24,14 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:layout title="${%Form post required}">
         <l:main-panel>
             <p>${%use_post}</p>
-            <form method="POST">
+            <form method="POST" id="post-form">
                 <input type="submit" value="${%Proceed}"/>
             </form>
+            <st:adjunct includes="hudson.model.Job.requirePOST_resources"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>
