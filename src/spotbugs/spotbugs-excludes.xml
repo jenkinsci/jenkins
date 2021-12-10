@@ -453,6 +453,7 @@
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
         <Or>
+          <Class name="jenkins.fingerprints.FileFingerprintStorage"/>
           <Class name="jenkins.model.PeepholePermalink"/>
           <Class name="jenkins.util.io.PathRemover"/>
         </Or>
@@ -502,41 +503,9 @@
       <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
         <Or>
-          <Class name="hudson.ClassicPluginStrategy"/>
-          <Class name="hudson.FilePath"/>
-          <Class name="hudson.FilePath$MoveAllChildrenTo"/>
-          <Class name="hudson.init.impl.InitialUserContent"/>
-          <Class name="hudson.lifecycle.Lifecycle"/>
-          <Class name="hudson.lifecycle.WindowsInstallerLink"/>
-          <Class name="hudson.Main"/>
-          <Class name="hudson.model.Computer"/>
-          <Class name="hudson.model.DownloadService$Downloadable"/>
-          <Class name="hudson.model.FileParameterValue$FileItemImpl"/>
-          <Class name="hudson.model.ItemGroupMixIn"/>
-          <Class name="hudson.model.Job"/>
-          <Class name="hudson.model.Queue"/>
-          <Class name="hudson.model.RunMap"/>
-          <Class name="hudson.model.UpdateCenter$DownloadJob"/>
-          <Class name="hudson.model.UpdateCenter$InstallationJob"/>
-          <Class name="hudson.model.UpdateCenter$PluginDowngradeJob"/>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.PluginWrapper"/>
-          <Class name="hudson.util.CompressedFile"/>
-          <Class name="hudson.util.io.ReopenableRotatingFileOutputStream"/>
-          <Class name="hudson.util.io.RewindableRotatingFileOutputStream"/>
-          <Class name="hudson.util.RemotingDiagnostics$GetHeapDump"/>
-          <Class name="hudson.util.TextFile"/>
-          <Class name="hudson.WebAppMain"/>
-          <Class name="hudson.XmlFile"/>
           <Class name="jenkins.agents.WebSocketAgents$Session"/>
-          <Class name="jenkins.diagnosis.HsErrPidFile"/>
-          <Class name="jenkins.fingerprints.FileFingerprintStorage"/>
-          <Class name="jenkins.install.InstallUtil"/>
-          <Class name="jenkins.management.AsynchronousAdministrativeMonitor"/>
-          <Class name="jenkins.model.Jenkins"/>
           <Class name="jenkins.slaves.restarter.JnlpSlaveRestarterInstaller"/>
           <Class name="jenkins.util.AtmostOneTaskExecutor"/>
-          <Class name="jenkins.util.io.FileBoolean"/>
         </Or>
       </And>
       <And>

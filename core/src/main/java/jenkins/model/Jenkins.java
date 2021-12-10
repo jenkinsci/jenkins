@@ -217,6 +217,8 @@ import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3345,8 +3347,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // make sure platform can handle colon
             try {
                 File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
-                tmp.delete();
-            } catch (IOException e) {
+                Files.delete(tmp.toPath());
+            } catch (IOException | InvalidPathException e) {
                 throw (InvalidBuildsDir)new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead").initCause(e);
             }
         }

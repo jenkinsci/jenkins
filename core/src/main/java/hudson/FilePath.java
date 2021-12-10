@@ -95,6 +95,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
@@ -683,7 +684,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             unzip(dir,tmpFile);
         }
         finally {
-            tmpFile.delete();
+            Files.delete(Util.fileToPath(tmpFile));
         }
     }
 
@@ -718,7 +719,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
-                    f.setLastModified(e.getTime());
+                    Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
                 }
             }
         } finally {
@@ -2426,7 +2427,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if(!deleting(reading(child)).renameTo(writing(creating(target))))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
-                deleting(tmp).delete();
+                Files.deleteIfExists(Util.fileToPath(deleting(tmp)));
                 return null;
             }
     }
@@ -2854,7 +2855,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     } else {
                         IOUtils.copy(t, writing(f));
 
-                        f.setLastModified(te.getModTime().getTime());
+                        Files.setLastModifiedTime(Util.fileToPath(f), FileTime.from(te.getModTime().toInstant()));
                         int mode = te.getMode() & 0777;
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
