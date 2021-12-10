@@ -206,7 +206,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
             CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
-        } catch(Exception e) {
+        } catch(RuntimeException e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
             CHECK_UPDATE_ATTEMPTS = CHECK_UPDATE_ATTEMPTS > 0 ? CHECK_UPDATE_ATTEMPTS : 1;
@@ -1589,7 +1589,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             responseData.put("correlationId", correlationId.toString());
 
             return hudson.util.HttpResponses.okJSON(responseData);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return hudson.util.HttpResponses.errorJSON(e.getMessage());
         }
     }

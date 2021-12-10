@@ -27,6 +27,7 @@ import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.Proc.ProcWithJenkins23271Patch;
 import hudson.model.Computer;
@@ -1504,6 +1505,7 @@ public abstract class Launcher {
     /**
      * Debug option to display full current path instead of just the last token.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean showFullPath = false;
 
     private static final NullInputStream NULL_INPUT_STREAM = new NullInputStream(0);

@@ -415,7 +415,7 @@ public class WebAppMain implements ServletContextListener {
                 if (instance != null) {
                     instance.cleanUp();
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
             }
 

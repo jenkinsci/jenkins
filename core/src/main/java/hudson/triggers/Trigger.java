@@ -331,7 +331,6 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * @deprecated Use {@link jenkins.util.Timer#get()} instead.
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
     @Deprecated
     public static @CheckForNull Timer timer;
 

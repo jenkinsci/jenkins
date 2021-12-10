@@ -107,7 +107,7 @@ public class I18n implements RootAction {
             }
 
             return HttpResponses.okJSON(ResourceBundleUtil.getBundle(baseName, locale));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(e.getMessage());
         }
     }

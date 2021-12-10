@@ -444,7 +444,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 jobs = Collections.emptyMap();
             }
             return HttpResponses.okJSON(jobs);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -514,7 +514,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             return HttpResponses.okJSON(JSONObject.fromObject(response));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
