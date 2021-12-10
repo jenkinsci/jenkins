@@ -162,14 +162,8 @@ public class InstallUtil {
             
             // Allow for skipping
             if(shouldNotRun) {
-                try {
-                    InstallState.INITIAL_SETUP_COMPLETED.initializeState();
-                    return j.getInstallState();
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                InstallState.INITIAL_SETUP_COMPLETED.initializeState();
+                return j.getInstallState();
             }
 
             return InstallState.INITIAL_SECURITY_SETUP;

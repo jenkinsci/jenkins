@@ -74,7 +74,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
                     Pattern.compile(m.group(3)),
                     createOpMatcher(m.group(2)),
                     m.group(1).equals("allow"));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new Failure("Invalid filter rule line: "+line+"\n"+ Functions.printThrowable(e));
         }
     }

@@ -913,7 +913,7 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
-        } catch(Exception ex) {
+        } catch(RuntimeException ex) {
             if (!(ex instanceof AccessDeniedException)) {
                 // Prevents UI from exploding in the case of unexpected runtime exceptions
                 LOGGER.log(WARNING, "Unhandled exception", ex);

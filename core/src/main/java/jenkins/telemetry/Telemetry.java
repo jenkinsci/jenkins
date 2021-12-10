@@ -204,7 +204,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 JSONObject data = new JSONObject();
                 try {
                     data = telemetry.createContent();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
                 }
 
