@@ -24,10 +24,10 @@
 package hudson.util;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -94,16 +94,29 @@ public class RingBufferLogHandler extends Handler {
      * <p>
      * New records are always placed early in the list.
      */
-    public synchronized List<LogRecord> getView() {
-        List<LogRecord> result = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            LogRecord lr = records[(start + i) % records.length].get();
-            if (lr != null) {
-                result.add(lr);
+    public List<LogRecord> getView() {
+        // Since Jenkins.logRecords is a field used as an API, we are forced to implement a dynamic list.
+        return new AbstractList<LogRecord>() {
+            @Override
+            public LogRecord get(int index) {
+                // flip the order
+                synchronized (RingBufferLogHandler.this) {
+                    LogRecord r = records[(start + (size - (index + 1))) % records.length].get();
+                    // We cannot just omit collected entries due to the List interface.
+                    return r != null ? r : new LogRecord(Level.OFF, "<discarded>");
+                }
             }
-        }
-        Collections.reverse(result);
-        return result;
+            @Override
+            public int size() {
+                synchronized (RingBufferLogHandler.this) {
+                    // Not actually correct if a log record is added
+                    // after this is called but before the list is iterated.
+                    // However the size should only ever grow, up to the ring buffer max,
+                    // so get(int) should never throw AIOOBE.
+                    return size;
+                }
+            }
+        };
     }
 
     // noop
