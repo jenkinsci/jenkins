@@ -68,6 +68,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
@@ -1883,8 +1884,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected synchronized void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            moveAtomically(dst, bak);
+            moveAtomically(src, dst);
         }
 
         /**
@@ -2259,13 +2260,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 final File legacy = getLegacyDestination();
                 if (Files.exists(Util.fileToPath(legacy))) {
-                    Files.move(Util.fileToPath(legacy), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                    moveAtomically(legacy, bak);
                 }
                 if (Files.exists(Util.fileToPath(dst))) {
-                    Files.move(Util.fileToPath(dst), Util.fileToPath(bak), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                    moveAtomically(dst, bak);
                 }
 
-                Files.move(Util.fileToPath(src), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                moveAtomically(src, dst);
             }
         }
 
@@ -2411,7 +2412,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected synchronized void replace(File dst, File backup) throws IOException {
-            Files.move(Util.fileToPath(backup), Util.fileToPath(dst), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            moveAtomically(backup, dst);
         }
 
         @Override
@@ -2662,5 +2663,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     static {
         XSTREAM.alias("site",UpdateSite.class);
         XSTREAM.alias("sites",PersistedList.class);
+    }
+
+    private static void moveAtomically(File src, File target) throws IOException {
+        try {
+            Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            LOGGER.log(Level.WARNING, "Atomic move not supported. Falling back to non-atomic move.", e);
+            try {
+                Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                e2.addSuppressed(e);
+                throw e2;
+            }
+        }
     }
 }
