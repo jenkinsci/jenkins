@@ -63,7 +63,7 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
             File fi = getNumberedFileName(i);
             if (Files.exists(Util.fileToPath(fi))) {
                 File next = getNumberedFileName(i+1);
-                Files.move(Util.fileToPath(fi), Util.fileToPath(next), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(Util.fileToPath(fi), Util.fileToPath(next), StandardCopyOption.REPLACE_EXISTING);
             }
         }
     }
