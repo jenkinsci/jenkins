@@ -193,13 +193,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="IS_FIELD_NOT_GUARDED"/>
-        <Or>
-          <Class name="hudson.model.ListView"/>
-          <Class name="hudson.model.ListView$Listener"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
         <Or>
           <Class name="hudson.triggers.Trigger"/>
