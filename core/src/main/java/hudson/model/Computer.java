@@ -710,9 +710,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             statusChangeLock.notifyAll();
         }
         if (temporarilyOffline) {
-            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOffline(this, cause));
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
         } else {
-            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOnline(this));
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
         }
     }
 

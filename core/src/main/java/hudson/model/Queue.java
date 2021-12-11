@@ -2552,7 +2552,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             if (q.waitingList.add(this)) {
-                Listeners.notify(QueueListener.class, l -> l.onEnterWaiting(this));
+                Listeners.notify(QueueListener.class, true, l -> l.onEnterWaiting(this));
             }
         }
 
@@ -2560,7 +2560,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = q.waitingList.remove(this);
             if (r) {
-                Listeners.notify(QueueListener.class, l -> l.onLeaveWaiting(this));
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveWaiting(this));
             }
             return r;
         }
@@ -2631,7 +2631,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
-            Listeners.notify(QueueListener.class, l -> l.onEnterBlocked(this));
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBlocked(this));
         }
 
                     @Override
@@ -2639,7 +2639,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = blockedProjects.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                Listeners.notify(QueueListener.class, l -> l.onLeaveBlocked(this));
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBlocked(this));
             }
             return r;
         }
@@ -2726,7 +2726,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             q.buildables.add(this);
-            Listeners.notify(QueueListener.class, l -> l.onEnterBuildable(this));
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBuildable(this));
         }
 
         @Override
@@ -2734,7 +2734,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = q.buildables.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                Listeners.notify(QueueListener.class, l -> l.onLeaveBuildable(this));
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBuildable(this));
             }
             return r;
         }
@@ -2790,7 +2790,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         void enter(Queue q) {
             q.leftItems.put(getId(),this);
-            Listeners.notify(QueueListener.class, l -> l.onLeft(this));
+            Listeners.notify(QueueListener.class, true, l -> l.onLeft(this));
         }
 
         @Override

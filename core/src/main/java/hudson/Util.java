@@ -1070,7 +1070,7 @@ public class Util {
      */
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
-        cp.setProject(new org.apache.tools.ant.Project());
+        cp.setProject(new Project());
         cp.setTofile(dst);
         cp.setFile(src);
         cp.setOverwrite(true);

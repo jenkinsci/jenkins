@@ -2892,11 +2892,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar")
-     * against this directory, and try to point out the problem.
-     *
-     * <p>
-     * This is useful in conjunction with {@link FormValidation}.
+     * Same as {@link #validateAntFileMask(String, int)} with (practically) unbounded number of operations.
      *
      * @return
      *      null if no error was found. Otherwise returns a human readable error message.
@@ -2910,10 +2906,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Same as {@link #validateAntFileMask(String, int, boolean)} with caseSensitive set to true
+     * Same as {@link #validateAntFileMask(String, int, boolean)} with caseSensitive set to true.
      */
     public String validateAntFileMask(final String fileMasks, final int bound) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, bound, true);
+    }
+
+    /**
+     * Same as {@link #validateAntFileMask(String, int, boolean)} with the default number of operations.
+     * @see #VALIDATE_ANT_FILE_MASK_BOUND
+     * @since TODO
+     */
+    public String validateAntFileMask(final String fileMasks, final boolean caseSensitive) throws IOException, InterruptedException {
+        return validateAntFileMask(fileMasks, VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
     }
 
     /**
@@ -2924,14 +2929,22 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
-     * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
+     * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar") against this directory, and try to point out the problem.
+     * This performs only a bounded number of operations.
+     *
      * <p>Whereas the unbounded overload is appropriate for calling from cancelable, long-running tasks such as build steps,
      * this overload should be used when an answer is needed quickly, such as for {@link #validateFileMask(String)}
      * or anything else returning {@link FormValidation}.
+     *
      * <p>If a positive match is found, {@code null} is returned immediately.
      * A message is returned in case the file pattern can definitely be determined to not match anything in the directory within the alloted time.
      * If the time runs out without finding a match but without ruling out the possibility that there might be one, {@link InterruptedException} is thrown,
      * in which case the calling code should give the user the benefit of the doubt and use {@link hudson.util.FormValidation.Kind#OK} (with or without a message).
+     *
+     * <p>While this can be used in conjunction with {@link FormValidation}, it's generally better to use {@link #validateFileMask(String)} and
+     * its overloads for use in {@code doCheck} form validation methods related to workspaces, as that performs an appropriate permission check.
+     * Callers of this method or its overloads from web methods should ensure permissions are checked before this method is invoked.
+     *
      * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; try {@link #VALIDATE_ANT_FILE_MASK_BOUND}
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
@@ -3153,8 +3166,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Checks the GLOB-style file mask. See {@link #validateAntFileMask(String)}.
-     * Requires configure permission on ancestor AbstractProject object in request,
-     * or admin permission if no such ancestor is found.
+     * Requires configure permission on ancestor {@link AbstractProject} object in request,
+     * or {@link Jenkins#MANAGE} permission if no such ancestor is found.
+     *
+     * <p>Note that this permission check may not always make sense based on the directory provided;
+     * callers should consider using {@link #validateFileMask(FilePath, String, boolean)} and its overloads instead
+     * (once appropriate permission checks have succeeded).
+     *
      * @since 1.294
      */
     public FormValidation validateFileMask(String value, boolean errorIfNotExist, boolean caseSensitive) throws IOException {
@@ -3178,8 +3196,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Validates a relative file path from this {@link FilePath}.
-     * Requires configure permission on ancestor AbstractProject object in request,
-     * or admin permission if no such ancestor is found.
+     * Requires configure permission on ancestor {@link AbstractProject} object in request,
+     * or {@link Jenkins#MANAGE} permission if no such ancestor is found.
+     *
+     * <p>Note that this permission check may not always make sense based on the directory provided;
+     * callers should consider using {@link #validateFileMask(FilePath, String, boolean)} and its overloads instead
+     * (once appropriate permission checks have succeeded).
      *
      * @param value
      *      The relative path being validated.
