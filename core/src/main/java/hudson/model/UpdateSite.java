@@ -35,6 +35,7 @@ import static jenkins.util.MemoryReductionUtil.internInPlace;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -372,7 +373,11 @@ public class UpdateSite {
                 return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
+                try {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                } catch (IOException e2) {
+                    LOGGER.log(Level.SEVERE, "Failed to delete " + df, e2);
+                }
                 return null;
             }
         } else {
@@ -1151,7 +1156,7 @@ public class UpdateSite {
             if (releaseTimestamp != null) {
                 try {
                     date = Date.from(Instant.parse(releaseTimestamp));
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
                 }
             }
@@ -1651,6 +1656,7 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

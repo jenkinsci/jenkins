@@ -246,12 +246,12 @@ public final class XmlFile {
         return file.exists();
     }
 
-    public void delete() {
-        file.delete();
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
     
-    public void mkdirs() {
-        file.getParentFile().mkdirs();
+    public void mkdirs() throws IOException {
+        Files.createDirectories(Util.fileToPath(file.getParentFile()));
     }
 
     @Override

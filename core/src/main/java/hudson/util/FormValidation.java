@@ -359,7 +359,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 }
             });
             return result[0];
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return FormValidation.error(e, "Unexpected error");
         }
     }

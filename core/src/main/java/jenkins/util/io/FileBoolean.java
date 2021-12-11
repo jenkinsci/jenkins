@@ -59,7 +59,7 @@ public class FileBoolean {
 
     public void on() {
         try {
-            file.getParentFile().mkdirs();
+            Files.createDirectories(file.getParentFile().toPath());
             Files.newOutputStream(file.toPath()).close();
             get();  // update state
         } catch (IOException | InvalidPathException e) {
@@ -68,8 +68,12 @@ public class FileBoolean {
     }
 
     public void off() {
-        file.delete();
-        get();  // update state
+        try {
+            Files.deleteIfExists(file.toPath());
+            get();  // update state
+        } catch (IOException | InvalidPathException e) {
+            LOGGER.log(Level.WARNING, "Failed to delete " + file);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(FileBoolean.class.getName());

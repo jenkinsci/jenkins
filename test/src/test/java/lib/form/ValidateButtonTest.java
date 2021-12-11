@@ -116,7 +116,7 @@ public class ValidateButtonTest {
                     assertEquals("dvalue",d);
                     assertEquals("e2",e);
                     test1Outcome = null;
-                } catch (Exception t) {
+                } catch (RuntimeException t) {
                     test1Outcome = t;
                 }
             }
