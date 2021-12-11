@@ -86,6 +86,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -2293,7 +2294,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;       
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return new String(Files.readAllBytes(fileToPath(reading(f))));
+            return new String(Files.readAllBytes(fileToPath(reading(f))), Charset.defaultCharset());
         }
     }
 
@@ -2350,7 +2351,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             mkdirs(f.getParentFile());
             try (OutputStream fos = Files.newOutputStream(fileToPath(writing(f)));
-                    Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
+                    Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos, Charset.defaultCharset())) {
                 w.write(content);
             }
             return null;

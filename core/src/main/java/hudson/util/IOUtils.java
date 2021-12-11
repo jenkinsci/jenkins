@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.Collection;
@@ -148,7 +149,7 @@ public class IOUtils {
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
         try (BufferedReader reader = new BufferedReader(
-                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
+                encoding == null ? new InputStreamReader(is, Charset.defaultCharset()) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
         }
     }

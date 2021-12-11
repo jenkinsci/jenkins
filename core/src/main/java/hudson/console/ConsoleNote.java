@@ -43,6 +43,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -325,11 +326,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Preamble of the encoded form. ANSI escape sequence to stop echo back
      * plus a few magic characters.
      */
-    public static final byte[] PREAMBLE = PREAMBLE_STR.getBytes();
+    public static final byte[] PREAMBLE = PREAMBLE_STR.getBytes(Charset.defaultCharset());
     /**
      * Post amble is the ANSI escape sequence that brings back the echo.
      */
-    public static final byte[] POSTAMBLE = POSTAMBLE_STR.getBytes();
+    public static final byte[] POSTAMBLE = POSTAMBLE_STR.getBytes(Charset.defaultCharset());
 
     /**
      * Locates the preamble in the given buffer.

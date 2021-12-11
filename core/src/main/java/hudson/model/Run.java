@@ -1509,11 +1509,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	}
     	
         String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes(Charset.defaultCharset()));
     }
    
     public @NonNull Reader getLogReader() throws IOException {
-        if (charset==null)  return new InputStreamReader(getLogInputStream());
+        if (charset==null)  return new InputStreamReader(getLogInputStream(),Charset.defaultCharset());
         else                return new InputStreamReader(getLogInputStream(),charset);
     }
 

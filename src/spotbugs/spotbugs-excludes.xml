@@ -36,48 +36,16 @@
       <Bug pattern="DM_DEFAULT_ENCODING"/>
       <Or>
         <Class name="hudson.cli.CLICommand"/>
-        <Class name="hudson.cli.CLIConnectionFactory"/>
         <Class name="hudson.cli.GroovyCommand"/>
         <Class name="hudson.cli.GroovyshCommand"/>
         <Class name="hudson.cli.ListChangesCommand"/>
-        <Class name="hudson.cli.PrivateKeyProvider"/>
-        <Class name="hudson.console.AnnotatedLargeText"/>
-        <Class name="hudson.console.ConsoleAnnotationOutputStream"/>
-        <Class name="hudson.console.ConsoleNote"/>
         <Class name="hudson.FilePath$CreateTextTempFile"/>
-        <Class name="hudson.FilePath$ReadToString"/>
-        <Class name="hudson.FilePath$Write"/>
         <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
-        <Class name="hudson.model.FileParameterValue$FileItemImpl"/>
-        <Class name="hudson.model.Run"/>
-        <Class name="hudson.model.UpdateCenter"/>
-        <Class name="hudson.model.UsageStatistics"/>
-        <Class name="hudson.Proc$LocalProc"/>
-        <Class name="hudson.scm.SCM"/>
-        <Class name="hudson.security.csrf.DefaultCrumbIssuer"/>
-        <Class name="hudson.security.HudsonAuthenticationEntryPoint"/>
-        <Class name="hudson.util.BootFailure"/>
-        <Class name="hudson.util.ByteBuffer"/>
-        <Class name="hudson.util.CompressedFile"/>
-        <Class name="hudson.util.ConsistentHash"/>
-        <Class name="hudson.util.IOUtils"/>
-        <Class name="hudson.util.LogTaskListener$LogOutputStream"/>
-        <Class name="hudson.util.ProcessTree$AIX$AIXProcess"/>
-        <Class name="hudson.util.ProcessTree$FreeBSD$FreeBSDProcess"/>
-        <Class name="hudson.util.ProcessTree$Linux$LinuxProcess"/>
-        <Class name="hudson.util.ProcessTree$Solaris$SolarisProcess"/>
-        <Class name="hudson.util.Scrambler"/>
-        <Class name="hudson.util.Secret"/>
         <Class name="hudson.util.StreamTaskListener"/>
         <Class name="hudson.util.TextFile"/>
-        <Class name="hudson.WebAppMain"/>
         <Class name="jenkins.diagnosis.HsErrPidList"/>
-        <Class name="jenkins.security.DefaultConfidentialStore"/>
         <Class name="jenkins.security.s2m.AdminWhitelistRule"/>
-        <Class name="jenkins.security.s2m.ConfigDirectory"/>
         <Class name="jenkins.slaves.DefaultJnlpSlaveReceiver"/>
-        <Class name="jenkins.slaves.restarter.UnixSlaveRestarter"/>
-        <Class name="jenkins.util.JSONSignatureValidator"/>
       </Or>
     </And>
   </Match>

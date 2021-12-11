@@ -2,8 +2,10 @@ package jenkins.security.s2m;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -36,7 +38,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
 
                 for (String fragment : fragments) {
                     File f = new File(dir, fragment);
-                    try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
+                    try (BufferedReader reader = Files.newBufferedReader(f.toPath(), Charset.defaultCharset())) {
                         String line;
                         while ((line=reader.readLine())!=null) {
                             if (line.startsWith("#")) continue;   // comment
@@ -44,7 +46,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
                             if (r != null)
                                 result.add(r);
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | InvalidPathException e) {
                         LOGGER.log(Level.WARNING, "Failed to parse "+f,e);
                     }
                 }

@@ -116,7 +116,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      * Transform path for Windows.
      */
     private InputStream transformForWindows(InputStream src) throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(src));
+        BufferedReader r = new BufferedReader(new InputStreamReader(src, Charset.defaultCharset()));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintStream p = new PrintStream(out)) {
             String line;
