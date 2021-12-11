@@ -306,7 +306,7 @@ public class SlaveComputer extends Computer {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
@@ -897,7 +897,7 @@ public class SlaveComputer extends Computer {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
-            Listeners.notify(ComputerListener.class, l -> l.onOffline(this, offlineCause));
+            Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));
         }
     }
 

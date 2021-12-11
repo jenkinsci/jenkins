@@ -62,7 +62,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param node A node being created.
      */
     public static void fireOnCreated(@NonNull Node node) {
-        Listeners.notify(NodeListener.class, l -> l.onCreated(node));
+        Listeners.notify(NodeListener.class, false, l -> l.onCreated(node));
     }
 
     /**
@@ -72,7 +72,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param newOne New Configuration.
      */
     public static void fireOnUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
-        Listeners.notify(NodeListener.class, l -> l.onUpdated(oldOne, newOne));
+        Listeners.notify(NodeListener.class, false, l -> l.onUpdated(oldOne, newOne));
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param node A node being removed.
      */
     public static void fireOnDeleted(@NonNull Node node) {
-        Listeners.notify(NodeListener.class, l -> l.onDeleted(node));
+        Listeners.notify(NodeListener.class, false, l -> l.onDeleted(node));
     }
 
     /**

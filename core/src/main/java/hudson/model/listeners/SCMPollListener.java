@@ -68,15 +68,15 @@ public abstract class SCMPollListener implements ExtensionPoint {
     public void onPollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
 
 	public static void fireBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {
-        Listeners.notify(SCMPollListener.class, l -> l.onBeforePolling(project, listener));
+        Listeners.notify(SCMPollListener.class, true, l -> l.onBeforePolling(project, listener));
     }
 
 	public static void firePollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result ) {
-        Listeners.notify(SCMPollListener.class, l -> l.onPollingSuccess(project, listener, result));
+        Listeners.notify(SCMPollListener.class, true, l -> l.onPollingSuccess(project, listener, result));
 	}
 
     public static void firePollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception ) {
-        Listeners.notify(SCMPollListener.class, l -> l.onPollingFailed(project, listener, exception));
+        Listeners.notify(SCMPollListener.class, true, l -> l.onPollingFailed(project, listener, exception));
    	}
 
 	/**

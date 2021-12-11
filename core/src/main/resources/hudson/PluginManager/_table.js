@@ -12,7 +12,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
     function applyFilter() {
         var filter = e.value.toLowerCase().trim();
         var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
-        var items = document.getElementsBySelector("TR.plugin");
+        var items = document.getElementsBySelector("TR.plugin").concat(document.getElementsBySelector("TR.unavailable"));
         var anyVisible = false;
         for (var i=0; i<items.length; i++) {
             if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {

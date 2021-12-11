@@ -220,7 +220,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
         createNewComputerForNode(n, automaticAgentLaunch);
         getQueue().scheduleMaintenance();
-        Listeners.notify(ComputerListener.class, ComputerListener::onConfigurationChange);
+        Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             killComputer(c);
         }
         getQueue().scheduleMaintenance();
-        Listeners.notify(ComputerListener.class, ComputerListener::onConfigurationChange);
+        Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);
     }
 
 }

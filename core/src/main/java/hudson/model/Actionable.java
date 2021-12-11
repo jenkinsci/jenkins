@@ -118,7 +118,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 }
             }
             return result;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "Could not load actions from " + taf + " for " + this, e);
             return Collections.emptySet();
         }
