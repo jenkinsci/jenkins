@@ -200,7 +200,7 @@ public class Main {
                 }
             }
         } finally {
-            tmpFile.delete();
+            Files.delete(Util.fileToPath(tmpFile));
         }
     }
 

@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -166,8 +167,9 @@ public abstract class Lifecycle implements ExtensionPoint {
        
         FileUtils.copyFile(by, dest);
         // we don't want to keep backup if we are downgrading
-        if (by.equals(bak)&&bak.exists())
-            bak.delete();
+        if (by.equals(bak)) {
+            Files.deleteIfExists(Util.fileToPath(bak));
+        }
     }
 
     /**

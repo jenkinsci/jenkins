@@ -25,12 +25,12 @@ package jenkins.security.seed;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.User;
 import java.util.List;
 import java.util.logging.Logger;
 import jenkins.security.SecurityListener;
 import jenkins.util.Listeners;
-import org.apache.tools.ant.ExtensionPoint;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO remove restriction on the weekly after the security fix
 @Restricted(NoExternalUse.class)
-public abstract class UserSeedChangeListener extends ExtensionPoint {
+public abstract class UserSeedChangeListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**
@@ -53,7 +53,7 @@ public abstract class UserSeedChangeListener extends ExtensionPoint {
      * @param user The target user
      */
     public static void fireUserSeedRenewed(@NonNull User user) {
-        Listeners.notify(UserSeedChangeListener.class, l -> l.onUserSeedRenewed(user));
+        Listeners.notify(UserSeedChangeListener.class, true, l -> l.onUserSeedRenewed(user));
     }
 
     private static List<UserSeedChangeListener> all() {

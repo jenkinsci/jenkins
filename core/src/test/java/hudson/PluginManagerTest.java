@@ -32,6 +32,7 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,7 +45,6 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
@@ -62,8 +62,8 @@ public class PluginManagerTest {
         Path output = Files.createFile(
                 tmp.resolve("output.txt")
         );
-        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.toFile())
-                .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
+        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.getParent().toFile())
+                .parseRequestedPlugins(new ByteArrayInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>".getBytes())).toString());
     }
 
     @Issue("SECURITY-167")
@@ -82,7 +82,7 @@ public class PluginManagerTest {
 
         PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
         final IOException ex = assertThrows(IOException.class,
-                () -> pluginManager.parseRequestedPlugins(new StringInputStream(evilXML)),
+                () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes())),
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
         assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));

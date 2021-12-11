@@ -78,6 +78,7 @@ import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
@@ -418,7 +419,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         // shuts down there might be a new job created under the
                         // old name.
                         Copy cp = new Copy();
-                        cp.setProject(new org.apache.tools.ant.Project());
+                        cp.setProject(new Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
                         src.setDir(oldRoot);

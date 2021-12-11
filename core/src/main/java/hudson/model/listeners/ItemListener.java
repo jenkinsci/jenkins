@@ -172,7 +172,7 @@ public class ItemListener implements ExtensionPoint {
     }
 
     public static void fireOnCopied(final Item src, final Item result) {
-        Listeners.notify(ItemListener.class, l -> l.onCopied(src, result));
+        Listeners.notify(ItemListener.class, false, l -> l.onCopied(src, result));
     }
 
     /**
@@ -197,16 +197,16 @@ public class ItemListener implements ExtensionPoint {
     }
 
     public static void fireOnCreated(final Item item) {
-        Listeners.notify(ItemListener.class, l -> l.onCreated(item));
+        Listeners.notify(ItemListener.class, false, l -> l.onCreated(item));
     }
 
     public static void fireOnUpdated(final Item item) {
-        Listeners.notify(ItemListener.class, l -> l.onUpdated(item));
+        Listeners.notify(ItemListener.class, false, l -> l.onUpdated(item));
     }
 
     /** @since 1.548 */
     public static void fireOnDeleted(final Item item) {
-        Listeners.notify(ItemListener.class, l -> l.onDeleted(item));
+        Listeners.notify(ItemListener.class, false, l -> l.onDeleted(item));
     }
 
     /**
@@ -227,16 +227,16 @@ public class ItemListener implements ExtensionPoint {
             final String oldName = oldFullName.substring(prefixS);
             final String newName = rootItem.getName();
             assert newName.equals(newFullName.substring(prefixS));
-            Listeners.notify(ItemListener.class, l -> l.onRenamed(rootItem, oldName, newName));
+            Listeners.notify(ItemListener.class, false, l -> l.onRenamed(rootItem, oldName, newName));
         }
-        Listeners.notify(ItemListener.class, l -> l.onLocationChanged(rootItem, oldFullName, newFullName));
+        Listeners.notify(ItemListener.class, false, l -> l.onLocationChanged(rootItem, oldFullName, newFullName));
         if (rootItem instanceof ItemGroup) {
             for (final Item child : Items.allItems2(ACL.SYSTEM2, (ItemGroup)rootItem, Item.class)) {
                 final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';
                 final String childOld = oldFullName + childNew.substring(newFullName.length());
-                Listeners.notify(ItemListener.class, l -> l.onLocationChanged(child, childOld, childNew));
+                Listeners.notify(ItemListener.class, false, l -> l.onLocationChanged(child, childOld, childNew));
             }
         }
     }

@@ -201,7 +201,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
     public static void fireCompleted(Run r, @NonNull TaskListener listener) {
-        Listeners.notify(RunListener.class, l -> {
+        Listeners.notify(RunListener.class, true, l -> {
             if (l.targetType.isInstance(r)) {
                 l.onCompleted(r, listener);
             }
@@ -212,7 +212,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onInitialize(Run)} event.
      */
     public static void fireInitialize(Run r) {
-        Listeners.notify(RunListener.class, l -> {
+        Listeners.notify(RunListener.class, true, l -> {
             if (l.targetType.isInstance(r)) {
                 l.onInitialize(r);
             }
@@ -224,7 +224,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onStarted(Run, TaskListener)} event.
      */
     public static void fireStarted(Run r, TaskListener listener) {
-        Listeners.notify(RunListener.class, l -> {
+        Listeners.notify(RunListener.class, true, l -> {
             if (l.targetType.isInstance(r)) {
                 l.onStarted(r, listener);
             }
@@ -238,7 +238,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         if (!Functions.isExtensionsAvailable()) {
             return;
         }
-        Listeners.notify(RunListener.class, l -> {
+        Listeners.notify(RunListener.class, true, l -> {
             if (l.targetType.isInstance(r)) {
                 l.onFinalized(r);
             }
@@ -249,7 +249,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onDeleted} event.
      */
     public static void fireDeleted(Run r) {
-        Listeners.notify(RunListener.class, l -> {
+        Listeners.notify(RunListener.class, true, l -> {
             if (l.targetType.isInstance(r)) {
                 l.onDeleted(r);
             }
