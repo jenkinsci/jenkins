@@ -23,8 +23,14 @@
  */
 package hudson.util.io;
 
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link ReopenableFileOutputStream} that does log rotation upon rewind.
@@ -33,6 +39,8 @@ import java.io.IOException;
  * @since 2.18
  */
 public class RewindableRotatingFileOutputStream extends RewindableFileOutputStream {
+    private static final Logger LOGGER = Logger.getLogger(RewindableRotatingFileOutputStream.class.getName());
+
     /**
      * Number of log files to keep.
      */
@@ -53,10 +61,9 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
         super.rewind();
         for (int i=size-1;i>=0;i--) {
             File fi = getNumberedFileName(i);
-            if (fi.exists()) {
+            if (Files.exists(Util.fileToPath(fi))) {
                 File next = getNumberedFileName(i+1);
-                next.delete();
-                fi.renameTo(next);
+                Files.move(Util.fileToPath(fi), Util.fileToPath(next), StandardCopyOption.REPLACE_EXISTING);
             }
         }
     }
@@ -66,7 +73,11 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
      */
     public void deleteAll() {
         for (int i=0; i<=size; i++) {
-            getNumberedFileName(i).delete();
+            try {
+                Files.deleteIfExists(getNumberedFileName(i).toPath());
+            } catch (IOException | InvalidPathException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
         }
     }
 }

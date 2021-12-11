@@ -189,12 +189,12 @@ public class WebAppMain implements ServletContextListener {
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
-            home.mkdirs();
+            try {
+                Files.createDirectories(home.toPath());
+            } catch (IOException | InvalidPathException e) {
+                throw (NoHomeDir)new NoHomeDir(home).initCause(e);
+            }
             LOGGER.info("Jenkins home directory: "+ home +" found at: " + describedHomeDir.description);
-
-            // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-            if (!home.exists())
-                throw new NoHomeDir(home);
 
             recordBootAttempt(home);
 

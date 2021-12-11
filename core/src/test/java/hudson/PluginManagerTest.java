@@ -62,7 +62,7 @@ public class PluginManagerTest {
         Path output = Files.createFile(
                 tmp.resolve("output.txt")
         );
-        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.toFile())
+        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.getParent().toFile())
                 .parseRequestedPlugins(new ByteArrayInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>".getBytes())).toString());
     }
 
