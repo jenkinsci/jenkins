@@ -34,6 +34,7 @@ import hudson.model.DownloadService;
 import hudson.model.UpdateSite;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +53,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -455,7 +455,7 @@ public class SetupWizardTest {
         protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
             Set<TrustAnchor> trustAnchors = new HashSet<>();
             try {
-                Certificate certificate = cf.generateCertificate(new StringInputStream(cert));
+                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes()));
                 trustAnchors.add(new TrustAnchor((X509Certificate) certificate, null));
             } catch (CertificateException ex) {
                 throw new IOException(ex);

@@ -4,6 +4,7 @@ import hudson.Util;
 import hudson.util.HttpResponses;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
@@ -51,7 +52,7 @@ public class HsErrPidFile {
     @RequirePOST
     public HttpResponse doDelete() throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        file.delete();
+        Files.deleteIfExists(Util.fileToPath(file));
         owner.files.remove(this);
         return HttpResponses.redirectTo("../..");
     }

@@ -25,7 +25,9 @@ package hudson.model;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assume.assumeFalse;
 
+import hudson.Functions;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
 import java.awt.image.BufferedImage;
@@ -45,6 +47,7 @@ public class LoadStatisticsTest {
 
     @Test
     public void graph() throws IOException {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         LoadStatistics ls = new LoadStatistics(0, 0) {
             @Override
             public int computeIdleExecutors() {

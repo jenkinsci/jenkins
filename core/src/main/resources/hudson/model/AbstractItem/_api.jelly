@@ -27,12 +27,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
     <h2>Fetch/Update config.xml</h2>
     <p>
-        To programmatically obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
-        You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
-        update the configuration of a job.
+        To programmatically obtain the current configuration of this item (<tt>config.xml</tt>), access <a href="../config.xml" target="_blank">this URL</a> using <tt>GET</tt>.
+        To programmatically update the configuration based on a modified <tt>config.xml</tt> file, you can send a <tt>POST</tt> request with <tt>Content-Type: text/xml</tt> header and the XML attached as request body to the <a href="../config.xml">same URL</a>.
     </p>
     <h2>Delete a job</h2>
     <p>
-        To programmatically delete this job, do HTTP DELETE to <a href="../">this URL</a>.
+        To programmatically delete this job, send an HTTP <tt>DELETE</tt> request to <a href="../" target="_blank">this URL</a>.
     </p>
 </j:jelly>

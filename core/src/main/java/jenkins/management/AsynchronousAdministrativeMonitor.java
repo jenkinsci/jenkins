@@ -11,7 +11,9 @@ import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -57,7 +59,11 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
      */
     protected File getLogFile() {
         File base = getBaseDir();
-        base.mkdirs();
+        try {
+            Files.createDirectories(base.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return new File(base,"log");
     }
 

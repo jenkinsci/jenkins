@@ -1378,7 +1378,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         Jenkins jenkins = Jenkins.get();
         
         jenkins.checkPermission(Jenkins.ADMINISTER);
-        archive.delete();
+        Files.deleteIfExists(Util.fileToPath(archive));
 
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();

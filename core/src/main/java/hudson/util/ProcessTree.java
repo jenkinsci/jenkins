@@ -1751,7 +1751,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     int argmax = argmaxRef.getValue();
 
-                    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
+                    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "Not needed for JNA")
                     class StringArrayMemory extends Memory {
                         private long offset=0;
                         private long length=0;
