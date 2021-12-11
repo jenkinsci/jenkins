@@ -66,6 +66,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,7 +107,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -1401,7 +1401,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure("No such view: "+from);
         }
         String xml = Jenkins.XSTREAM.toXML(src);
-        v = createViewFromXML(name, new StringInputStream(xml));
+        v = createViewFromXML(name, new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())));
         return v;
     }
 
