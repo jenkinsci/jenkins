@@ -291,12 +291,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
-    public String getDescription() {
+    public synchronized String getDescription() {
         return description;
     }
 
     @DataBoundSetter
-    public void setDescription(String description) {
+    public synchronized void setDescription(String description) {
         this.description = description;
     }
 
