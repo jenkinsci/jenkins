@@ -53,7 +53,7 @@ public abstract class UserSeedChangeListener extends ExtensionPoint {
      * @param user The target user
      */
     public static void fireUserSeedRenewed(@NonNull User user) {
-        Listeners.notify(UserSeedChangeListener.class, l -> l.onUserSeedRenewed(user));
+        Listeners.notify(UserSeedChangeListener.class, true, l -> l.onUserSeedRenewed(user));
     }
 
     private static List<UserSeedChangeListener> all() {
