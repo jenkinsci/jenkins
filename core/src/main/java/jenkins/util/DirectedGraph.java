@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,6 +77,7 @@ public abstract class DirectedGraph<N> {
          */
         int lowlink;
 
+        @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "no big deal")
         SCC scc;
 
         Node(N n) {

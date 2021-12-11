@@ -71,8 +71,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletResponse;
 import javax.servlet.SessionTrackingMode;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
@@ -140,6 +138,7 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     @Override
+    @SuppressFBWarnings(value = "DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED", justification = "Jenkins is not designed to work with a security manager")
     public void contextInitialized(ServletContextEvent event) {
         // Nicer console log formatting when using mvn jetty:run.
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
@@ -233,23 +232,6 @@ public class WebAppMain implements ServletContextListener {
                 }
             } catch (IOException e) {
                 throw new NoTempDir(e);
-            }
-
-            // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
-            // try to correct it
-            try {
-                TransformerFactory.newInstance();
-                // if this works we are all happy
-            } catch (TransformerFactoryConfigurationError x) {
-                // no it didn't.
-                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See https://bz.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
-                System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
-                try {
-                    TransformerFactory.newInstance();
-                    LOGGER.info("XSLT is set to the JAXP RI in JRE");
-                } catch(TransformerFactoryConfigurationError y) {
-                    LOGGER.log(SEVERE, "Failed to correct the problem.");
-                }
             }
 
             installExpressionFactory(event);

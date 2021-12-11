@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -327,7 +328,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Chooses the object that locks the loading of the extension instances.
      */
     protected Object getLoadLock() {
-        return jenkins.lookup.setIfNull(Lock.class,new Lock());
+        return Objects.requireNonNull(jenkins).lookup.setIfNull(Lock.class,new Lock());
     }
 
     /**
@@ -379,7 +380,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
             LOGGER.log(Level.FINER, String.format("Loading ExtensionList '%s' from", extensionType.getName()), new Throwable("Only present for stacktrace information"));
         }
 
-        return jenkins.getPluginManager().getPluginStrategy().findComponents(extensionType, hudson);
+        return Objects.requireNonNull(jenkins).getPluginManager().getPluginStrategy().findComponents(extensionType, hudson);
     }
 
     /**

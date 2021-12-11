@@ -429,6 +429,7 @@ public class Maven extends Builder {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }

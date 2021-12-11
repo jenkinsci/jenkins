@@ -1,5 +1,6 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.init.Terminator;
 import hudson.model.Computer;
@@ -46,6 +47,7 @@ public class NioChannelSelector {
     /**
      * Escape hatch to disable use of NIO.
      */
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for script console")
     public static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
 
     private static final Logger LOGGER = Logger.getLogger(NioChannelSelector.class.getName());
