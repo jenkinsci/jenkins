@@ -45,7 +45,6 @@ public class RunMapTest {
         // now create a build that hangs until we signal the OneShotEvent
         p.getBuildersList().add(new SleepBuilder(9999999));
         FreeStyleBuild b2 = p.scheduleBuild2(0).waitForStart();
-        r.waitForMessage("Sleeping", b2);
         assertEquals(2, b2.number);
 
         // now reload
@@ -60,8 +59,6 @@ public class RunMapTest {
         b1 = p.getBuildByNumber(1);
         assertSame(b1.getNextBuild(), b2);
         assertSame(b2.getPreviousBuild(), b1);
-        b2.doStop();
-        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b2));
     }
 
     @Issue("JENKINS-27530")
@@ -84,19 +81,16 @@ public class RunMapTest {
         assertEquals(1, items.length);
         assertEquals(p, items[0].task); // the real issue: assignBuildNumber was being called on the wrong Job
         QueueTaskFuture<Queue.Executable> b2f = items[0].getFuture();
-        r.waitForMessage("Sleeping", b1);
         b1.getExecutor().interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b1));
         FreeStyleBuild b2 = (FreeStyleBuild) b2f.waitForStart();
         assertEquals(2, b2.getNumber());
         assertEquals(p, b2.getParent());
-        r.waitForMessage("Sleeping", b2);
         b2.getExecutor().interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b2));
         FreeStyleBuild b3 = p.scheduleBuild2(0).waitForStart();
         assertEquals(3, b3.getNumber());
         assertEquals(p, b3.getParent());
-        r.waitForMessage("Sleeping", b3);
         b3.getExecutor().interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b3));
     }
