@@ -501,15 +501,17 @@ public class JobTest {
         p.setConcurrentBuild(true);
         p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
         FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
+        j.waitForMessage("Sleeping", build1);
         FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
+        j.waitForMessage("Sleeping", build2);
         QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
         long start = System.nanoTime();
         p.delete();
         long end = System.nanoTime();
         assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
-        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build3.isCancelled(), Matchers.is(true));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build2));
+        assertTrue(build3.isCancelled());
     }
 
     @Issue("SECURITY-1868")

@@ -41,7 +41,6 @@
         <Class name="hudson.cli.ListChangesCommand"/>
         <Class name="hudson.FilePath$CreateTextTempFile"/>
         <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
-        <Class name="hudson.scm.SCM"/>
         <Class name="hudson.util.StreamTaskListener"/>
         <Class name="hudson.util.TextFile"/>
         <Class name="jenkins.diagnosis.HsErrPidList"/>
