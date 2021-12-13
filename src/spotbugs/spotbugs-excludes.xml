@@ -668,13 +668,6 @@
         <Class name="hudson.WebAppMain"/>
       </And>
       <And>
-        <Bug pattern="XXE_SAXPARSER"/>
-        <Or>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.XmlFile"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="XXE_XSLT_TRANSFORM_FACTORY"/>
         <Class name="hudson.WebAppMain"/>
       </And>
