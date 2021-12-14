@@ -37,7 +37,9 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -162,14 +164,8 @@ public class InstallUtil {
             
             // Allow for skipping
             if(shouldNotRun) {
-                try {
-                    InstallState.INITIAL_SETUP_COMPLETED.initializeState();
-                    return j.getInstallState();
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                InstallState.INITIAL_SETUP_COMPLETED.initializeState();
+                return j.getInstallState();
             }
 
             return InstallState.INITIAL_SECURITY_SETUP;
@@ -298,7 +294,11 @@ public class InstallUtil {
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();
 	if(installingPlugins == null || installingPlugins.isEmpty()) {
-		installingPluginsFile.delete();
+		try {
+			Files.deleteIfExists(installingPluginsFile.toPath());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());

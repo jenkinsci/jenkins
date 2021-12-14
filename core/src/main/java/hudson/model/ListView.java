@@ -185,7 +185,7 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
-    public Set<String> getJobNames() {
+    public synchronized Set<String> getJobNames() {
         return Collections.unmodifiableSet(jobNames);
     }
 

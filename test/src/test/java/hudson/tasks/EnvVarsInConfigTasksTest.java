@@ -1,7 +1,7 @@
 package hudson.tasks;
 
-
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
@@ -9,7 +9,6 @@ import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Maven.MavenInstallation;
-import org.apache.tools.ant.taskdefs.condition.Os;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -61,7 +60,7 @@ public class EnvVarsInConfigTasksTest {
 	@Test
 	public void testFreeStyleShellOnAgent() throws Exception {
 		FreeStyleProject project = j.createFreeStyleProject();
-		if (Os.isFamily("dos")) {
+		if (Functions.isWindows()) {
 			project.getBuildersList().add(new BatchFile("echo %JAVA_HOME%"));
 		} else {
 			project.getBuildersList().add(new Shell("echo \"$JAVA_HOME\""));

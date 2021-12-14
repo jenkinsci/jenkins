@@ -69,6 +69,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -77,6 +78,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -204,7 +206,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
             CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
-        } catch(Exception e) {
+        } catch(RuntimeException e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
             CHECK_UPDATE_ATTEMPTS = CHECK_UPDATE_ATTEMPTS > 0 ? CHECK_UPDATE_ATTEMPTS : 1;
@@ -352,8 +354,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         this.context = context;
 
         this.rootDir = rootDir;
-        if(!rootDir.exists())
-            rootDir.mkdirs();
+        try {
+            Files.createDirectories(rootDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         String workDir = SystemProperties.getString(PluginManager.class.getName()+".workDir");
         this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
@@ -538,11 +543,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -563,6 +570,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -923,9 +931,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
             } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(sn, e));
+                failedPlugins.add(new FailedPlugin(p, e));
                 activePlugins.remove(p);
                 plugins.remove(p);
+                p.releaseClassLoader();
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
@@ -1052,7 +1061,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(getModificationDate(src));
+            Files.setLastModifiedTime(Util.fileToPath(file), FileTime.fromMillis(getModificationDate(src)));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -1318,12 +1327,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Orderly terminates all the plugins.
      */
-    public void stop() {
+    public synchronized void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
+        }
+        List<PluginWrapper> pluginsCopy = new ArrayList<>(plugins);
+        for (PluginWrapper p : pluginsCopy) {
+            activePlugins.remove(p);
+            plugins.remove(p);
             p.releaseClassLoader();
         }
-        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
@@ -1584,7 +1597,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             responseData.put("correlationId", correlationId.toString());
 
             return hudson.util.HttpResponses.okJSON(responseData);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return hudson.util.HttpResponses.errorJSON(e.getMessage());
         }
     }
@@ -1812,10 +1825,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
+            // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+            Files.delete(Util.fileToPath(t));
             try {
-                // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                t.delete();
-
                 copier.copy(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur

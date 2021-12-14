@@ -68,8 +68,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -443,7 +445,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 jobs = Collections.emptyMap();
             }
             return HttpResponses.okJSON(jobs);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -513,7 +515,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             return HttpResponses.okJSON(JSONObject.fromObject(response));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -1258,8 +1260,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // particularly noticeable during 2.0 install when downloading
                 // many plugins
                 con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
-                
-                int total = con.getContentLength();
+
+                long total;
+                final long sizeFromMetadata = job.getContentLength();
+                if (sizeFromMetadata == -1) {
+                    // Update site does not advertise a file size, so fall back to download file size, if any
+                    total = con.getContentLength();
+                } else {
+                    total = sizeFromMetadata;
+                }
                 byte[] buf = new byte[8192];
                 int len;
 
@@ -1279,7 +1288,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                      CountingInputStream cin = new CountingInputStream(in)) {
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf,0,len);
-                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
+                        final int count = cin.getCount();
+                        job.status = job.new Installing(total == -1 ? -1 : ((int) (count * 100 / total)));
+                        if (total != -1 && total < count) {
+                            throw new IOException("Received more data than expected. Expected " + total + " bytes but got " + count + " bytes (so far), aborting download.");
+                        }
                     }
                 } catch (IOException | InvalidPathException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
@@ -1880,14 +1893,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Called when the download is completed to overwrite
          * the old file with the new file.
          */
-        protected void replace(File dst, File src) throws IOException {
+        protected synchronized void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            bak.delete();
-            dst.renameTo(bak);
-            dst.delete(); // any failure up to here is no big deal
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
-            }
+            moveAtomically(dst, bak);
+            moveAtomically(src, dst);
+        }
+
+        /**
+         * Indicate the expected size of the download as provided in update site
+         * metadata.
+         *
+         * @return the expected size, or -1 if unknown.
+         * @since TODO
+         */
+        public long getContentLength() {
+            return -1;
         }
 
         /**
@@ -2159,6 +2179,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         @Override
+        public long getContentLength() {
+            final Long size = plugin.getFileSize();
+            return size == null ? -1 : size;
+        }
+
+        @Override
         public void _run() throws IOException, InstallationStatus {
             if (wasInstalled()) {
                 // Do this first so we can avoid duplicate downloads, too
@@ -2257,23 +2283,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 verifyChecksums(this, plugin, src);
             }
 
-            File bak = Util.changeExtension(dst, ".bak");
-            bak.delete();
+            synchronized (this) {
+                File bak = Util.changeExtension(dst, ".bak");
 
-            final File legacy = getLegacyDestination();
-            if (legacy.exists()) {
-                if (!legacy.renameTo(bak)) {
-                    legacy.delete();
+                final File legacy = getLegacyDestination();
+                if (Files.exists(Util.fileToPath(legacy))) {
+                    moveAtomically(legacy, bak);
                 }
-            }
-            if (dst.exists()) {
-                if (!dst.renameTo(bak)) {
-                    dst.delete();
+                if (Files.exists(Util.fileToPath(dst))) {
+                    moveAtomically(dst, bak);
                 }
-            }
 
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
+                moveAtomically(src, dst);
             }
         }
 
@@ -2418,11 +2439,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * current version with backup file
          */
         @Override
-        protected void replace(File dst, File backup) throws IOException {
-            dst.delete(); // any failure up to here is no big deal
-            if(!backup.renameTo(dst)) {
-                throw new IOException("Failed to rename "+backup+" to "+dst);
-            }
+        protected synchronized void replace(File dst, File backup) throws IOException {
+            moveAtomically(backup, dst);
         }
 
         @Override
@@ -2673,5 +2691,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     static {
         XSTREAM.alias("site",UpdateSite.class);
         XSTREAM.alias("sites",PersistedList.class);
+    }
+
+    private static void moveAtomically(File src, File target) throws IOException {
+        try {
+            Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            LOGGER.log(Level.WARNING, "Atomic move not supported. Falling back to non-atomic move.", e);
+            try {
+                Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                e2.addSuppressed(e);
+                throw e2;
+            }
+        }
     }
 }

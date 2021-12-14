@@ -285,19 +285,18 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Creates the classloader that can load all the specified jar files and delegate to the given parent.
      */
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
-        if (atts != null) {
-            String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
-            if (Boolean.parseBoolean( usePluginFirstClassLoader )) {
-                PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
-                classLoader.setParentFirst( false );
-                classLoader.setParent( parent );
-                classLoader.addPathFiles( paths );
-                return classLoader;
-            }
-        }
+        boolean usePluginFirstClassLoader =
+                atts != null && Boolean.parseBoolean(atts.getValue("PluginFirstClassLoader"));
 
         if (useAntClassLoader) {
-            AntClassLoader classLoader = new AntClassLoader(parent, true);
+            AntClassLoader classLoader;
+            if (usePluginFirstClassLoader) {
+                classLoader = new PluginFirstClassLoader();
+                classLoader.setParentFirst(false);
+                classLoader.setParent(parent);
+            } else {
+                classLoader = new AntClassLoader(parent, true);
+            }
             classLoader.addPathFiles(paths);
             return classLoader;
         } else {
@@ -305,7 +304,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
             for (File path : paths) {
                 urls.add(path.toURI().toURL());
             }
-            return new URLClassLoader2(urls.toArray(new URL[0]), parent);
+            URLClassLoader2 classLoader;
+            if (usePluginFirstClassLoader) {
+                classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
+            } else {
+                classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
+            }
+            return classLoader;
         }
     }
 
@@ -475,7 +480,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Explodes the plugin into a directory, if necessary.
      */
     private static void explode(File archive, File destDir) throws IOException {
-        destDir.mkdirs();
+        Files.createDirectories(Util.fileToPath(destDir));
 
         // timestamp check
         File explodeTime = new File(destDir,".timestamp2");
@@ -544,7 +549,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             };
             z.setProject(prj);
             z.setTaskType("zip");
-            classesJar.getParentFile().mkdirs();
+            Files.createDirectories(Util.fileToPath(classesJar.getParentFile()));
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();

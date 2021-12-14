@@ -204,7 +204,7 @@ public class SetupWizard extends PageDecorator {
         try {
             // Make sure plugin metadata is up to date
             UpdateCenter.updateDefaultSite();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
@@ -285,7 +285,7 @@ public class SetupWizard extends PageDecorator {
         try {
             return !Jenkins.get().getInstallState().isSetupComplete()
                     && isUsingSecurityDefaults();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // ignore
         }
         return false;
@@ -584,7 +584,7 @@ public class SetupWizard extends PageDecorator {
                     } else {
                         try {
                             initialPluginList = JSONArray.fromObject(initialPluginJson);
-                        } catch (Exception ex) {
+                        } catch (RuntimeException ex) {
                             /* Second attempt: It's not a remote file, but still wrapped */
                             initialPluginList = JSONObject.fromObject(initialPluginJson).getJSONArray("categories");
                         }

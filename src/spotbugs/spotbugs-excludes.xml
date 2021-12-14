@@ -7,6 +7,8 @@
     <Or>
       <!-- We don't care about this behavior -->
       <Bug pattern="CRLF_INJECTION_LOGS"/>
+      <!-- Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals. -->
+      <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
       <!-- Jenkins handles this issue differently or doesn't care about it -->
       <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
       <!-- Used for backward compatibility and extending utility classes -->
@@ -117,28 +119,12 @@
         </Or>
       </Match>
       <And>
-        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
-        <Or>
-          <Class name="hudson.ExtensionComponent"/>
-          <Class name="hudson.Functions$Tag"/>
-          <Class name="hudson.MarkupText$Tag"/>
-          <Class name="hudson.model.HealthReport"/>
-          <Class name="hudson.model.Queue$WaitingItem"/>
-          <Class name="hudson.model.User"/>
-          <Class name="hudson.model.View$UserInfo"/>
-          <Class name="hudson.PluginWrapper"/>
-          <Class name="hudson.util.ConsistentHash$Point"/>
-          <Class name="jenkins.FilePathFilterAggregator$Entry"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/>
         <Or>
           <Class name="hudson.model.Run$ArtifactList"/>
           <Class name="hudson.model.Run$SerializableArtifactList"/>
           <Class name="hudson.search.Search$SearchResultImpl"/>
           <Class name="hudson.slaves.NodeList"/>
-          <Class name="hudson.util.StreamResource"/>
         </Or>
       </And>
       <And>
@@ -153,10 +139,6 @@
           <Class name="hudson.model.TextParameterDefinition"/>
           <Class name="hudson.util.NoClientBindProtocolSocketFactory"/>
         </Or>
-      </And>
-      <And>
-        <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC"/>
-        <Class name="hudson.cli.BuildCommand$CLICause"/>
       </And>
       <And>
         <Bug pattern="FILE_UPLOAD_FILENAME"/>
@@ -208,13 +190,6 @@
           <Class name="hudson.util.SequentialExecutionQueue$QueueEntry"/>
           <Class name="jenkins.model.RunIdMigrator"/>
           <Class name="jenkins.security.apitoken.ApiTokenStats"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="IS_FIELD_NOT_GUARDED"/>
-        <Or>
-          <Class name="hudson.model.ListView"/>
-          <Class name="hudson.model.ListView$Listener"/>
         </Or>
       </And>
       <And>
@@ -270,15 +245,6 @@
           <Class name="hudson.security.ACL"/>
           <Class name="hudson.util.ProcessTree"/>
           <Class name="jenkins.slaves.NioChannelSelector"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="MS_SHOULD_BE_FINAL"/>
-        <Or>
-          <Class name="hudson.Launcher"/>
-          <Class name="hudson.Main"/>
-          <Class name="hudson.model.UpdateSite"/>
-          <Class name="hudson.model.ViewJob"/>
         </Or>
       </And>
       <And>
@@ -487,6 +453,7 @@
       <And>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
         <Or>
+          <Class name="jenkins.fingerprints.FileFingerprintStorage"/>
           <Class name="jenkins.model.PeepholePermalink"/>
           <Class name="jenkins.util.io.PathRemover"/>
         </Or>
@@ -536,41 +503,9 @@
       <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
         <Or>
-          <Class name="hudson.ClassicPluginStrategy"/>
-          <Class name="hudson.FilePath"/>
-          <Class name="hudson.FilePath$MoveAllChildrenTo"/>
-          <Class name="hudson.init.impl.InitialUserContent"/>
-          <Class name="hudson.lifecycle.Lifecycle"/>
-          <Class name="hudson.lifecycle.WindowsInstallerLink"/>
-          <Class name="hudson.Main"/>
-          <Class name="hudson.model.Computer"/>
-          <Class name="hudson.model.DownloadService$Downloadable"/>
-          <Class name="hudson.model.FileParameterValue$FileItemImpl"/>
-          <Class name="hudson.model.ItemGroupMixIn"/>
-          <Class name="hudson.model.Job"/>
-          <Class name="hudson.model.Queue"/>
-          <Class name="hudson.model.RunMap"/>
-          <Class name="hudson.model.UpdateCenter$DownloadJob"/>
-          <Class name="hudson.model.UpdateCenter$InstallationJob"/>
-          <Class name="hudson.model.UpdateCenter$PluginDowngradeJob"/>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.PluginWrapper"/>
-          <Class name="hudson.util.CompressedFile"/>
-          <Class name="hudson.util.io.ReopenableRotatingFileOutputStream"/>
-          <Class name="hudson.util.io.RewindableRotatingFileOutputStream"/>
-          <Class name="hudson.util.RemotingDiagnostics$GetHeapDump"/>
-          <Class name="hudson.util.TextFile"/>
-          <Class name="hudson.WebAppMain"/>
-          <Class name="hudson.XmlFile"/>
           <Class name="jenkins.agents.WebSocketAgents$Session"/>
-          <Class name="jenkins.diagnosis.HsErrPidFile"/>
-          <Class name="jenkins.fingerprints.FileFingerprintStorage"/>
-          <Class name="jenkins.install.InstallUtil"/>
-          <Class name="jenkins.management.AsynchronousAdministrativeMonitor"/>
-          <Class name="jenkins.model.Jenkins"/>
           <Class name="jenkins.slaves.restarter.JnlpSlaveRestarterInstaller"/>
           <Class name="jenkins.util.AtmostOneTaskExecutor"/>
-          <Class name="jenkins.util.io.FileBoolean"/>
         </Or>
       </And>
       <And>
@@ -701,10 +636,6 @@
           <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor$RevokeAllSelectedModel"/>
           <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor$RevokeAllSelectedUserAndUuid"/>
         </Or>
-      </And>
-      <And>
-        <Bug pattern="VO_VOLATILE_INCREMENT"/>
-        <Class name="hudson.util.RingBufferLogHandler"/>
       </And>
       <And>
         <Bug pattern="WA_AWAIT_NOT_IN_LOOP"/>
