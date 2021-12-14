@@ -1,16 +1,20 @@
-.jenkins-about {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  margin: -2rem;
-  overflow: hidden;
+.app-about-branding {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #28404e;
+  padding: 2rem;
 
-  &__masthead {
+  .app-about-branding__logo {
+    position: fixed;
+    top: 50%;
+    width: 100%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    background: #28404e;
-    padding: 4rem;
 
     img {
       height: 12.5vh;
@@ -34,11 +38,5 @@
         opacity: 0.85;
       }
     }
-  }
-
-  &__content {
-    padding: 2rem;
-    height: calc(100vh - 96px);
-    overflow: scroll;
   }
 }

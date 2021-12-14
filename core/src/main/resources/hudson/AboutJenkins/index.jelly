@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2011, CloudBees, Inc.
+Copyright (c) 2011 - 2022, CloudBees, Inc., Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,146 +25,190 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-    <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column" title="${%about(app.VERSION)}">
-        <l:main-panel>
-            <div class="jenkins-about">
-                <div class="jenkins-about__masthead">
-                    <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
-                    <h1>Jenkins <span class="jenkins-visually-hidden">${%Version}</span> <span>${app.VERSION}</span></h1>
-                </div>
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
 
-                <div class="jenkins-about__content">
-                    <div class="jenkins-tab-pane">
-                        <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
-                        <j:set var="uri" value="${it.licensesURL}"/>
+    <l:side-panel>
+      <style>
+        #side-panel {
+          padding: 0;
+          border-right: none;
+        }
+      </style>
+
+      <div class="app-about-branding">
+        <div class="app-about-branding__logo">
+          <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
+          <h1>Jenkins <span class="jenkins-visually-hidden">${%Version}</span>
+            <span>${app.VERSION}</span>
+          </h1>
+        </div>
+      </div>
+    </l:side-panel>
+
+    <l:main-panel>
+      <div class="jenkins-tab-pane">
+        <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
+        <j:set var="uri" value="${it.licensesURL}"/>
+        <j:choose>
+          <j:when test="${uri != null}">
+            <t:thirdPartyLicenses>
+              <j:include uri="${uri}"/>
+            </t:thirdPartyLicenses>
+          </j:when>
+          <j:otherwise>
+            <p>${%No information recorded}</p>
+          </j:otherwise>
+        </j:choose>
+      </div>
+
+      <div class="jenkins-tab-pane">
+        <h2 class="jenkins-tab-pane__title">${%static.dependencies}</h2>
+        <table class="jenkins-table sortable">
+          <thead>
+            <tr>
+              <th>${%Name}</th>
+              <th>${%Author}</th>
+              <th>${%Licence}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <a class="jenkins-table__link" href="https://fontawesome.com">Font Awesome</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://twitter.com/davegandy">Dave Gandy</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://scripts.sil.org/OFL">SIL OFL 1.1 License</a>
+                and
+                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a class="jenkins-table__link" href="https://www.google.com/fonts/specimen/Roboto">Google Fonts:
+                  Roboto
+                </a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://twitter.com/cr64">Christian Robertson</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache
+                  License, version 2.0
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
+                  Jenkins Contrib Themes
+                </a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
+              </td>
+              <td>
+                <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
+                  License
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="jenkins-tab-pane">
+            <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
+            <table class="jenkins-table sortable">
+              <thead>
+                <tr>
+                  <th>${%Name}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <j:forEach var="p" items="${app.pluginManager.plugins}">
+                  <tr>
+                    <td>
+                      <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                         <j:choose>
-                            <j:when test="${uri != null}">
-                                <t:thirdPartyLicenses>
-                                    <j:include uri="${uri}"/>
-                                </t:thirdPartyLicenses>
-                            </j:when>
-                            <j:otherwise>
-                                <p>${%No information recorded}</p>
-                            </j:otherwise>
+                          <j:when test="${p.active}">
+                            ${p.displayName}
+                          </j:when>
+                          <j:otherwise>
+                            <strike>${p.displayName}</strike>
+                          </j:otherwise>
                         </j:choose>
-                    </div>
+                      </a>
+                    </td>
+                  </tr>
+                </j:forEach>
+              </tbody>
+            </table>
+          </div>
 
-                    <div class="jenkins-tab-pane">
-                        <h2 class="jenkins-tab-pane__title">${%static.dependencies}</h2>
-                        <table class="jenkins-table sortable">
-                            <thead>
-                                <tr>
-                                    <th>${%Name}</th>
-                                    <th>${%Author}</th>
-                                    <th>${%Licence}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><a class="jenkins-table__link" href="http://fontawesome.io">Font Awesome</a></td>
-                                    <td><a class="jenkins-table__link" href="https://twitter.com/davegandy">Dave Gandy</a></td>
-                                    <td><a class="jenkins-table__link" href="http://scripts.sil.org/OFL">SIL OFL 1.1 License</a> and <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a></td>
-                                </tr>
-                                <tr>
-                                    <td><a class="jenkins-table__link" href="https://www.google.com/fonts/specimen/Roboto">Google Fonts: Roboto</a></td>
-                                    <td><a class="jenkins-table__link" href="https://twitter.com/cr64">Christian Robertson</a></td>
-                                    <td><a class="jenkins-table__link" href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License, version 2.0</a></td>
-                                </tr>
-                                <tr>
-                                    <td><a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">Jenkins Contrib Themes</a></td>
-                                    <td><a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a></td>
-                                    <td><a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a></td>
-                                </tr>
-                                <tr>
-                                    <td><a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a></td>
-                                    <td><a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a></td>
-                                    <td><a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT License</a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+      <script>
+        const tabPanes = document.querySelectorAll(".jenkins-tab-pane")
+        const content = document.querySelector("#main-panel")
 
-                    <div class="jenkins-tab-pane">
-                        <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
-                        <table class="jenkins-table sortable">
-                            <thead>
-                                <tr>
-                                    <th>${%Name}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <j:forEach var="p" items="${app.pluginManager.plugins}">
-                                    <tr>
-                                        <td>
-                                            <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
-                                                <j:choose>
-                                                    <j:when test="${p.active}">
-                                                        ${p.displayName}
-                                                    </j:when>
-                                                    <j:otherwise>
-                                                        <strike>${p.displayName}</strike>
-                                                    </j:otherwise>
-                                                </j:choose>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </j:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        // Hide tab panes
+        tabPanes.forEach((tabPane) => {
+          tabPane.style.display = "none"
+        })
 
-            <script>
-                const tabPanes = document.querySelectorAll(".jenkins-tab-pane")
-                const content = document.querySelector(".jenkins-about__content")
+        // Show the first
+        tabPanes[0].style.display = "block"
 
-                // Hide tab panes
-                tabPanes.forEach((tabPane) => {
-                    tabPane.style.display = "none"
-                })
+        const tabBar = document.createElement("div")
+        tabBar.className = "tabBar"
 
-                // Show the first
-                tabPanes[0].style.display = "block"
+        // Add tabs for each tab pane
+        tabPanes.forEach((tabPane, index) => {
+          const tabPaneTitle = tabPane.querySelector(".jenkins-tab-pane__title")
+          tabPaneTitle.style.display = "none"
 
-                const tabBar = document.createElement("div")
-                tabBar.className = "tabBar"
+          const tab = document.createElement("div")
+          tab.className = "tab"
 
-                // Add tabs for each tab pane
-                tabPanes.forEach((tabPane, index) => {
-                    const tabPaneTitle = tabPane.querySelector(".jenkins-tab-pane__title")
-                    tabPaneTitle.style.display = "none"
+          if (index === 0) {
+            tab.classList.add("active")
+          }
 
-                    const tab = document.createElement("div")
-                    tab.className = "tab"
+          tab.addEventListener("click", function () {
+            document.querySelectorAll(".tab").forEach((tab) => {
+              tab.classList.remove("active")
+            })
+            tab.classList.add("active")
 
-                    if (index === 0) {
-                        tab.classList.add("active")
-                    }
+            tabPanes.forEach((tabPane) => {
+              tabPane.style.display = "none"
+            })
+            tabPanes[index].style.display = "block"
+          })
 
-                    tab.addEventListener("click", function() {
-                        document.querySelectorAll(".tab").forEach((tab) => {
-                            tab.classList.remove("active")
-                        })
-                        tab.classList.add("active")
+          const tabLink = document.createElement("a")
+          tabLink.innerText = tabPaneTitle.textContent
 
-                        tabPanes.forEach((tabPane) => {
-                            tabPane.style.display = "none"
-                        })
-                        tabPanes[index].style.display = "block"
-                    })
+          tab.append(tabLink)
 
-                    const tabLink = document.createElement("a")
-                    tabLink.innerText = tabPaneTitle.textContent
+          tabBar.append(tab)
+        })
 
-                    tab.append(tabLink)
+        content.insertBefore(tabBar, content.children[0]);
+      </script>
 
-                    tabBar.append(tab)
-                })
-
-                content.insertBefore(tabBar, content.children[0]);
-            </script>
-
-        </l:main-panel>
-    </l:layout>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
