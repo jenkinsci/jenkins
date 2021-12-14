@@ -1,0 +1,44 @@
+.jenkins-about {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  margin: -2rem;
+  overflow: hidden;
+
+  &__masthead {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #28404e;
+    padding: 4rem;
+
+    img {
+      height: 12.5vh;
+      margin-right: 1.5rem;
+    }
+
+    h1 {
+      display: flex;
+      flex-direction: column;
+      font-family: "Georgia";
+      color: white;
+      text-shadow: 0 2px 0 #1b1819;
+
+      span {
+        margin-top: 10px;
+        font-family: var(--font-family-sans);
+        font-size: 0.7rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+    }
+  }
+
+  &__content {
+    padding: 2rem;
+    height: calc(100vh - 96px);
+    overflow: scroll;
+  }
+}
