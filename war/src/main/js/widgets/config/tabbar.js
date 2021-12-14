@@ -83,7 +83,6 @@ export var addTabs = function(configTable, options) {
     }
 
     var section;
-
     for (var i = 0; i < configTableMetadata.sections.length; i++) {
         section = configTableMetadata.sections[i];
         var tab = newTab(section);
