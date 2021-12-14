@@ -110,6 +110,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import jenkins.ClassLoaderReflectionToolkit;
@@ -544,11 +545,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -569,6 +572,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -929,9 +933,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
             } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(sn, e));
+                failedPlugins.add(new FailedPlugin(p, e));
                 activePlugins.remove(p);
                 plugins.remove(p);
+                p.releaseClassLoader();
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
@@ -1324,12 +1329,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Orderly terminates all the plugins.
      */
-    public void stop() {
+    public synchronized void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
+        }
+        List<PluginWrapper> pluginsCopy = new ArrayList<>(plugins);
+        for (PluginWrapper p : pluginsCopy) {
+            activePlugins.remove(p);
+            plugins.remove(p);
             p.releaseClassLoader();
         }
-        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
@@ -2101,7 +2110,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<>();
         try {
-            SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            spf.newSAXParser().parse(configXml, new DefaultHandler() {
                 @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     String plugin = attributes.getValue("plugin");
                     if (plugin == null) {
