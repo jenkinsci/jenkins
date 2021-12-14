@@ -375,7 +375,7 @@ LTS backporting, if needed, will be handled separately by the release team.
 * Release Team members are permitted to bypass the review/merge process if and only if a change is needed to unblock the security release.
   Common review process is used otherwise.
 * Only one approval is required for low-risk small changes with the `skip-changelog` label,
-  as long as the approver has write access to the repository.
+  as long as both author and approver have write access to the repository.
   Note that the 24-hour waiting period still applies.
 * 24 hours waiting period after adding the `ready-for-merge` label is not required for:
 //TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
