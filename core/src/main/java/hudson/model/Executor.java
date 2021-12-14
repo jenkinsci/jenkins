@@ -409,7 +409,15 @@ public class Executor extends Thread implements ModelObject {
 
                 if (executable instanceof Actionable) {
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
+                        LOGGER.log(
+                                FINER,
+                                "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}",
+                                new Object[] {
+                                    executable,
+                                    workUnit.context.item,
+                                    workUnit.context.actions,
+                                    workUnit.context.item.getAllActions(),
+                                });
                     }
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
@@ -905,7 +913,7 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
-        } catch(Exception ex) {
+        } catch(RuntimeException ex) {
             if (!(ex instanceof AccessDeniedException)) {
                 // Prevents UI from exploding in the case of unexpected runtime exceptions
                 LOGGER.log(WARNING, "Unhandled exception", ex);

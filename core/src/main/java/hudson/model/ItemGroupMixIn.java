@@ -33,6 +33,7 @@ import hudson.util.Secret;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
@@ -97,7 +98,11 @@ public abstract class ItemGroupMixIn {
      *      Directory that contains sub-directories for each child item.
      */
     public static <K,V extends Item> Map<K,V> loadChildren(ItemGroup parent, File modulesDir, Function1<? extends K,? super V> key) {
-        modulesDir.mkdirs(); // make sure it exists
+        try {
+            Files.createDirectories(modulesDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
         File[] subdirs = modulesDir.listFiles(File::isDirectory);
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
@@ -219,7 +224,13 @@ public abstract class ItemGroupMixIn {
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication2().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
+                    throw new AccessDeniedException(
+                            Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(
+                                    src.getFullName(),
+                                    Jenkins.getAuthentication2().getName(),
+                                    Item.PERMISSIONS.title,
+                                    Item.EXTENDED_READ.name,
+                                    Item.CONFIGURE.name));
                 }
             }
         }
@@ -260,9 +271,9 @@ public abstract class ItemGroupMixIn {
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         final File dir = configXml.getParentFile();
-        dir.mkdirs();
         boolean success = false;
         try {
+            Files.createDirectories(dir.toPath());
             XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
 
             // load it

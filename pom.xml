@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.324</revision>
+    <revision>2.326</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -102,7 +102,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.22</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.1.0</mockito.version>
-    <spotless.version>2.17.5</spotless.version>
+    <spotless.version>2.17.6</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -409,7 +409,7 @@ THE SOFTWARE.
                 <module name="UniqueProperties" />
                 <module name="LineLength">
                   <property name="fileExtensions" value="java" />
-                  <property name="max" value="300" />
+                  <property name="max" value="240" />
                   <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
                 </module>
                 <module name="TreeWalker">
@@ -444,6 +444,9 @@ THE SOFTWARE.
                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
                   <module name="UnnecessarySemicolonInEnumeration" />
                   <module name="UnnecessarySemicolonInTryWithResources" />
+                  <module name="VariableDeclarationUsageDistance">
+                    <property name="allowedDistance" value="10" />
+                  </module>
                   <!--
                     Imports: https://checkstyle.sourceforge.io/config_imports.html
                   -->

@@ -59,7 +59,7 @@ public class RemotingVersionInfoTest {
         }
     }
 
-    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) throws AssertionError {
+    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) {
         assertThat("Wrong value of manifest attribute " + attributeName,
                 manifest.getMainAttributes().getValue(attributeName),
                 equalTo(expectedValue.toString()));

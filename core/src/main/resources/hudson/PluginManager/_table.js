@@ -12,17 +12,18 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
     function applyFilter() {
         var filter = e.value.toLowerCase().trim();
         var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
-        var items = document.getElementsBySelector("TR.plugin");
+        var items = document.getElementsBySelector("TR.plugin").concat(document.getElementsBySelector("TR.unavailable"));
         var anyVisible = false;
         for (var i=0; i<items.length; i++) {
             if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
-                items[i].addClassName("hidden");
+                items[i].addClassName("jenkins-hidden");
                 continue;
             }
             var makeVisible = true;
 
             var pluginId = items[i].getAttribute('data-plugin-id');
             var content = (items[i].querySelector('.details').innerText + " " + pluginId).toLowerCase();
+
             for (var j = 0; j < filterParts.length; j++) {
                 var part = filterParts[j];
                 if (content.indexOf(part) < 0) {
@@ -30,11 +31,12 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     break;
                 }
             }
+
             if (makeVisible) {
-                items[i].removeClassName("hidden");
+                items[i].classList.remove("jenkins-hidden");
                 anyVisible = true;
             } else {
-                items[i].addClassName("hidden");
+                items[i].classList.add("jenkins-hidden");
             }
         }
         var instructions = document.getElementById("hidden-by-default-instructions")

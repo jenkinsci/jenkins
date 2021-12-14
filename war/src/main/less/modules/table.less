@@ -65,6 +65,7 @@
         &:first-of-type {
           border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
           padding-left: calc(var(--table-padding) * 2);
+          padding-right: var(--table-padding);
         }
 
         &:last-of-type {
@@ -110,6 +111,10 @@
     width: 60px;
   }
 
+  &__cell--no-wrap {
+    white-space: nowrap;
+  }
+
   &__button {
     display: inline-flex;
   }
@@ -153,6 +158,10 @@
         height: 16px!important;
       }
     }
+  }
+
+  &__button, &__link {
+    color: var(--link-color)!important;
   }
 
   &__button, .sortheader, &__link {
@@ -205,6 +214,14 @@
 
     &--green {
       color: var(--green)!important;
+    }
+
+    &--orange {
+      color: var(--orange)!important;
+    }
+
+    &--red {
+      color: var(--red)!important;
     }
   }
 

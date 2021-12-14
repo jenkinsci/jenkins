@@ -121,7 +121,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 

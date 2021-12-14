@@ -65,7 +65,7 @@ public class MockStaplerRequestBuilder{
         return this;
     }
        
-    public StaplerRequest build() throws AssertionError {        
+    public StaplerRequest build() {
         HttpServletRequest rawRequest = Mockito.mock(HttpServletRequest.class);
         return new RequestImpl(stapler != null ? stapler : new Stapler(), rawRequest, ancestors, tokens);
     }

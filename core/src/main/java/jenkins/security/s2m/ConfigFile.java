@@ -94,6 +94,10 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     }
 
     public synchronized void append(String additional) throws IOException {
+        if (!exists()) {
+            set(additional);
+            return;
+        }
         String s = read();
         if (!s.endsWith("\n"))
             s += "\n";

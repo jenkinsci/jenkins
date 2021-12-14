@@ -768,6 +768,6 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit.HOURS.toMillis(1));
 }

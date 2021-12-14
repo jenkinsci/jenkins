@@ -174,7 +174,7 @@ public class MyViewsPropertyTest {
     }
 
     @Test
-    public void testOnViewRenamed() throws IOException, Failure, FormException {
+    public void testOnViewRenamed() throws IOException, FormException {
         User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();

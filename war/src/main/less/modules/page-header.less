@@ -111,8 +111,8 @@ a.page-header__brand-link {
     line-height: var(--line-height-base);
     font-weight: bold;
     color: var(--search-input-color);
-    border-radius: var(--header-item-border-radius);
-    border: 2px solid transparent;
+    border-radius: var(--form-input-border-radius);
+    border: 2px solid var(--header-search-border);
     outline: none;
     box-shadow: 0 0 0 10px transparent;
     transition: 0.2s ease;
@@ -133,7 +133,6 @@ a.page-header__brand-link {
     display: inline-flex;
     height: 2.5rem;
     width: 2.5rem;
-    padding: 0.5rem;
     justify-content: center;
     align-items: center;
     background: transparent;
@@ -142,6 +141,11 @@ a.page-header__brand-link {
 .main-search__icon-leading {
     left: 0;
     pointer-events: none;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 .main-search__icon-trailing {
@@ -160,6 +164,11 @@ a.page-header__brand-link {
 
     &:active {
         fill: var(--header-link-bg-classic-active);
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
     }
 }
 

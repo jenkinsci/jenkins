@@ -33,6 +33,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
@@ -46,6 +47,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -353,8 +356,13 @@ public class DownloadService {
                 try {
                     return JSONObject.fromObject(df.read());
                 } catch (JSONException e) {
-                    df.delete(); // if we keep this file, it will cause repeated failures
-                    throw new IOException("Failed to parse "+df+" into JSON",e);
+                    IOException ioe = new IOException("Failed to parse " + df + " into JSON", e);
+                    try {
+                        df.delete(); // if we keep this file, it will cause repeated failures
+                    } catch (IOException e2) {
+                        ioe.addSuppressed(e2);
+                    }
+                    throw ioe;
                 }
             return null;
         }
@@ -362,7 +370,7 @@ public class DownloadService {
         private FormValidation load(String json, long dataTimestamp) throws IOException {
             TextFile df = getDataFile();
             df.write(json);
-            df.file.setLastModified(dataTimestamp);
+            Files.setLastModifiedTime(Util.fileToPath(df.file), FileTime.fromMillis(dataTimestamp));
             LOGGER.info("Obtained the updated data file for "+id);
             return FormValidation.ok();
         }

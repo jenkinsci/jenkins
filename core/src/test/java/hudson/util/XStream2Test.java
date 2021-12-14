@@ -284,7 +284,13 @@ public class XStream2Test {
     @Issue("SECURITY-105")
     @Test
     public void dynamicProxyBlocked() {
-        assertThrows(XStreamException.class, () -> ((Runnable) new XStream2().fromXML("<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='" + Hacked.class.getName() + "'/><action>oops</action></handler></dynamic-proxy>")).run());
+        assertThrows(
+                XStreamException.class,
+                () -> ((Runnable) new XStream2().fromXML(
+                                "<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='"
+                                        + Hacked.class.getName()
+                                        + "'/><action>oops</action></handler></dynamic-proxy>"))
+                        .run());
         assertFalse("should never have run that", Hacked.tripped);
     }
 
