@@ -236,6 +236,7 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -497,7 +498,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile List<JDK> jdks = new ArrayList<>();
 
     private transient volatile DependencyGraph dependencyGraph;
-    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
+    private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
+    private transient Future<DependencyGraph> futureDependencyGraphUndergoingCalculation;
+    private transient Object dependencyGraphLock = new Object();
 
     /**
      * Currently active Views tab bar.
@@ -4885,6 +4888,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
+    
+    public Future<DependencyGraph> getFutureDependencyGraph(){
+        synchronized(dependencyGraphLock) {
+            //Scheduled future will be the most recent one --> Return
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+            //Running future will be the most recent one --> Return 
+            if (futureDependencyGraphUndergoingCalculation != null ) {
+                return futureDependencyGraphUndergoingCalculation;
+            }
+            //No scheduled or running future --> Already completed dependency graph is the most recent one 
+            return CompletableFuture.completedFuture(dependencyGraph);
+        }
+    }
+    
+    
     /**
      * Rebuilds the dependency map.
      */
@@ -4894,7 +4914,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
-        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -4907,14 +4926,41 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        dependencyGraphDirty.set(true);
+        synchronized(dependencyGraphLock) {
+            // Collects calls to this method to avoid unnecessary calculation of the dependency graph
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+            // Schedule new calculation
+            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+        }
+    }
+    
+    
+    private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
-            if (dependencyGraphDirty.get()) {
-                rebuildDependencyGraph();
+            
+            //Wait for the currently running calculation to finish
+            while (futureDependencyGraphUndergoingCalculation != null && !futureDependencyGraphUndergoingCalculation.isDone()) {
+                Thread.sleep(100);
+            }
+
+            // Scheduled future becomes the currently running future
+            synchronized (dependencyGraphLock) {
+                futureDependencyGraphUndergoingCalculation = scheduledFutureDependencyGraph;
+                scheduledFutureDependencyGraph = null;
+            }
+
+            rebuildDependencyGraph();
+            
+            // Mark that we finished calculating the dependency graph
+            synchronized (dependencyGraphLock) {
+                futureDependencyGraphUndergoingCalculation = null;
             }
             return dependencyGraph;
-        }, 500, TimeUnit.MILLISECONDS);
+        }, delay, unit);
     }
+    
 
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
