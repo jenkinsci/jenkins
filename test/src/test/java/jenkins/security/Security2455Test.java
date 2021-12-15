@@ -36,6 +36,7 @@ import jenkins.SlaveToMasterFileCallable;
 import jenkins.SoloFilePathFilter;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.AdminWhitelistRule;
+import jenkins.security.s2m.RunningBuildFilePathFilter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
@@ -53,11 +54,8 @@ import org.jvnet.hudson.test.recipes.LocalData;
 @Issue("SECURITY-2455")
 public class Security2455Test {
 
-    // TODO After merge, reference the class directly
-    private static final String SECURITY_2428_KILLSWITCH = "jenkins.security.s2m.RunningBuildFilePathFilter.FAIL";
-
     @Rule
-    public final FlagRule<String> flagRule = FlagRule.systemProperty(SECURITY_2428_KILLSWITCH, "false");
+    public final FlagRule<String> flagRule = FlagRule.systemProperty(RunningBuildFilePathFilter.class.getName() + ".FAIL", "false");
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -78,13 +76,13 @@ public class Security2455Test {
         final File buildStuff = new File(j.jenkins.getRootDir(), "job/nonexistent/builds/1/foo/bar");
         logging.capture(10);
         SecurityException ex = assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkdirsParentsCallable(buildStuff)));
-        assertThat(logging, recorded(containsString("foo/bar")));
-        assertThat(ex.getMessage(), not(containsString("foo/bar"))); // test error redaction
+        assertThat(logging, recorded(containsString("foo" + File.separator + "bar")));
+        assertThat(ex.getMessage(), not(containsString("foo" + File.separator + "bar"))); // test error redaction
 
         SoloFilePathFilter.REDACT_ERRORS = false;
         try {
             SecurityException ex2 = assertThrowsIOExceptionCausedBySecurityException(() -> invokeOnAgent(new MkdirsParentsCallable(buildStuff)));
-            assertThat(ex2.getMessage(), containsString("foo/bar")); // test error redaction
+            assertThat(ex2.getMessage(), containsString("foo" + File.separator + "bar")); // test error redaction
         } finally {
             SoloFilePathFilter.REDACT_ERRORS = true;
         }
@@ -493,7 +491,7 @@ public class Security2455Test {
         assertTrue(cause instanceof SecurityException);
         assertThat(cause.getMessage(), not(containsString("prefix"))); // redacted
         assertThat(logging, recorded(containsString("'create'")));
-        assertThat(logging, recorded(containsString("/prefix-security-check-dummy-suffix")));
+        assertThat(logging, recorded(containsString(File.separator + "prefix-security-check-dummy-suffix")));
         assertFalse(Arrays.stream(Objects.requireNonNull(rootDir.listFiles())).anyMatch(it -> it.getName().contains("prefix")));
     }
     private static class CreateTempFileCaller extends MasterToSlaveCallable<String, Exception> {
@@ -526,7 +524,7 @@ public class Security2455Test {
         assertTrue(cause instanceof SecurityException);
         assertThat(cause.getMessage(), not(containsString("prefix"))); // redacted
         assertThat(logging, recorded(containsString("'create'")));
-        assertThat(logging, recorded(containsString("/prefix-security-check-dummy-suffix")));
+        assertThat(logging, recorded(containsString(File.separator + "prefix-security-check-dummy-suffix")));
         assertFalse(Arrays.stream(Objects.requireNonNull(rootDir.listFiles())).anyMatch(it -> it.getName().contains("prefix")));
     }
     private static class CreateTextTempFileCaller extends MasterToSlaveCallable<String, Exception> {
@@ -558,7 +556,7 @@ public class Security2455Test {
         assertTrue(cause instanceof SecurityException);
         assertThat(cause.getMessage(), not(containsString("prefix"))); // redacted
         assertThat(logging, recorded(containsString("'mkdirs'")));
-        assertThat(logging, recorded(containsString("/prefix.suffix-security-test"))); // weird but that's what it looks like
+        assertThat(logging, recorded(containsString(File.separator + "prefix.suffix-security-test"))); // weird but that's what it looks like
         assertFalse(Arrays.stream(Objects.requireNonNull(rootDir.listFiles())).anyMatch(it -> it.getName().contains("prefix")));
     }
     private static class CreateTempDirCaller extends MasterToSlaveCallable<String, Exception> {
