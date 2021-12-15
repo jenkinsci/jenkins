@@ -55,16 +55,6 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-annotations</artifactId>
-        <version>${spotbugs-annotations.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>net.jcip</groupId>
-        <artifactId>jcip-annotations</artifactId>
-        <version>1.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
         <version>1.10.12</version>
@@ -139,11 +129,6 @@ THE SOFTWARE.
         <groupId>org.samba.jcifs</groupId>
         <artifactId>jcifs</artifactId>
         <version>1.3.18-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>access-modifier-annotation</artifactId>
-        <version>${access-modifier.version}</version>
       </dependency>
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->

@@ -149,10 +149,33 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
       <groupId>javax.servlet</groupId>
       <!-- the old artifactID for the servlet API -->
       <artifactId>servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <version>${access-modifier.version}</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 

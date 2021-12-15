@@ -127,12 +127,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <exclusions>
-        <exclusion> <!-- pick up from SpotBugs Annotations -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -507,22 +501,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>access-modifier-annotation</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <dependency>

@@ -50,11 +50,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>access-modifier-annotation</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
       <optional>true</optional>
@@ -98,11 +93,6 @@
       <artifactId>tyrus-standalone-client-jdk</artifactId>
       <version>2.0.1</version>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
