@@ -78,6 +78,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -381,7 +384,7 @@ public class Queue extends ResourceController implements Saveable {
             pendings.clear();
 
             File queueFile = getXMLQueueFile();
-            if (queueFile.exists()) {
+            if (Files.exists(queueFile.toPath())) {
                 Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
                 List items;
 
@@ -430,11 +433,9 @@ public class Queue extends ResourceController implements Saveable {
                 // I don't know how this problem happened, but to diagnose this problem better
                 // when it happens again, save the old queue file for introspection.
                 File bk = new File(queueFile.getPath() + ".bak");
-                bk.delete();
-                queueFile.renameTo(bk);
-                queueFile.delete();
+                Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();

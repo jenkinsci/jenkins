@@ -1008,103 +1008,6 @@ table.fingerprint-in-build td {
   padding-right: 1em;
 }
 
-
-
-
-/* ========================= plugin manager ========================= */
-#plugins {
-  margin-top: 0;
-  border-top: none;
-}
-
-#plugins.bigtable {
-  // Add this fallback because tables with hidden rows will
-  // not have a bottom border
-  border-bottom: 1px solid var(--bigtable-row-border-color);
-}
-
-#pluginsAdv tr:hover {
-  background-color: inherit;
-}
-
-#plugins tr.already-upgraded {
-  background-color: var(--plugin-manager-bg-color-already-upgraded);
-}
-
-#plugins tr.all-dependents-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-dependents input,
-#plugins tr.has-disabled-dependency .enable input {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-#plugins tr.has-dependents-but-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-disabled-dependency .enable input {
-  opacity: 0.4;
-}
-
-#plugins tr.deleted input {
-  visibility: hidden !important;
-}
-
-#plugins .dependent-list,
-#plugins .dependency-list {
-  display: none;
-}
-
-#plugins .enable-state-info,
-#plugins .uninstall-state-info {
-    padding: 5px 20px;
-    max-width: 70%;
-    border: solid 1px var(--warning);
-    border-radius: 3px;
-    text-align: center;
-}
-
-#plugins .enable-state-info {
-    float: left;
-}
-
-#plugins .uninstall-state-info {
-    float: right;
-}
-
-#plugins .plugin-dependency-info .title,
-#plugins .plugin-dependency-info .subtitle {
-    opacity: 0.7;
-}
-
-#plugins .plugin-dependency-info .title {
-    margin-bottom: 5px;
-    font-size: larger;
-    font-weight: bolder;
-}
-
-#plugins .plugin-dependency-info span {
-    margin: 5px 5px 0 0;
-    background-color: var(--primary);
-    display: inline-block;
-    padding: 0.2em 0.6em 0.3em;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    line-height: 1;
-    color: var(--white);
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25em;
-}
-
 /* ========================= repeatable elements ========================= */
 
 .repeated-chunk {
@@ -1238,19 +1141,6 @@ textarea.rich-editor {
   }
 }
 
-/* ========================= plugin update center ========================= */
-
-#plugins .excerpt {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: var(--text-color-secondary);
-}
-
-#plugins .excerpt a {
-  text-decoration: underline;
-}
-
 /*
  * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
  *                  remove once there are no more dependencies
@@ -1267,16 +1157,6 @@ textarea.rich-editor {
     margin-top: 0.5em;
     padding-left: 2em;
     color: #f00;
-}
-
-#pluginsAdv {
-  padding: 0.5rem;
-}
-
-#pluginsAdv section {
-  &:not(:last-child) {
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ========================= progress bar ========================= */
@@ -1538,7 +1418,7 @@ select.select-ajax-pending {
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: var(--form-input-border-radius);
 }
 
 .alert a {
