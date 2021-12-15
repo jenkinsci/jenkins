@@ -1767,14 +1767,10 @@ public class Util {
         }
 
         if (parent == null) {
-            try {
+            if (Files.isDirectory(dir)) {
+                return dir;
+            } else {
                 return Files.createDirectory(dir, attrs);
-            } catch (FileAlreadyExistsException e) {
-                if (Files.isDirectory(dir)) {
-                    return dir;
-                } else {
-                    throw e;
-                }
             }
         }
 
