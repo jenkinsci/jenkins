@@ -1,17 +1,17 @@
 .app-about-branding {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
   background: #28404e;
   padding: 2rem;
+  pointer-events: none;
 
   .app-about-branding__logo {
     position: fixed;
-    top: 50%;
+    top: 0;
     width: 100%;
-    transform: translateY(-50%);
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -24,7 +24,7 @@
     h1 {
       display: flex;
       flex-direction: column;
-      font-family: "Georgia";
+      font-family: "Georgia", serif;
       color: white;
       text-shadow: 0 2px 0 #1b1819;
 

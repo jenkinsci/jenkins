@@ -26,7 +26,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
-
     <l:side-panel>
       <style>
         #side-panel {
@@ -131,84 +130,35 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-tab-pane">
-            <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
-            <table class="jenkins-table sortable">
-              <thead>
-                <tr>
-                  <th>${%Name}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <j:forEach var="p" items="${app.pluginManager.plugins}">
-                  <tr>
-                    <td>
-                      <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
-                        <j:choose>
-                          <j:when test="${p.active}">
-                            ${p.displayName}
-                          </j:when>
-                          <j:otherwise>
-                            <strike>${p.displayName}</strike>
-                          </j:otherwise>
-                        </j:choose>
-                      </a>
-                    </td>
-                  </tr>
-                </j:forEach>
-              </tbody>
-            </table>
-          </div>
+        <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
+        <table class="jenkins-table sortable">
+          <thead>
+            <tr>
+              <th>${%Name}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <tr>
+                <td>
+                  <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
+                    <j:choose>
+                      <j:when test="${p.active}">
+                        ${p.displayName}
+                      </j:when>
+                      <j:otherwise>
+                        <strike>${p.displayName}</strike>
+                      </j:otherwise>
+                    </j:choose>
+                  </a>
+                </td>
+              </tr>
+            </j:forEach>
+          </tbody>
+        </table>
+      </div>
 
-      <script>
-        const tabPanes = document.querySelectorAll(".jenkins-tab-pane")
-        const content = document.querySelector("#main-panel")
-
-        // Hide tab panes
-        tabPanes.forEach((tabPane) => {
-          tabPane.style.display = "none"
-        })
-
-        // Show the first
-        tabPanes[0].style.display = "block"
-
-        const tabBar = document.createElement("div")
-        tabBar.className = "tabBar"
-
-        // Add tabs for each tab pane
-        tabPanes.forEach((tabPane, index) => {
-          const tabPaneTitle = tabPane.querySelector(".jenkins-tab-pane__title")
-          tabPaneTitle.style.display = "none"
-
-          const tab = document.createElement("div")
-          tab.className = "tab"
-
-          if (index === 0) {
-            tab.classList.add("active")
-          }
-
-          tab.addEventListener("click", function () {
-            document.querySelectorAll(".tab").forEach((tab) => {
-              tab.classList.remove("active")
-            })
-            tab.classList.add("active")
-
-            tabPanes.forEach((tabPane) => {
-              tabPane.style.display = "none"
-            })
-            tabPanes[index].style.display = "block"
-          })
-
-          const tabLink = document.createElement("a")
-          tabLink.innerText = tabPaneTitle.textContent
-
-          tab.append(tabLink)
-
-          tabBar.append(tab)
-        })
-
-        content.insertBefore(tabBar, content.children[0]);
-      </script>
-
+      <l:js src="jsbundles/section-to-tabs.js" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
