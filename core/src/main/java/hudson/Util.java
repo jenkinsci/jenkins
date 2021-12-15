@@ -1770,7 +1770,9 @@ public class Util {
             try {
                 return Files.createDirectory(dir, attrs);
             } catch (FileAlreadyExistsException e) {
-                if (!Files.isDirectory(dir)) {
+                if (Files.isDirectory(dir)) {
+                    return dir;
+                } else {
                     throw e;
                 }
             }
