@@ -26,12 +26,11 @@ package hudson.util.io;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath.TarCompression;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Creates {@link Archiver} on top of a stream.
@@ -48,18 +47,19 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Uncompressed tar format.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
     public static ArchiverFactory TAR = new TarArchiverFactory(TarCompression.NONE);
 
     /**
      * tar+gz
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
     public static ArchiverFactory TARGZ = new TarArchiverFactory(TarCompression.GZIP);
 
     /**
      * Zip format.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
     /**

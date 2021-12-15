@@ -25,14 +25,13 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import java.util.logging.Logger;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
 import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.logging.Logger;
 
 /**
  * Scans the fingerprint database and remove old records
@@ -79,9 +78,10 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
         }
         FingerprintStorage.get().iterateAndCleanupFingerprints(listener);
 
+        final FileFingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
         if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
-                FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            FingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
+                fileFingerprintStorage.isReady()) {
+            fileFingerprintStorage.iterateAndCleanupFingerprints(listener);
         }
     }
 

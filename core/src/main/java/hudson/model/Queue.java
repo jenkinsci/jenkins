@@ -24,64 +24,63 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.util.Iterators.reverse;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.init.Initializer;
-
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import static hudson.util.Iterators.reverse;
-
 import hudson.cli.declarative.CLIResolver;
+import hudson.init.Initializer;
+import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.Executables;
+import hudson.model.queue.FoldableAction;
+import hudson.model.queue.FutureImpl;
+import hudson.model.queue.MappingWorksheet;
+import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.QueueListener;
+import hudson.model.queue.QueueSorter;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.ScheduleResult.Created;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.FutureImpl;
-import hudson.model.queue.MappingWorksheet;
-import hudson.model.queue.MappingWorksheet.Mapping;
-import hudson.model.queue.QueueSorter;
-import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
-import hudson.model.Node.Mode;
-import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.CauseOfBlockage;
-import hudson.model.queue.FoldableAction;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-
 import hudson.security.Permission;
-import hudson.util.Futures;
-import jenkins.security.QueueItemAuthenticatorProvider;
-import jenkins.security.stapler.StaplerAccessibleType;
-import jenkins.util.SystemProperties;
-import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
-import java.util.concurrent.TimeUnit;
-import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-import hudson.util.ConsistentHash.Hash;
-
+import hudson.util.Futures;
+import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -100,40 +99,35 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
-
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.AsynchronousExecution;
+import jenkins.model.queue.CompositeCauseOfBlockage;
 import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.jenkinsci.bytecode.AdaptField;
+import jenkins.util.Listeners;
+import jenkins.util.SystemProperties;
+import jenkins.util.Timer;
+import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.http.HttpServletResponse;
-
-import jenkins.model.queue.AsynchronousExecution;
-import jenkins.model.queue.CompositeCauseOfBlockage;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -390,7 +384,7 @@ public class Queue extends ResourceController implements Saveable {
             pendings.clear();
 
             File queueFile = getXMLQueueFile();
-            if (queueFile.exists()) {
+            if (Files.exists(queueFile.toPath())) {
                 Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
                 List items;
 
@@ -439,11 +433,9 @@ public class Queue extends ResourceController implements Saveable {
                 // I don't know how this problem happened, but to diagnose this problem better
                 // when it happens again, save the old queue file for introspection.
                 File bk = new File(queueFile.getPath() + ".bak");
-                bk.delete();
-                queueFile.renameTo(bk);
-                queueFile.delete();
+                Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
@@ -613,7 +605,7 @@ public class Queue extends ResourceController implements Saveable {
                     shouldScheduleItem |= action.shouldSchedule(actions);
                 }
                 for (QueueAction action : Util.filter(actions, QueueAction.class)) {
-                    shouldScheduleItem |= action.shouldSchedule((new ArrayList<>(item.getAllActions())));
+                    shouldScheduleItem |= action.shouldSchedule(new ArrayList<>(item.getAllActions()));
                 }
                 if (!shouldScheduleItem) {
                     duplicatesInQueue.add(item);
@@ -749,6 +741,9 @@ public class Queue extends ResourceController implements Saveable {
     @RequirePOST
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
+        if (item != null && !hasReadPermission(item, true)) {
+            item = null;
+        }
         if (item != null) {
             if(item.hasCancelPermission()){
                 if(cancel(item)) {
@@ -800,14 +795,27 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
-        if (t.task instanceof AccessControlled) {
-            AccessControlled taskAC = (AccessControlled) t.task;
-            if (taskAC.hasPermission(hudson.model.Item.READ)
-                    || taskAC.hasPermission(Permission.READ)) {
-                r.add(t);
-            }
+        // TODO Changing the second arg to 'true' should reveal some tasks currently hidden for no obvious reason
+        if (hasReadPermission(t.task, false)) {
+            r.add(t);
         }
         return r;
+    }
+
+    private static boolean hasReadPermission(Item t, boolean valueIfNotAccessControlled) {
+        return hasReadPermission(t.task, valueIfNotAccessControlled);
+    }
+
+    private static boolean hasReadPermission(Queue.Task t, boolean valueIfNotAccessControlled) {
+        if (t instanceof AccessControlled) {
+            AccessControlled taskAC = (AccessControlled) t;
+            if (taskAC.hasPermission(hudson.model.Item.READ)
+                    || taskAC.hasPermission(Permission.READ)) { // TODO should be unnecessary given the 'implies' relationship
+                return true;
+            }
+            return false;
+        }
+        return valueIfNotAccessControlled;
     }
 
     /**
@@ -1669,8 +1677,8 @@ public class Queue extends ResourceController implements Saveable {
                     // of getCauseOfBlockageForItem(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
-                    // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://jenkins-ci.org/issue/27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // See https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins.io/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                     // for alternative fixes of this issue.
                     updateSnapshot();
                 }
@@ -1780,7 +1788,7 @@ public class Queue extends ResourceController implements Saveable {
         };
     }
 
-    private static final Hash<Node> NODE_HASH = Node::getNodeName;
+    private static final ConsistentHash.Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -2066,6 +2074,17 @@ public class Queue extends ResourceController implements Saveable {
         @NonNull SubTask getParent();
 
         /**
+         * An umbrella executable (such as a {@link Run}) of which this is one part.
+         * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
+         * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
+         * @return a <em>distinct</em> executable (never {@code this}, unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
+         * @since 2.313, but implementations can already implement this with a lower core dependency.
+         */
+        default @CheckForNull Executable getParentExecutable() {
+            return null;
+        }
+
+        /**
          * Called by {@link Executor} to perform the task.
          * @throws AsynchronousExecution if you would like to continue without consuming a thread
          */
@@ -2100,7 +2119,6 @@ public class Queue extends ResourceController implements Saveable {
          * Unique ID (per master) that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item} and into any subsequent
          * {@link Run} instance (see {@link Run#getQueueId()}).
-         * @return
          * @since 1.601
          */
         @Exported
@@ -2108,7 +2126,6 @@ public class Queue extends ResourceController implements Saveable {
             return id;
         }
 
-        @AdaptField(was=int.class, name="id")
         @Deprecated
         public int getIdLegacy() {
             if (id > Integer.MAX_VALUE) {
@@ -2438,7 +2455,7 @@ public class Queue extends ResourceController implements Saveable {
     @Restricted(NoExternalUse.class)
     @ExportedBean(defaultVisibility = 999)
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "it is exported, so it might be used")
-    public class StubItem {
+    public static class StubItem {
 
         @Exported public StubTask task;
 
@@ -2535,14 +2552,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             if (q.waitingList.add(this)) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onEnterWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onEnterWaiting(this));
             }
         }
 
@@ -2550,14 +2560,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = q.waitingList.remove(this);
             if (r) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveWaiting(this));
             }
             return r;
         }
@@ -2628,14 +2631,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBlocked(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBlocked(this));
         }
 
                     @Override
@@ -2643,14 +2639,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = blockedProjects.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBlocked(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBlocked(this));
             }
             return r;
         }
@@ -2737,14 +2726,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             q.buildables.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBuildable(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBuildable(this));
         }
 
         @Override
@@ -2752,14 +2734,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = q.buildables.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBuildable(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBuildable(this));
             }
             return r;
         }
@@ -2815,14 +2790,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         void enter(Queue q) {
             q.leftItems.put(getId(),this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onLeft(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onLeft(this));
         }
 
         @Override
@@ -3088,7 +3056,12 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
-        h.getQueue().load();
+        Queue queue = h.getQueue();
+        Item[] items = queue.getItems();
+        if (items.length > 0) {
+            LOGGER.warning(() -> "Loading queue will discard previously scheduled items: " + Arrays.toString(items));
+        }
+        queue.load();
     }
 
     /**

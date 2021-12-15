@@ -24,12 +24,13 @@
 package hudson.util;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -47,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.instanceOf;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -284,11 +284,13 @@ public class XStream2Test {
     @Issue("SECURITY-105")
     @Test
     public void dynamicProxyBlocked() {
-        try {
-            ((Runnable) new XStream2().fromXML("<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='" + Hacked.class.getName() + "'/><action>oops</action></handler></dynamic-proxy>")).run();
-        } catch (XStreamException x) {
-            // good
-        }
+        assertThrows(
+                XStreamException.class,
+                () -> ((Runnable) new XStream2().fromXML(
+                                "<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='"
+                                        + Hacked.class.getName()
+                                        + "'/><action>oops</action></handler></dynamic-proxy>"))
+                        .run());
         assertFalse("should never have run that", Hacked.tripped);
     }
 
@@ -529,26 +531,17 @@ public class XStream2Test {
 
     @Issue("SECURITY-503")
     @Test
-    public void crashXstream() throws Exception {
-        try {
-            new XStream2().fromXML("<void/>");
-            fail("expected to throw ConversionException, but why are we still alive?");
-        } catch (XStreamException ex) {
-            // pass
-        }
+    public void crashXstream() {
+        assertThrows(XStreamException.class, () -> new XStream2().fromXML("<void/>"));
     }
 
     @Test
-    public void annotations() throws Exception {
+    public void annotations() {
         assertEquals("not registered, so sorry", "<hudson.util.XStream2Test_-C1/>", Jenkins.XSTREAM2.toXML(new C1()));
         assertEquals("manually registered", "<C-2/>", Jenkins.XSTREAM2.toXML(new C2()));
         assertEquals("manually processed", "<C-3/>", Jenkins.XSTREAM2.toXML(new C3()));
-        try {
-            Jenkins.XSTREAM2.fromXML("<C-4/>");
-            fail("this could never have worked anyway");
-        } catch (CannotResolveClassException x) {
-            // OK
-        }
+        assertThrows(CannotResolveClassException.class, () -> Jenkins.XSTREAM2.fromXML("<C-4/>"));
+
         Jenkins.XSTREAM2.processAnnotations(C5.class);
         assertThat("can deserialize from annotations so long as the processing happened at some point", Jenkins.XSTREAM2.fromXML("<C-5/>"), instanceOf(C5.class));
     }

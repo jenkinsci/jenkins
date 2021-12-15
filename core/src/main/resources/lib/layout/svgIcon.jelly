@@ -12,6 +12,10 @@
             Extra CSS classes passed to the icon. Currently only the 'svg-icon' class is applied by default.
         </st:attribute>
 
+        <st:attribute name="id">
+            ID of the icon element. Since TODO.
+        </st:attribute>
+
         <st:attribute name="href">
             Href of the 'use' tag. Normally path to a sprite plus an icon id
         </st:attribute>
@@ -22,7 +26,7 @@
             Whether the icon can receive keyboard focus. Possible values 'true' or 'false'
         </st:attribute>
 
-        <st:attribute name="onclick">onclick handler.</st:attribute>
+        <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
         <st:attribute name="style">style</st:attribute>
         <st:attribute name="tooltip">tooltip</st:attribute>
         <st:attribute name="ariaHidden">aria-hidden</st:attribute>
@@ -34,6 +38,7 @@
          aria-hidden="${attrs.ariaHidden}"
          style="${attrs.style}"
          onclick="${attrs.onclick}"
+         id="${attrs.id}"
          tooltip="${attrs.tooltip != null ? h.xmlEscape(attrs.tooltip) : null}">
 
         <j:choose>

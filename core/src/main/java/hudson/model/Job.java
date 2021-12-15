@@ -23,7 +23,13 @@
  */
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -66,19 +72,17 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
@@ -117,9 +121,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-
 /**
  * A job is an runnable entity under the monitoring of Hudson.
  * 
@@ -131,6 +132,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "TODO needs triage")
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
@@ -277,7 +279,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // #3361
+        if (nextBuildNumber == 0) { // JENKINS-3361
             nextBuildNumber = 1;
         }
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
@@ -661,13 +663,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            if (!newBuildDir.getParentFile().isDirectory()) {
-                newBuildDir.getParentFile().mkdirs();
-            }
-            if (!oldBuildDir.renameTo(newBuildDir)) {
-                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
-            }
+        if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
+            Files.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir));
         }
     }
 
@@ -751,7 +749,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Obtains all the {@link Run}s whose build numbers matches the given {@link RangeSet}.
      */
     public synchronized List<RunT> getBuilds(RangeSet rs) {
-        List<RunT> builds = new LinkedList<>();
+        List<RunT> builds = new ArrayList<>();
 
         for (Range r : rs.getRanges()) {
             for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
@@ -814,7 +812,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 throw new CmdLineException(null, "No such build '#"+n+"' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(null, id+ "is not a number");
+            throw new CmdLineException(null, id+ "is not a number", e);
         }
     }
 
@@ -1106,7 +1104,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
             }
-            scmDisplayName = " " + Util.join(scmNames, ", ");
+            scmDisplayName = " " + String.join(", ", scmNames);
         }
 
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
@@ -1500,8 +1498,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 plot.setBackgroundPaint(Color.WHITE);
                 plot.setOutlinePaint(null);
                 plot.setForegroundAlpha(0.8f);
-                // plot.setDomainGridlinesVisible(true);
-                // plot.setDomainGridlinePaint(Color.white);
                 plot.setRangeGridlinesVisible(true);
                 plot.setRangeGridlinePaint(Color.black);
 

@@ -26,14 +26,13 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.DescribableList;
+import java.io.IOException;
+import java.util.Collections;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Global configuration UI for background build discarders

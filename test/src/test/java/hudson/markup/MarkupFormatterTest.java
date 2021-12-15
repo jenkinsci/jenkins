@@ -35,16 +35,15 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AuthorizationStrategy.Unsecured;
 import hudson.security.HudsonPrivateSecurityRealm;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URL;
 
 /**
  * @author Kohsuke Kawaguchi

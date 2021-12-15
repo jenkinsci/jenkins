@@ -3,7 +3,6 @@ package jenkins;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.remoting.ChannelProperty;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,7 +30,7 @@ class FilePathFilterAggregator extends FilePathFilter {
 
         @Override
         public int compareTo(Entry that) {
-            double result = Double.compare(this.ordinal, that.ordinal);
+            int result = Double.compare(this.ordinal, that.ordinal);
 
             if (result < 0) return -1;
             if (result > 0) return 1;

@@ -23,18 +23,16 @@
  */
 package hudson.scm;
 
-import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.net.MalformedURLException;
-
+import java.net.URL;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -87,7 +85,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> extends Ab
 
         // normalize
         String q = url.getQuery();
-        q = q!=null?('?'+q):"";
+        q = q != null ? '?' + q : "";
         try {
             return new URL(url,url.getPath()+'/'+q);
         } catch (MalformedURLException e) {

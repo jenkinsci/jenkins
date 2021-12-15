@@ -24,29 +24,34 @@
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionPoint;
-import hudson.Extension;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Actionable;
 import hudson.model.Computer;
-import hudson.model.Slave;
-import hudson.security.PermissionScope;
-import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.Label;
 import hudson.model.Descriptor;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.security.PermissionScope;
+import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -255,6 +260,19 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public static final Permission PROVISION = new Permission(
             Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
     );
+
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
+    @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    @Restricted(DoNotUse.class)
+    public static void registerPermissions() {
+        // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
+        // allowing plugins to adapt the system configuration, which may depend on these permissions
+        // having been registered. Since this method is static and since it follows the above
+        // construction of static permission objects (and therefore their calls to
+        // PermissionGroup#register), there is nothing further to do in this method. We call
+        // Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(PERMISSION_SCOPE, PROVISION);
+    }
 
     /**
      * Parameter object for {@link hudson.slaves.Cloud}.

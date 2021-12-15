@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -32,14 +33,12 @@ import hudson.model.listeners.ItemListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,17 +53,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-
+import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -86,7 +81,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
@@ -110,7 +105,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Deprecated see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     private transient Boolean statusFilter;
@@ -151,7 +146,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         synchronized(this) {
             if (jobNames == null) {
-                jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+                jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
             }
         }
         initColumns();
@@ -190,7 +185,7 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
-    public Set<String> getJobNames() {
+    public synchronized Set<String> getJobNames() {
         return Collections.unmodifiableSet(jobNames);
     }
 
@@ -338,7 +333,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Status filter is now controlled via a JobViewFilter, see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     public Boolean getStatusFilter() {
@@ -493,8 +488,7 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     /**
-     * Deprecated see, {@link StatusFilter}
-     * @param statusFilter
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     @DataBoundSetter

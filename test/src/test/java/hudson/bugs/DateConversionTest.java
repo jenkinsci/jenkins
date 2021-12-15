@@ -24,15 +24,14 @@
 package hudson.bugs;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
-import org.junit.Test;
-import org.jvnet.hudson.test.Email;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.junit.Test;
+import org.jvnet.hudson.test.Email;
 
 /**
  * Testing date conversion.
@@ -52,7 +51,7 @@ public class DateConversionTest {
         for(int i=0;i<10;i++) {
             futures.add(es.submit(new Callable<Object>() {
                 @Override
-                public Object call() throws Exception {
+                public Object call() {
                     for( int i=0; i<10000; i++ )
                         dc.fromString("2008-08-26 15:40:14.568 GMT-03:00");
                     return null;

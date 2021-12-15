@@ -25,15 +25,16 @@ package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
-import jenkins.util.SystemProperties;
 import hudson.Util;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.logging.Level;
-
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -62,7 +63,11 @@ public abstract class Lifecycle implements ExtensionPoint {
             if(p!=null) {
                 try {
                     ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                    instance = (Lifecycle)cl.loadClass(p).newInstance();
+                    instance = (Lifecycle)cl.loadClass(p).getDeclaredConstructor().newInstance();
+                } catch (NoSuchMethodException e) {
+                    NoSuchMethodError x = new NoSuchMethodError(e.getMessage());
+                    x.initCause(e);
+                    throw x;
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());
                     x.initCause(e);
@@ -75,6 +80,19 @@ public abstract class Lifecycle implements ExtensionPoint {
                     NoClassDefFoundError x = new NoClassDefFoundError(e.getMessage());
                     x.initCause(e);
                     throw x;
+                } catch (InvocationTargetException e) {
+                    Throwable t = e.getCause();
+                    if (t instanceof RuntimeException) {
+                        throw (RuntimeException) t;
+                    } else if (t instanceof IOException) {
+                        throw new UncheckedIOException((IOException) t);
+                    } else if (t instanceof Exception) {
+                        throw new RuntimeException(t);
+                    } else if (t instanceof Error) {
+                        throw (Error) t;
+                    } else {
+                        throw new Error(e);
+                    }
                 }
             } else {
                 if(Functions.isWindows()) {
@@ -149,8 +167,9 @@ public abstract class Lifecycle implements ExtensionPoint {
        
         FileUtils.copyFile(by, dest);
         // we don't want to keep backup if we are downgrading
-        if (by.equals(bak)&&bak.exists())
-            bak.delete();
+        if (by.equals(bak)) {
+            Files.deleteIfExists(Util.fileToPath(bak));
+        }
     }
 
     /**

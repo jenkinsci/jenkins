@@ -23,9 +23,7 @@
  */
 package hudson.util;
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.kohsuke.stapler.ClassDescriptor;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -37,7 +35,8 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.kohsuke.stapler.ClassDescriptor;
 
 /**
  * Utility code for reflection.
@@ -71,7 +70,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                 Field f = o.getClass().getField(p);
                 return f.get(o);
             } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("No such property "+p+" on "+o.getClass());
+                throw new IllegalArgumentException("No such property "+p+" on "+o.getClass(), e);
             }
         } else {
             return PropertyUtils.getProperty(o, p);

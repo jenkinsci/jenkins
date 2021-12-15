@@ -23,6 +23,8 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
@@ -33,16 +35,7 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
-import java.util.concurrent.Callable;
-
-import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,11 +44,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Manages all the nodes for Jenkins.
@@ -141,17 +138,10 @@ public class Nodes implements Saveable {
 
         Node oldNode = nodes.get(node.getNodeName());
         if (node != oldNode) {
-            // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
-            // computer list for just the new node
             AtomicReference<Node> old = new AtomicReference<>();
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    old.set(nodes.put(node.getNodeName(), node));
-                    jenkins.updateComputerList();
-                    jenkins.trimLabels();
-                }
-            });
+            old.set(nodes.put(node.getNodeName(), node));
+            jenkins.updateNewComputer(node);
+            jenkins.trimLabels(node, oldNode);
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);
@@ -163,7 +153,7 @@ public class Nodes implements Saveable {
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> oldNode);
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node, oldNode);
                     }
                 });
                 throw e;
@@ -211,7 +201,7 @@ public class Nodes implements Saveable {
                 @Override
                 public Boolean call() throws Exception {
                     if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                         return true;
                     }
                     return false;
@@ -252,7 +242,7 @@ public class Nodes implements Saveable {
                     Nodes.this.nodes.remove(oldOne.getNodeName());
                     Nodes.this.nodes.put(newOne.getNodeName(), newOne);
                     jenkins.updateComputerList();
-                    jenkins.trimLabels();
+                    jenkins.trimLabels(oldOne, newOne);
                 }
             });
             updateNode(newOne);
@@ -286,7 +276,7 @@ public class Nodes implements Saveable {
                     }
                     if (node == nodes.remove(node.getNodeName())) {
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                     }
                 }
             });
@@ -313,12 +303,8 @@ public class Nodes implements Saveable {
             xmlFile.write(n);
             SaveableListener.fireOnChange(this, xmlFile);
         }
-        for (File forDeletion : nodesDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && !existing.contains(pathname.getName());
-            }
-        })) {
+        for (File forDeletion : nodesDir.listFiles(pathname ->
+                pathname.isDirectory() && !existing.contains(pathname.getName()))) {
             Util.deleteRecursive(forDeletion);
         }
     }
@@ -341,12 +327,7 @@ public class Nodes implements Saveable {
      */
     public void load() throws IOException {
         final File nodesDir = getNodesDir();
-        final File[] subdirs = nodesDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File child) {
-                return child.isDirectory();
-            }
-        });
+        final File[] subdirs = nodesDir.listFiles(File::isDirectory);
         final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
             for (File subdir : subdirs) {
@@ -376,7 +357,6 @@ public class Nodes implements Saveable {
      * Returns the directory that the nodes are stored in.
      *
      * @return the directory that the nodes are stored in.
-     * @throws IOException
      */
     private File getNodesDir() throws IOException {
         final File nodesDir = new File(jenkins.getRootDir(), "nodes");

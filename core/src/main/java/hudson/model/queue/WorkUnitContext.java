@@ -23,17 +23,21 @@
  */
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.ExtensionList;
 import hudson.model.Action;
 import hudson.model.Executor;
+import hudson.model.ExecutorListener;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Holds the information shared between {@link WorkUnit}s created from the same {@link Task}.
@@ -41,6 +45,8 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public final class WorkUnitContext {
+
+    private static final Logger LOGGER = Logger.getLogger(WorkUnitContext.class.getName());
 
     public final BuildableItem item;
 
@@ -74,6 +80,7 @@ public final class WorkUnitContext {
         // +1 for the main task
         int workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
             @Override
             protected void onCriteriaMet() {
                 // on behalf of the member Executors,
@@ -82,6 +89,13 @@ public final class WorkUnitContext {
                 Executor e = Executor.currentExecutor();
                 if (e.getCurrentWorkUnit().isMainWork()) {
                     e.getOwner().taskAccepted(e,task);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        try {
+                            listener.taskAccepted(e, task);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
+                    }
                 }
             }
         };
@@ -121,6 +135,13 @@ public final class WorkUnitContext {
             WorkUnit wu = e.getCurrentWorkUnit();
             if (wu.isMainWork()) {
                 future.start.set(e.getCurrentExecutable());
+                for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                    try {
+                        listener.taskStarted(e, task);
+                    } catch (RuntimeException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
+                }
             }
         }
     }
@@ -150,9 +171,23 @@ public final class WorkUnitContext {
                 if (problems == null) {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        try {
+                            listener.taskCompleted(e, task, duration);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
+                    }
                 } else {
                     future.set(problems);
                     e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
+                    for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
+                        try {
+                            listener.taskCompletedWithProblems(e, task, duration, problems);
+                        } catch (RuntimeException x) {
+                            LOGGER.log(Level.WARNING, null, x);
+                        }
+                    }
                 }
             }
         }

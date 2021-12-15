@@ -23,24 +23,21 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionListView;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
 import hudson.security.Permission;
-import jenkins.model.Jenkins;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point to add icon to {@code http://server/hudson/manage} page.
@@ -191,7 +188,9 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
          */
         TROUBLESHOOTING(Messages._ManagementLink_Category_TROUBLESHOOTING()),
         /**
-         * Tools are specifically tools for administrators, such as the Jenkins CLI and Script Console, as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
+         * Tools are specifically tools for administrators,
+         * such as the Jenkins CLI and Script Console,
+         * as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
          * This has nothing to do with build tools or tool installers.
          */
         TOOLS(Messages._ManagementLink_Category_TOOLS()),

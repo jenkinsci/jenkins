@@ -23,21 +23,20 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import jenkins.util.Timer;
-
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-
+import jenkins.util.Timer;
 
 /**
  * Extension point which allows scheduling a task with variable interval. Interval in evaluated every time before next
@@ -50,6 +49,7 @@ import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
  * @author vjuranek
  * @since 1.410
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPoint {
 	
 	protected final Logger logger = Logger.getLogger(getClass().getName());

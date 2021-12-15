@@ -23,9 +23,11 @@
  */
 package hudson.util;
 
+import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -37,13 +39,20 @@ public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
+    private static final class LogRecordRef extends SoftReference<LogRecord> {
+        LogRecordRef(LogRecord referent) {
+            super(referent);
+        }
+    }
+
     private int start = 0;
-    private final LogRecord[] records;
-    private volatile int size = 0;
+    private final LogRecordRef[] records;
+    private int size;
 
     /**
      * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
      * as it's not legal to use it on remoting agents.
+     * @deprecated use {@link #RingBufferLogHandler(int)}
      */
     @Deprecated
     public RingBufferLogHandler() {
@@ -51,12 +60,12 @@ public class RingBufferLogHandler extends Handler {
     }
 
     public RingBufferLogHandler(int ringSize) {
-        records = new LogRecord[ringSize];
+        records = new LogRecordRef[ringSize];
     }
 
     /**
      * @return int DEFAULT_RING_BUFFER_SIZE
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-50669">JENKINS-50669</a>
      * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
@@ -66,8 +75,8 @@ public class RingBufferLogHandler extends Handler {
     @Override
     public synchronized void publish(LogRecord record) {
         int len = records.length;
-        records[(start+size)%len]=record;
-        if(size==len) {
+        records[(start + size) % len] = new LogRecordRef(record);
+        if (size == len) {
             start = (start+1)%len;
         } else {
             size++;
@@ -86,18 +95,26 @@ public class RingBufferLogHandler extends Handler {
      * New records are always placed early in the list.
      */
     public List<LogRecord> getView() {
+        // Since Jenkins.logRecords is a field used as an API, we are forced to implement a dynamic list.
         return new AbstractList<LogRecord>() {
             @Override
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    return records[(start+(size-(index+1)))%records.length];
+                    LogRecord r = records[(start + (size - (index + 1))) % records.length].get();
+                    // We cannot just omit collected entries due to the List interface.
+                    return r != null ? r : new LogRecord(Level.OFF, "<discarded>");
                 }
             }
-
             @Override
             public int size() {
-                return size;
+                synchronized (RingBufferLogHandler.this) {
+                    // Not actually correct if a log record is added
+                    // after this is called but before the list is iterated.
+                    // However the size should only ever grow, up to the ring buffer max,
+                    // so get(int) should never throw AIOOBE.
+                    return size;
+                }
             }
         };
     }

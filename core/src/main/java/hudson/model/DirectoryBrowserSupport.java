@@ -26,6 +26,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,9 +60,9 @@ import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -81,6 +82,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     // escape hatch for SECURITY-904 to keep legacy behavior
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean ALLOW_SYMLINK_ESCAPE = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
+
+    /**
+     * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed. 
+     */
+    static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
 
     public final ModelObject owner;
     
@@ -243,7 +249,20 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String rest = _rest.toString();
 
         // this is the base file/directory
-        VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
+        VirtualFile baseFile;
+        if (base.isEmpty()) {
+            baseFile = root;
+        } else {
+            if (!SystemProperties.getBoolean(ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, false)) {
+                boolean isAbsolute = root.run(new IsAbsolute(base));
+                if (isAbsolute) {
+                    LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
+                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+            }
+            baseFile = root.child(base);
+        }
 
         if (baseFile.hasSymlink(getNoFollowLinks())) {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -397,6 +416,19 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
+    private static final class IsAbsolute extends MasterToSlaveCallable<Boolean, IOException> {
+        private final String fragment;
+
+        IsAbsolute(String fragment) {
+            this.fragment = fragment;
+        }
+
+        @Override 
+        public Boolean call() throws IOException {
+            return new File(fragment).isAbsolute();
+        }
+    }
+
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){
         Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
             List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
@@ -525,7 +557,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
         // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
         // TODO On Linux file names can contain backslashes which should not treated as file separators.
-        //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+        //      Unfortunately, only the file separator char of the controller is known (File.separatorChar)
         //      but not the file separator char of the (maybe remote) "dir".
         ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
 

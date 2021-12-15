@@ -23,8 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -40,18 +38,6 @@ import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.ExtensionFilter;
-import jenkins.ExtensionRefreshException;
-import jenkins.ProxyInjector;
-import jenkins.model.Jenkins;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.util.ClassUtils;
-
-import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -62,13 +48,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.annotation.PostConstruct;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionFilter;
+import jenkins.ExtensionRefreshException;
+import jenkins.ProxyInjector;
+import jenkins.model.Jenkins;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.util.ClassUtils;
 
 /**
  * Discovers the implementations of an extension point.
@@ -305,12 +302,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
-        private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
+        private List<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
             List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
-                Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
+                for (IndexItem<?, Object> indexItem : Index.load(gea.annotationType, Object.class, classLoader)) {
+                    indices.add(indexItem);
+                }
             }
-            return ImmutableList.copyOf(indices);
+            return Collections.unmodifiableList(indices);
         }
 
         public Injector getContainer() {
@@ -396,7 +395,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private <U> void _find(Class<U> type, List<ExtensionComponent<U>> result, Injector container) {
-            for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
+            for (Map.Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
                 if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
                     Annotation a = annotations.get(e.getKey());
                     Object o = e.getValue().getProvider().get();
@@ -503,7 +502,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         }
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
-                } catch (Exception x) {
+                } catch (RuntimeException x) {
                     throw new LinkageError("Failed to resolve "+c, x);
                 }
             }
@@ -543,12 +542,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             // make unique key, because Guice wants that.
                             Key key = Key.get(extType, Names.named(item.className() + "." + item.memberName()));
                             annotations.put(key,a);
-                            bind(key).toProvider(new Provider() {
-                                    @Override
-                                    public Object get() {
-                                        return instantiate(item);
-                                    }
-                                }).in(scope);
+                            bind(key).toProvider(() -> instantiate(item)).in(scope);
                         }
                         loadedIndex.add(item);
                     } catch (Exception|LinkageError e) {
@@ -561,14 +555,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
-                return Collections.unmodifiableList(loadedIndex);
+                return Collections.unmodifiableList(new ArrayList<>(loadedIndex));
             }
 
             @Override
             public <T> void onProvision(ProvisionInvocation<T> provision) {
                 final T instance = provision.provision();
                 if (instance == null) return;
-                List<Method> methods = new LinkedList<>();
+                List<Method> methods = new ArrayList<>();
                 Class c = instance.getClass();
 
                 // find PostConstruct methods in class hierarchy, the one from parent class being first in list
@@ -646,7 +640,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 5. dead lock
             if (indices==null) {
                 ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
+                indices = Collections.unmodifiableList(StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false).collect(Collectors.toList()));
             }
             return indices;
         }
@@ -666,7 +660,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
-            indices = ImmutableList.copyOf(r);
+            indices = Collections.unmodifiableList(r);
 
             return new ExtensionComponentSet() {
                 @Override

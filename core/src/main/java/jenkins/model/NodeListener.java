@@ -23,14 +23,13 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Node;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.Listeners;
 
 /**
  * Listen to {@link Node} CRUD operations.
@@ -63,13 +62,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param node A node being created.
      */
     public static void fireOnCreated(@NonNull Node node) {
-        for (NodeListener nl: all()) {
-            try {
-                nl.onCreated(node);
-            } catch (Throwable ex) {
-                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
-            }
-        }
+        Listeners.notify(NodeListener.class, false, l -> l.onCreated(node));
     }
 
     /**
@@ -79,13 +72,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param newOne New Configuration.
      */
     public static void fireOnUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
-        for (NodeListener nl: all()) {
-            try {
-                nl.onUpdated(oldOne, newOne);
-            } catch (Throwable ex) {
-                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
-            }
-        }
+        Listeners.notify(NodeListener.class, false, l -> l.onUpdated(oldOne, newOne));
     }
 
     /**
@@ -94,13 +81,7 @@ public abstract class NodeListener implements ExtensionPoint {
      * @param node A node being removed.
      */
     public static void fireOnDeleted(@NonNull Node node) {
-        for (NodeListener nl: all()) {
-            try {
-                nl.onDeleted(node);
-            } catch (Throwable ex) {
-                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
-            }
-        }
+        Listeners.notify(NodeListener.class, false, l -> l.onDeleted(node));
     }
 
     /**

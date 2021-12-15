@@ -24,7 +24,6 @@
  */
 package hudson.model;
 
-import java.util.function.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -63,6 +62,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -70,6 +70,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.scm.RunWithSCM;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -128,8 +129,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(User.class.getName() + ".skipPermissionCheck");
 
     /**
      * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
@@ -138,9 +139,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
      * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
      * <p>
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">JENKINS-22346</a>.
+     * See <a href="https://issues.jenkins.io/browse/JENKINS-22346">JENKINS-22346</a>.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
@@ -148,7 +149,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * accesses a /user/arbitraryName URL.
      * <p>
      * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
-     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.44 / 2.32.2.
      * <p>
      * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
      * is not recommended.
@@ -156,7 +157,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * SECURITY-406.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
     /**
@@ -683,10 +684,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
+     * true if {@link RunWithSCM#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
      */
-    private boolean relatedTo(@NonNull AbstractBuild<?, ?> b) {
-        if (b.hasParticipant(this)) {
+    private boolean relatedTo(@NonNull Run<?, ?> b) {
+        if (b instanceof RunWithSCM && ((RunWithSCM) b).hasParticipant(this)) {
             return true;
         }
         for (Cause cause : b.getCauses()) {
@@ -701,14 +702,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the list of {@link Build}s that include changes by this user,
-     * by the timestamp order.
+     * Searches for builds which include changes by this user or which were triggered by this user.
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
-                allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
+                allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
     }
 
     /**
@@ -731,6 +731,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Called by tests in the JTH. Otherwise this shouldn't be called.
      * Even in the tests this usage is questionable.
+     * @deprecated removed without replacement
      */
     @Deprecated
     public static void clear() {
@@ -868,7 +869,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (UserPropertyDescriptor d : UserProperty.all()) {
             UserProperty p = getProperty(d.clazz);
 
-            JSONObject o = json.optJSONObject("userProperty" + (i++));
+            JSONObject o = json.optJSONObject("userProperty" + i++);
             if (o != null) {
                 if (p != null) {
                     p = p.reconfigure(req, o);
@@ -918,8 +919,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+        for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
+            for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
                 if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;

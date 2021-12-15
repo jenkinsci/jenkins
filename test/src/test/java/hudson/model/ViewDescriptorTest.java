@@ -24,18 +24,17 @@
 
 package hudson.model;
 
-import java.util.Arrays;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
-import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.util.Arrays;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import net.sf.json.JSONObject;
 import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +43,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
-import net.sf.json.JSONObject;
 
 public class ViewDescriptorTest {
 
@@ -61,7 +59,7 @@ public class ViewDescriptorTest {
         assertContains(r.jenkins.getDescriptorByType(AllView.DescriptorImpl.class).doAutoCompleteCopyNewItemFrom("../d1/", d2), "../d1/prj");
     }
 
-    @SuppressWarnings({"rawtypes"}) // the usual API mistakes
+    @SuppressWarnings("rawtypes") // the usual API mistakes
     public static class RestrictiveFolder extends MockFolder {
 
         public RestrictiveFolder(ItemGroup parent, String name) {
@@ -156,7 +154,7 @@ public class ViewDescriptorTest {
             return this.someProperty;
         }
 
-        public CustomInvisibleProperty() {
+        CustomInvisibleProperty() {
             this.someProperty = "undefined";
         }
 

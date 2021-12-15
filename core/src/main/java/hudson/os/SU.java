@@ -23,7 +23,10 @@
  */
 package hudson.os;
 
+import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import com.sun.solaris.EmbeddedSu;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -36,13 +39,10 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.slaves.Channels;
 import hudson.util.ArgumentListBuilder;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
-
-import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -82,18 +82,20 @@ public abstract class SU {
                     return "sudo";
                 }
 
+                @SuppressFBWarnings(value = {"COMMAND_INJECTION", "DM_DEFAULT_ENCODING"}, justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(),"-S");
-                    listener.getLogger().println("$ "+Util.join(args.toList()," "));
+                    listener.getLogger().println("$ " + String.join(" ", args.toList()));
                     ProcessBuilder pb = new ProcessBuilder(args.toCommandArray());
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
                     // TODO: detect if the password didn't work
-                    PrintStream ps = new PrintStream(p.getOutputStream());
-                    ps.println(rootPassword);
-                    ps.println(rootPassword);
-                    ps.println(rootPassword);
+                    try (PrintStream ps = new PrintStream(p.getOutputStream())) {
+                        ps.println(rootPassword);
+                        ps.println(rootPassword);
+                        ps.println(rootPassword);
+                    }
                     return p;
                 }
             }.start(listener,rootPassword);
@@ -105,6 +107,7 @@ public abstract class SU {
                     return "/usr/bin/pfexec";
                 }
 
+                @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     listener.getLogger().println("Running with embedded_su");

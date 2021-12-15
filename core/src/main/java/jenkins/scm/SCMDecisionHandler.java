@@ -23,13 +23,13 @@
  */
 package jenkins.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Item;
 import java.util.ArrayList;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point for various decisions about SCM operations for {@link Item} instances.

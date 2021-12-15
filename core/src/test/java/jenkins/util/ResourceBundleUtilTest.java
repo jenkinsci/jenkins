@@ -23,14 +23,13 @@
  */
 package jenkins.util;
 
-import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-
-import static org.junit.Assert.assertThrows;
+import net.sf.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -44,11 +43,11 @@ public class ResourceBundleUtilTest {
     public void test_known_locale() {
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", Locale.GERMAN);
         Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
-        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt"));
-        Assert.assertEquals("Inicializando registros de log", bundle.getString("LogRecorderManager.init"));
+        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
 
         // Test caching - should get the same bundle instance back...
-        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")), bundle);
+        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de")), bundle);
     }
 
     /**
@@ -62,7 +61,7 @@ public class ResourceBundleUtilTest {
             Locale.setDefault(new Locale("en", "US"));
 
             JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
-            Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
+            Assert.assertEquals("Initializing log recorders", bundle.getString("LogRecorderManager.init"));
         }finally{
             Locale.setDefault(defaultOSLocale);
         }

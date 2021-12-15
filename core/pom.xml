@@ -36,11 +36,12 @@ THE SOFTWARE.
 
   <name>Jenkins core</name>
   <description>Jenkins core code and view files to render HTML.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <xmlunit.version>2.8.2</xmlunit.version>
+    <xmlunit.version>2.8.3</xmlunit.version>
   </properties>
 
   <dependencyManagement>
@@ -74,16 +75,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>jtidy</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
@@ -97,9 +88,10 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <exclusions>
-        <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
+        <exclusion>
+          <!-- Provided by spring-aop via spring-security-web -->
+          <groupId>aopalliance</groupId>
+          <artifactId>aopalliance</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -108,14 +100,29 @@ THE SOFTWARE.
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
     </dependency>
-    <dependency> <!-- for compatibility only; all new code should use JNR. Not included into BOM due to the same reason -->
-      <groupId>org.jruby.ext.posix</groupId>
-      <artifactId>jna-posix</artifactId>
-      <version>1.0.3-jenkins-1</version>
-    </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-analysis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-tree</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-util</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -189,7 +196,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.18</version>
+      <version>${bridge-method-injector.version}</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -207,10 +214,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>bytecode-compatibility-transformer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -272,16 +275,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-digester</groupId>
-      <artifactId>commons-digester</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
@@ -406,6 +399,11 @@ THE SOFTWARE.
       <artifactId>jansi</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.jupiter.version}</version>
@@ -431,17 +429,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito2</artifactId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
@@ -464,6 +453,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -477,21 +473,9 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
     </dependency>
-    <dependency><!-- StAX implementation. See JENKINS-2547. -->
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>wstx-asl</artifactId>
-    </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>akuma</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
@@ -515,10 +499,9 @@ THE SOFTWARE.
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
     </dependency>
-    <dependency> <!-- Not included into BOM, plugins should use one from structs-plugin -->
+    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
-      <version>1.1</version>
     </dependency>
 
     <dependency>
@@ -560,16 +543,19 @@ THE SOFTWARE.
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <exclusions>
-        <exclusion> <!-- pick up from SpotBugs Annotations -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.j2objc</groupId>
+          <artifactId>j2objc-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava-testlib</artifactId>
-      <scope>test</scope>
     </dependency>
     <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
@@ -746,8 +732,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <forkCount>0.5C</forkCount>
-          <reuseForks>true</reuseForks>
-          <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
+          <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -825,12 +810,12 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs install site". -->
+      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
       <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>spotbugs</id>
       <properties>
         <!-- In the default profile we always fail the build if there SpotBugs errors -->
-        <findbugs.failOnError>true</findbugs.failOnError>
+        <spotbugs.failOnError>true</spotbugs.failOnError>
       </properties>
     </profile>
     <profile>

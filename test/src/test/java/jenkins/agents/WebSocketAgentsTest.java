@@ -24,6 +24,9 @@
 
 package jenkins.agents;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.Functions;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
@@ -43,10 +46,8 @@ import jenkins.security.SlaveToMasterCallable;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.ClassRule;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
@@ -93,10 +94,10 @@ public class WebSocketAgentsTest {
             r.jenkins.addNode(s);
             String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
             File slaveJar = tmp.newFile();
-            FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+            FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
             proc.set(r.createLocalLauncher().launch().cmds(
                 JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", r.getURL() + "computer/remote/slave-agent.jnlp",
+                "-jnlpUrl", r.getURL() + "computer/remote/jenkins-agent.jnlp",
                 "-secret", secret
             ).stdout(System.out).start());
             r.waitOnline(s);

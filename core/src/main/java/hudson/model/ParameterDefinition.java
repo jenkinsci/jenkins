@@ -23,25 +23,22 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.AbortException;
+import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.util.DescriptorList;
-
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Util;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -105,7 +102,7 @@ public abstract class ParameterDefinition implements
 
     private String description;
 
-    public ParameterDefinition(@NonNull String name) {
+    protected ParameterDefinition(@NonNull String name) {
         if (name == null) {
             throw new IllegalArgumentException("Parameter name must be non-null");
         }
@@ -116,7 +113,7 @@ public abstract class ParameterDefinition implements
      * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link org.kohsuke.stapler.DataBoundConstructor} and allow {@link #setDescription} to be used as needed
      */
     @Deprecated
-    public ParameterDefinition(@NonNull String name, String description) {
+    protected ParameterDefinition(@NonNull String name, String description) {
         this(name);
         setDescription(description);
     }

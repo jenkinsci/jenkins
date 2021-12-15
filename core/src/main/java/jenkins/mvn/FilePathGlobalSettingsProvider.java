@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -35,7 +34,7 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
         try {
             return SettingsPathHelper.getSettings(build, listener, getPath());
         } catch (Exception e) {
-            throw new IllegalStateException("failed to prepare global settings.xml");
+            throw new IllegalStateException("failed to prepare global settings.xml", e);
         }
 
     }

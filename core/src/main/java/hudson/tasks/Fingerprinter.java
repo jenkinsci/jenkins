@@ -23,26 +23,22 @@
  */
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
-import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
 import hudson.model.Job;
-import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -50,33 +46,35 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.model.RunAction2;
+import jenkins.tasks.SimpleBuildStep;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundSetter;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jenkins.model.RunAction2;
-import jenkins.tasks.SimpleBuildStep;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -85,6 +83,8 @@ import org.springframework.security.access.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer, SimpleBuildStep {
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
     
     /**
@@ -126,6 +126,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         this.caseSensitive = caseSensitive;
     }
 
+    /**
+     * @deprecated use {@link #Fingerprinter(String)} and {@link ArtifactArchiver#setFingerprint}
+     */
     @Deprecated
     public Fingerprinter(String targets, boolean recordBuildArtifacts) {
         this(targets);
@@ -162,6 +165,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return this;
     }
 
+    /**
+     * @deprecated use {@link ArtifactArchiver#isFingerprint}
+     */
     @Deprecated
     public boolean getRecordBuildArtifacts() {
         return recordBuildArtifacts != null && recordBuildArtifacts;
@@ -362,8 +368,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public static final class FingerprintAction implements RunAction2 {
 
         private transient Run build;
-        
-        private static final Random rand = new Random();
 
         /**
          * From file name to the digest.
@@ -432,7 +436,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /** Share data structure with other builds, mainly those of the same job. */
         private PackedMap<String,String> compact(Map<String,String> record) {
             Map<String,String> b = new HashMap<>();
-            for (Entry<String,String> e : record.entrySet()) {
+            for (Map.Entry<String,String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
             return PackedMap.of(b);
@@ -451,7 +455,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             Jenkins h = Jenkins.get();
 
             Map<String,Fingerprint> m = new TreeMap<>();
-            for (Entry<String, String> r : record.entrySet()) {
+            for (Map.Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
                     if(fp!=null)
@@ -461,7 +465,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
             }
 
-            m = ImmutableMap.copyOf(m);
+            m = Collections.unmodifiableMap(m);
             ref = new WeakReference<>(m);
             return m;
         }

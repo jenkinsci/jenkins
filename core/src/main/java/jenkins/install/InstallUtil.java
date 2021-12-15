@@ -26,38 +26,36 @@ package jenkins.install;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
+import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.inject.Provider;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.function.Function;
-import com.thoughtworks.xstream.XStream;
-
 import hudson.Functions;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Provider;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Jenkins install utilities.
@@ -138,7 +136,7 @@ public class InstallUtil {
             try {
                 return InstallState.valueOf(stateOverride.toUpperCase());
             } catch (RuntimeException e) {
-                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
+                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.", e);
             }
         }
         
@@ -166,14 +164,8 @@ public class InstallUtil {
             
             // Allow for skipping
             if(shouldNotRun) {
-                try {
-                    InstallState.INITIAL_SETUP_COMPLETED.initializeState();
-                    return j.getInstallState();
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                InstallState.INITIAL_SETUP_COMPLETED.initializeState();
+                return j.getInstallState();
             }
 
             return InstallState.INITIAL_SECURITY_SETUP;
@@ -298,12 +290,15 @@ public class InstallUtil {
 
     /**
      * Persists a list of installing plugins; this is used in the case Jenkins fails mid-installation and needs to be restarted
-     * @param installingPlugins
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();
 	if(installingPlugins == null || installingPlugins.isEmpty()) {
-		installingPluginsFile.delete();
+		try {
+			Files.deleteIfExists(installingPluginsFile.toPath());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());

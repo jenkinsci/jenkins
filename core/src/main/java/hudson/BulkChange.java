@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.model.Saveable;
-
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -160,9 +159,6 @@ public class BulkChange implements Closeable {
      * all the save operations by making the {@link #contains(Saveable)} method return
      * true for everything.
      */
-    public static final Saveable ALL = new Saveable() {
-        @Override
-        public void save() {
-        }
+    public static final Saveable ALL = () -> {
     };
 }

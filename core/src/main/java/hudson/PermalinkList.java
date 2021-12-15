@@ -25,7 +25,6 @@ package hudson;
 
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.util.EditDistance;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

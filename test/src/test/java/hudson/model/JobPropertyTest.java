@@ -145,7 +145,7 @@ public class JobPropertyTest {
         InvisibleImpl() {}
 
         @Override
-        public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
             return this;
         }
 

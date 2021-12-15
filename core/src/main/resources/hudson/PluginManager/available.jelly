@@ -23,47 +23,42 @@ THE SOFTWARE.
 -->
 
 <!--
-  List of available new plugins    
+  List of available new plugins
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Available Plugins}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Available Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="page" value="available"/>
 
-    <st:include page="sidepanel.jelly"/>
-    <l:main-panel>
-      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
-      <link rel="stylesheet" href="${resURL}/jsbundles/plugin-manager-ui.css" type="text/css"/>
-
-      <div id="filter-container">
-        <div class="plugin-manager__search">
-          <input
-              role="searchbox"
-              class="plugin-manager__search-input"
-              type="text"
-              id="filter-box"
-              value="${request.getParameter('filter')}"
-              placeholder="${%search}"/>
-          <span class="plugin-manager__icon-leading">
-            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px"/>
-          </span>
+    <l:app-bar title="${%Plugin Manager}">
+      <div class="jenkins-search">
+        <input
+          class="jenkins-search__input"
+          type="search"
+          id="filter-box"
+          value="${request.getParameter('filter')}"
+          placeholder="${%Search}"/>
+        <div class="jenkins-search__icon">
+          <l:ionicon name="search-outline"/>
         </div>
       </div>
+    </l:app-bar>
+
+    <st:include page="sidepanel.jelly"/>
+
+    <l:main-panel>
+      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
       <form method="post" action="install">
         <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager"/>
-        <table id="plugins" class="sortable pane bigtable stripped-odd"
+        <table id="plugins" class="jenkins-table sortable"
                data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'up'}"
-                    tooltip="${%Check to install the plugin}"
-                    width="32">${%Install}
-                </th>
+                <th width="32">${%Install}</th>
               </l:isAdmin>
-              <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
-              <th>${%Version}</th>
+              <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
               <j:if test="${isUpdates}">
                 <th>${%Installed}</th>

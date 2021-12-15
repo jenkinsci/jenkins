@@ -6,15 +6,14 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Run;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import org.apache.commons.io.IOUtils;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * cat/tail/head of the console output.
@@ -57,13 +56,13 @@ public class ConsoleCommand extends CLICommand {
             if (p!=null) {
                 run = p.resolve(job);
                 if (run==null)
-                    throw new IllegalStateException("Permalink "+build+" produced no build");
+                    throw new IllegalStateException("Permalink "+build+" produced no build", e);
             } else {
                 Permalink nearest = job.getPermalinks().findNearest(build);
                 throw new IllegalArgumentException(nearest == null ?
                         String.format("Not sure what you meant by \"%s\".", build) :
                         String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?",
-                                build, nearest.getId()));
+                                build, nearest.getId()), e);
             }
         }
 

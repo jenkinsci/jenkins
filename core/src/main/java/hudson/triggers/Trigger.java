@@ -24,6 +24,9 @@
  */
 package hudson.triggers;
 
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DependencyRunner;
 import hudson.DependencyRunner.ProjectRunnable;
@@ -36,15 +39,14 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Describable;
-import hudson.scheduler.Hash;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.Items;
 import hudson.model.PeriodicWork;
 import hudson.model.Project;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTabList;
-
+import hudson.scheduler.Hash;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
@@ -54,16 +56,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Timer;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import antlr.ANTLRException;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.model.Items;
+import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
@@ -260,6 +258,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "TODO needs triage")
                     @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
@@ -288,7 +287,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 long begin_time = System.currentTimeMillis();
                                 t.run();
                                 long end_time = System.currentTimeMillis();
-                                if ((end_time - begin_time) > (CRON_THRESHOLD * 1000)) {
+                                if (end_time - begin_time > CRON_THRESHOLD * 1000) {
                                     TriggerDescriptor descriptor = t.getDescriptor();
                                     String name = descriptor.getDisplayName();
                                     final String msg = String.format("Trigger '%s' triggered by '%s' (%s) spent too much time (%s) in its execution, other timers could be delayed.",
@@ -312,12 +311,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     /**
-     * Used to be milliseconds, now is seconds since Jenkins 2.TODO.
+     * Used to be milliseconds, now is seconds since Jenkins 2.289.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.289")
     public static /* non-final for Groovy */ long CRON_THRESHOLD = SystemProperties.getLong(Trigger.class.getName() + ".CRON_THRESHOLD", 30L); // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
@@ -332,9 +331,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * @deprecated Use {@link jenkins.util.Timer#get()} instead.
      */
-    @SuppressWarnings("MS_SHOULD_BE_FINAL")
     @Deprecated
-    public static @CheckForNull java.util.Timer timer;
+    public static @CheckForNull Timer timer;
 
     /**
      * Returns all the registered {@link Trigger} descriptors.

@@ -23,6 +23,9 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -57,8 +60,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
@@ -295,6 +296,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (AbstractProject p : getChildProjects(owner)) // only care about AbstractProject here
             graph.addDependency(new Dependency(owner, p) {
+                @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
@@ -336,19 +338,14 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         if(changed) {
-            StringBuilder b = new StringBuilder();
-            for (String p : projects) {
-                if(b.length()>0)    b.append(',');
-                b.append(p);
-            }
-            childProjects = b.toString();
+            childProjects = String.join(",", projects);
         }
 
         return changed;
     }
 
     /**
-     * Correct broken data gracefully (#1537)
+     * Correct broken data gracefully (JENKINS-1537)
      */
     private Object readResolve() {
         if(childProjects==null)

@@ -23,6 +23,14 @@
  */
 package hudson.model;
 
+import static hudson.model.queue.Executables.getParentOf;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
@@ -30,12 +38,38 @@ import hudson.model.Queue.Executable;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.AccessControlled;
 import hudson.util.InterceptingProxy;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.servlet.ServletException;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.AsynchronousExecution;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticatorDescriptor;
+import net.jcip.annotations.GuardedBy;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -44,42 +78,8 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import net.jcip.annotations.GuardedBy;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static hudson.model.queue.Executables.getParentOf;
-import hudson.security.ACLContext;
-import hudson.security.AccessControlled;
-import java.util.Collection;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.queue.AsynchronousExecution;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.QueueItemAuthenticatorDescriptor;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
-
 
 /**
  * Thread that executes builds.
@@ -218,7 +218,7 @@ public class Executor extends Thread implements ModelObject {
 
     private void interrupt(Result result, boolean forShutdown, CauseOfInterruption... causes) {
         if (LOGGER.isLoggable(FINE))
-            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
+            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Arrays.stream(causes).map(Object::toString).collect(Collectors.joining(","))), new InterruptedException());
 
         lock.writeLock().lock();
         try {
@@ -347,7 +347,7 @@ public class Executor extends Thread implements ModelObject {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
-            task = Queue.withLock(new java.util.concurrent.Callable<SubTask>() {
+            task = Queue.withLock(new Callable<SubTask>() {
                 @Override
                 public SubTask call() throws Exception {
                     if (!owner.isOnline()) {
@@ -409,14 +409,22 @@ public class Executor extends Thread implements ModelObject {
 
                 if (executable instanceof Actionable) {
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
+                        LOGGER.log(
+                                FINER,
+                                "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}",
+                                new Object[] {
+                                    executable,
+                                    workUnit.context.item,
+                                    workUnit.context.actions,
+                                    workUnit.context.item.getAllActions(),
+                                });
                     }
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
                     }
                 }
 
-                setName(getName() + " : executing " + executable.toString());
+                setName(getName() + " : executing " + executable);
                 Authentication auth = workUnit.context.item.authenticate2();
                 LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
                 if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM2)) { // i.e., unspecified
@@ -871,8 +879,16 @@ public class Executor extends Thread implements ModelObject {
         try {
             if (executable != null) {
                 if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
-                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
-                    getParentOf(executable).getOwnerTask().checkAbortPermission();
+                        || (runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                    final Queue.Task ownerTask = getParentOf(executable).getOwnerTask();
+                    boolean canAbort = ownerTask.hasAbortPermission();
+                    if (canAbort && ownerTask instanceof AccessControlled) {
+                        if (!((AccessControlled) ownerTask).hasPermission(Item.READ)) {
+                            // pretend the build does not exist
+                            return HttpResponses.forwardToPreviousPage();
+                        }
+                    }
+                    ownerTask.checkAbortPermission();
                     interrupt();
                 }
             }
@@ -897,7 +913,7 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
-        } catch(Exception ex) {
+        } catch(RuntimeException ex) {
             if (!(ex instanceof AccessDeniedException)) {
                 // Prevents UI from exploding in the case of unexpected runtime exceptions
                 LOGGER.log(WARNING, "Unhandled exception", ex);

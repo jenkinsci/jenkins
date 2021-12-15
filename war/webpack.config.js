@@ -16,7 +16,6 @@ module.exports = (env, argv) => ({
     ],
     "plugin-manager-ui": [
       path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
-      path.join(__dirname, "src/main/less/plugin-manager-ui.less"),
     ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
@@ -31,6 +30,7 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
+    "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
 
     // New UI CSS files
     "base-styles-v2": [path.join(__dirname, "src/main/less/base-styles-v2.less")],

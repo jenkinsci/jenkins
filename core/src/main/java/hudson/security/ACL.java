@@ -69,7 +69,7 @@ public abstract class ACL {
      */
     public final void checkPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication2();
-        if (a.equals(SYSTEM2)) {
+        if (a.equals(SYSTEM2)) { // perhaps redundant given check in AccessControlled
             return;
         }
         if (!hasPermission2(a,p)) {
@@ -131,7 +131,7 @@ public abstract class ACL {
      */
     public final boolean hasPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication2();
-        if (a.equals(SYSTEM2)) {
+        if (a.equals(SYSTEM2)) { // perhaps redundant given check in AccessControlled
             return true;
         }
         return hasPermission2(a, p);

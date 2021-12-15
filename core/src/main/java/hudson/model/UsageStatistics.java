@@ -23,35 +23,24 @@
  */
 package hudson.model;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.PluginWrapper;
-import hudson.Util;
-import hudson.Extension;
-import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
-import hudson.security.Permission;
-import hudson.util.Secret;
 import static java.util.concurrent.TimeUnit.DAYS;
 
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.kohsuke.stapler.StaplerRequest;
-
+import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.CipherInputStream;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.FilterInputStream;
-import java.io.InputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
+import hudson.PluginWrapper;
+import hudson.Util;
+import hudson.node_monitors.ArchitectureMonitor;
+import hudson.security.Permission;
+import hudson.util.Secret;
 import java.io.DataInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -63,14 +52,28 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import com.jcraft.jzlib.GZIPOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
+    private static final Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
+    
     private final String keyImage;
 
     /**
@@ -122,7 +125,8 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     /**
-     * Gets the encrypted usage stat data to be sent to the Hudson server.
+     * Gets the encrypted usage stat data to be sent to the Hudson server. 
+     * Used exclusively by jelly: resources/hudson/model/UsageStatistics/footer.jelly
      */
     public String getStatData() throws IOException {
         Jenkins j = Jenkins.get();
@@ -143,7 +147,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = j.getDescriptorByType(DescriptorImpl.class);
+            ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }
@@ -190,8 +194,10 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             }
 
             return new String(Base64.getEncoder().encode(baos.toByteArray()));
-        } catch (GeneralSecurityException e) {
-            throw new Error(e); // impossible
+        } catch (Throwable e) { // the exception could be GeneralSecurityException, InvalidParameterException or any other depending on the security provider you have installed
+            LOG.log(Level.INFO, "Usage statistics could not be sent ({0})", e.getMessage());
+            LOG.log(Level.FINE, "Error sending usage statistics", e);
+            return null;
         }
     }
 
@@ -272,7 +278,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static String getKeyAlgorithm(String algorithm) {
         int index = algorithm.indexOf('/');
-        return (index>0)?algorithm.substring(0,index):algorithm;
+        return index > 0 ? algorithm.substring(0, index) : algorithm;
     }
 
     private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {
@@ -284,10 +290,15 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     /**
      * Public key to encrypt the usage statistics
      */
-    private static final String DEFAULT_KEY_BYTES = "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b0203010001";
+    private static final String DEFAULT_KEY_BYTES =
+            "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e"
+                + "4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a"
+                + "169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f"
+                + "4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b020301"
+                + "0001";
 
     private static final long DAY = DAYS.toMillis(1);
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

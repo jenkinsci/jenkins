@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import jenkins.util.SystemProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -231,5 +232,6 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      * when explicitly requested.
      * 
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean reloadPeriodically = SystemProperties.getBoolean(ViewJob.class.getName()+".reloadPeriodically");
 }

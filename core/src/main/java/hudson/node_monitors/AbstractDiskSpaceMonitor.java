@@ -2,12 +2,10 @@ package hudson.node_monitors;
 
 import hudson.model.Computer;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.text.ParseException;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -20,12 +18,12 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
      */
     public final String freeSpaceThreshold;
 
-    public AbstractDiskSpaceMonitor(String threshold) throws ParseException {
+    protected AbstractDiskSpaceMonitor(String threshold) throws ParseException {
         this.freeSpaceThreshold = threshold;
         DiskSpace.parse(threshold); // make sure it parses
     }
 
-    public AbstractDiskSpaceMonitor() {
+    protected AbstractDiskSpaceMonitor() {
         this.freeSpaceThreshold = "1GB";
     }
 

@@ -23,19 +23,11 @@
  */
 package jenkins.security.apitoken;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Util;
-import hudson.util.Secret;
-import jenkins.security.Messages;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import net.jcip.annotations.Immutable;
+import hudson.Util;
+import hudson.util.Secret;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -54,6 +46,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import jenkins.security.Messages;
+import net.jcip.annotations.Immutable;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class ApiTokenStore {
@@ -87,7 +85,6 @@ public class ApiTokenStore {
         }
     }
     
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public synchronized @NonNull Collection<HashedToken> getTokenListSortedByName() {
         return tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
@@ -242,7 +239,7 @@ public class ApiTokenStore {
         try {
             digest = MessageDigest.getInstance(HASH_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
+            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system", e);
         }
         return digest.digest(tokenBytes);
     }

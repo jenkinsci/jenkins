@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
-
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -48,7 +47,7 @@ public class UrlAnnotatorTest {
      * Mark up of URL should consider surrounding markers, if any.
      */
     @Test
-    public void test2() throws Exception {
+    public void test2() {
         MarkupText m = new MarkupText("{abc='http://url/',def='ghi'}");
         new UrlAnnotator().newInstance(null).annotate(null,m);
         String html = m.toString(false);

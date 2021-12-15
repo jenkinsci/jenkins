@@ -23,6 +23,20 @@
  */
 package hudson;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -31,17 +45,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
-import org.mockito.Mockito;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -70,23 +73,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Chmod;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+import org.mockito.Mockito;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -163,49 +162,44 @@ public class FilePathTest {
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
         List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
-            r.add(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    class Sink extends OutputStream {
-                        private Exception closed;
-                        private volatile int count;
+            r.add(() -> {
+                class Sink extends OutputStream {
+                    private Exception closed;
+                    private final AtomicInteger count = new AtomicInteger();
 
-                        private void checkNotClosed() throws IOException {
-                            if (closed != null)
-                                throw new IOException(closed);
-                        }
-
-                        @Override
-                        public void write(int b) throws IOException {
-                            count++;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void write(byte[] b) throws IOException {
-                            count+=b.length;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void write(byte[] b, int off, int len) throws IOException {
-                            count+=len;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void close() throws IOException {
-                            closed = new Exception();
-                            //if (size!=count)
-                            //    fail();
-                        }
+                    private void checkNotClosed() throws IOException {
+                        if (closed != null)
+                            throw new IOException(closed);
                     }
 
-                    FilePath f = new FilePath(channels.french, file.getPath());
-                    Sink sink = new Sink();
-                    f.copyTo(sink);
-                    return sink.count;
+                    @Override
+                    public void write(int b) throws IOException {
+                        count.incrementAndGet();
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void write(byte[] b) throws IOException {
+                        count.addAndGet(b.length);
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        count.addAndGet(len);
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void close() {
+                        closed = new Exception();
+                    }
                 }
+
+                FilePath f = new FilePath(channels.french, file.getPath());
+                Sink sink = new Sink();
+                f.copyTo(sink);
+                return sink.count.get();
             });
         }
 
@@ -269,7 +263,7 @@ public class FilePathTest {
             d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
-    @Test public void normalization() throws Exception {
+    @Test public void normalization() {
         compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
 
         {// basic '.' trimming
@@ -484,7 +478,7 @@ public class FilePathTest {
     }
 
     @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        assumeFalse(Functions.isWindows() || Platform.isDarwin());
         File tmp = temp.getRoot();
         File original = new File(tmp,"original");
         FilePath originalP = new FilePath(channels.french, original.getPath());
@@ -503,7 +497,7 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        assumeFalse("can't test on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
@@ -570,12 +564,7 @@ public class FilePathTest {
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
-            try {
-                d.validateAntFileMask("**/*.js", 10);
-                fail();
-            } catch (InterruptedException x) {
-                // good
-            }
+            assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
     
     @Issue("JENKINS-5253")
@@ -698,7 +687,7 @@ public class FilePathTest {
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {
-            @Override protected URLConnection openConnection(URL u) throws IOException {
+            @Override protected URLConnection openConnection(URL u) {
                 return con;
             }
         };
@@ -788,12 +777,8 @@ public class FilePathTest {
         File f = temp.newFolder("folder");
         FilePath fp = new FilePath(f);
         int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
-        try {
-            chmodAndMode(fp, invalidMode);
-            fail("Setting sticky bit should fail");
-        } catch (IOException e) {
-            assertEquals("Invalid mode: " + invalidMode, e.getMessage());
-        }
+        final IOException e = assertThrows("Setting sticky bit should fail", IOException.class, () -> chmodAndMode(fp, invalidMode));
+        assertEquals("Invalid mode: " + invalidMode, e.getMessage());
     }
 
     private int chmodAndMode(FilePath path, int mode) throws Exception {
@@ -820,7 +805,7 @@ public class FilePathTest {
     }
 
     @Test public void deleteRecursiveOnUnix() throws Exception {
-        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
@@ -866,7 +851,7 @@ public class FilePathTest {
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
-        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
@@ -947,6 +932,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularSymlinks() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
         //          /a
@@ -965,7 +951,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -981,6 +966,7 @@ public class FilePathTest {
         workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1029,7 +1015,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1043,6 +1028,7 @@ public class FilePathTest {
         createJunction(new File(root, "/workspace/_nonexistentUp"), new File(root, "/nonexistent"));
         createJunction(new File(root, "/workspace/_protected"), new File(root, "/protected"));
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1074,6 +1060,7 @@ public class FilePathTest {
 
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
+        assumeFalse(Functions.isWindows());
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
@@ -1101,6 +1088,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /w
         //          /_workspace => symlink to ../workspace
@@ -1118,11 +1106,9 @@ public class FilePathTest {
         //      /protected
         //          secret.txt
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
-        FilePath wFolder = rootFolder.child("w");
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1140,10 +1126,12 @@ public class FilePathTest {
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
+        FilePath wFolder = rootFolder.child("w");
         wFolder.mkdirs();
         FilePath symbolicWorkspace = wFolder.child("_w");
         symbolicWorkspace.symlinkTo("../workspace", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 

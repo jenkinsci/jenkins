@@ -24,9 +24,18 @@
 
 package jenkins.install;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.ClassicPluginStrategy;
-import jenkins.plugins.DetachedPluginsUtil;
-import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
@@ -36,27 +45,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
+import jenkins.plugins.DetachedPluginsUtil;
+import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import org.jvnet.hudson.test.LoggerRule;
 
 @Category(SmokeTest.class)
 public class LoadDetachedPluginsTest {

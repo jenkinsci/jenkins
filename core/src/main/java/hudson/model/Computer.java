@@ -25,12 +25,16 @@
  */
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
-import hudson.slaves.Cloud;
-import jenkins.security.stapler.StaplerDispatchable;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
@@ -51,56 +55,31 @@ import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
+import hudson.slaves.RetentionStrategy;
+import hudson.slaves.WorkspaceList;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
-import hudson.util.RemotingDiagnostics;
-import hudson.util.RemotingDiagnostics.HeapDump;
-import hudson.util.RunList;
 import hudson.util.Futures;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
-import jenkins.model.Jenkins;
-import jenkins.util.ContextResettingExecutorService;
-import jenkins.util.SystemProperties;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.ImpersonatingExecutorService;
-
-import org.apache.commons.lang.StringUtils;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
-
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import net.jcip.annotations.GuardedBy;
-import javax.servlet.ServletException;
-
+import hudson.util.RemotingDiagnostics;
+import hudson.util.RemotingDiagnostics.HeapDump;
+import hudson.util.RunList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -111,25 +90,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.nio.charset.Charset;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import jenkins.security.ImpersonatingExecutorService;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.Listeners;
+import jenkins.util.SystemProperties;
+import net.jcip.annotations.GuardedBy;
+import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -142,7 +141,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
  * This object is related to {@link Node} but they have some significant differences.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it (except for the master node,
+ * you won't have a {@link Computer} object for it (except for the built-in node,
  * which always gets its {@link Computer} in case we have no static executors and
  * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
@@ -202,7 +201,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
-    private final Object logDirLock = new String("logDirLock");
+    private final Object logDirLock = new Object();
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
@@ -255,7 +254,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new ArrayList<>(terminatedBy);
     }
 
-    public Computer(Node node) {
+    protected Computer(Node node) {
         setNode(node);
     }
 
@@ -283,7 +282,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @SuppressWarnings({"ConstantConditions","deprecation"})
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void addAction(@NonNull Action a) {
         if (a == null) {
@@ -466,10 +464,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      *
      * @param force
      *      If true cancel any currently pending connect operation and retry from scratch
+     *
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      */
     @Deprecated
     public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
@@ -489,7 +488,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Disconnect this computer.
      *
-     * If this is the master, no-op. This method may return immediately
+     * If this is the built-in node, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
      * @param cause
@@ -528,10 +527,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
      */
     @Deprecated
     public void cliDisconnect(String cause) throws ExecutionException, InterruptedException {
@@ -540,10 +539,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
      */
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
@@ -615,21 +614,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
-    }
-
-    @Override
-    public void taskAccepted(Executor executor, Queue.Task task) {
-        // dummy implementation
-    }
-
-    @Override
-    public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
-        // dummy implementation
-    }
-
-    @Override
-    public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
-        // dummy implementation
     }
 
     @Exported
@@ -725,9 +709,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
-        for (ComputerListener cl : ComputerListener.all()) {
-            if (temporarilyOffline)     cl.onTemporarilyOffline(this,cause);
-            else                        cl.onTemporarilyOnline(this);
+        if (temporarilyOffline) {
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
+        } else {
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
         }
     }
 
@@ -785,13 +770,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "computer/" + Util.rawEncode(getName()) + "/";
+        return "computer/" + Util.fullEncode(getName()) + "/";
     }
 
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
+        return node != null ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -799,7 +784,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
+        return node != null ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1088,7 +1073,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public @NonNull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : "";
+        return node != null ? node.getNodeDescription() : "";
     }
 
 
@@ -1448,11 +1433,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
             VirtualChannel vc = getChannel();
             if (vc instanceof Channel) {
-                w.println("Master to slave");
+                w.println("Controller to agent");
                 ((Channel) vc).dumpExportTable(w);
                 w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
 
-                w.println("\n\n\nSlave to master");
+                w.println("\n\n\nAgent to controller");
                 w.print(vc.call(new DumpExportTableTask()));
             } else {
                 w.println(Messages.Computer_BadChannel());
@@ -1506,7 +1491,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new ServletException("No such node " + nodeName);
         }
 
-        if ((!proposedName.equals(nodeName))
+        if (!proposedName.equals(nodeName)
                 && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
@@ -1623,8 +1608,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.
@@ -1656,7 +1641,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for built-in node") String name) throws CmdLineException {
         Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
         if (item==null) {
@@ -1677,6 +1662,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @see #getLogFile()
      */
+    // TODO(terminology) migrate from slaves/ to agents/
     @Initializer
     public static void relocateOldLogs() {
         relocateOldLogs(Jenkins.get().getRootDir());
@@ -1691,12 +1677,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Matcher m = logfile.matcher(f.getName());
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
-                newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessful=f.renameTo(newLocation);
-                if (relocationSuccessful) { // The operation will fail if mkdir fails
+                try {
+                    Files.createDirectories(newLocation.getParentFile().toPath());
+                    Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
-                } else {
-                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } catch (IOException | InvalidPathException e) {
+                    LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
             } else {
                 assert false;
@@ -1804,32 +1790,63 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.COMPUTER);
+    public static final Permission CONFIGURE =
+            new Permission(
+                    PERMISSIONS,
+                    "Configure",
+                    Messages._Computer_ConfigurePermission_Description(),
+                    Permission.CONFIGURE,
+                    PermissionScope.COMPUTER);
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
-    public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
-    public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
-    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+    public static final Permission EXTENDED_READ =
+            new Permission(
+                    PERMISSIONS,
+                    "ExtendedRead",
+                    Messages._Computer_ExtendedReadPermission_Description(),
+                    CONFIGURE,
+                    SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"),
+                    new PermissionScope[] {PermissionScope.COMPUTER});
+    public static final Permission DELETE =
+            new Permission(
+                    PERMISSIONS,
+                    "Delete",
+                    Messages._Computer_DeletePermission_Description(),
+                    Permission.DELETE,
+                    PermissionScope.COMPUTER);
+    public static final Permission CREATE =
+            new Permission(
+                    PERMISSIONS,
+                    "Create",
+                    Messages._Computer_CreatePermission_Description(),
+                    Permission.CREATE,
+                    PermissionScope.JENKINS);
+    public static final Permission DISCONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Disconnect",
+                    Messages._Computer_DisconnectPermission_Description(),
+                    Jenkins.ADMINISTER,
+                    PermissionScope.COMPUTER);
+    public static final Permission CONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Connect",
+                    Messages._Computer_ConnectPermission_Description(),
+                    DISCONNECT,
+                    PermissionScope.COMPUTER);
+    public static final Permission BUILD =
+            new Permission(
+                    PERMISSIONS,
+                    "Build",
+                    Messages._Computer_BuildPermission_Description(),
+                    Permission.WRITE,
+                    PermissionScope.COMPUTER);
 
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =
             new Permission[] { EXTENDED_READ, CONNECT };
 
-    // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
-    // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,
-    // it might appear the permission does not exist. Referencing the permission from here to make sure it gets loaded.
-    private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
-
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
-
-    static {
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-sm", "16x16/computer-user-offline.png", Icon.ICON_SMALL_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-md", "24x24/computer-user-offline.png", Icon.ICON_MEDIUM_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-lg", "32x32/computer-user-offline.png", Icon.ICON_LARGE_STYLE));
-        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-xlg", "48x48/computer-user-offline.png", Icon.ICON_XLARGE_STYLE));
-    }
 }

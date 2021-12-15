@@ -23,12 +23,11 @@
  */
 package hudson.cli;
 
-import org.kohsuke.args4j.Argument;
-
-import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Failure;
 import hudson.model.View;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza

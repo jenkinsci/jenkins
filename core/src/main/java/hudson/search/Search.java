@@ -26,10 +26,10 @@ package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
-
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,12 +39,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
-
-import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -302,6 +300,7 @@ public class Search implements StaplerProxy {
                 prefixMatch = i.getPath().startsWith(tokenList)?1:0;
             }
 
+            @SuppressFBWarnings(value = "EQ_COMPARETO_USE_OBJECT_EQUALS", justification = "TODO needs triage")
             @Override
             public int compareTo(Tag that) {
                 int r = this.prefixMatch -that.prefixMatch;
@@ -424,9 +423,9 @@ public class Search implements StaplerProxy {
     /**
      * Escape hatch for StaplerProxy-based access control
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 
     private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

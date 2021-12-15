@@ -23,11 +23,9 @@
  */
 package jenkins.slaves;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.InputStream;
@@ -35,10 +33,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 @For(RemotingVersionInfo.class)
 public class RemotingVersionInfoTest {
@@ -60,7 +59,7 @@ public class RemotingVersionInfoTest {
         }
     }
 
-    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) throws AssertionError {
+    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) {
         assertThat("Wrong value of manifest attribute " + attributeName,
                 manifest.getMainAttributes().getValue(attributeName),
                 equalTo(expectedValue.toString()));

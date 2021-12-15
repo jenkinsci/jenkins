@@ -25,6 +25,8 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -59,8 +61,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -98,8 +98,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
-    /** @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-46652">JENKINS-46652</a> */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    /** @see <a href="https://issues.jenkins.io/browse/JENKINS-46652">JENKINS-46652</a> */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final */ boolean SKIP_BUILD_CHECK_ON_FLYWEIGHTS = SystemProperties.getBoolean(Node.class.getName() + ".SKIP_BUILD_CHECK_ON_FLYWEIGHTS", true);
 
     /**
@@ -309,7 +309,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return all the labels assigned dynamically to this node.
      * This calls all the LabelFinder implementations with the node converts
      * the results into Labels.
-     * @return HashSet<Label>.
      */
     private HashSet<LabelAtom> getDynamicLabels() {
         HashSet<LabelAtom> result = new HashSet<>();

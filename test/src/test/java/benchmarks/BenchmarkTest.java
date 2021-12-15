@@ -1,17 +1,16 @@
 package benchmarks;
 
+import static org.junit.Assert.assertTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
 
 public class BenchmarkTest {
     /**
@@ -21,7 +20,7 @@ public class BenchmarkTest {
      * {@link jenkins.benchmark.jmh.BenchmarkFinder} to automatically find classes for benchmark which are annotated
      * with {@link jenkins.benchmark.jmh.JmhBenchmark}.
      * @throws Exception when the benchmark fails to run or throws an exception.
-     * @see <a href="https://jenkins.io/blog/2019/06/21/performance-testing-jenkins/">Blog post on writing benchmarks</a>
+     * @see <a href="https://www.jenkins.io/blog/2019/06/21/performance-testing-jenkins/">Blog post on writing benchmarks</a>
      */
     @Test
     public void runSampleBenchmark() throws Exception {

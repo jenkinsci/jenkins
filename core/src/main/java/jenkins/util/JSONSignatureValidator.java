@@ -1,24 +1,14 @@
 package jenkins.util;
 
 import hudson.util.FormValidation;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.io.output.TeeOutputStream;
-import org.jvnet.hudson.crypto.CertificateUtil;
-import org.jvnet.hudson.crypto.SignatureOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -39,6 +29,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.jvnet.hudson.crypto.CertificateUtil;
+import org.jvnet.hudson.crypto.SignatureOutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -73,9 +71,9 @@ public class JSONSignatureValidator {
                         try {
                             c.checkValidity();
                         } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
-                            warning = FormValidation.warning(e, String.format("Certificate %s has expired in %s", cert.toString(), name));
+                            warning = FormValidation.warning(e, String.format("Certificate %s has expired in %s", cert, name));
                         } catch (CertificateNotYetValidException e) {
-                            warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert.toString(), name));
+                            warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert, name));
                         }
                         LOGGER.log(Level.FINE, "Add certificate found in JSON document:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                                 new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });
@@ -107,7 +105,9 @@ public class JSONSignatureValidator {
                         LOGGER.log(Level.INFO, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
                         break;
                     case OK:
-                        // fall through
+                        break;
+                    default:
+                        throw new AssertionError("Unknown form validation kind: " + resultSha512.kind);
                 }
             } catch (NoSuchAlgorithmException nsa) {
                 LOGGER.log(Level.WARNING, "Failed to verify potential SHA-512 digest/signature, falling back to SHA-1", nsa);
@@ -129,7 +129,9 @@ public class JSONSignatureValidator {
                         return FormValidation.error("No correct_signature or correct_signature512 entry found in '" + name + "'.");
                     }
                 case OK:
-                    // fall through
+                    break;
+                default:
+                    throw new AssertionError("Unknown form validation kind: " + resultSha1.kind);
             }
 
             if (warning!=null)  return warning;

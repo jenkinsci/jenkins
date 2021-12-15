@@ -23,16 +23,15 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Fingerprint;
 import hudson.model.FingerprintMap;
-
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient base class for implementing data storage.
@@ -101,10 +100,10 @@ public abstract class KeyedDataStorage<T,P> {
      * Atomically gets the existing data object if any, or if it doesn't exist
      * {@link #create(String,Object) create} it and return it.
      *
-     * @return
-     *      Item with the specified {@code key}.
      * @param createParams
      *      Additional parameters needed to create a new data object. Can be null.
+     * @return
+     *      Item with the specified {@code key}.
      * @throws IOException Loading error
      */
     public @NonNull T getOrCreate(String key, P createParams) throws IOException {

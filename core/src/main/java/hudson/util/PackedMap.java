@@ -27,7 +27,6 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
-
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -54,7 +53,7 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"unchecked"})
+@SuppressWarnings("unchecked")
 public final class PackedMap<K,V> extends AbstractMap<K,V> {
     private Object[] kvpairs;
 
@@ -87,7 +86,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
                 }
 
                 @Override
-                @SuppressWarnings({"unchecked"})
+                @SuppressWarnings("unchecked")
                 public Entry<K, V> next() {
                     final K k = (K)kvpairs[index++];
                     final V v = (V)kvpairs[index++];

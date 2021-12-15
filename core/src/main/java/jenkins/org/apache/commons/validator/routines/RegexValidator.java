@@ -17,12 +17,11 @@
 /* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
 package jenkins.org.apache.commons.validator.routines;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * <b>Regular Expression</b> validation (using JDK 1.4+ regex support).
@@ -129,7 +128,7 @@ public class RegexValidator implements Serializable {
             throw new IllegalArgumentException("Regular expressions are missing");
         }
         patterns = new Pattern[regexs.length];
-        int flags =  (caseSensitive ? 0: Pattern.CASE_INSENSITIVE);
+        int flags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
         for (int i = 0; i < regexs.length; i++) {
             if (regexs[i] == null || regexs[i].length() == 0) {
                 throw new IllegalArgumentException("Regular expression[" + i + "] is missing");

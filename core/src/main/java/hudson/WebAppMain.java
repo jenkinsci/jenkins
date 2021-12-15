@@ -23,36 +23,46 @@
  */
 package hudson;
 
-import hudson.security.ACLContext;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardOpenOption;
-import jenkins.util.SystemProperties;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.util.AWTProblem;
 import hudson.util.BootFailure;
-import jenkins.model.Jenkins;
+import hudson.util.ChartUtil;
+import hudson.util.HudsonFailedToLoad;
 import hudson.util.HudsonIsLoading;
+import hudson.util.IncompatibleAntVersionDetected;
 import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.InsufficientPermissionDetected;
 import hudson.util.NoHomeDir;
-import hudson.util.RingBufferLogHandler;
 import hudson.util.NoTempDir;
-import hudson.util.IncompatibleAntVersionDetected;
-import hudson.util.HudsonFailedToLoad;
-import hudson.util.ChartUtil;
-import hudson.util.AWTProblem;
-import jenkins.util.JenkinsJVM;
-import org.jvnet.localizer.LocaleProvider;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.jelly.JellyFacet;
-import org.apache.tools.ant.types.FileSet;
-
+import hudson.util.RingBufferLogHandler;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardOpenOption;
+import java.security.Security;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.Locale;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -63,24 +73,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.SessionTrackingMode;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.security.Security;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
+import org.apache.tools.ant.types.FileSet;
+import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -120,11 +120,12 @@ public class WebAppMain implements ServletContextListener {
         }
     };
 
-    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+    /**
+     * This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
      * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
      * Written for the requirements of JENKINS-50669
      * @return int This returns DEFAULT_RING_BUFFER_SIZE
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-50669">JENKINS-50669</a>
      * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
@@ -169,7 +170,7 @@ public class WebAppMain implements ServletContextListener {
                 }
             });
 
-            // quick check to see if we (seem to) have enough permissions to run. (see #719)
+            // quick check to see if we (seem to) have enough permissions to run. (see JENKINS-719)
             JVM jvm;
             try {
                 jvm = new JVM();
@@ -188,12 +189,12 @@ public class WebAppMain implements ServletContextListener {
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
-            home.mkdirs();
+            try {
+                Files.createDirectories(home.toPath());
+            } catch (IOException | InvalidPathException e) {
+                throw (NoHomeDir)new NoHomeDir(home).initCause(e);
+            }
             LOGGER.info("Jenkins home directory: "+ home +" found at: " + describedHomeDir.description);
-
-            // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-            if (!home.exists())
-                throw new NoHomeDir(home);
 
             recordBootAttempt(home);
 
@@ -202,49 +203,18 @@ public class WebAppMain implements ServletContextListener {
                 throw new IncompatibleVMDetected(); // nope
             }
 
-//  JNA is no longer a hard requirement. It's just nice to have. See JENKINS-4820 for more context.
-//            // make sure JNA works. this can fail if
-//            //    - platform is unsupported
-//            //    - JNA is already loaded in another classloader
-//            // see http://wiki.jenkins-ci.org/display/JENKINS/JNA+is+already+loaded
-//            // TODO: or shall we instead modify Hudson to work gracefully without JNA?
-//            try {
-//                /*
-//                    java.lang.UnsatisfiedLinkError: Native Library /builds/apps/glassfish/domains/hudson-domain/generated/jsp/j2ee-modules/hudson-1.309/loader/com/sun/jna/sunos-sparc/libjnidispatch.so already loaded in another classloader
-//                        at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1743)
-//                        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1674)
-//                        at java.lang.Runtime.load0(Runtime.java:770)
-//                        at java.lang.System.load(System.java:1005)
-//                        at com.sun.jna.Native.loadNativeLibraryFromJar(Native.java:746)
-//                        at com.sun.jna.Native.loadNativeLibrary(Native.java:680)
-//                        at com.sun.jna.Native.<clinit>(Native.java:108)
-//                        at hudson.util.jna.GNUCLibrary.<clinit>(GNUCLibrary.java:86)
-//                        at hudson.Util.createSymlink(Util.java:970)
-//                        at hudson.model.Run.run(Run.java:1174)
-//                        at hudson.matrix.MatrixBuild.run(MatrixBuild.java:149)
-//                        at hudson.model.ResourceController.execute(ResourceController.java:88)
-//                        at hudson.model.Executor.run(Executor.java:123)
-//                 */
-//                String.valueOf(Native.POINTER_SIZE); // this meaningless operation forces the classloading and initialization
-//            } catch (LinkageError e) {
-//                if (e.getMessage().contains("another classloader"))
-//                    context.setAttribute(APP,new JNADoublyLoaded(e));
-//                else
-//                    context.setAttribute(APP,new HudsonFailedToLoad(e));
-//            }
-
             // make sure this is servlet 2.4 container or above
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleServletVersionDetected(ServletResponse.class);
+                throw (IncompatibleServletVersionDetected)new IncompatibleServletVersionDetected(ServletResponse.class).initCause(e);
             }
 
             // make sure that we see Ant 1.7
             try {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
-                throw new IncompatibleAntVersionDetected(FileSet.class);
+                throw (IncompatibleAntVersionDetected)new IncompatibleAntVersionDetected(FileSet.class).initCause(e);
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
@@ -272,7 +242,7 @@ public class WebAppMain implements ServletContextListener {
                 // if this works we are all happy
             } catch (TransformerFactoryConfigurationError x) {
                 // no it didn't.
-                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
+                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See https://bz.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
                 System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
                     TransformerFactory.newInstance();
@@ -291,6 +261,7 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
+                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -341,7 +312,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).getBytes());
+            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes());
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }
@@ -354,7 +325,7 @@ public class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
@@ -392,7 +363,7 @@ public class WebAppMain implements ServletContextListener {
                 String value = (String) env.lookup(name);
                 if(value!=null && value.trim().length()>0)
                     return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
-                // look at one more place. See issue #1314
+                // look at one more place. See issue JENKINS-1314
                 value = (String) iniCtxt.lookup(name);
                 if(value!=null && value.trim().length()>0)
                     return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
@@ -444,7 +415,7 @@ public class WebAppMain implements ServletContextListener {
                 if (instance != null) {
                     instance.cleanUp();
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
             }
 

@@ -23,20 +23,21 @@
  */
 package hudson.model;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
-import jenkins.util.SystemProperties;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
-import hudson.util.FormValidation.Kind;
 import hudson.util.TextFile;
-import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,11 +47,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -352,8 +356,13 @@ public class DownloadService {
                 try {
                     return JSONObject.fromObject(df.read());
                 } catch (JSONException e) {
-                    df.delete(); // if we keep this file, it will cause repeated failures
-                    throw new IOException("Failed to parse "+df+" into JSON",e);
+                    IOException ioe = new IOException("Failed to parse " + df + " into JSON", e);
+                    try {
+                        df.delete(); // if we keep this file, it will cause repeated failures
+                    } catch (IOException e2) {
+                        ioe.addSuppressed(e2);
+                    }
+                    throw ioe;
                 }
             return null;
         }
@@ -361,7 +370,7 @@ public class DownloadService {
         private FormValidation load(String json, long dataTimestamp) throws IOException {
             TextFile df = getDataFile();
             df.write(json);
-            df.file.setLastModified(dataTimestamp);
+            Files.setLastModifiedTime(Util.fileToPath(df.file), FileTime.fromMillis(dataTimestamp));
             LOGGER.info("Obtained the updated data file for "+id);
             return FormValidation.ok();
         }
@@ -386,7 +395,7 @@ public class DownloadService {
                 JSONObject o = JSONObject.fromObject(jsonString);
                 if (signatureCheck) {
                     FormValidation e = updatesite.getJsonSignatureValidator(signatureValidatorPrefix +" '"+id+"'").verifySignature(o);
-                    if (e.kind!= Kind.OK) {
+                    if (e.kind!= FormValidation.Kind.OK) {
                         LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
                         continue;
                     }
@@ -487,12 +496,13 @@ public class DownloadService {
     }
 
     // TODO this was previously referenced in the browser-based download, but should probably be checked for the server-based download
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
      * Useful when upstream signatures are broken, such as due to expired certificates.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
-

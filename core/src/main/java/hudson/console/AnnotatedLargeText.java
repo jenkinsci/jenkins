@@ -25,21 +25,13 @@
  */
 package hudson.console;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.model.Jenkins;
-import hudson.remoting.ObjectInputStreamEx;
-import java.util.concurrent.TimeUnit;
-import jenkins.security.CryptoConfidentialKey;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.framework.io.ByteBuffer;
-import org.kohsuke.stapler.framework.io.LargeText;
+import static java.lang.Math.abs;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -50,13 +42,19 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
-
-import static java.lang.Math.abs;
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import java.util.concurrent.TimeUnit;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import jenkins.model.Jenkins;
+import jenkins.security.CryptoConfidentialKey;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
+import org.kohsuke.stapler.framework.io.LargeText;
 
 /**
  * Extension to {@link LargeText} that handles annotations by {@link ConsoleAnnotator}.

@@ -1,14 +1,15 @@
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Computer;
-import hudson.model.Queue.Task;
-import hudson.model.Node;
-import hudson.model.Messages;
 import hudson.model.Label;
+import hudson.model.Messages;
+import hudson.model.Node;
+import hudson.model.Queue.Task;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Objects;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -45,7 +46,7 @@ public abstract class CauseOfBlockage {
      * Obtains a simple implementation backed by {@link Localizable}.
      */
     public static CauseOfBlockage fromMessage(@NonNull final Localizable l) {
-        l.getKey(); // null check
+        Objects.requireNonNull(l);
         return new CauseOfBlockage() {
             @Override
             public String getShortDescription() {
@@ -98,7 +99,7 @@ public abstract class CauseOfBlockage {
 
         @Override
         public String getShortDescription() {
-            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_NodeOffline(name);
         }
         
@@ -178,7 +179,7 @@ public abstract class CauseOfBlockage {
 
         @Override
         public String getShortDescription() {
-            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
         

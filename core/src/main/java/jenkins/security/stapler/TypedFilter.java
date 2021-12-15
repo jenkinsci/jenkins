@@ -1,7 +1,14 @@
 package jenkins.security.stapler;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -13,14 +20,6 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.interceptor.InterceptorAnnotation;
 import org.kohsuke.stapler.lang.FieldRef;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Restricted(NoExternalUse.class)
 public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
@@ -270,10 +269,10 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_TYPE_CHECK = SystemProperties.getBoolean(TypedFilter.class.getName() + ".skipTypeCheck");
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean PROHIBIT_STATIC_ACCESS = SystemProperties.getBoolean(TypedFilter.class.getName() + ".prohibitStaticAccess", true);
 }

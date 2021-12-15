@@ -29,9 +29,16 @@ import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.FormValidation;
-import jenkins.tasks.filters.EnvVarsFilterRuleContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
+import jenkins.tasks.filters.EnvVarsFilterRuleContext;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -41,14 +48,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Local rule that removes all the non-retained variables for that step.
@@ -156,18 +155,20 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
                             variablesRemoved.add(variableName);
                             iterator.remove();
                             break;
+                        default:
+                            throw new AssertionError("Unknown process variables handling: " + processVariablesHandling);
                     }
                 }
             }
         }
 
         if (!variablesRemoved.isEmpty()) {
-            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_RemovalMessage(getDescriptor().getDisplayName(), StringUtils.join(variablesRemoved.toArray(), ", ")));
+            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_RemovalMessage(getDescriptor().getDisplayName(), String.join(", ", variablesRemoved)));
         }
         if (!variablesReset.isEmpty()) {
             // reset the variables using the initial value from System
             variablesReset.forEach(variableName -> envVars.put(variableName, systemEnvVars.get(variableName)));
-            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_ResetMessage(getDescriptor().getDisplayName(), StringUtils.join(variablesReset.toArray(), ", ")));
+            context.getTaskListener().getLogger().println(Messages.RetainVariablesLocalRule_ResetMessage(getDescriptor().getDisplayName(), String.join(", ", variablesReset)));
         }
     }
 
@@ -187,7 +188,6 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
     public static final class DescriptorImpl extends EnvVarsFilterLocalRuleDescriptor {
 
         public DescriptorImpl() {
-            super();
             load();
         }
 

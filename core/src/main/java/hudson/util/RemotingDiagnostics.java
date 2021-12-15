@@ -23,39 +23,38 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
-import jenkins.model.Jenkins;
+import hudson.Util;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
-import jenkins.security.MasterToSlaveCallable;
-
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 
 /**
  * Various remoting operations related to diagnostics.
@@ -151,6 +150,7 @@ public final class RemotingDiagnostics {
             }
             return out.toString();
         }
+        private static final long serialVersionUID = 1L;
     }
 
     /**
@@ -163,7 +163,7 @@ public final class RemotingDiagnostics {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
-                hprof.delete();
+                Files.delete(Util.fileToPath(hprof));
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
                     server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",

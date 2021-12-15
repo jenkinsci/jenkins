@@ -25,35 +25,24 @@ package hudson.tools;
 
 import static org.junit.Assert.assertEquals;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.EnvVars;
 import hudson.Functions;
-import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
-import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
-import hudson.tasks.BatchFile;
-import hudson.tasks.Ant;
-import hudson.tasks.Shell;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.EnvVars;
-
-import java.io.IOException;
-
-import jenkins.model.Jenkins;
-
+import hudson.tasks.Shell;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.SingleFileSCM;
-
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * This class tests that environment variables from node properties are applied,
@@ -111,33 +100,11 @@ public class ToolLocationNodePropertyTest {
         assertEquals("zotfoo", location.getHome());
     }
 
-    private void configureDumpEnvBuilder() throws IOException {
+    private void configureDumpEnvBuilder() {
         if(Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else
             project.getBuildersList().add(new Shell("export"));
-    }
-
-    @Test
-    public void ant() throws Exception {
-        Ant.AntInstallation ant = ToolInstallations.configureDefaultAnt(tmp);
-        String antPath = ant.getHome();
-        Jenkins.get().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
-
-        project.setScm(new SingleFileSCM("build.xml", "<project name='foo'/>"));
-        project.getBuildersList().add(new Ant("-version", "ant", null,null,null));
-        configureDumpEnvBuilder();
-
-        Build build = project.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.FAILURE, build);
-
-        ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
-        slave.getNodeProperties().add(property);
-
-        build = project.scheduleBuild2(0).get();
-        System.out.println(build.getLog());
-        j.assertBuildStatus(Result.SUCCESS, build);
     }
 
     @Before

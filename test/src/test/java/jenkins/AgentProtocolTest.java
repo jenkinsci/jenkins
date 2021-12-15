@@ -23,14 +23,13 @@
  */
 package jenkins;
 
+import static org.junit.Assert.fail;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.fail;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -56,11 +55,11 @@ public class AgentProtocolTest {
         assertProtocols(true, "System protocols should be always enabled", "Ping");
     }
     
-    private void assertEnabled(String ... protocolNames) throws AssertionError {
+    private void assertEnabled(String ... protocolNames) {
         assertProtocols(true, null, protocolNames);    
     }
     
-    private void assertDisabled(String ... protocolNames) throws AssertionError {
+    private void assertDisabled(String ... protocolNames) {
         assertProtocols(false, null, protocolNames);    
     }
     
@@ -68,12 +67,11 @@ public class AgentProtocolTest {
         assertProtocols(j.jenkins, shouldBeEnabled, why, protocolNames);
     }
     
-    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) 
-            throws AssertionError {
+    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) {
         Set<String> agentProtocols = jenkins.getAgentProtocols();
         List<String> failedChecks = new ArrayList<>();
         for (String protocol : protocolNames) {
-            if (shouldBeEnabled && !(agentProtocols.contains(protocol))) {
+            if (shouldBeEnabled && !agentProtocols.contains(protocol)) {
                 failedChecks.add(protocol);
             }
             if (!shouldBeEnabled && agentProtocols.contains(protocol)) {
@@ -84,9 +82,9 @@ public class AgentProtocolTest {
         if (!failedChecks.isEmpty()) {
             String message = String.format("Protocol(s) are not %s: %s. %sEnabled protocols: %s",
                     shouldBeEnabled ? "enabled" : "disabled",
-                    StringUtils.join(failedChecks, ','),
+                    String.join(",", failedChecks),
                     why != null ? "Reason: " + why + ". " : "",
-                    StringUtils.join(agentProtocols, ','));
+                    String.join(",", agentProtocols));
             fail(message);
         }
     }

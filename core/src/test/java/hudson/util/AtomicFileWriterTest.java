@@ -1,14 +1,18 @@
 package hudson.util;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeThat;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -18,16 +22,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 
 public class AtomicFileWriterTest {
     private static final String PREVIOUS = "previous value \n blah";
@@ -74,6 +75,7 @@ public class AtomicFileWriterTest {
 
     @Test
     public void symlinkToDirectory() throws Exception {
+        assumeFalse(Functions.isWindows());
         final File folder = tmp.newFolder();
         final File containingSymlink = tmp.newFolder();
         final Path zeSymlink = Files.createSymbolicLink(Paths.get(containingSymlink.getAbsolutePath(), "ze_symlink"),
@@ -136,12 +138,7 @@ public class AtomicFileWriterTest {
     @Test
     public void indexOutOfBoundsLeavesOriginalUntouched() throws Exception {
         // Given
-        try {
-            afw.write(expectedContent, 0, expectedContent.length() + 10);
-            fail("exception expected");
-        } catch (IndexOutOfBoundsException e) {
-        }
-
+        assertThrows(IndexOutOfBoundsException.class, () -> afw.write(expectedContent, 0, expectedContent.length() + 10));
         assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
     @Test
@@ -152,13 +149,10 @@ public class AtomicFileWriterTest {
         assertTrue(newFile.exists());
         assertFalse(parentExistsAndIsAFile.exists());
 
-        try {
-            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8);
-            fail("Expected a failure");
-        } catch (IOException e) {
-            assertThat(e.getMessage(),
-                       containsString("exists and is neither a directory nor a symlink to a directory"));
-        }
+        final IOException e = assertThrows(IOException.class,
+                () -> new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8));
+        assertThat(e.getMessage(),
+                   containsString("exists and is neither a directory nor a symlink to a directory"));
     }
 
     @Issue("JENKINS-48407")

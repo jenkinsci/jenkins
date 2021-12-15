@@ -24,7 +24,8 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableSet;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -57,15 +58,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
@@ -95,7 +97,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://jenkins.io/issue/27268">JENKINS-27268</a>.
+ * See <a href="https://www.jenkins.io/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -115,7 +117,7 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
-     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-slave"
+     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-agent"
      * when used with an SSH launcher.
      *
      * NOTE: if the administrator is using a relative path they are responsible for ensuring that the launcher used
@@ -152,7 +154,7 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
-     * Removed with no replacement.
+     * @deprecated Removed with no replacement.
      */
     @Deprecated
     private transient String userId;
@@ -162,7 +164,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated since 2.184
      */
     @Deprecated
-    public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
+    protected Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
     }
@@ -171,12 +173,12 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated since 2009-02-20.
      */
     @Deprecated
-    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
-    public Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    protected Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
@@ -187,7 +189,7 @@ public abstract class Slave extends Node implements Serializable {
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
     @Deprecated
-    public Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
@@ -203,9 +205,6 @@ public abstract class Slave extends Node implements Serializable {
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
-
-//        if (remoteFS.equals(""))
-//            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
@@ -258,6 +257,7 @@ public abstract class Slave extends Node implements Serializable {
         return remoteFS;
     }
 
+    @NonNull
     @Override
     public String getNodeName() {
         return name;
@@ -612,7 +612,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Returns the list of {@link ComputerLauncher} descriptors appropriate to the supplied {@link Slave}.
          *
-         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @param it the {@link Slave} or {@code null} to assume the agent is of type {@link #clazz}.
          * @return the filtered list
          * @since 2.12
          */
@@ -643,7 +643,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Returns the list of {@link NodePropertyDescriptor} appropriate to the supplied {@link Slave}.
          *
-         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @param it the {@link Slave} or {@code null} to assume the agent is of type {@link #clazz}.
          * @return the filtered list
          * @since 2.12
          */
@@ -672,11 +672,11 @@ public abstract class Slave extends Node implements Serializable {
 //
     /**
      * Command line to launch the agent, like
-     * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * "ssh myagent java -jar /path/to/hudson-remoting.jar"
      * @deprecated in 1.216
      */
     @Deprecated
-    private transient String agentCommand;
+    private transient String agentCommand; // this was called 'agentCommand' from the beginning; not an accidental 2016 rename
 
     /**
      * Obtains the clock difference between this side and that side of the channel.
@@ -707,7 +707,7 @@ public abstract class Slave extends Node implements Serializable {
 
     private static final class GetClockDifference2 extends MasterToSlaveCallable<GetClockDifference3,IOException> {
         /**
-         * Capture the time on the master when this object is sent to remote, which is when
+         * Capture the time on the controller when this object is sent to remote, which is when
          * {@link GetClockDifference1#writeReplace()} is run.
          */
         private final long startTime = System.currentTimeMillis();
@@ -742,5 +742,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar")));
 }

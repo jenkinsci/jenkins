@@ -23,14 +23,13 @@
  */
 package hudson.model;
 
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
-import net.sf.json.JSONObject;
 import hudson.Extension;
-
 import java.util.Objects;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link ParameterDefinition} that is either 'true' or 'false'.
@@ -121,7 +120,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
     // to avoid picking the Java reserved word "boolean" as the primary identifier
-    @Extension @Symbol({"booleanParam"})
+    @Extension @Symbol("booleanParam")
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

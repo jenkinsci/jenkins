@@ -35,10 +35,9 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.util.VariableResolver;
-
 import hudson.util.XStream2;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,8 +48,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Stack;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * XML DOM like structure to preserve a portion of XStream data as-is, so that you can
@@ -151,7 +151,7 @@ public class XStreamDOM {
     private String[] toAttributeList(Map<String, String> attributes) {
         String[] r = new String[attributes.size()*2];
         int i=0;
-        for (Entry<String, String> e : attributes.entrySet()) {
+        for (Map.Entry<String, String> e : attributes.entrySet()) {
             r[i++] = e.getKey();
             r[i++] = e.getValue();
         }
@@ -563,6 +563,7 @@ public class XStreamDOM {
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.301")
+    public static final XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

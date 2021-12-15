@@ -24,16 +24,15 @@
 
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.slaves.Cloud;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.slaves.Cloud;
 
 /**
  * Vetos the execution of a task on a node

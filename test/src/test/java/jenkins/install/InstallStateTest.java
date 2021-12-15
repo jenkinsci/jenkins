@@ -23,12 +23,13 @@
  */
 package jenkins.install;
 
-import hudson.ExtensionList;
-import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertSame;
+
+import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -85,7 +86,7 @@ public class InstallStateTest {
         assertThat(state, equalTo(InstallState.UNKNOWN));
     }
     
-    private static InstallState forName(String name) throws AssertionError {
+    private static InstallState forName(String name) {
         String xml = "<jenkins.install.InstallState>\n" +
             "  <isSetupComplete>true</isSetupComplete>\n" +
             "  <name>" + name + "</name>\n" +
@@ -93,7 +94,7 @@ public class InstallStateTest {
         return forXml(xml);
     }
     
-    private static InstallState forXml(String xml) throws AssertionError {
+    private static InstallState forXml(String xml) {
         Object read = Jenkins.XSTREAM2.fromXML(xml);
         assertThat(read, instanceOf(InstallState.class));
         InstallState state = (InstallState) read;

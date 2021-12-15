@@ -1,5 +1,10 @@
 package jenkins.security.stapler;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kohsuke.stapler.Function;
@@ -9,15 +14,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.json.JsonResponse;
 import org.kohsuke.stapler.lang.FieldRef;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class StaplerSignaturesTest {
     @Test
-    public void testSignaturesSimple() throws Exception {
+    public void testSignaturesSimple() {
         Set<String> methodSignatures = Arrays.stream(SomeClass.class.getMethods()).map(it -> new Function.InstanceFunction(it).getSignature()).collect(Collectors.toSet());
         Assert.assertEquals(SomeClass.METHOD_SIGNATURES, methodSignatures);
 
@@ -26,7 +25,7 @@ public class StaplerSignaturesTest {
     }
 
     @Test
-    public void testSignaturesInheritance() throws Exception {
+    public void testSignaturesInheritance() {
         Set<String> methodSignatures = Arrays.stream(SomeSubclass.class.getMethods()).map(it -> new Function.InstanceFunction(it).getSignature()).collect(Collectors.toSet());
         Assert.assertEquals(SomeSubclass.METHOD_SIGNATURES, methodSignatures);
 

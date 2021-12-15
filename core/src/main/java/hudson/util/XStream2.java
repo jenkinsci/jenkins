@@ -26,18 +26,18 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
-import com.thoughtworks.xstream.mapper.Mapper;
-import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.ConverterLookup;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
+import com.thoughtworks.xstream.converters.ConverterRegistry;
 import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
+import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.core.util.Fields;
@@ -45,28 +45,31 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.remoting.ClassFilter;
-import hudson.util.xstream.ImmutableSetConverter;
-import hudson.util.xstream.ImmutableSortedSetConverter;
-import jenkins.util.xstream.SafeURLConverter;
-import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableListConverter;
 import hudson.util.xstream.ImmutableMapConverter;
+import hudson.util.xstream.ImmutableSetConverter;
+import hudson.util.xstream.ImmutableSortedSetConverter;
 import hudson.util.xstream.MapperDelegate;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -78,8 +81,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.util.xstream.SafeURLConverter;
 
 /**
  * {@link XStream} customized in various ways for Jenkins’ needs.
@@ -121,6 +124,17 @@ public class XStream2 extends XStream {
         classOwnership = null;
     }
 
+    /**
+     * @since 2.318
+     */
+    public XStream2(ReflectionProvider reflectionProvider, HierarchicalStreamDriver driver,
+                    ClassLoaderReference classLoaderReference, Mapper mapper, ConverterLookup converterLookup,
+                    ConverterRegistry converterRegistry) {
+        super(reflectionProvider, driver, classLoaderReference, mapper, converterLookup, converterRegistry);
+        init();
+        classOwnership = null;
+    }
+
     XStream2(ClassOwnership classOwnership) {
         super(getDefaultDriver());
         init();
@@ -145,7 +159,7 @@ public class XStream2 extends XStream {
      * @param nullOut whether to perform this special behavior;
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
      * @see XmlFile#unmarshalNullingOut
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-21017">JENKINS-21017</a>
      * @since 2.99
      */
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {
@@ -456,11 +470,13 @@ public class XStream2 extends XStream {
             return findConverter(type)!=null;
         }
 
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             findConverter(source.getClass()).marshal(source,writer,context);
         }
 
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             return findConverter(context.getRequiredType()).unmarshal(reader,context);
@@ -479,7 +495,7 @@ public class XStream2 extends XStream {
     public abstract static class PassthruConverter<T> implements Converter {
         private Converter converter;
 
-        public PassthruConverter(XStream2 xstream) {
+        protected PassthruConverter(XStream2 xstream) {
             converter = xstream.reflectionConverter;
         }
 
@@ -543,12 +559,12 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons; see https://www.jenkins.io/redirect/class-filter/");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://www.jenkins.io/redirect/class-filter/");
         }
 
         /** TODO see comment in {@code whitelisted-classes.txt} */

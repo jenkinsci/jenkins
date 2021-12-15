@@ -3,9 +3,8 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
+import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 
 /**

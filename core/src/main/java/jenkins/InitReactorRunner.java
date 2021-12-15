@@ -1,20 +1,12 @@
 package jenkins;
 
-import com.google.common.collect.Lists;
-import jenkins.util.SystemProperties;
+import static java.util.logging.Level.SEVERE;
+
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import jenkins.model.Jenkins;
-import jenkins.security.ImpersonatingExecutorService;
-import org.jvnet.hudson.reactor.Milestone;
-import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.ReactorException;
-import org.jvnet.hudson.reactor.ReactorListener;
-import org.jvnet.hudson.reactor.Task;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -25,8 +17,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.SEVERE;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import jenkins.model.Jenkins;
+import jenkins.security.ImpersonatingExecutorService;
+import jenkins.util.SystemProperties;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.reactor.ReactorListener;
+import org.jvnet.hudson.reactor.Task;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -61,7 +61,7 @@ public class InitReactorRunner {
      * As such there's no way for plugins to participate into this process.
      */
     private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = Lists.newArrayList(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()));
+        List<ReactorListener> r = StreamSupport.stream(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()).spliterator(), false).collect(Collectors.toList());
         r.add(new ReactorListener() {
             final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );
             @Override

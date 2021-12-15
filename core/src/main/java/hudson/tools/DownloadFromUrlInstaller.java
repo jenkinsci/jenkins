@@ -5,15 +5,14 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
-import net.sf.json.JSONObject;
-
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.net.URL;
+import net.sf.json.JSONObject;
 
 /**
  * Partial convenience implementation of {@link ToolInstaller} that just downloads
@@ -104,7 +103,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @param root
      *      The directory that contains the extracted archive. This directory contains nothing but the
      *      extracted archive. For example, if the user installed
-     *      http://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip , this directory would contain
+     *      https://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip , this directory would contain
      *      a single directory "jakarta-ant".
      *
      * @return
@@ -177,7 +176,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return the merged ToolInstallerList wrapped in a JSONObject
          */
         private JSONObject reduce(List<JSONObject> jsonList) {
-            List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
+            List<ToolInstallerEntry> reducedToolEntries = new ArrayList<>();
 
             HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {
@@ -255,7 +254,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      */
     public abstract class NodeSpecificInstallable extends Installable implements NodeSpecific<NodeSpecificInstallable> {
 
-        public NodeSpecificInstallable(Installable inst) {
+        protected NodeSpecificInstallable(Installable inst) {
             this.id = inst.id;
             this.name = inst.name;
             this.url = inst.url;

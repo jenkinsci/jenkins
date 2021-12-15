@@ -23,21 +23,20 @@
  */
 package hudson.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -133,9 +132,19 @@ public class ArgumentListBuilderTest {
         // Try to hide password
         builder.add("-Dpassword=hidden", true);
         // By default, does not escape %VAR%
-        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        assertThat(builder.toWindowsCommand().toString(), is(
+                "cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" "
+                    + "\"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" "
+                    + "\"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" "
+                    + "\"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** "
+                    + "&& exit %%ERRORLEVEL%%\""));
         // Pass flag to escape %VAR%
-        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
+        assertThat(builder.toWindowsCommand(true).toString(), is(
+                "cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" "
+                    + "\"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" "
+                    + "\"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" "
+                    + "\"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** "
+                    + "&& exit %%ERRORLEVEL%%\""));
     }
     
     @Test
@@ -152,9 +161,19 @@ public class ArgumentListBuilderTest {
                 add("-Dfoo9=%'''%%@%"). // no quotes as none of the % are followed by a letter
                 add("-Dpassword=hidden", true);
         // By default, does not escape %VAR%
-        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        assertThat(builder.toWindowsCommand().toString(), is(
+                "cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" "
+                    + "\"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" "
+                    + "\"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" "
+                    + "\"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** "
+                    + "&& exit %%ERRORLEVEL%%\""));
         // Pass flag to escape %VAR%
-        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
+        assertThat(builder.toWindowsCommand(true).toString(), is(
+                "cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" "
+                    + "\"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" "
+                    + "\"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" "
+                    + "\"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** "
+                    + "&& exit %%ERRORLEVEL%%\""));
     }
 
     @Test
@@ -171,15 +190,14 @@ public class ArgumentListBuilderTest {
         assertThat("The mask array was incorrect", array, is(builder.toMaskArray()));
     }
     
-    private static final Map<String, String> KEY_VALUES = new LinkedHashMap<String, String>() {{
-        put("key1", "value1");
-        put("key2", "value2");
-        put("key3", "value3");
-    }};
+    private static final Map<String, String> KEY_VALUES = new LinkedHashMap<>();
+    static {
+        KEY_VALUES.put("key1", "value1");
+        KEY_VALUES.put("key2", "value2");
+        KEY_VALUES.put("key3", "value3");
+    }
 
-    private static final Set<String> MASKS = new HashSet<String>() {{
-        add("key2");
-    }};
+    private static final Set<String> MASKS = Collections.singleton("key2");
     
     @Test
     public void assertKeyValuePairsWithMask() {

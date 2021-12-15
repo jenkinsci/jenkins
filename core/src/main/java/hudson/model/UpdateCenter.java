@@ -23,7 +23,13 @@
  */
 package hudson.model;
 
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -32,22 +38,8 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
-import hudson.security.ACLContext;
-import hudson.security.Permission;
-import hudson.util.VersionNumber;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.text.MessageFormat;
-import java.util.concurrent.TimeUnit;
-
-import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
-
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
@@ -56,32 +48,15 @@ import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.Permission;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PersistedList;
+import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import jenkins.MissingDependencyException;
-import jenkins.RestartRequiredException;
-import jenkins.install.InstallUtil;
-import jenkins.model.Jenkins;
-import jenkins.util.io.OnMaster;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.io.output.NullOutputStream;
-import org.jenkinsci.Symbol;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.net.ssl.SSLHandshakeException;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,9 +68,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -113,21 +93,39 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import javax.net.ssl.SSLHandshakeException;
+import javax.servlet.ServletException;
+import jenkins.MissingDependencyException;
+import jenkins.RestartRequiredException;
+import jenkins.install.InstallUtil;
+import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
+import jenkins.util.io.OnMaster;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.output.NullOutputStream;
+import org.jenkinsci.Symbol;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.core.Authentication;
-
 
 /**
  * Controls update center capability.
@@ -447,7 +445,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 jobs = Collections.emptyMap();
             }
             return HttpResponses.okJSON(jobs);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -517,7 +515,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             return HttpResponses.okJSON(JSONObject.fromObject(response));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -1001,7 +999,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
      * A plugin with multiple categories will appear multiple times in the list.
-     * @deprecated
+     * @deprecated use {@link #getAvailables()}
      */
     @Deprecated
     public PluginEntry[] getCategorizedAvailables() {
@@ -1092,10 +1090,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * browse to the instance.
      *
      * @return a list of {@link FormValidation} for each updated Update Site
-     * @throws ExecutionException
-     * @throws InterruptedException
      * @since 1.501
-     *
      */
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<>();
@@ -1161,7 +1156,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * @since 1.266
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static class UpdateCenterConfiguration implements ExtensionPoint {
         /**
          * Creates default update center configuration - uses settings for global update center.
@@ -1265,8 +1260,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // particularly noticeable during 2.0 install when downloading
                 // many plugins
                 con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
-                
-                int total = con.getContentLength();
+
+                long total;
+                final long sizeFromMetadata = job.getContentLength();
+                if (sizeFromMetadata == -1) {
+                    // Update site does not advertise a file size, so fall back to download file size, if any
+                    total = con.getContentLength();
+                } else {
+                    total = sizeFromMetadata;
+                }
                 byte[] buf = new byte[8192];
                 int len;
 
@@ -1286,7 +1288,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                      CountingInputStream cin = new CountingInputStream(in)) {
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf,0,len);
-                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
+                        final int count = cin.getCount();
+                        job.status = job.new Installing(total == -1 ? -1 : ((int) (count * 100 / total)));
+                        if (total != -1 && total < count) {
+                            throw new IOException("Received more data than expected. Expected " + total + " bytes but got " + count + " bytes (so far), aborting download.");
+                        }
                     }
                 } catch (IOException | InvalidPathException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
@@ -1378,11 +1384,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Returns the URL of the server that hosts the update-center.json
          * file.
          *
+         * @return
+         *      Absolute URL that ends with '/'.
          * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now moved to {@link UpdateSite}.
-         * @return
-         *      Absolute URL that ends with '/'.
          */
         @Deprecated
         public String getUpdateCenterUrl() {
@@ -1519,7 +1525,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Immutable state of this job.
          */
          @Exported(inline=true)
-        public volatile RestartJenkinsJobStatus status = new Pending();
+        public volatile RestartJenkinsJobStatus status = new RestartJenkinsJob.Pending();
 
         /**
          * The name of the user that started this job
@@ -1530,8 +1536,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Cancel job
          */
         public synchronized boolean cancel() {
-            if (status instanceof Pending) {
-                status = new Canceled();
+            if (status instanceof RestartJenkinsJob.Pending) {
+                status = new RestartJenkinsJob.Canceled();
                 return true;
             }
             return false;
@@ -1544,10 +1550,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         public synchronized void run() {
-            if (!(status instanceof Pending)) {
+            if (!(status instanceof RestartJenkinsJob.Pending)) {
                 return;
             }
-            status = new Running();
+            status = new RestartJenkinsJob.Running();
             try {
                 // safeRestart records the current authentication for the log, so set it to the managing user
                 try (ACLContext acl = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
@@ -1555,7 +1561,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             } catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
-                status = new Failure();
+                status = new RestartJenkinsJob.Failure();
                 error = exception;
             }
         }
@@ -1702,7 +1708,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
                             error = e;
-                            status = new Failure(e);
+                            status = new DownloadJob.Failure(e);
                         }
                         
                         if (dynamicLoad) {
@@ -1713,7 +1719,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                 LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
                                 error = e;
                                 requiresRestart = true;
-                                status = new Failure(e);
+                                status = new DownloadJob.Failure(e);
                             }
                         } else {
                             requiresRestart = true;
@@ -1724,10 +1730,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 LOGGER.log(Level.SEVERE, "An unexpected error occurred while attempting to enable " + plugin.getDisplayName(), e);
                 error = e;
                 requiresRestart = true;
-                status = new Failure(e);
+                status = new DownloadJob.Failure(e);
             }
-            if(status instanceof Pending) {
-                status = new Success();
+            if(status instanceof DownloadJob.Pending) {
+                status = new DownloadJob.Success();
             }
         }
     }
@@ -1742,7 +1748,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             // do nothing
-            status = new Success();
+            status = new DownloadJob.Success();
         }
     }
 
@@ -1761,7 +1767,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Immutable object representing the current state of this job.
          */
         @Exported(inline=true)
-        public volatile InstallationStatus status = new Pending();
+        public volatile InstallationStatus status = new DownloadJob.Pending();
 
         /**
          * Where to download the file from.
@@ -1854,7 +1860,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 _run();
 
                 LOGGER.info("Installation successful: "+getName());
-                status = new Success();
+                status = new DownloadJob.Success();
                 onSuccess();
             } catch (InstallationStatus e) {
                 status = e;
@@ -1862,11 +1868,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 requiresRestart |= status.requiresRestart();
             } catch (MissingDependencyException e) {
                 LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { getName(), e.getMessage() });
-                status = new Failure(e);
+                status = new DownloadJob.Failure(e);
                 error = e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
-                status = new Failure(e);
+                status = new DownloadJob.Failure(e);
                 error = e;
             }
         }
@@ -1887,14 +1893,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Called when the download is completed to overwrite
          * the old file with the new file.
          */
-        protected void replace(File dst, File src) throws IOException {
+        protected synchronized void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            bak.delete();
-            dst.renameTo(bak);
-            dst.delete(); // any failure up to here is no big deal
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
-            }
+            moveAtomically(dst, bak);
+            moveAtomically(src, dst);
+        }
+
+        /**
+         * Indicate the expected size of the download as provided in update site
+         * metadata.
+         *
+         * @return the expected size, or -1 if unknown.
+         * @since TODO
+         */
+        public long getContentLength() {
+            return -1;
         }
 
         /**
@@ -2093,6 +2106,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:
                 throw new IOException("Unable to confirm integrity of downloaded file, refusing installation");
+            default:
+                throw new AssertionError("Unknown verification result: " + result1);
         }
     }
 
@@ -2124,7 +2139,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
-         * @deprecated use {@link InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
+         * @deprecated use {@link #InstallationJob(UpdateSite.Plugin, UpdateSite, Authentication, boolean)}
          */
         @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth, boolean dynamicLoad) {
@@ -2164,6 +2179,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         @Override
+        public long getContentLength() {
+            final Long size = plugin.getFileSize();
+            return size == null ? -1 : size;
+        }
+
+        @Override
         public void _run() throws IOException, InstallationStatus {
             if (wasInstalled()) {
                 // Do this first so we can avoid duplicate downloads, too
@@ -2186,12 +2207,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     try {
                         pm.dynamicLoad(getDestination(), false, batch);
                     } catch (RestartRequiredException e) {
-                        throw new SuccessButRequiresRestart(e.message);
+                        throw new DownloadJob.SuccessButRequiresRestart(e.message);
                     } catch (Exception e) {
                         throw new IOException("Failed to dynamically deploy this plugin",e);
                     }
                 } else {
-                    throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+                    throw new DownloadJob.SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
                 }
             } finally {
                 synchronized(this) {
@@ -2199,7 +2220,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     LOGGER.fine("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
                     // some status other than Installing or Downloading needs to be set here
                     // {@link #isAlreadyInstalling()}, it will be overwritten by {@link DownloadJob#run()}
-                    status = new Skipped();
+                    status = new DownloadJob.Skipped();
                     notifyAll();
                 }
             }
@@ -2222,7 +2243,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
                             // wait until other install is completed
                             synchronized(ij) {
-                                if(ij.status instanceof Installing || ij.status instanceof Pending) {
+                                if(ij.status instanceof DownloadJob.Installing || ij.status instanceof DownloadJob.Pending) {
                                     try {
                                         LOGGER.fine("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
                                         ij.wait();
@@ -2231,7 +2252,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                     }
                                 }
                                 // Must check for success, otherwise may have failed installation
-                                if (ij.status instanceof Success) {
+                                if (ij.status instanceof DownloadJob.Success) {
                                     return true;
                                 }
                             }
@@ -2262,23 +2283,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 verifyChecksums(this, plugin, src);
             }
 
-            File bak = Util.changeExtension(dst, ".bak");
-            bak.delete();
+            synchronized (this) {
+                File bak = Util.changeExtension(dst, ".bak");
 
-            final File legacy = getLegacyDestination();
-            if (legacy.exists()) {
-                if (!legacy.renameTo(bak)) {
-                    legacy.delete();
+                final File legacy = getLegacyDestination();
+                if (Files.exists(Util.fileToPath(legacy))) {
+                    moveAtomically(legacy, bak);
                 }
-            }
-            if (dst.exists()) {
-                if (!dst.renameTo(bak)) {
-                    dst.delete();
+                if (Files.exists(Util.fileToPath(dst))) {
+                    moveAtomically(dst, bak);
                 }
-            }
 
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
+                moveAtomically(src, dst);
             }
         }
 
@@ -2294,7 +2310,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final List<PluginWrapper> batch;
         private final long start;
         @Exported(inline = true)
-        public volatile CompleteBatchJobStatus status = new Pending();
+        public volatile CompleteBatchJobStatus status = new CompleteBatchJob.Pending();
 
         public CompleteBatchJob(List<PluginWrapper> batch, long start, UUID correlationId) {
             super(getCoreSource());
@@ -2306,12 +2322,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             LOGGER.info("Completing installing of plugin batch…");
-            status = new Running();
+            status = new CompleteBatchJob.Running();
             try {
                 Jenkins.get().getPluginManager().start(batch);
-                status = new Success();
+                status = new CompleteBatchJob.Success();
             } catch (Exception x) {
-                status = new Failure(x);
+                status = new CompleteBatchJob.Failure(x);
                 LOGGER.log(Level.WARNING, "Failed to start some plugins", x);
             }
             LOGGER.log(INFO, "Completed installation of {0} plugins in {1}", new Object[] {batch.size(), Util.getTimeSpanString((System.nanoTime() - start) / 1_000_000)});
@@ -2350,7 +2366,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final PluginManager pm = Jenkins.get().getPluginManager();
 
         /**
-         * @deprecated use {@link PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
+         * @deprecated use {@link #PluginDowngradeJob(UpdateSite.Plugin, UpdateSite, Authentication)}
          */
         @Deprecated
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2405,7 +2421,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 onSuccess();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
-                status = new Failure(e);
+                status = new DownloadJob.Failure(e);
                 error = e;
             }
         }
@@ -2423,11 +2439,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * current version with backup file
          */
         @Override
-        protected void replace(File dst, File backup) throws IOException {
-            dst.delete(); // any failure up to here is no big deal
-            if(!backup.renameTo(dst)) {
-                throw new IOException("Failed to rename "+backup+" to "+dst);
-            }
+        protected synchronized void replace(File dst, File backup) throws IOException {
+            moveAtomically(backup, dst);
         }
 
         @Override
@@ -2447,7 +2460,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonUpgradeJob extends DownloadJob {
 
         /**
-          * @deprecated use {@link HudsonUpgradeJob(UpdateSite site, Authentication auth)}
+          * @deprecated use {@link #HudsonUpgradeJob(UpdateSite, Authentication)}
          */
         @Deprecated
         public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2478,7 +2491,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected void onSuccess() {
-            status = new Success();
+            status = new DownloadJob.Success();
         }
 
         @Override
@@ -2494,7 +2507,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonDowngradeJob extends DownloadJob {
 
         /**
-         * @deprecated use {@link HudsonDowngradeJob(UpdateSite site, Authentication auth)}
+         * @deprecated use {@link #HudsonDowngradeJob(UpdateSite, Authentication)}
          */
         @Deprecated
         public HudsonDowngradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2524,7 +2537,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         @Override
         protected void onSuccess() {
-            status = new Success();
+            status = new DownloadJob.Success();
         }
         @Override
         public void run() {
@@ -2534,11 +2547,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 _run();
 
                 LOGGER.info("Downgrading successful: "+getName());
-                status = new Success();
+                status = new DownloadJob.Success();
                 onSuccess();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
-                status = new Failure(e);
+                status = new DownloadJob.Failure(e);
                 error = e;
             }
         }
@@ -2657,8 +2670,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
 
 
     /**
@@ -2678,5 +2691,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     static {
         XSTREAM.alias("site",UpdateSite.class);
         XSTREAM.alias("sites",PersistedList.class);
+    }
+
+    private static void moveAtomically(File src, File target) throws IOException {
+        try {
+            Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            LOGGER.log(Level.WARNING, "Atomic move not supported. Falling back to non-atomic move.", e);
+            try {
+                Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                e2.addSuppressed(e);
+                throw e2;
+            }
+        }
     }
 }

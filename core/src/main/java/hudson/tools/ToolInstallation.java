@@ -24,6 +24,9 @@
 
 package hudson.tools;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -39,15 +42,10 @@ import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
-
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.io.IOException;
 import java.util.List;
-
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -66,7 +64,7 @@ import org.dom4j.io.SAXReader;
  *
  * <ul>
  * <li>Hudson allows admins to specify different locations for tools on some agents.
- *     For example, JDK on the master might be on /usr/local/java but on a Windows agent
+ *     For example, JDK on the controller might be on /usr/local/java but on a Windows agent
  *     it could be at c:\Program Files\Java
  * <li>Hudson can verify the existence of tools and provide warnings and diagnostics for
  *     admins. (TBD)
@@ -105,12 +103,12 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
     @Deprecated
-    public ToolInstallation(String name, String home) {
+    protected ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
     }
 
-    public ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+    protected ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         this.name = name;
         this.home = home;
         if(properties!=null) {
@@ -141,7 +139,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * 
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
-     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on controller)
      */
     public @CheckForNull String getHome() {
         return home;
@@ -260,7 +258,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Subclasses can extend this for data migration from old field storing home directory.
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
-        public ToolConverter(XStream2 xstream) { super(xstream); }
+        protected ToolConverter(XStream2 xstream) { super(xstream); }
         @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;

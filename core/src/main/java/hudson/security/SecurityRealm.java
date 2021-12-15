@@ -36,6 +36,7 @@ import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +51,9 @@ import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
+import jenkins.security.AuthenticationSuccessHandler;
 import jenkins.security.BasicHeaderProcessor;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -76,6 +79,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
@@ -391,10 +395,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Shortcut for {@link UserDetailsService#loadUserByUsername(String)}.
      *
-     * @throws UserMayOrMayNotExistException2
-     *      If the security realm cannot even tell if the user exists or not.
      * @return
      *      never null.
+     * @throws UserMayOrMayNotExistException2
+     *      If the security realm cannot even tell if the user exists or not.
      * @since 2.266
      */
     public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
@@ -592,9 +596,15 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         {
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
+            if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 1) {
+                // By default, use the 'canonical' protection from Spring Security; see AuthenticationProcessingFilter2#successfulAuthentication for alternative
+                apf.setSessionAuthenticationStrategy(new SessionFixationProtectionStrategy());
+            }
             apf.setRememberMeServices(sc.rememberMe2);
+            final AuthenticationSuccessHandler successHandler = new AuthenticationSuccessHandler();
+            successHandler.setTargetUrlParameter("from");
+            apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
-            // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
             filters.add(apf);
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
@@ -630,12 +640,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         String from = null, returnValue = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
-        // Try to obtain a return point either from the Session
-        // or from the QueryParameter in this order
-        if (request != null
-                && request.getSession(false) != null) {
-            from = (String) request.getSession().getAttribute("from");
-        } else if (request != null) {
+        // Try to obtain a return point from the query parameter
+        if (request != null) {
             from = request.getParameter("from");
         }
 
@@ -656,7 +662,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         
         // Encode the return value
         try {
-            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
+            returnValue = URLEncoder.encode(from, "UTF-8");
         } catch (UnsupportedEncodingException e) { }
 
         // Return encoded value or at least "/" in the case exception occurred during encode()

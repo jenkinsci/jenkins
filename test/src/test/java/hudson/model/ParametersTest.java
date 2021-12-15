@@ -1,5 +1,13 @@
 package hudson.model;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -16,13 +24,6 @@ import java.net.HttpURLConnection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -69,7 +70,7 @@ public class ParametersTest {
 
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
-        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
         element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
@@ -84,12 +85,12 @@ public class ParametersTest {
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='run']")).getParentNode();
         assertNotNull(element);
         assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         j.submit(form);
         Queue.Item q = j.jenkins.getQueue().getItem(project);
@@ -119,7 +120,7 @@ public class ParametersTest {
         HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
         HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
         assertEquals("Choice <2>", opt.asText());

@@ -2,13 +2,12 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import jenkins.util.SystemProperties;
 import hudson.model.Api;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

@@ -23,17 +23,15 @@
  */
 package jenkins.util;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import java.io.Serializable;
+import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * {@link TreeString} is an alternative string representation that saves the

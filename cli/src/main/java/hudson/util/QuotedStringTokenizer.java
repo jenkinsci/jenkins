@@ -35,10 +35,10 @@
 // ========================================================================
 package hudson.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
 
 /* ------------------------------------------------------------ */
 /** StringTokenizer with Quoting support.
@@ -269,6 +269,9 @@ public class QuotedStringTokenizer
                   else
                       _token.append(c);
                   continue;
+
+              default:
+                  break;
             }
         }
 
@@ -417,7 +420,6 @@ public class QuotedStringTokenizer
 
                     default:
                         buf.append(c);
-                        continue;
                 }
             }
             buf.append('"');
@@ -472,7 +474,7 @@ public class QuotedStringTokenizer
                                 (convertHexDigit((byte)s.charAt(i++))<<24)+
                                 (convertHexDigit((byte)s.charAt(i++))<<16)+
                                 (convertHexDigit((byte)s.charAt(i++))<<8)+
-                                (convertHexDigit((byte)s.charAt(i++)))
+                                convertHexDigit((byte)s.charAt(i++))
                                 )
                         );
                         break;
@@ -483,7 +485,6 @@ public class QuotedStringTokenizer
             else if (c=='\\')
             {
                 escape=true;
-                continue;
             }
             else
                 b.append(c);
@@ -534,9 +535,9 @@ public class QuotedStringTokenizer
      */
     public static byte convertHexDigit( byte b )
     {
-        if ((b >= '0') && (b <= '9')) return (byte)(b - '0');
-        if ((b >= 'a') && (b <= 'f')) return (byte)(b - 'a' + 10);
-        if ((b >= 'A') && (b <= 'F')) return (byte)(b - 'A' + 10);
+        if (b >= '0' && b <= '9') return (byte) (b - '0');
+        if (b >= 'a' && b <= 'f') return (byte) (b - 'a' + 10);
+        if (b >= 'A' && b <= 'F') return (byte) (b - 'A' + 10);
         return 0;
     }
 
@@ -549,14 +550,3 @@ public class QuotedStringTokenizer
      */
     private static final String ESCAPABLE_CHARS = "\\\"' ";
 }
-
-
-
-
-
-
-
-
-
-
-

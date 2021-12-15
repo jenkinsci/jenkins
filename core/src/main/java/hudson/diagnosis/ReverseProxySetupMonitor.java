@@ -28,6 +28,10 @@ import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerDispatchable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -36,11 +40,6 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -122,7 +121,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
+            return new HttpRedirect("https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
         }
     }
 
@@ -131,4 +130,3 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         return Messages.ReverseProxySetupMonitor_DisplayName();
     }
 }
-

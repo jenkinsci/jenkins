@@ -36,6 +36,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.UnprotectedRootAction;
@@ -50,8 +51,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 import org.w3c.dom.NodeList;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * @author Kohsuke Kawaguchi

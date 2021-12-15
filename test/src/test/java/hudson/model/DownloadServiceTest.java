@@ -1,25 +1,29 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.DownloadService.Downloadable;
+import hudson.tasks.Ant.AntInstaller;
+import hudson.tasks.Maven;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.ToolInstallation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import hudson.tasks.Maven;
-import hudson.tools.DownloadFromUrlInstaller;
-import hudson.tools.ToolInstallation;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Test;
 import org.jvnet.hudson.test.WithoutJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DownloadServiceTest extends HudsonTestCase {
+public class DownloadServiceTest {
 
     @WithoutJenkins // could have been in core/src/test/ but update-center.json was already in test/src/test/ (used by UpdateSiteTest)
+    @Test
     public void testLoadJSON() throws Exception {
         assertRoots("[list]", "hudson.tasks.Maven.MavenInstaller.json"); // format used by most tools
         assertRoots("[data, version]", "hudson.tools.JDKInstaller.json"); // anomalous format
@@ -34,6 +38,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 
+    @Test
     public void testReduceFunctionWithMavenJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller2.json");
@@ -52,6 +57,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertEquals(reducedJson, expectedResultJson);
     }
 
+    @Test
     public void testReduceFunctionWithAntJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller2.json");
@@ -63,13 +69,14 @@ public class DownloadServiceTest extends HudsonTestCase {
         jsonObjectList.add(json1);
         jsonObjectList.add(json2);
         jsonObjectList.add(json3);
-        Downloadable downloadable = new hudson.tasks.Ant.AntInstaller.DescriptorImpl().createDownloadable();
+        Downloadable downloadable = new AntInstaller.DescriptorImpl().createDownloadable();
         JSONObject reducedJson = downloadable.reduce(jsonObjectList);
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstallerResult.json");
         JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
         assertEquals(reducedJson, expectedResultJson);
     }
 
+    @Test
     public void testReduceFunctionWithNotDefaultSchemaJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller2.json");

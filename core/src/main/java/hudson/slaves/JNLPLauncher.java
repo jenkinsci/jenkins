@@ -23,15 +23,15 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
@@ -52,7 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * If the agent needs to tunnel the connection to the master,
+     * If the agent needs to tunnel the connection to the controller,
      * specify the "host:port" here. This can include the special
      * syntax "host:" and ":port" to indicate the default host/port
      * shall be used.
@@ -92,6 +92,7 @@ public class JNLPLauncher extends ComputerLauncher {
      *                        If {@code null}, {@link RemotingWorkDirSettings#getEnabledDefaults()}
      *                        will be used to enable work directories by default in new agents.
      * @since 2.68
+     * @deprecated use {@link #JNLPLauncher(String, String)} and {@link #setWorkDirSettings(RemotingWorkDirSettings)}
      */
     @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @CheckForNull RemotingWorkDirSettings workDirSettings) {
@@ -126,7 +127,8 @@ public class JNLPLauncher extends ComputerLauncher {
                 ? RemotingWorkDirSettings.getEnabledDefaults() 
                 : RemotingWorkDirSettings.getDisabledDefaults());
     }
-    
+
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "workDirSettings in readResolve is needed for data migration.")
     protected Object readResolve() {
         if (workDirSettings == null) {
             // For the migrated code agents are always disabled
@@ -204,6 +206,7 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
@@ -267,7 +270,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * This enables using a private address for inbound tcp agents,
      * separate from Jenkins root URL.
      *
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-63222">JENKINS-63222</a>
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {

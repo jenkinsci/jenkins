@@ -26,7 +26,6 @@ package jenkins.model;
 import hudson.model.ModifiableItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-
 import java.io.IOException;
 import java.io.InputStream;
 

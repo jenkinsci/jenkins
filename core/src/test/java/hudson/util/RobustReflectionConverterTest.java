@@ -23,18 +23,19 @@
  */
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /**
@@ -60,25 +61,14 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        try {
-            read(new XStream());
-            fail();
-        } catch (ConversionException e) {
-            // expected
-            assertTrue(e.getMessage().contains("z"));
-        }
+        XStream xs = new XStream();
+        xs.allowTypes(new Class[] {Point.class});
+        final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
+        assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
     @Test
-    public void classOwnership() throws Exception {
-        XStream xs = new XStream2(new XStream2.ClassOwnership() {
-            @Override public String ownerOf(Class<?> clazz) {
-                Owner o = clazz.getAnnotation(Owner.class);
-                return o != null ? o.value() : null;
-            }
-        });
-        String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
-        String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
+    public void classOwnership() {
         Enchufla s1 = new Enchufla();
         s1.number = 1;
         s1.direction = "North";
@@ -95,6 +85,12 @@ public class RobustReflectionConverterTest {
         b.steppes = new Steppe[] {s1, s2, s3};
         Projekt p = new Projekt();
         p.bildz = new Bild[] {b};
+        XStream xs = new XStream2(clazz -> {
+            Owner o = clazz.getAnnotation(Owner.class);
+            return o != null ? o.value() : null;
+        });
+        String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
+        String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
         assertEquals("<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
                 // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned
@@ -104,6 +100,23 @@ public class RobustReflectionConverterTest {
                 xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
+    }
+
+    @Test
+    public void implicitCollection() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        xs.addImplicitCollection(Hold.class,"items", "item", String.class);
+        Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
+        assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
+        assertEquals("<hold>\n" +
+                "  <item>a</item>\n" +
+                "  <item>b</item>\n" +
+                "</hold>", xs.toXML(h));
+    }
+
+    public static class Hold {
+        List<String> items;
     }
 
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}

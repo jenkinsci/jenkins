@@ -24,6 +24,8 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -35,7 +37,6 @@ import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
-import jenkins.util.MemoryReductionUtil;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
@@ -48,10 +49,9 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.function.Predicate;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.Authentication;
@@ -278,7 +278,7 @@ public class Items {
             }
             name.push(p[i]);
         }
-        return StringUtils.join(name, '/');
+        return String.join("/", name);
     }
 
     /**
@@ -312,7 +312,7 @@ public class Items {
                 newValue.add(relativeName);
             }
         }
-        return StringUtils.join(newValue, ",");
+        return String.join(",", newValue);
     }
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:

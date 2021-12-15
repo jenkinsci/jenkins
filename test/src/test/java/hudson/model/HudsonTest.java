@@ -42,8 +42,12 @@ import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
-import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BuildStep;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,11 +58,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -155,35 +154,35 @@ public class HudsonTest {
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void computerConfigureLink() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("computer/(master)/configure");
+        HtmlPage page = j.createWebClient().goTo("computer/(built-in)/configure");
         j.submit(page.getFormByName("config"));
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
-        HtmlPage page = wc.goTo("computer/(master)/");
+        HtmlPage page = wc.goTo("computer/(built-in)/");
         for (HtmlAnchor a : page.getAnchors()) {
             assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
         }
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(built-in)/doDelete"), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 
-        // the master computer object should be still here
-        page = wc.goTo("computer/(master)/");
+        // the built-in computer object should be still here
+        page = wc.goTo("computer/(built-in)/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
     }
 
@@ -192,7 +191,7 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
-    public void legacyDescriptorLookup() throws Exception {
+    public void legacyDescriptorLookup() {
         Descriptor dummy = new Descriptor(HudsonTest.class) {};
 
         BuildStep.PUBLISHERS.addRecorder(dummy);

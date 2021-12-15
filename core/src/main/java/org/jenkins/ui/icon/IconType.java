@@ -33,7 +33,7 @@ import org.apache.commons.jelly.JellyContext;
  */
 public enum IconType {
     CORE,
-    PLUGIN,;
+    PLUGIN;
 
     /**
      * Qualify the supplied icon url.
@@ -54,8 +54,8 @@ public enum IconType {
             case PLUGIN: {
                 return resURL + "/plugin/" + url;
             }
+            default:
+                throw new AssertionError("Unknown icon type: " + this);
         }
-
-        return null;
     }
 }

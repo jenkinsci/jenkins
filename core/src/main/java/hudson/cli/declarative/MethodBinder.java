@@ -26,19 +26,19 @@ package hudson.cli.declarative;
 import hudson.cli.CLICommand;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.FieldSetter;
-import org.kohsuke.args4j.spi.Setter;
-import org.kohsuke.args4j.spi.OptionHandler;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Binds method parameters to CLI arguments and parameters via args4j.
@@ -52,9 +52,6 @@ class MethodBinder {
     private final Method method;
     private final Object[] arguments;
 
-    /**
-     * @param method
-     */
     MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
         this.command = command;
@@ -126,7 +123,7 @@ class MethodBinder {
     /**
      * {@link Argument} implementation that adds a bias to {@link #index()}.
      */
-    @SuppressWarnings({"ClassExplicitlyAnnotation"})
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     private static final class ArgumentImpl implements Argument {
         private final Argument base;
         private final int bias;
@@ -174,6 +171,23 @@ class MethodBinder {
         @Override
         public boolean hidden() {
             return base.hidden();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ArgumentImpl)) {
+                return false;
+            }
+            ArgumentImpl argument = (ArgumentImpl) o;
+            return Objects.equals(base, argument.base) && bias == argument.bias;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(base, bias);
         }
     }
 }

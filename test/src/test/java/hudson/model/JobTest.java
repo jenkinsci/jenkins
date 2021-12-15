@@ -24,13 +24,22 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.TextPage;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -39,45 +48,33 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.TextFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import jenkins.model.Jenkins;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
+import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -148,7 +145,7 @@ public class JobTest {
                                 return;
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
-                            if (buildNumber != (savedBuildNumber-1)) {
+                            if (buildNumber != savedBuildNumber - 1) {
                                 this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
                                 this.passed = false;
                                 return;
@@ -176,7 +173,7 @@ public class JobTest {
             }
             catch (InterruptedException e) {}
             catch (IOException e) {
-                fail("Failed to assign build number");
+                throw new AssertionError("Failed to assign build number", e);
             }
             finally {
                 stop.countDown();
@@ -269,7 +266,7 @@ public class JobTest {
     }
 
     @LocalData @Issue("JENKINS-6371")
-    @Test public void getArtifactsUpTo() throws Exception {
+    @Test public void getArtifactsUpTo() {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
         Run r = j.jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
@@ -292,14 +289,11 @@ public class JobTest {
     
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
-        assertNotNull("no project created", p);
         try {
-            j.createFreeStyleProject("project");
-            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
-        } catch (Failure e) {
-            // OK, expected
-        }finally{
+            final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+            assertNotNull("no project created", p);
+            assertThrows(Failure.class, () -> j.createFreeStyleProject("project"));
+        } finally {
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
             j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
@@ -320,7 +314,7 @@ public class JobTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
-            @Override public Integer call() throws Exception {
+            @Override public Integer call() {
                 return p.getLastFailedBuild().getNumber();
             }
         }).intValue());
@@ -380,7 +374,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = new String(out.toByteArray());
+        final String oldB2Log = out.toString();
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -397,7 +391,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = new String(out.toByteArray());
+        final String newB2Log = out.toString();
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 
@@ -555,7 +549,7 @@ public class JobTest {
     static class NameChangingNode extends Slave {
         private String virtualName;
 
-        public NameChangingNode(JenkinsRule j, String name) throws Exception {
+        NameChangingNode(JenkinsRule j, String name) throws Exception {
             super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
         }
 
@@ -563,6 +557,7 @@ public class JobTest {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getNodeName() {
             if (virtualName != null) {

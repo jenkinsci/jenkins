@@ -3,24 +3,23 @@ package hudson.util;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 /**
  * Rewrites XML files by looking for Secrets that are stored with the old key and replaces them
@@ -54,7 +53,7 @@ public class SecretRewriter {
         this();
     }
 
-    private String tryRewrite(String s) throws IOException, InvalidKeyException {
+    private String tryRewrite(String s) throws InvalidKeyException {
         if (s.length()<24)
             return s;   // Encrypting "" in Secret produces 24-letter characters, so this must be the minimum length
         if (!isBase64(s))
@@ -82,7 +81,7 @@ public class SecretRewriter {
 
     public boolean rewrite(File f) throws InvalidKeyException, IOException {
 
-        AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
+        AtomicFileWriter w = new AtomicFileWriter(f.toPath(), StandardCharsets.UTF_8);
         try {
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
@@ -110,7 +109,7 @@ public class SecretRewriter {
                         copied = eidx;
                     }
                     buf.append(line.substring(copied));
-                    out.println(buf.toString());
+                    out.println(buf);
                 }
             }
 
@@ -156,7 +155,7 @@ public class SecretRewriter {
             for (File child : children) {
                 String cn = child.getName();
                 if (cn.endsWith(".xml")) {
-                    if ((count++)%100==0)
+                    if (count++ % 100 == 0)
                         listener.getLogger().println("Scanning "+child);
                     try {
                         if (rewrite(child)) {

@@ -23,13 +23,12 @@
  */
 package jenkins;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.http.HttpSessionEvent;
 import jenkins.util.HttpSessionListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.servlet.http.HttpSessionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Web container hook for the {@link HttpSessionListener} {@link hudson.ExtensionPoint}.
@@ -50,7 +49,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
         for (HttpSessionListener listener : HttpSessionListener.all()) {
             try {
                 listener.sessionCreated(httpSessionEvent);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error calling HttpSessionListener ExtensionPoint sessionCreated().", e);
             }
         }
@@ -61,7 +60,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
         for (HttpSessionListener listener : HttpSessionListener.all()) {
             try {
                 listener.sessionDestroyed(httpSessionEvent);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error calling HttpSessionListener ExtensionPoint sessionDestroyed().", e);
             }
         }

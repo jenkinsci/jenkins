@@ -23,15 +23,15 @@
  */
 package hudson.slaves;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
-
+import hudson.util.VersionNumber;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.tools.ant.util.DeweyDecimal;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -193,12 +192,12 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                 final String versionStr = m.group(1);
                 logger.println(Messages.ComputerLauncher_JavaVersionResult(javaCommand, versionStr));
                 try {
-                    if (new DeweyDecimal(versionStr).isLessThan(new DeweyDecimal("1.8"))) {
+                    if (new VersionNumber(versionStr).isOlderThan(new VersionNumber("1.8"))) {
                         throw new IOException(Messages
                                 .ComputerLauncher_NoJavaFound(line));
                     }
                 } catch (NumberFormatException x) {
-                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line));
+                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line), x);
                 }
                 return;
             }

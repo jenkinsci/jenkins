@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
 import java.io.Writer;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 

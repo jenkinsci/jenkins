@@ -1,5 +1,6 @@
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
@@ -8,15 +9,15 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
-import jenkins.model.Jenkins;
-import jenkins.security.RekeySecretAdminMonitor;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
+import jenkins.security.RekeySecretAdminMonitor;
 
 /**
  * Convenient partial implementation of {@link AdministrativeMonitor} that involves a background "fixing" action
@@ -58,7 +59,11 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
      */
     protected File getLogFile() {
         File base = getBaseDir();
-        base.mkdirs();
+        try {
+            Files.createDirectories(base.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return new File(base,"log");
     }
 

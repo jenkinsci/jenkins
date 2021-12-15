@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
 import java.util.Collection;
 import java.util.Collections;
 

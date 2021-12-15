@@ -24,14 +24,13 @@
 package hudson.model;
 
 import hudson.util.ColorPalette;
+import java.awt.Color;
+import java.util.Locale;
 import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;
-
-import java.awt.Color;
-import java.util.Locale;
 
 /**
  * Ball color used for the build status indication.
@@ -49,7 +48,7 @@ import java.util.Locale;
  * Hudson started to overload colors &mdash; for example grey could mean
  * either disabled, aborted, or not yet built. As a result, {@link BallColor}
  * becomes more like a "logical" color, in the sense that different {@link BallColor}
- * values can map to the same RGB color. See issue #956.
+ * values can map to the same RGB color. See JENKINS-956.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -69,7 +68,7 @@ public enum BallColor implements StatusIcon {
     ABORTED("aborted",Messages._BallColor_Aborted(), ColorPalette.DARK_GREY),
     ABORTED_ANIME("aborted_anime",Messages._BallColor_InProgress(), ColorPalette.DARK_GREY),
     NOTBUILT("nobuilt",Messages._BallColor_NotBuilt(), ColorPalette.LIGHT_GREY),
-    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.LIGHT_GREY),
+    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.LIGHT_GREY)
     ;
 
     private final Localizable description;

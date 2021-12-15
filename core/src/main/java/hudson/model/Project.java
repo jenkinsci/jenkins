@@ -32,18 +32,13 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven;
-import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Maven.ProjectWithMaven;
+import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -53,8 +48,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.servlet.ServletException;
 import jenkins.triggers.SCMTriggerItem;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Buildable software project.
@@ -88,7 +86,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     /**
      * Creates a new project.
      */
-    public Project(ItemGroup parent,String name) {
+    protected Project(ItemGroup parent,String name) {
         super(parent,name);
     }
 
@@ -242,28 +240,28 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         for (BuildStep step : getBuildersList()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading build step.", e);
             }
         }
         for (BuildStep step : getPublishersList()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading publisher.", e);
             }
         }
         for (BuildWrapper step : getBuildWrappers().values()) {
             try {
                 r.addAll(step.getProjectActions(this));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading build wrapper.", e);
             }
         }
         for (Trigger trigger : triggers()) {
             try {
                 r.addAll(trigger.getProjectActions());
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Error loading trigger.", e);
             }
         }

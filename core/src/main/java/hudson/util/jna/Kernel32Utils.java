@@ -23,18 +23,16 @@
  */
 package hudson.util.jna;
 
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.WString;
+import com.sun.jna.ptr.IntByReference;
 import hudson.Util;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.WString;
 
 /**
  *
@@ -124,7 +122,7 @@ public class Kernel32Utils {
 
     /*package*/ static Kernel32 load() {
         try {
-            return (Kernel32) Native.loadLibrary("kernel32", Kernel32.class);
+            return (Kernel32) Native.load("kernel32", Kernel32.class);
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to load Kernel32", e);
             return InitializationErrorInvocationHandler.create(Kernel32.class,e);

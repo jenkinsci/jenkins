@@ -23,15 +23,14 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.Queue.Task;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Builder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Action} that contributes environment variables during a build.
@@ -69,12 +68,11 @@ public interface EnvironmentContributingAction extends Action {
     /**
      * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
      *
-     * @deprecated Use {@link #buildEnvironment} instead
-     *
      * @param build
      *      The calling build. Never null.
      * @param env
      *      Environment variables should be added to this map.
+     * @deprecated Use {@link #buildEnvironment} instead
      */
     @Deprecated
     @Restricted(ProtectedExternally.class)

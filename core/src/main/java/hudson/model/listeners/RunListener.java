@@ -23,10 +23,11 @@
  */
 package hudson.model.listeners;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionListView;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -40,15 +41,12 @@ import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
-import org.jvnet.tiger_types.Types;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.util.Listeners;
+import org.jvnet.tiger_types.Types;
 
 /**
  * Receives notifications about builds.
@@ -203,28 +201,22 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
     public static void fireCompleted(Run r, @NonNull TaskListener listener) {
-        for (RunListener l : all()) {
-            if(l.targetType.isInstance(r))
-                try {
-                    l.onCompleted(r,listener);
-                } catch (Throwable e) {
-                    report(e);
-                }
-        }
+        Listeners.notify(RunListener.class, true, l -> {
+            if (l.targetType.isInstance(r)) {
+                l.onCompleted(r, listener);
+            }
+        });
     }
 
     /**
      * Fires the {@link #onInitialize(Run)} event.
      */
     public static void fireInitialize(Run r) {
-        for (RunListener l : all()) {
-            if(l.targetType.isInstance(r))
-                try {
-                    l.onInitialize(r);
-                } catch (Throwable e) {
-                    report(e);
-                }
-        }
+        Listeners.notify(RunListener.class, true, l -> {
+            if (l.targetType.isInstance(r)) {
+                l.onInitialize(r);
+            }
+        });
     }
 
 
@@ -232,14 +224,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onStarted(Run, TaskListener)} event.
      */
     public static void fireStarted(Run r, TaskListener listener) {
-        for (RunListener l : all()) {
-            if(l.targetType.isInstance(r))
-                try {
-                    l.onStarted(r,listener);
-                } catch (Throwable e) {
-                    report(e);
-                }
-        }
+        Listeners.notify(RunListener.class, true, l -> {
+            if (l.targetType.isInstance(r)) {
+                l.onStarted(r, listener);
+            }
+        });
     }
 
     /**
@@ -249,28 +238,22 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         if (!Functions.isExtensionsAvailable()) {
             return;
         }
-        for (RunListener l : all()) {
-            if(l.targetType.isInstance(r))
-                try {
-                    l.onFinalized(r);
-                } catch (Throwable e) {
-                    report(e);
-                }
-        }
+        Listeners.notify(RunListener.class, true, l -> {
+            if (l.targetType.isInstance(r)) {
+                l.onFinalized(r);
+            }
+        });
     }
 
     /**
      * Fires the {@link #onDeleted} event.
      */
     public static void fireDeleted(Run r) {
-        for (RunListener l : all()) {
-            if(l.targetType.isInstance(r))
-                try {
-                    l.onDeleted(r);
-                } catch (Throwable e) {
-                    report(e);
-                }
-        }
+        Listeners.notify(RunListener.class, true, l -> {
+            if (l.targetType.isInstance(r)) {
+                l.onDeleted(r);
+            }
+        });
     }
 
     /**
@@ -279,11 +262,4 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static ExtensionList<RunListener> all() {
         return ExtensionList.lookup(RunListener.class);
     }
-
-    private static void report(Throwable e) {
-        LOGGER.log(Level.WARNING, "RunListener failed",e);
-    }
-
-    private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
-
 }

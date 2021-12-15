@@ -23,43 +23,40 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.ParametersAction;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.ParameterDefinition;
-import hudson.Extension;
-import hudson.AbortException;
-import hudson.model.Queue;
 import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.triggers.SCMTriggerItem;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-
-import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
-import jenkins.triggers.SCMTriggerItem;
 
 /**
  * Builds a job, and optionally waits until its completion.
@@ -112,7 +109,7 @@ public class BuildCommand extends CLICommand {
             //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<>();
 
-            for (Entry<String, String> e : parameters.entrySet()) {
+            for (Map.Entry<String, String> e : parameters.entrySet()) {
                 String name = e.getKey();
                 ParameterDefinition pd = pdp.getParameterDefinition(name);
                 if (pd==null) {
@@ -266,12 +263,22 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof CLICause;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+            CLICause cliCause = (CLICause) o;
+            return Objects.equals(startedBy, cliCause.startedBy);
         }
 
         @Override
         public int hashCode() {
-            return 7;
+            return Objects.hash(super.hashCode(), startedBy);
         }
     }
 }

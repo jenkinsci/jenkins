@@ -26,12 +26,11 @@ package jenkins.util.xstream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.basic.URLConverter;
 import hudson.remoting.URLDeserializationHelper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Wrap the URL handler during deserialization into a specific one that does not generate DNS query on the hostname

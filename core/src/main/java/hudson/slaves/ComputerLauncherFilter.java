@@ -26,7 +26,6 @@ package hudson.slaves;
 import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-
 import java.io.IOException;
 
 /**
@@ -42,7 +41,7 @@ import java.io.IOException;
 public abstract class ComputerLauncherFilter extends ComputerLauncher {
     protected volatile ComputerLauncher core;
 
-    public ComputerLauncherFilter(ComputerLauncher core) {
+    protected ComputerLauncherFilter(ComputerLauncher core) {
         this.core = core;
     }
 

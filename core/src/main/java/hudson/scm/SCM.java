@@ -23,6 +23,9 @@
  */
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -56,9 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
@@ -80,7 +80,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <p>
  * If you are interested in writing a subclass in a plugin,
- * also take a look at <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+an+SCM+plugin">
+ * also take a look at <a href="https://www.jenkins.io/doc/developer/plugin-development/writing-an-scm-plugin/">
  * "Writing an SCM plugin"</a> wiki article.
  *
  * @author Kohsuke Kawaguchi
@@ -185,7 +185,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * The default implementation returns true.
      *
      * <p>
-     * See issue #1348 for more discussion of this feature.
+     * See issue JENKINS-1348 for more discussion of this feature.
      *
      * @since 1.196
      */
@@ -388,8 +388,23 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
-    public PollingResult compareRemoteRevisionWith(@NonNull Job<?,?> project, @Nullable Launcher launcher, @Nullable FilePath workspace, @NonNull TaskListener listener, @NonNull SCMRevisionState baseline) throws IOException, InterruptedException {
-        if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
+    public PollingResult compareRemoteRevisionWith(
+            @NonNull Job<?, ?> project,
+            @Nullable Launcher launcher,
+            @Nullable FilePath workspace,
+            @NonNull TaskListener listener,
+            @NonNull SCMRevisionState baseline)
+            throws IOException, InterruptedException {
+        if (project instanceof AbstractProject
+                && Util.isOverridden(
+                        SCM.class,
+                        getClass(),
+                        "compareRemoteRevisionWith",
+                        AbstractProject.class,
+                        Launcher.class,
+                        FilePath.class,
+                        TaskListener.class,
+                        SCMRevisionState.class)) {
             return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
         } else {
             throw new AbstractMethodError("you must override the new overload of compareRemoteRevisionWith");
@@ -478,8 +493,25 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws AbortException in case of a routine failure
      * @since 1.568
      */
-    public void checkout(@NonNull Run<?,?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
-        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
+    public void checkout(
+            @NonNull Run<?, ?> build,
+            @NonNull Launcher launcher,
+            @NonNull FilePath workspace,
+            @NonNull TaskListener listener,
+            @CheckForNull File changelogFile,
+            @CheckForNull SCMRevisionState baseline)
+            throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild
+                && listener instanceof BuildListener
+                && Util.isOverridden(
+                        SCM.class,
+                        getClass(),
+                        "checkout",
+                        AbstractBuild.class,
+                        Launcher.class,
+                        FilePath.class,
+                        BuildListener.class,
+                        File.class)) {
             if (changelogFile == null) {
                 changelogFile = File.createTempFile("changelog", ".xml");
                 try {

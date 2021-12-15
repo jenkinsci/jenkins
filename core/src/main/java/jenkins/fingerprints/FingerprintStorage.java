@@ -27,18 +27,16 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
-import java.io.IOException;
-import java.util.Date;
-
 import hudson.Functions;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
+import java.io.IOException;
+import java.util.Date;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Pluggable fingerprint storage API for fingerprints.
@@ -57,9 +55,11 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
 
     /**
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
+     * @deprecated since TODO, use {@code ExtensionList.lookupSingleton(FileFingerprintStorage.class)} instead.
      */
+    @Deprecated
     public static FingerprintStorage getFileFingerprintStorage() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(ExtensionList.lookup(FingerprintStorage.class).size()-1);
+        return ExtensionList.lookupSingleton(FileFingerprintStorage.class);
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
             if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
-                taskListener.getLogger().println("deleting obsolete " + fingerprint.toString());
+                taskListener.getLogger().println("deleting obsolete " + fingerprint);
                 Fingerprint.delete(fingerprint.getHashString());
                 return true;
             } else {
