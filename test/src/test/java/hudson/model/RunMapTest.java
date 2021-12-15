@@ -59,6 +59,8 @@ public class RunMapTest {
         b1 = p.getBuildByNumber(1);
         assertSame(b1.getNextBuild(), b2);
         assertSame(b2.getPreviousBuild(), b1);
+        b2.doStop();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b2));
     }
 
     @Issue("JENKINS-27530")
