@@ -69,12 +69,6 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void classOwnership() {
-        XStream xs = new XStream2(clazz -> {
-            Owner o = clazz.getAnnotation(Owner.class);
-            return o != null ? o.value() : null;
-        });
-        String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
-        String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
         Enchufla s1 = new Enchufla();
         s1.number = 1;
         s1.direction = "North";
@@ -91,6 +85,12 @@ public class RobustReflectionConverterTest {
         b.steppes = new Steppe[] {s1, s2, s3};
         Projekt p = new Projekt();
         p.bildz = new Bild[] {b};
+        XStream xs = new XStream2(clazz -> {
+            Owner o = clazz.getAnnotation(Owner.class);
+            return o != null ? o.value() : null;
+        });
+        String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
+        String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
         assertEquals("<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
                 // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned

@@ -460,7 +460,7 @@ public class Util {
                 try {
                     ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
                     return rb.getString("error"+m.group(1));
-                } catch (Exception ignored) {
+                } catch (RuntimeException ignored) {
                     // silently recover from resource related failures
                 }
             }
@@ -1070,7 +1070,7 @@ public class Util {
      */
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
-        cp.setProject(new org.apache.tools.ant.Project());
+        cp.setProject(new Project());
         cp.setTofile(dst);
         cp.setFile(src);
         cp.setOverwrite(true);
@@ -1429,7 +1429,7 @@ public class Util {
             return null;
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }

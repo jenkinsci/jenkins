@@ -299,6 +299,6 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static final long DAY = DAYS.toMillis(1);
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

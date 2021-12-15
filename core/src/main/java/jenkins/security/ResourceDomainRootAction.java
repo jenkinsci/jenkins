@@ -185,7 +185,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         try {
             return new Token(dbsUrl, authenticationName, Instant.now());
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + dbsUrl + " user: " + authenticationName, ex);
         }
         return null;
@@ -301,7 +301,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 String authenticationName = authenticationNameAndBrowserUrl.substring(0, authenticationNameLength);
                 String browserUrl = authenticationNameAndBrowserUrl.substring(authenticationNameLength + 1);
                 return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
-            } catch (Exception ex) {
+            } catch (RuntimeException ex) {
                 // Choose log level that hides people messing with the URLs
                 LOGGER.log(Level.FINE, "Failure decoding", ex);
                 return null;
@@ -313,6 +313,6 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     private static HMACConfidentialKey KEY = new HMACConfidentialKey(ResourceDomainRootAction.class, "key");
 
     // Not @Restricted because the entire class is
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final for Groovy */ int VALID_FOR_MINUTES = SystemProperties.getInteger(ResourceDomainRootAction.class.getName() + ".validForMinutes", 30);
 }

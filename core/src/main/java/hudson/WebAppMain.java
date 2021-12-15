@@ -120,7 +120,8 @@ public class WebAppMain implements ServletContextListener {
         }
     };
 
-    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+    /**
+     * This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
      * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
      * Written for the requirements of JENKINS-50669
      * @return int This returns DEFAULT_RING_BUFFER_SIZE
@@ -188,12 +189,12 @@ public class WebAppMain implements ServletContextListener {
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
-            home.mkdirs();
+            try {
+                Files.createDirectories(home.toPath());
+            } catch (IOException | InvalidPathException e) {
+                throw (NoHomeDir)new NoHomeDir(home).initCause(e);
+            }
             LOGGER.info("Jenkins home directory: "+ home +" found at: " + describedHomeDir.description);
-
-            // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-            if (!home.exists())
-                throw new NoHomeDir(home);
 
             recordBootAttempt(home);
 
@@ -260,6 +261,7 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
+                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -323,7 +325,7 @@ public class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
@@ -413,7 +415,7 @@ public class WebAppMain implements ServletContextListener {
                 if (instance != null) {
                     instance.cleanUp();
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
             }
 

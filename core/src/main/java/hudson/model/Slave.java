@@ -164,7 +164,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated since 2.184
      */
     @Deprecated
-    public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
+    protected Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
     }
@@ -173,12 +173,12 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated since 2009-02-20.
      */
     @Deprecated
-    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
-    public Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    protected Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
@@ -189,7 +189,7 @@ public abstract class Slave extends Node implements Serializable {
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
     @Deprecated
-    public Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;

@@ -32,11 +32,11 @@ import org.springframework.core.NestedRuntimeException;
 @Deprecated
 public abstract class AcegiSecurityException extends NestedRuntimeException {
 
-    public AcegiSecurityException(String msg) {
+    protected AcegiSecurityException(String msg) {
         super(msg);
     }
     
-    public AcegiSecurityException(String msg, Throwable cause) {
+    protected AcegiSecurityException(String msg, Throwable cause) {
         super(msg, cause);
     }
 

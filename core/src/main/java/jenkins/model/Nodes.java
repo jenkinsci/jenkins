@@ -32,7 +32,6 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;
-import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;

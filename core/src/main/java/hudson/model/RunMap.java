@@ -29,6 +29,8 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -186,13 +188,17 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     public R put(R r) {
         // Defense against JENKINS-23152 and its ilk.
         File rootDir = r.getRootDir();
-        if (rootDir.isDirectory()) {
+        if (Files.isDirectory(rootDir.toPath())) {
             throw new IllegalStateException("JENKINS-23152: " + rootDir + " already existed; will not overwrite with " + r);
         }
         if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
             proposeNewNumber(r.getNumber());
         }
-        rootDir.mkdirs();
+        try {
+            Files.createDirectories(rootDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return super._put(r);
     }
 

@@ -51,7 +51,7 @@ public final class MemoryUsageMonitor extends PeriodicWork {
     /**
      * A memory group is conceptually a set of memory pools. 
      */
-    public final class MemoryGroup {
+    public static final class MemoryGroup {
         private final List<MemoryPoolMXBean> pools = new ArrayList<>();
 
         /**

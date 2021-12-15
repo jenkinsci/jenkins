@@ -29,6 +29,7 @@ import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
 import hudson.scm.PollingResult;
 import java.io.IOException;
+import jenkins.util.Listeners;
 
 /**
  * A hook for listening to polling activities in Jenkins.
@@ -67,33 +68,15 @@ public abstract class SCMPollListener implements ExtensionPoint {
     public void onPollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
 
 	public static void fireBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {
-        for (SCMPollListener l : all()) {
-            try {
-                l.onBeforePolling(project, listener);
-            } catch (Exception e) {
-                /* Make sure, that the listeners do not have any impact on the actual poll */
-            }
-        }
+        Listeners.notify(SCMPollListener.class, true, l -> l.onBeforePolling(project, listener));
     }
 
 	public static void firePollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result ) {
-		for( SCMPollListener l : all() ) {
-            try {
-                l.onPollingSuccess(project, listener, result);
-            } catch (Exception e) {
-                /* Make sure, that the listeners do not have any impact on the actual poll */
-            }
-		}
+        Listeners.notify(SCMPollListener.class, true, l -> l.onPollingSuccess(project, listener, result));
 	}
 
     public static void firePollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception ) {
-   		for( SCMPollListener l : all() ) {
-               try {
-                   l.onPollingFailed(project, listener, exception);
-               } catch (Exception e) {
-                   /* Make sure, that the listeners do not have any impact on the actual poll */
-               }
-   		}
+        Listeners.notify(SCMPollListener.class, true, l -> l.onPollingFailed(project, listener, exception));
    	}
 
 	/**

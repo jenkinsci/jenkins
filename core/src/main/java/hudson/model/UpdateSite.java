@@ -35,6 +35,7 @@ import static jenkins.util.MemoryReductionUtil.internInPlace;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -372,7 +373,11 @@ public class UpdateSite {
                 return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
+                try {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                } catch (IOException e2) {
+                    LOGGER.log(Level.SEVERE, "Failed to delete " + df, e2);
+                }
                 return null;
             }
         } else {
@@ -697,6 +702,10 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+        /**
+         * Size of the file in bytes, or {@code null} if unknown.
+         */
+        private final Long size;
 
         // non-private, non-final for test
         @Restricted(NoExternalUse.class)
@@ -722,6 +731,12 @@ public class UpdateSite {
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
             this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
             this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
+
+            Long fileSize = null;
+            if (o.has("size")) {
+                fileSize = o.getLong("size");
+            }
+            this.size = fileSize;
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -783,6 +798,17 @@ public class UpdateSite {
             return new Api(this);
         }
 
+        /**
+         * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
+         * @return size of the file if known, {@code null} otherwise.
+         *
+         * @since TODO
+         */
+        // @Exported -- TODO unsure
+        @Restricted(NoExternalUse.class)
+        public Long getFileSize() {
+            return size;
+        }
     }
 
     /**
@@ -1151,7 +1177,7 @@ public class UpdateSite {
             if (releaseTimestamp != null) {
                 try {
                     date = Date.from(Instant.parse(releaseTimestamp));
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
                 }
             }
@@ -1651,6 +1677,7 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

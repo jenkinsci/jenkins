@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.io.IOUtils;
@@ -246,12 +247,12 @@ public final class XmlFile {
         return file.exists();
     }
 
-    public void delete() {
-        file.delete();
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
     
-    public void mkdirs() {
-        file.getParentFile().mkdirs();
+    public void mkdirs() throws IOException {
+        Files.createDirectories(Util.fileToPath(file.getParentFile()));
     }
 
     @Override
@@ -263,8 +264,8 @@ public final class XmlFile {
      * Opens a {@link Reader} that loads XML.
      * This method uses {@link #sniffEncoding() the right encoding},
      * not just the system default encoding.
-     * @throws IOException Encoding issues
      * @return Reader for the file. should be close externally once read.
+     * @throws IOException Encoding issues
      */
     public Reader readRaw() throws IOException {
         try {
@@ -304,10 +305,10 @@ public final class XmlFile {
     /**
      * Parses the beginning of the file and determines the encoding.
      *
-     * @throws IOException
-     *      if failed to detect encoding.
      * @return
      *      always non-null.
+     * @throws IOException
+     *      if failed to detect encoding.
      */
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
@@ -320,7 +321,11 @@ public final class XmlFile {
         try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
-            JAXP.newSAXParser().parse(input,new DefaultHandler() {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            spf.setNamespaceAware(true);
+            spf.newSAXParser().parse(input, new DefaultHandler() {
                 private Locator loc;
                 @Override
                 public void setDocumentLocator(Locator locator) {
@@ -372,13 +377,7 @@ public final class XmlFile {
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
-    private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
-
     private static final HierarchicalStreamDriver DEFAULT_DRIVER = XStream2.getDefaultDriver();
 
     private static final XStream DEFAULT_XSTREAM = new XStream2(DEFAULT_DRIVER);
-
-    static {
-        JAXP.setNamespaceAware(true);
-    }
 }
