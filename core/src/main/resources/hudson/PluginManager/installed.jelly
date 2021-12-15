@@ -131,7 +131,7 @@ THE SOFTWARE.
                     <j:set var="issueTrackerReportUrl" value="${p.getIssueTrackerReportUrl()}"/>
                     <j:if test="${issueTrackerReportUrl != null}">
                       <div class="excerpt">
-                        <a href="${issueTrackerReportUrl}" rel="noopener nofollow noreferrer" target="_blank">
+                        <a href="${issueTrackerReportUrl}" rel="noopener nofollow noreferrer" target="_blank" class="jenkins-label jenkins-label--tertiary">
                           ${%reportIssue}
                         </a>
                       </div>
