@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.listeners.RunListener;
+import hudson.model.queue.QueueTaskFuture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class JobQueueTest {
         project.getBuildersList().add(new SleepBuilder(1000));
 
         //Kick the first Build
-        project.scheduleBuild2(1);
+        FreeStyleBuild b1 = project.scheduleBuild2(1).waitForStart();
         int count =0;
         //Now, Wait for run to be in POST_PRODUCTION stage
         while(!JobQueueTest.fireCompletedFlag && count<100) {
@@ -76,9 +77,10 @@ public class JobQueueTest {
             count++;
         }
 
+        QueueTaskFuture<FreeStyleBuild> b2 = null;
         if(JobQueueTest.fireCompletedFlag) {
         //Schedule the build for the project and this build should be in Queue since the state is POST_PRODUCTION
-            project.scheduleBuild2(0);
+            b2 = project.scheduleBuild2(0);
             assertTrue(project.isInQueue()); //That means it's pending or it's waiting or blocked
             j.jenkins.getQueue().maintain();
             while(j.jenkins.getQueue().getItem(project) instanceof WaitingItem) {
@@ -106,6 +108,9 @@ public class JobQueueTest {
         else {
             fail("The maximum attempts for checking if the job is in COMPLETED State have reached");
         }
-        Thread.sleep(1000); //Sleep till job completes.
+        j.assertBuildStatusSuccess(b1);
+        if (b2 != null) {
+            j.assertBuildStatusSuccess(b2);
+        }
     }
 }
