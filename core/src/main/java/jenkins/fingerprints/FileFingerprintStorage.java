@@ -147,7 +147,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     public static void save(Fingerprint fp, File file) throws IOException {
         if (fp.getPersistedFacets().isEmpty()) {
-            Files.createDirectories(Util.fileToPath(file.getParentFile()));
+            Util.createDirectories(Util.fileToPath(file.getParentFile()));
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try (PrintWriter w = new PrintWriter(new BufferedWriter(afw))) {
