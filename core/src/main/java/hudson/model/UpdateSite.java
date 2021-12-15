@@ -702,6 +702,10 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+        /**
+         * Size of the file in bytes, or {@code null} if unknown.
+         */
+        private final Long size;
 
         // non-private, non-final for test
         @Restricted(NoExternalUse.class)
@@ -727,6 +731,12 @@ public class UpdateSite {
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
             this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
             this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
+
+            Long fileSize = null;
+            if (o.has("size")) {
+                fileSize = o.getLong("size");
+            }
+            this.size = fileSize;
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -788,6 +798,17 @@ public class UpdateSite {
             return new Api(this);
         }
 
+        /**
+         * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
+         * @return size of the file if known, {@code null} otherwise.
+         *
+         * @since TODO
+         */
+        // @Exported -- TODO unsure
+        @Restricted(NoExternalUse.class)
+        public Long getFileSize() {
+            return size;
+        }
     }
 
     /**
