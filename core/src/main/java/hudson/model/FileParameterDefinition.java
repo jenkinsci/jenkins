@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import java.io.File;
@@ -50,11 +52,11 @@ public class FileParameterDefinition extends ParameterDefinition {
      * @since 2.281
      */
     @DataBoundConstructor
-    public FileParameterDefinition(String name) {
+    public FileParameterDefinition(@NonNull String name) {
         super(name);
     }
 
-    public FileParameterDefinition(String name, String description) {
+    public FileParameterDefinition(@NonNull String name, @CheckForNull String description) {
         this(name);
         setDescription(description);
     }
