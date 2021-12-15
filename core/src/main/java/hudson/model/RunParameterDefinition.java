@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.EnumConverter;
 import hudson.util.RunList;
@@ -67,7 +69,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @since 1.517
      */
     @DataBoundConstructor
-    public RunParameterDefinition(String name, String projectName, String description, RunParameterFilter filter) {
+    public RunParameterDefinition(@NonNull String name, String projectName, @CheckForNull String description, @CheckForNull RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = null;
@@ -78,12 +80,12 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @deprecated as of 1.517
      */ 
     @Deprecated
-    public RunParameterDefinition(String name, String projectName, String description) {
+    public RunParameterDefinition(@NonNull String name, String projectName, @CheckForNull String description) {
     	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
     	this(name, projectName, description, RunParameterFilter.ALL);
     }
 
-    private RunParameterDefinition(String name, String projectName, String runId, String description, RunParameterFilter filter) {
+    private RunParameterDefinition(@NonNull String name, String projectName, String runId, @CheckForNull String description, @CheckForNull RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = runId;

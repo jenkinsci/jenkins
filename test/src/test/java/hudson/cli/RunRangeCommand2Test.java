@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 import hudson.Functions;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.labels.LabelAtom;
@@ -83,7 +84,7 @@ public class RunRangeCommand2Test {
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10s"));
-        assertThat("Job wasn't scheduled properly", project.scheduleBuild(0), equalTo(true));
+        FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
 
         // Wait until classProject is started (at least 1s)
         while(!project.isBuilding()) {
@@ -101,6 +102,7 @@ public class RunRangeCommand2Test {
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
+        j.waitForCompletion(build);
     }
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {

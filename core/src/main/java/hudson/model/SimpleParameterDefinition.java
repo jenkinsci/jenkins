@@ -1,5 +1,7 @@
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommand;
 import java.io.IOException;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -11,7 +13,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public abstract class SimpleParameterDefinition extends ParameterDefinition {
-    protected SimpleParameterDefinition(String name) {
+    protected SimpleParameterDefinition(@NonNull String name) {
         super(name);
     }
 
@@ -19,7 +21,7 @@ public abstract class SimpleParameterDefinition extends ParameterDefinition {
      * @deprecated Prefer {@link #SimpleParameterDefinition(String)} with a {@link DataBoundConstructor} and allow {@link #setDescription} to be used as needed
      */
     @Deprecated
-    protected SimpleParameterDefinition(String name, String description) {
+    protected SimpleParameterDefinition(@NonNull String name, @CheckForNull String description) {
         super(name, description);
     }
 

@@ -507,9 +507,9 @@ public class JobTest {
         p.delete();
         long end = System.nanoTime();
         assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
-        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build3.isCancelled(), Matchers.is(true));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build2));
+        assertTrue(build3.isCancelled());
     }
 
     @Issue("SECURITY-1868")

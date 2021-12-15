@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
 import java.util.Objects;
@@ -48,14 +50,14 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     private Secret defaultValue;
 
     @Deprecated
-    public PasswordParameterDefinition(String name, String defaultValue, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
     // TODO consider switching @DataBoundConstructor to a PasswordParameterDefinition(String) overload
     @DataBoundConstructor
-    public PasswordParameterDefinition(String name, Secret defaultValueAsSecret, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull Secret defaultValueAsSecret, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = defaultValueAsSecret;
     }
@@ -90,6 +92,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         return new PasswordParameterValue(getName(), getDefaultValue(), getDescription());
     }
 
+    @NonNull
     public String getDefaultValue() {
         return Secret.toString(defaultValue);
     }
