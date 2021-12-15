@@ -1765,8 +1765,15 @@ public class Util {
                 break;
             }
         }
+
         if (parent == null) {
-            throw new IOException("Unable to determine whether parent directories of " + dir + " exist");
+            try {
+                return Files.createDirectory(dir, attrs);
+            } catch (FileAlreadyExistsException e) {
+                if (!Files.isDirectory(dir)) {
+                    throw e;
+                }
+            }
         }
 
         Path child = parent;
