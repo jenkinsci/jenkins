@@ -45,6 +45,8 @@ THE SOFTWARE.
     </l:side-panel>
 
     <l:main-panel>
+      <l:js src="jsbundles/section-to-tabs.js" />
+
       <div class="jenkins-tab-pane">
         <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
         <j:set var="uri" value="${it.licensesURL}"/>
@@ -157,8 +159,6 @@ THE SOFTWARE.
           </tbody>
         </table>
       </div>
-
-      <l:js src="jsbundles/section-to-tabs.js" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
