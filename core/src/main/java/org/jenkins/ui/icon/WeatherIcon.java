@@ -39,7 +39,7 @@ public class WeatherIcon extends Icon {
         PARTLY_CLOUDY("build-status/weather-sprite.svg#weather-partly-cloudy"),
         SUNNY("build-status/weather-sprite.svg#weather-sunny");
 
-        private String url;
+        private final String url;
 
         Status(String url) {
            this.url = url;
