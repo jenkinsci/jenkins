@@ -250,7 +250,7 @@ public class RetainVariablesLocalRuleTest {
         Shell shell = new Shell("env");
         p.getBuildersList().add(shell);
 
-        FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null));
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
         List<String> unfilteredLogOutput = build.getLog(200).stream().filter(s -> s.contains("=")).map(s -> s.substring(0, s.indexOf('='))).collect(Collectors.toList());
 
         p.getBuildersList().remove(shell);
@@ -264,7 +264,7 @@ public class RetainVariablesLocalRuleTest {
         filteredShell.setConfiguredLocalRules(Collections.singletonList(localRule));
         p.getBuildersList().add(filteredShell);
 
-        build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null));
+        build = j.buildAndAssertSuccess(p);
         List<String> filteredLogOutput = build.getLog(200).stream().filter(s -> s.contains("=")).map(s -> s.substring(0, s.indexOf('='))).collect(Collectors.toList());
 
         assertTrue(filteredLogOutput.size() < unfilteredLogOutput.size() - 10); // 10 is a value slightly larger than the number of characteristic env vars (7)

@@ -156,8 +156,10 @@ public class FreeStyleProjectTest {
                     if (j <= 16) {
                         expectedFails++;
                     }
+                    this.j.buildAndAssertStatus(Result.FAILURE, p);
+                } else {
+                    this.j.buildAndAssertSuccess(p);
                 }
-                p.scheduleBuild2(0).get();
             }
             HealthReport health = p.getBuildHealth();
 

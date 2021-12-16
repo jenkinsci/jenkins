@@ -63,7 +63,7 @@ public class BuildTimeTrendTest {
     @Test
     public void withAbstractJob_OnBuiltInNode() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
@@ -80,7 +80,7 @@ public class BuildTimeTrendTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
@@ -99,10 +99,10 @@ public class BuildTimeTrendTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedNode(j.jenkins);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
         
         p.setAssignedNode(agent);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 

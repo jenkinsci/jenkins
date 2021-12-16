@@ -46,7 +46,7 @@ public class ParametersTest {
     @Test
     public void parameterTypes() throws Exception {
         FreeStyleProject otherProject = j.createFreeStyleProject();
-        otherProject.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(otherProject);
 
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
@@ -145,7 +145,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -162,7 +162,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -182,7 +182,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);

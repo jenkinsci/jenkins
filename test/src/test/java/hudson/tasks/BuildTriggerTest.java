@@ -103,14 +103,12 @@ public class BuildTriggerTest {
         j.jenkins.rebuildDependencyGraph();
 
         // First build should not trigger downstream job
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertStatus(dontTriggerResult, p);
         assertNoDownstreamBuild(dp, b);
-        j.assertBuildStatus(dontTriggerResult, b);
 
         // Next build should trigger downstream job
         p.getBuildersList().replace(new MockBuilder(triggerResult));
-        b = p.scheduleBuild2(0).get();
-        j.assertBuildStatus(triggerResult, b);
+        b = j.buildAndAssertStatus(triggerResult, p);
         j.assertBuildStatusSuccess(j.waitForCompletion(assertDownstreamBuild(dp, b)));
     }
 
