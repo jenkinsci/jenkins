@@ -85,7 +85,7 @@ public class PluginManagerTest {
                 () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes())),
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
-        assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
+        assertThat(ex.getCause().getMessage(), containsString("DOCTYPE is disallowed"));
     }
     
     @Test

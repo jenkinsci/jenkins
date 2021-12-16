@@ -390,7 +390,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             Map<String,String> r = new HashMap<>(record);
             r.putAll(moreRecords);
             record = compact(r);
-            ref = null;
+            synchronized (this) {
+                ref = null;
+            }
         }
 
         @Override
