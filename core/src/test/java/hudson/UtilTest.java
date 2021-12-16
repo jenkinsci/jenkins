@@ -662,7 +662,11 @@ public class UtilTest {
         assertEquals(a.resolve("new4"), Util.createDirectories(b.resolve("new4")).toRealPath());
         assertEquals(a1.resolve("new5"), Util.createDirectories(b.resolve("a1").resolve("new5")).toRealPath());
         assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
+    }
 
+    @Test
+    @Issue("JENKINS-67372")
+    public void createDirectoriesInRoot() throws Exception {
         Path newDirInRoot = Paths.get("/new-dir-in-root");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
         try {
