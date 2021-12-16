@@ -631,6 +631,37 @@ public class UtilTest {
     }
 
     @Test
+    @Issue("JENKINS-67372")
+    public void createDirectories() throws Exception {
+        assumeFalse(Functions.isWindows());
+        //  root
+        //      /a
+        //          /a1
+        //          /a2 => symlink to a1
+        //      /b => symlink to a
+        Path root = tmp.getRoot().toPath();
+        Path a = root.resolve("a");
+        Path a1 = a.resolve("a1");
+        Files.createDirectories(a1);
+
+        Path a2 = a.resolve("a2");
+        Util.createSymlink(a2.getParent().toFile(), a1.getFileName().toString(), a2.getFileName().toString(), TaskListener.NULL);
+
+        Path b = root.resolve("b");
+        Util.createSymlink(b.getParent().toFile(), a.getFileName().toString(), b.getFileName().toString(), TaskListener.NULL);
+
+        assertTrue(Files.isSymbolicLink(a2));
+        assertTrue(Files.isSymbolicLink(b));
+
+        assertEquals(a.resolve("new1"), Util.createDirectories(a.resolve("new1")).toRealPath());
+        assertEquals(a1.resolve("new2"), Util.createDirectories(a1.resolve("new2")).toRealPath());
+        assertEquals(a1.resolve("new3"), Util.createDirectories(a2.resolve("new3")).toRealPath());
+        assertEquals(a.resolve("new4"), Util.createDirectories(b.resolve("new4")).toRealPath());
+        assertEquals(a1.resolve("new5"), Util.createDirectories(b.resolve("a1").resolve("new5")).toRealPath());
+        assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
+    }
+
+    @Test
     public void ifOverriddenSuccess() {
         assertTrue(Util.ifOverridden(() -> true, BaseClass.class, DerivedClassSuccess.class, "method"));
     }
