@@ -1739,7 +1739,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
             @Override
             @NonNull
-            public List<String> getArguments() {
+            public synchronized List<String> getArguments() {
                 if(arguments !=null)
                     return arguments;
                 parse();

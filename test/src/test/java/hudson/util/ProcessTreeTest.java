@@ -56,12 +56,11 @@ public class ProcessTreeTest {
         project.getBuildersList().add(new Maven("install", "maven"));
 
         // build the project, wait until tests are running, then cancel.
-        project.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild b = project.scheduleBuild2(0).waitForStart();
 
-        FreeStyleBuild b = project.getLastBuild();
         b.doStop();
 
-        Thread.sleep(1000);
+        j.waitForCompletion(b);
 
         // will fail (at least on windows) if test process is still running
         b.getWorkspace().deleteRecursive();

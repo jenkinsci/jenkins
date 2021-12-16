@@ -1261,8 +1261,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // particularly noticeable during 2.0 install when downloading
                 // many plugins
                 con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
-                
-                int total = con.getContentLength();
+
+                long total;
+                final long sizeFromMetadata = job.getContentLength();
+                if (sizeFromMetadata == -1) {
+                    // Update site does not advertise a file size, so fall back to download file size, if any
+                    total = con.getContentLength();
+                } else {
+                    total = sizeFromMetadata;
+                }
                 byte[] buf = new byte[8192];
                 int len;
 
@@ -1282,7 +1289,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                      CountingInputStream cin = new CountingInputStream(in)) {
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf,0,len);
-                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
+                        final int count = cin.getCount();
+                        job.status = job.new Installing(total == -1 ? -1 : ((int) (count * 100 / total)));
+                        if (total != -1 && total < count) {
+                            throw new IOException("Received more data than expected. Expected " + total + " bytes but got " + count + " bytes (so far), aborting download.");
+                        }
                     }
                 } catch (IOException | InvalidPathException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
@@ -1890,6 +1901,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
+         * Indicate the expected size of the download as provided in update site
+         * metadata.
+         *
+         * @return the expected size, or -1 if unknown.
+         * @since TODO
+         */
+        public long getContentLength() {
+            return -1;
+        }
+
+        /**
          * Indicates the status or the result of a plugin installation.
          * <p>
          * Instances of this class is immutable.
@@ -2155,6 +2177,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public String getDisplayName() {
             return plugin.getDisplayName();
+        }
+
+        @Override
+        public long getContentLength() {
+            final Long size = plugin.getFileSize();
+            return size == null ? -1 : size;
         }
 
         @Override

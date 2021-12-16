@@ -33,6 +33,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -961,7 +962,8 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Gets the sorted list of job names where this jar is used.
      */
-    public @NonNull List<String> getJobs() {
+    @NonNull
+    public synchronized List<String> getJobs() {
         List<String> r = new ArrayList<>(usages.keySet());
         Collections.sort(r);
         return r;
@@ -1024,6 +1026,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     // JENKINS-49588
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "nothing should be competing with XStream during deserialization")
     protected Object readResolve() {
         if (usages == null) {
             usages = new Hashtable<>();

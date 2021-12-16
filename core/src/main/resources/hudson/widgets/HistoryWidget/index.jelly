@@ -77,7 +77,9 @@ THE SOFTWARE.
         <td>
           <div class="jenkins-search">
             <input type="search" placeholder="${%find}" class="jenkins-search__input" />
-            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+            <div class="jenkins-search__icon">
+              <l:ionicon name="search-outline" />
+            </div>
           </div>
           <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() ? '' : 'display: none;'}">
             ${%No builds}

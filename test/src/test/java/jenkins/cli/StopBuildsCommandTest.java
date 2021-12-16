@@ -30,6 +30,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import hudson.Functions;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.tasks.BatchFile;
@@ -129,7 +130,7 @@ public class StopBuildsCommandTest {
                 grant(Jenkins.READ).everywhere().toEveryone().
                 grant(Item.READ).onItems(project).toEveryone().
                 grant(Item.CANCEL).onItems(project).toAuthenticated());
-        project.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
 
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
@@ -137,6 +138,9 @@ public class StopBuildsCommandTest {
                 equalTo("Exception occurred while trying to stop build '#1' for job 'jobName'. " +
                         "Exception class: AccessDeniedException3, message: anonymous is missing the Job/Cancel permission" + LN +
                         "No builds stopped" + LN));
+
+        build.doStop();
+        j.waitForCompletion(build);
     }
 
     @Test
@@ -152,8 +156,8 @@ public class StopBuildsCommandTest {
                 grant(Item.CANCEL).onItems(restrictedProject).toAuthenticated().
                 grant(Item.CANCEL).onItems(project).toEveryone());
 
-        restrictedProject.scheduleBuild2(0).waitForStart();
-        project.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild b1 = restrictedProject.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild b2 = project.scheduleBuild2(0).waitForStart();
 
         final String stdout = runWith(asList(TEST_JOB_NAME, TEST_JOB_NAME_2)).stdout();
 
@@ -161,6 +165,11 @@ public class StopBuildsCommandTest {
                 equalTo("Exception occurred while trying to stop build '#1' for job 'jobName'. " +
                         "Exception class: AccessDeniedException3, message: anonymous is missing the Job/Cancel permission" + LN +
                         "Build '#1' stopped for job 'jobName2'" + LN));
+
+        b1.doStop();
+        b2.doStop();
+        j.waitForCompletion(b1);
+        j.waitForCompletion(b2);
     }
 
     private CLICommandInvoker.Result runWith(final List<String> jobNames) throws Exception {
