@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
 import static org.junit.Assume.assumeTrue;
 
 import hudson.model.TaskListener;
@@ -43,8 +44,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -659,6 +662,17 @@ public class UtilTest {
         assertEquals(a.resolve("new4"), Util.createDirectories(b.resolve("new4")).toRealPath());
         assertEquals(a1.resolve("new5"), Util.createDirectories(b.resolve("a1").resolve("new5")).toRealPath());
         assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
+
+        Path newDirInRoot = Paths.get("/new-dir-in-root");
+        Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
+        try {
+            assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
+            Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
+            assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
+        } catch (AccessDeniedException e) {
+            // Not running as root
+            assumeNoException(e);
+        }
     }
 
     @Test
