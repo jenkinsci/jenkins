@@ -53,8 +53,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -499,7 +499,7 @@ public class JobTest {
         p.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("dummy", "0")));
         p.setConcurrentBuild(true);
-        p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));  // we want the uninterrupted job to run for long time
         FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
         FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
         QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
@@ -550,7 +550,7 @@ public class JobTest {
         private String virtualName;
 
         NameChangingNode(JenkinsRule j, String name) throws Exception {
-            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
+            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.emptyList());
         }
 
         public void setVirtualName(String virtualName) {
