@@ -692,7 +692,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      itself run successfully)
          *      Return a non-null value to abort the build right there with the specified result code.
          */
-        protected abstract Result doRun(BuildListener listener) throws Exception, RunnerAbortedException;
+        protected abstract Result doRun(BuildListener listener) throws Exception;
 
         /**
          * @see #post(BuildListener)
