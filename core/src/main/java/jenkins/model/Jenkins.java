@@ -4905,11 +4905,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
     
     
+    public DependencyGraph createNewDependencyGraph() {
+        return new DependencyGraph();
+    }
+    
     /**
      * Rebuilds the dependency map.
      */
     public void rebuildDependencyGraph() {
-        DependencyGraph graph = new DependencyGraph();
+        DependencyGraph graph = createNewDependencyGraph();
         graph.build();
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
@@ -5699,4 +5703,5 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             this.reason = reason;
         }
     }
+
 }
