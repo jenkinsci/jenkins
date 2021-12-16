@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.junit.Rule;
@@ -31,7 +32,7 @@ import org.jvnet.hudson.test.SleepBuilder;
 public class RunMapTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
-    @Rule public LoggerRule logger = new LoggerRule();
+    @Rule public LoggerRule logs = new LoggerRule();
 
     /**
      * Makes sure that reloading the project while a build is in progress won't clobber that in-progress build.
@@ -66,7 +67,7 @@ public class RunMapTest {
 
     @Issue("JENKINS-27530")
     @Test public void reloadWhileBuildIsInQueue() throws Exception {
-        //logs.record(Queue.class, Level.FINE);
+        logs.record(Queue.class, Level.FINE);
         FreeStyleProject p = r.createFreeStyleProject("p");
         p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         r.jenkins.setNumExecutors(1);
