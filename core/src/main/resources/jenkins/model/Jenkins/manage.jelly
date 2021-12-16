@@ -27,14 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+  <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
     <l:header>
        <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
     </l:header>
 
-    <j:if test="${taskTags==null}">
-      <st:include page="sidepanel.jelly" />
-    </j:if>
+    <l:breadcrumb title="${%Manage Jenkins}" href="${rootURL}/manage" />
 
     <l:main-panel>
       <div class="jenkins-app-bar">

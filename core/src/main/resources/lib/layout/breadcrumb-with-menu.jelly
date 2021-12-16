@@ -24,7 +24,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Used inside &lt;l:layout> to render additional breadcrumb items.
+    Used inside &lt;l:layout> to render additional breadcrumb items that should have model link dropdowns.
 
     <st:attribute name="href">
       URL that the breadcrumb item links to. Can be omitted.
@@ -50,13 +50,10 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
   <j:if test="${mode=='breadcrumbs' and breadcrumbMode==position}">
-    <li id="${attrs.id}" class="item">
-      <a href="${attrs.href}">
+    <li id="${attrs.id}" class="${attrs.position} item">
+      <a href="${attrs.href}" class="model-link inside">
         ${attrs.title}
       </a>
     </li>
-    <j:if test="${breadcrumbMode=='parent'}">
-      <li class="separator"></li>
-    </j:if>
   </j:if>
 </j:jelly>

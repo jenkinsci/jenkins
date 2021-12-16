@@ -36,7 +36,8 @@ THE SOFTWARE.
       If true, will hide all rows by default, and only the filter field will show them.
     </st:attribute>
   </st:documentation>
-  <l:layout title="${%Update Center} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Update Center} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}" type="one-column">
+    <l:breadcrumb href="${rootURL}/manage" title="${%Manage Jenkins}" position="parent" />
     <l:app-bar title="${%Plugin Manager}">
       <div class="jenkins-search">
         <input

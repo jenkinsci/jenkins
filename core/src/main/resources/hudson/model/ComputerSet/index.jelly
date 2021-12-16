@@ -29,6 +29,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
+  <l:hasAdministerOrManage>
+    <l:breadcrumb title="${%Manage Jenkins}" href="${rootURL}/manage" position="parent"/>
+  </l:hasAdministerOrManage>
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>

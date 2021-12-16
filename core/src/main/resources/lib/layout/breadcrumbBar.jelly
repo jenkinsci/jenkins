@@ -43,6 +43,12 @@ THE SOFTWARE.
             <ul id="breadcrumbs">
               <j:forEach var="anc" items="${request.ancestors}">
                 <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+                  <j:if test="${it == anc.object and it != app}">
+                    <!-- render additional breadcrumb items with 'parent' position -->
+                    <j:set var="breadcrumbMode" value="parent"/>
+                    <d:invokeBody />
+                  </j:if>
+
                   <li class="item">
                     <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
                       <!-- Workaround to set desired name to first breadcrumb (instead of Jenkins) -->
@@ -71,6 +77,12 @@ THE SOFTWARE.
               </j:forEach>
 
               <!-- render additional breadcrumb items -->
+              <j:if test="${it == anc.object and it == app}">
+                <!-- render additional breadcrumb items with 'parent' position after root link and before current non-model breadcrumb -->
+                <j:set var="breadcrumbMode" value="parent"/>
+                <d:invokeBody />
+              </j:if>
+              <j:set var="breadcrumbMode" value="child"/>
               <d:invokeBody />
             </ul>
 
