@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
+/* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
 package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;
@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *   <li>Validate {@code true} or {@code false}:</li>
  *   <li>
  *     <ul>
- *       <li>{@code boolean valid = validator.isValidRootUrl(value);}</li>
+ *       <li>{@code boolean valid = validator.isValid(value);}</li>
  *     </ul>
  *   </li>
  *   <li>Validate returning an aggregated String of the matched groups:</li>
@@ -67,7 +67,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * to the {@link Pattern} API are safe to use in a multi-threaded environment.
  * </p>
  *
- * @version $Revision: 1739356 $
+ * @version $Revision$
  * @since Validator 1.4
  */
 //[PATCH]
