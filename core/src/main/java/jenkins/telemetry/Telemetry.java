@@ -161,6 +161,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * @return a map in a format suitable for a value of {@link #createContent}
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     protected final Map<String, String> buildComponentInformation() {
         Map<String, String> components = new TreeMap<>();
         VersionNumber core = Jenkins.getVersion();
