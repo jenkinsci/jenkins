@@ -184,7 +184,7 @@ public class DirectoryBrowserSupportTest {
             }
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
-        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
+        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asNormalizedText();
         assertTrue(text, text.contains("X.java"));
         assertTrue(text, text.contains("XTest.java"));
         assertFalse(text, text.contains("pom.xml"));

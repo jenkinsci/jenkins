@@ -123,7 +123,7 @@ public class ParametersTest {
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
         HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
-        assertEquals("Choice <2>", opt.asText());
+        assertEquals("Choice <2>", opt.asNormalizedText());
         opt.setSelected(true);
 
         j.submit(form);

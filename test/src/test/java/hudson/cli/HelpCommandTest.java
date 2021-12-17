@@ -73,13 +73,13 @@ public class HelpCommandTest {
     @Test public void getHelpUsingJenkinsUI() throws Exception {
 
         WebClient wc = j.createWebClient();
-        String generalHelp = wc.goTo("cli").asText();
+        String generalHelp = wc.goTo("cli").asNormalizedText();
 
         assertContainsOverviewOfClassCommand(generalHelp);
         assertContainsOverviewOfMethodCommand(generalHelp);
 
-        assertContainsUsageOfClassCommand(wc.goTo("cli/command/class-command").asText());
-        assertContainsUsageOfMethodCommand(wc.goTo("cli/command/offline-node").asText());
+        assertContainsUsageOfClassCommand(wc.goTo("cli/command/class-command").asNormalizedText());
+        assertContainsUsageOfMethodCommand(wc.goTo("cli/command/offline-node").asNormalizedText());
     }
 
     private void assertContainsOverviewOfClassCommand(String text) {
