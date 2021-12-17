@@ -1411,6 +1411,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return deprecations;
     }
 
+    @Restricted(NoExternalUse.class)
+    public String getIssueTrackerReportUrl() {
+        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
+        if (updateCenter.isSiteDataReady()) {
+            for (UpdateSite site : updateCenter.getSites()) {
+                final UpdateSite.Plugin sitePlugin = site.getPlugin(this.shortName);
+                if (sitePlugin != null && sitePlugin.issueTrackers != null) {
+                    for (UpdateSite.IssueTracker issueTracker : sitePlugin.issueTrackers) {
+                        if (issueTracker.reportUrl != null) {
+                            return issueTracker.reportUrl;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
     /**
