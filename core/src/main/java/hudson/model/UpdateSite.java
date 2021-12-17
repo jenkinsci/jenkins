@@ -702,6 +702,10 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+        /**
+         * Size of the file in bytes, or {@code null} if unknown.
+         */
+        private final Long size;
 
         // non-private, non-final for test
         @Restricted(NoExternalUse.class)
@@ -727,6 +731,12 @@ public class UpdateSite {
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
             this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
             this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
+
+            Long fileSize = null;
+            if (o.has("size")) {
+                fileSize = o.getLong("size");
+            }
+            this.size = fileSize;
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -788,6 +798,17 @@ public class UpdateSite {
             return new Api(this);
         }
 
+        /**
+         * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
+         * @return size of the file if known, {@code null} otherwise.
+         *
+         * @since TODO
+         */
+        // @Exported -- TODO unsure
+        @Restricted(NoExternalUse.class)
+        public Long getFileSize() {
+            return size;
+        }
     }
 
     /**
@@ -1057,6 +1078,42 @@ public class UpdateSite {
     static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get((JSONObject) x, "name") != null;
     static final Predicate<Object> IS_NOT_OPTIONAL = x -> "false".equals(get((JSONObject) x, "optional"));
 
+    /**
+     * Metadata for one issue tracker provided by the update site.
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class IssueTracker {
+        /**
+         * A string specifying the type of issue tracker.
+         */
+        public final String type;
+        /**
+         * Issue tracker URL that can be used to view previously reported issues.
+         */
+        public final String viewUrl;
+        /**
+         * Issue tracker URL that can be used to report a new issue.
+         */
+        @CheckForNull
+        public final String reportUrl;
+
+        public IssueTracker(@NonNull String type, @NonNull String viewUrl, @CheckForNull String reportUrl) {
+            this.type = type;
+            this.viewUrl = viewUrl;
+            this.reportUrl = reportUrl;
+        }
+
+        private static IssueTracker createFromJSONObject(Object o) {
+            if (o instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) o;
+                if (jsonObject.has("type") && jsonObject.has("viewUrl") && jsonObject.has("reportUrl")) {
+                    return new IssueTracker(jsonObject.getString("type"), jsonObject.getString("viewUrl"), jsonObject.getString("reportUrl"));
+                }
+            }
+            return null;
+        }
+    }
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -1141,6 +1198,15 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public String latest;
 
+        /**
+         * Issue trackers associated with this plugin.
+         * This list is sorted by preference in descending order, meaning a UI
+         * supporting only one issue tracker should reference the first one
+         * supporting the desired behavior (like having a {@code reportUrl}).
+         */
+        @Restricted(NoExternalUse.class)
+        public IssueTracker[] issueTrackers;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1172,6 +1238,8 @@ public class UpdateSite {
             this.popularity = popularity;
             this.releaseTimestamp = date;
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            this.issueTrackers = o.has("issueTrackers") ? o.getJSONArray("issueTrackers").stream().map(IssueTracker::createFromJSONObject).filter(Objects::nonNull).toArray(IssueTracker[]::new) : null;
+
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count();
             int optionalDepCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();

@@ -26,6 +26,7 @@ package jenkins.security.apitoken;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
@@ -161,6 +162,7 @@ public class ApiTokenStats implements Saveable {
     }
     
     
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "access is in fact synchronized")
     private synchronized SingleTokenStats updateUsageForIdIfNeeded(@NonNull String tokenUuid) {
     	SingleTokenStats stats = findById(tokenUuid)
                 .orElseGet(() -> {

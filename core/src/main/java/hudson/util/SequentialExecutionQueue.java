@@ -107,7 +107,9 @@ public class SequentialExecutionQueue implements Executor {
         // Caller must have a lock
         private void submit() {
             submissionTime = System.currentTimeMillis();
-            executors.submit(this);
+            synchronized (SequentialExecutionQueue.this) {
+                executors.submit(this);
+            }
         }
 
         @Override

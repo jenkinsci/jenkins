@@ -93,7 +93,9 @@ THE SOFTWARE.
               <j:set var="descriptor" value="${it.descriptor}" />
               <div class="jenkins-search">
                 <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input"  name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
-                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" class="jenkins-search__icon" />
+                <div class="jenkins-search__icon">
+                  <l:ionicon name="search-outline" />
+                </div>
               </div>
             </div>
           </div>

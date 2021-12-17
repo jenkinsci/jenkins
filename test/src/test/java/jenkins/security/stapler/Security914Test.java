@@ -25,18 +25,19 @@ package jenkins.security.stapler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
 @Issue("SECURITY-914")
 public class Security914Test {
@@ -45,12 +46,11 @@ public class Security914Test {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
+    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
+        assumeTrue(Functions.isWindows());
         
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
+        assertNotNull(j.getPluginManager().getPlugin("credentials"));
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         
         JenkinsRule.WebClient wc = j.createWebClient()
@@ -67,12 +67,11 @@ public class Security914Test {
     }
     
     @Test
+    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
-        
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
+        assumeTrue(Functions.isWindows());
+
+        assertNotNull(j.getPluginManager().getPlugin("credentials"));
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         
         JenkinsRule.WebClient wc = j.createWebClient()

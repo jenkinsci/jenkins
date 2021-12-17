@@ -148,10 +148,11 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void notRestartAfterDisablePluginWithoutArgumentRestart() {
+    public void notRestartAfterDisablePluginWithoutArgumentRestart() throws Exception {
         assertThat(disablePluginsCLiCommand("dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsNotInQuietMode();
+        j.waitUntilNoActivity();
     }
 
     /**
@@ -171,7 +172,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void disableAlreadyDisabledPluginNotRestart() throws IOException {
+    public void disableAlreadyDisabledPluginNotRestart() throws Exception {
         // Disable before the command call
         disablePlugin("dependee");
 
@@ -179,6 +180,7 @@ public class DisablePluginCommandTest {
         assertThat(disablePluginsCLiCommand("-restart", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsNotInQuietMode();
+        j.waitUntilNoActivity();
     }
 
     /**
