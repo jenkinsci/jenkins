@@ -10,7 +10,7 @@ This page provides information about contributing code to the Jenkins core codeb
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
   * Java Development Kit (JDK) 11 or 8.
-    In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.net/), but you can use other JDKs as well.
+    In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
   * Apache Maven 3.8.1 or above. You can [download Maven here].
   * Any IDE which supports importing Maven projects.
     In the Jenkins project we usually use the most recent Maven release.
