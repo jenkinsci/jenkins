@@ -77,7 +77,7 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BadAction2());
         b.save();
         r.jenkins.getQueue().clearLeftItems();

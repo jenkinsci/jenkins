@@ -105,8 +105,8 @@ public class FingerprinterTest {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -144,9 +144,9 @@ public class FingerprinterTest {
         FreeStyleProject upstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
 
-        j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(upstream2);
+        j.buildAndAssertSuccess(downstream);
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -167,9 +167,9 @@ public class FingerprinterTest {
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
 
-        j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        j.buildAndAssertSuccess(downstream2);
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -190,8 +190,8 @@ public class FingerprinterTest {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        FreeStyleBuild upstreamBuild = j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        FreeStyleBuild upstreamBuild = j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
 
         upstreamBuild.delete();
 
@@ -207,8 +207,8 @@ public class FingerprinterTest {
     @Test public void circularDependency() throws Exception {
         FreeStyleProject p = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
         
         Jenkins.get().rebuildDependencyGraph();
 
@@ -247,8 +247,8 @@ public class FingerprinterTest {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        FreeStyleBuild upstreamBuild = j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild = j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        FreeStyleBuild upstreamBuild = j.buildAndAssertSuccess(upstream);
+        FreeStyleBuild downstreamBuild = j.buildAndAssertSuccess(downstream);
 
         String oldUpstreamName = upstream.getName();
         String oldDownstreamName = downstream.getName();
@@ -314,7 +314,7 @@ public class FingerprinterTest {
         } else {
             assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
         }
-        j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        j.buildAndAssertSuccess(job);
         job._getRuns().purgeCache(); // force build records to be reloaded
         build = job.getBuildByNumber(3);
         assertNotNull(build);
@@ -339,9 +339,9 @@ public class FingerprinterTest {
         FreeStyleProject p2 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles2);
         FreeStyleProject p3 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        j.assertBuildStatusSuccess(p1.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p1);
+        j.buildAndAssertSuccess(p2);
+        j.buildAndAssertSuccess(p3);
 
         Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+System.lineSeparator()));
         assertNotNull(f);
@@ -369,7 +369,7 @@ public class FingerprinterTest {
         p2.getBuildersList().clear();
         p2.getPublishersList().clear();
         addFingerprinterToProject(p2,singleContents2,singleFiles2);
-        j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p2);
 
         // another garbage collection that gets rid of p2 records from the fingerprint
         p2.getBuildByNumber(1).delete();

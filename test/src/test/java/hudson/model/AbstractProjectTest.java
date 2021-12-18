@@ -114,7 +114,7 @@ public class AbstractProjectTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertSuccess(project);
 
         assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
@@ -132,7 +132,7 @@ public class AbstractProjectTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertSuccess(project);
 
         assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
@@ -283,7 +283,7 @@ public class AbstractProjectTest {
     @Issue("JENKINS-18678")
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
         assertEquals(1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();

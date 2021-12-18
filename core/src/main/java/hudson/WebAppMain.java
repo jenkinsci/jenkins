@@ -191,7 +191,7 @@ public class WebAppMain implements ServletContextListener {
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             try {
-                Files.createDirectories(home.toPath());
+                Util.createDirectories(home.toPath());
             } catch (IOException | InvalidPathException e) {
                 throw (NoHomeDir)new NoHomeDir(home).initCause(e);
             }

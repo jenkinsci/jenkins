@@ -116,7 +116,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new BatchFile("echo > abc..def"));
         else
             p.getBuildersList().add(new Shell("touch abc..def"));
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
         j.createWebClient().goTo("job/"+p.getName()+"/ws/abc..def","application/octet-stream");
@@ -144,7 +144,7 @@ public class DirectoryBrowserSupportTest {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
         j.createWebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
@@ -161,7 +161,7 @@ public class DirectoryBrowserSupportTest {
                 return true;
             }
         }); // Kanji
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
         j.createWebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
@@ -183,8 +183,8 @@ public class DirectoryBrowserSupportTest {
                 return true;
             }
         });
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
-        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
+        j.buildAndAssertSuccess(p);
+        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asNormalizedText();
         assertTrue(text, text.contains("X.java"));
         assertTrue(text, text.contains("XTest.java"));
         assertFalse(text, text.contains("pom.xml"));
@@ -197,7 +197,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("artifact.out", "Hello world!"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         HtmlPage page = j.createWebClient().goTo("job/"+p.getName()+"/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByHref("./*zip*/archive.zip").click();
@@ -223,7 +223,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("artifact.out", content));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page downloadPage = page.getAnchorByHref("artifact.out").click();
@@ -246,7 +246,7 @@ public class DirectoryBrowserSupportTest {
             // add randomness just to prevent any potential caching issue
             p.setScm(new SingleFileSCM("artifact.out", "Hello world! " + Math.random()));
             p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-            assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+            j.buildAndAssertSuccess(p);
 
             HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
             for (int clicks = 0; clicks < numOfClicks; clicks++) {
@@ -300,7 +300,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("test.html", "<html><body><h1>Hello world!</h1></body></html>"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
@@ -569,7 +569,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -714,7 +714,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -777,7 +777,7 @@ public class DirectoryBrowserSupportTest {
         String script = loadContentFromResource("outsideWorkspaceStructureWithJunctions.bat");
         p.getBuildersList().add(new BatchFile(script));
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -908,7 +908,7 @@ public class DirectoryBrowserSupportTest {
     public void directSymlink_forTestingZip() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
         FilePath ws = p.getSomeWorkspace();
 
         /*
@@ -968,7 +968,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         File jobWorkspaceFolder = new File(new File(j.jenkins.getRootDir(), "workspace"), p.name);
         File folderInsideWorkspace = new File(jobWorkspaceFolder, "asset");
@@ -995,7 +995,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);

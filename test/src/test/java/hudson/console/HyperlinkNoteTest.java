@@ -86,7 +86,7 @@ public class HyperlinkNoteTest {
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
         HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
-        assertThat(rsp.querySelector(".console-output").asText(), containsString("Triggering a new build of"));
+        assertThat(rsp.querySelector(".console-output").asNormalizedText(), containsString("Triggering a new build of"));
         assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }
 

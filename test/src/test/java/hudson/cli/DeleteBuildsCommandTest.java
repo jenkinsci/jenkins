@@ -60,7 +60,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldFailWithoutJobReadPermission() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -71,7 +71,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldFailWithoutRunDeletePermission() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
@@ -91,7 +91,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldFailIfJobNameIsEmpty() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
@@ -103,7 +103,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldSuccess() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
@@ -115,7 +115,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldSuccessIfBuildDoesNotExist() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
@@ -126,7 +126,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldSuccessIfBuildNumberZeroSpecified() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command

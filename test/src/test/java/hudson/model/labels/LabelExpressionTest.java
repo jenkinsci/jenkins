@@ -100,7 +100,7 @@ public class LabelExpressionTest {
         Thread.sleep(1000); // time window to ensure queue has tried to assign f2 build
 
         // p3 is tied to 'win', so even though p1 is busy, this should still go ahead and complete
-        FreeStyleBuild b3 = j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
+        FreeStyleBuild b3 = j.buildAndAssertSuccess(p3);
         assertSame(w64,b3.getBuiltOn());
 
         seq.phase(3);   // once we confirm that p3 build is over, we let p1 proceed
@@ -125,15 +125,15 @@ public class LabelExpressionTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         assertSame(j.jenkins,b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("win"));
-        b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        b = j.buildAndAssertSuccess(p);
         assertSame(s,b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
-        b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        b = j.buildAndAssertSuccess(p);
         assertSame(j.jenkins,b.getBuiltOn());
     }
 
