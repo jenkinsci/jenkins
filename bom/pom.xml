@@ -284,7 +284,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
