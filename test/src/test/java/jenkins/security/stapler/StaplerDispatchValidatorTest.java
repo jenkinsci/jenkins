@@ -59,8 +59,8 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"annotated/explicitRoot", "extended/explicitRoot", "extended/whitelistedRoot"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-            assertEquals("Explicit Fragment", root.getElementById("explicit-frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
+            assertEquals("Explicit Fragment", root.getElementById("explicit-frag").asNormalizedText());
         }
     }
 
@@ -87,7 +87,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"annotated", "groovy", "jelly"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -96,7 +96,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/include", "jelly/include"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -105,7 +105,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/redirect", "jelly/redirect"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -114,7 +114,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/compress", "jelly/compress"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 

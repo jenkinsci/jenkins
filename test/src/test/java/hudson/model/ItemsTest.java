@@ -166,7 +166,7 @@ public class ItemsTest {
         MockFolder foo = r.createFolder("foo");
         MockFolder bar = r.createFolder("bar");
         FreeStyleProject test = foo.createProject(FreeStyleProject.class, "test");
-        test.scheduleBuild2(0).get();
+        r.buildAndAssertSuccess(test);
         Items.move(test, bar);
         assertFalse(new File(tmp, "foo/test/1").exists());
         assertTrue(new File(tmp, "bar/test/1").exists());

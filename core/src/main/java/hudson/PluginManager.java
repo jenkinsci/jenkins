@@ -357,7 +357,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         this.rootDir = rootDir;
         try {
-            Files.createDirectories(rootDir.toPath());
+            Util.createDirectories(rootDir.toPath());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

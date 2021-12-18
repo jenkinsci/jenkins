@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.EnvVars;
-import hudson.model.Build;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -42,7 +41,6 @@ import hudson.model.JDK;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.PasswordParameterDefinition;
-import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -123,10 +121,7 @@ public class MavenTest {
         project.getBuildersList().add(new Maven("--help", varMaven.getName()));
         project.setJDK(varJDK);
 
-        Build<?, ?> build = project.scheduleBuild2(0).get();
-
-        assertEquals(Result.SUCCESS, build.getResult());
-
+        j.buildAndAssertSuccess(project);
     }
 
     @Test public void withParameter() throws Exception {

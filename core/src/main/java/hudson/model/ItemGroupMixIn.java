@@ -99,7 +99,7 @@ public abstract class ItemGroupMixIn {
      */
     public static <K,V extends Item> Map<K,V> loadChildren(ItemGroup parent, File modulesDir, Function1<? extends K,? super V> key) {
         try {
-            Files.createDirectories(modulesDir.toPath());
+            Util.createDirectories(modulesDir.toPath());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -273,7 +273,7 @@ public abstract class ItemGroupMixIn {
         final File dir = configXml.getParentFile();
         boolean success = false;
         try {
-            Files.createDirectories(dir.toPath());
+            Util.createDirectories(dir.toPath());
             XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
 
             // load it
