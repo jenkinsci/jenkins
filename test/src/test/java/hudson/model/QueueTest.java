@@ -254,7 +254,7 @@ public class QueueTest {
     @Test
     public void queue_id_to_run_mapping() throws Exception {
         FreeStyleProject testProject = r.createFreeStyleProject("test");
-        FreeStyleBuild build = r.assertBuildStatusSuccess(testProject.scheduleBuild2(0));
+        FreeStyleBuild build = r.buildAndAssertSuccess(testProject);
         Assert.assertNotEquals(Run.QUEUE_ID_UNKNOWN, build.getQueueId());
     }
 
@@ -670,7 +670,7 @@ public class QueueTest {
                 return true;
             }
         });
-        r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        r.buildAndAssertSuccess(p);
     }
 
     private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
@@ -698,8 +698,8 @@ public class QueueTest {
             }
         });
 
-        final FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        final FreeStyleBuild b2 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        final FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        final FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
 
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
@@ -708,7 +708,7 @@ public class QueueTest {
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
-            FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
@@ -877,7 +877,7 @@ public class QueueTest {
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
         matrixProject.setAssignedLabel(label);
-        r.assertBuildStatusSuccess(matrixProject.scheduleBuild2(0));
+        r.buildAndAssertSuccess(matrixProject);
         assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 

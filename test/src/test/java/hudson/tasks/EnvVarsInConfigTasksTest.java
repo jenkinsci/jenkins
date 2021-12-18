@@ -73,17 +73,13 @@ public class EnvVarsInConfigTasksTest {
 
 		// test the regular agent - variable not expanded
 		project.setAssignedLabel(agentRegular.getSelfLabel());
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-		j.assertBuildStatusSuccess(build);
+		FreeStyleBuild build = j.buildAndAssertSuccess(project);
 
 		j.assertLogContains(DUMMY_LOCATION_VARNAME, build);
 
 		// test the agent with prepared environment
 		project.setAssignedLabel(agentEnv.getSelfLabel());
-		build = project.scheduleBuild2(0).get();
-
-		j.assertBuildStatusSuccess(build);
+		build = j.buildAndAssertSuccess(project);
 
 		// Check variable was expanded
 		j.assertLogNotContains(DUMMY_LOCATION_VARNAME, build);
@@ -103,17 +99,13 @@ public class EnvVarsInConfigTasksTest {
 
 		// test the regular agent - variable not expanded
 		project.setAssignedLabel(agentRegular.getSelfLabel());
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-		j.assertBuildStatus(Result.FAILURE, build);
+		FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, project);
 
 		j.assertLogContains(DUMMY_LOCATION_VARNAME, build);
 
 		// test the agent with prepared environment
 		project.setAssignedLabel(agentEnv.getSelfLabel());
-		build = project.scheduleBuild2(0).get();
-
-		j.assertBuildStatusSuccess(build);
+		build = j.buildAndAssertSuccess(project);
 
 		// Check variable was expanded
 		j.assertLogNotContains(DUMMY_LOCATION_VARNAME, build);
