@@ -83,7 +83,7 @@ public class ProcessTreeTest {
 
         sleepProject.getBuildersList().add(new Shell("nohup sleep 100000 &"));
 
-        j.assertBuildStatusSuccess(sleepProject.scheduleBuild2(0).get());
+        j.buildAndAssertSuccess(sleepProject);
 
         processJob.getBuildersList().add(new Shell("ps -ef | grep sleep"));
 

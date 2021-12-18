@@ -58,7 +58,7 @@ public class RunRangeCommand2Test {
     }
 
     @Test public void dummyRangeShouldFailIfJobNameIsEmptyOnEmptyJenkins() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
         CLICommandInvoker.Result result = command
@@ -70,7 +70,7 @@ public class RunRangeCommand2Test {
     }
 
     @Test public void dummyRangeShouldFailIfJobNameIsSpaceOnEmptyJenkins() throws Exception {
-        j.createFreeStyleProject("aProject").scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
         CLICommandInvoker.Result result = command

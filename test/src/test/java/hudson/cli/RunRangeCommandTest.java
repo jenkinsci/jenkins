@@ -30,7 +30,6 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 import hudson.Extension;
 import hudson.model.FreeStyleProject;
@@ -62,7 +61,7 @@ public class RunRangeCommandTest {
         command = new CLICommandInvoker(j,  new DummyRangeCommand());
         project = j.createFreeStyleProject(PROJECT_NAME);
         for (int i=0; i<BUILDS; i++) {
-            assertThat(project.scheduleBuild2(0).get(), not(equalTo(null)));
+            j.buildAndAssertSuccess(project);
         }
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(),
                 equalTo(BUILDS));

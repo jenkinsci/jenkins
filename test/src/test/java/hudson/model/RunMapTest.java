@@ -42,7 +42,7 @@ public class RunMapTest {
         FreeStyleProject p = r.createFreeStyleProject();
 
         // want some completed build records
-        FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
 
         // now create a build that hangs until we signal the OneShotEvent
         p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
@@ -105,7 +105,7 @@ public class RunMapTest {
     @Issue("JENKINS-15533")
     @Test public void runtimeExceptionInUnmarshalling() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BombAction());
         b.save();
 
