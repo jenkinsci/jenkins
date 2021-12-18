@@ -98,10 +98,10 @@ THE SOFTWARE.
     <spotbugs.threshold>Medium</spotbugs.threshold>
     <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.25</access-modifier.version>
+    <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.22</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.1.0</mockito.version>
+    <mockito.version>4.2.0</mockito.version>
     <spotless.version>2.17.6</spotless.version>
   </properties>
 
