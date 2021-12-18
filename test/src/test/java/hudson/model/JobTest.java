@@ -493,6 +493,7 @@ public class JobTest {
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         j.jenkins.setNumExecutors(2);
         Queue.getInstance().maintain();
         final FreeStyleProject p = j.createFreeStyleProject();
@@ -514,6 +515,7 @@ public class JobTest {
 
     @Issue("SECURITY-1868")
     @Test public void noXssPossible() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         String desiredNodeName = "agent is a better name2 <script>alert(123)</script>";
         String initialNodeName = "agent is a better name";
 
