@@ -130,7 +130,7 @@ public class JenkinsManagePermissionTest {
 
         //WHEN the user goes to /configure page
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        String formText = form.asText();
+        String formText = form.asNormalizedText();
         //THEN items restricted to ADMINISTER only should not be displayed.
         assertThat("Should be able to configure system message", formText, not(containsString("systemMessage")));
         assertThat("Should be able to configure project naming strategy", formText, not(containsString("useProjectNamingStrategy")));
