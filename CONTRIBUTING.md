@@ -149,7 +149,7 @@ just submit a pull request.
 # Links
 
 * [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
-* [Jenkins IRC Channel](https://www.jenkins.io/chat/)
+* [Jenkins Chat Channels](https://www.jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
 * [List of newbie-friendly issues in the core](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
