@@ -325,6 +325,7 @@
           <Class name="hudson.model.AsyncAperiodicWork"/>
           <Class name="hudson.model.AsyncPeriodicWork"/>
           <Class name="hudson.model.Computer"/>
+          <Class name="hudson.model.Descriptor"/>
           <Class name="hudson.model.DirectoryBrowserSupport$IsAbsolute"/>
           <Class name="hudson.model.DownloadService$Downloadable"/>
           <Class name="hudson.model.FileParameterValue"/>
@@ -360,6 +361,7 @@
           <Class name="hudson.util.io.RewindableRotatingFileOutputStream"/>
           <Class name="hudson.util.IOUtils"/>
           <Class name="hudson.util.jna.Kernel32Utils"/>
+          <Class name="hudson.util.ProcessTree$UnixProcess"/>
           <Class name="hudson.WebAppMain"/>
           <Class name="jenkins.diagnosis.HsErrPidList"/>
           <Class name="jenkins.fingerprints.FileFingerprintStorage"/>
@@ -378,6 +380,7 @@
           <Class name="jenkins.security.s2m.ConfigDirectory"/>
           <Class name="jenkins.security.stapler.StaplerDispatchValidator$ValidatorCache"/>
           <Class name="jenkins.security.stapler.StaticRoutingDecisionProvider"/>
+          <Class name="jenkins.slaves.restarter.UnixSlaveRestarter"/>
           <Class name="jenkins.SoloFilePathFilter"/>
           <Class name="jenkins.util.groovy.GroovyHookScript"/>
           <Class name="jenkins.util.io.FileBoolean"/>
