@@ -157,7 +157,7 @@ just submit a pull request.
 [newbie friendly issues]: https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
 [Participate]: https://www.jenkins.io/participate/
 [building and debugging process here]: https://www.jenkins.io/doc/developer/building/
-[guide]: https://www.jenkins.io/doc/book/installing/war-file/
+[guide]: https://www.jenkins.io/doc/book/installing/war-file/#run-the-war-file
 [Remote Debug Flags]: https://stackoverflow.com/questions/975271/remote-debugging-a-java-application
 [Acceptance Test Harness (ATH)]: https://github.com/jenkinsci/acceptance-test-harness
 [backporting process]: https://www.jenkins.io/download/lts/
