@@ -305,13 +305,13 @@ public class JobTest {
         final FreeStyleProject p = j.createFreeStyleProject();
         RunLoadCounter.prepare(p);
         p.getBuildersList().add(new FailureBuilder());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
         p.getBuildersList().remove(FailureBuilder.class);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
             @Override public Integer call() {
@@ -324,7 +324,7 @@ public class JobTest {
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
         final FreeStyleProject p = j.createFreeStyleProject();
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
         p.renameTo("different-name");
     }
 
@@ -525,7 +525,7 @@ public class JobTest {
         j.jenkins.setNumExecutors(0);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         node.setVirtualName(desiredNodeName);
 

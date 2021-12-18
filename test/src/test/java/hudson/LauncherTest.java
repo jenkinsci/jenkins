@@ -87,7 +87,7 @@ public class LauncherTest {
         ;
         project.getBuildersList().add(script);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("aaa aaaccc ccc", build);
     }
@@ -108,7 +108,7 @@ public class LauncherTest {
         project.getBuildersList().add(script);
         project.setAssignedNode(slave.getComputer().getNode());
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("original value and new value", build);
     }
