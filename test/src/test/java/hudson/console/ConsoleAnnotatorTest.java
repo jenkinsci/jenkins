@@ -344,7 +344,7 @@ public class ConsoleAnnotatorTest {
 
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         HtmlPage html = r.createWebClient().getPage(b, "console");
-        String text = html.asText();
+        String text = html.asNormalizedText();
         System.out.println(text);
         assertTrue(text.contains("<b>&amp;</b>"));
         assertTrue(JenkinsRule.getLog(b).contains("<b>&amp;</b>"));
@@ -367,7 +367,7 @@ public class ConsoleAnnotatorTest {
         t.new Runner().run();
 
         HtmlPage log = r.createWebClient().getPage(p, "scmPollLog");
-        String text = log.asText();
+        String text = log.asNormalizedText();
         assertTrue(text, text.contains("$$$hello from polling"));
     }
 

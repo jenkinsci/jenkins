@@ -59,7 +59,7 @@ public class AbstractScmTagActionTest {
         String tagToKeep = "Nice tag with space";
         p.setScm(new FakeSCM(tagToKeep));
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         String tooltip = buildAndExtractTooltipAttribute(p);
         assertEquals(tagToKeep, tooltip);
@@ -71,7 +71,7 @@ public class AbstractScmTagActionTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new FakeSCM("<img src='x' onerror=alert(123)>XSS"));
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         String tooltip = buildAndExtractTooltipAttribute(p);
         assertThat(tooltip, not(containsString("<")));

@@ -87,7 +87,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldSucceed() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         assertThat(build.getLog(), containsString("echo 1"));
         assertThat(build.getDescription(), equalTo(null));
 

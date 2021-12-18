@@ -97,7 +97,7 @@ public class WideExecutionTest {
     @Test
     public void run() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         assertEquals("I was here", b.getDescription());
     }
 }

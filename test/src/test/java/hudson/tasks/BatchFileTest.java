@@ -67,7 +67,7 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
@@ -87,12 +87,12 @@ public class BatchFileTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class BatchFileTest {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewBatchTask("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 

@@ -9,12 +9,10 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-  * Java Development Kit (JDK) 8 or 11.
-    In the Jenkins project we usually use [OpenJDK](http://openjdk.java.net/) or [AdoptOpenJDK](https://adoptopenjdk.net/), but you can use other JDKs as well.
-    * For JDK 11 there might be some compatibility issues in developer tools,
-      please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
-      If you find a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
-  * Maven 3.5.4 or above. You can [download Maven here].
+  * Java Development Kit (JDK) 11 or 8.
+    In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
+  * Apache Maven 3.8.1 or above. You can [download Maven here].
+    In the Jenkins project we usually use the most recent Maven release.
   * Any IDE which supports importing Maven projects.
   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
@@ -92,7 +90,7 @@ cd war; yarn test
 ## Proposing Changes
 
 The Jenkins project source code repositories are hosted at GitHub.
-All proposed changes are submitted, and code reviewed, using the _GitHub Pull Request_ process.
+All proposed changes are submitted, and code reviewed, using a [GitHub pull request] process.
 
 To submit a pull request:
 
@@ -123,6 +121,7 @@ This will help minimize the diff, which makes reviewing PRs easier.
 
 We also do not recommend `*` imports in the production code.
 Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
+
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.
@@ -150,15 +149,15 @@ just submit a pull request.
 # Links
 
 * [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
-* [Jenkins IRC Channel](https://www.jenkins.io/chat/)
-* [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
+* [Jenkins Chat Channels](https://www.jenkins.io/chat/)
+* [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
 * [List of newbie-friendly issues in the core](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
 [Preparing for Plugin Development]: https://www.jenkins.io/doc/developer/tutorial/prepare/
 [newbie friendly issues]: https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
 [Participate]: https://www.jenkins.io/participate/
 [building and debugging process here]: https://www.jenkins.io/doc/developer/building/
-[guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins
+[guide]: https://www.jenkins.io/doc/book/installing/war-file/#run-the-war-file
 [Remote Debug Flags]: https://stackoverflow.com/questions/975271/remote-debugging-a-java-application
 [Acceptance Test Harness (ATH)]: https://github.com/jenkinsci/acceptance-test-harness
 [backporting process]: https://www.jenkins.io/download/lts/
@@ -170,3 +169,4 @@ just submit a pull request.
 [Jenkins Pipeline]: https://www.jenkins.io/doc/book/pipeline/
 [Jenkinsfile]: ./Jenkinsfile
 [download Maven here]: https://maven.apache.org/download.cgi
+[GitHub pull request]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests

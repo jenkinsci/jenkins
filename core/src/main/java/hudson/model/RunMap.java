@@ -27,6 +27,7 @@ import static java.util.logging.Level.FINEST;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -195,7 +196,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             proposeNewNumber(r.getNumber());
         }
         try {
-            Files.createDirectories(rootDir.toPath());
+            Util.createDirectories(rootDir.toPath());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -76,7 +76,7 @@ public class LoginTest {
         form.getInputByName("j_password").setValueAttribute("oops I forgot");
         wc.setThrowExceptionOnFailingStatusCode(false);
         page = (HtmlPage) HtmlFormUtil.submit(form, null);
-        assertThat(page.asText(), containsString("Invalid username or password"));
+        assertThat(page.asNormalizedText(), containsString("Invalid username or password"));
     }
 
     private HtmlForm prepareLoginFormWithRememberMeChecked(WebClient wc) throws IOException, org.xml.sax.SAXException {

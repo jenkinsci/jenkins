@@ -84,7 +84,7 @@ public class RunTest  {
                 });
             }
         });
-        j.assertBuildStatusSuccess(j.createFreeStyleProject("stuff").scheduleBuild2(0));
+        j.buildAndAssertSuccess(j.createFreeStyleProject("stuff"));
         j.createWebClient().assertFails("job/stuff/1/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
