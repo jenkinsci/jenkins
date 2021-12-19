@@ -109,7 +109,6 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 builds.ath = {
     node("docker-highmem") {
         // Just to be safe
