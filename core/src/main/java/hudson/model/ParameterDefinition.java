@@ -102,7 +102,7 @@ public abstract class ParameterDefinition implements
 
     private String description;
 
-    public ParameterDefinition(@NonNull String name) {
+    protected ParameterDefinition(@NonNull String name) {
         if (name == null) {
             throw new IllegalArgumentException("Parameter name must be non-null");
         }
@@ -113,7 +113,7 @@ public abstract class ParameterDefinition implements
      * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link org.kohsuke.stapler.DataBoundConstructor} and allow {@link #setDescription} to be used as needed
      */
     @Deprecated
-    public ParameterDefinition(@NonNull String name, String description) {
+    protected ParameterDefinition(@NonNull String name, String description) {
         this(name);
         setDescription(description);
     }

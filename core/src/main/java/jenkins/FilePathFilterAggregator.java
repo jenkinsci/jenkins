@@ -30,7 +30,7 @@ class FilePathFilterAggregator extends FilePathFilter {
 
         @Override
         public int compareTo(Entry that) {
-            double result = Double.compare(this.ordinal, that.ordinal);
+            int result = Double.compare(this.ordinal, that.ordinal);
 
             if (result < 0) return -1;
             if (result > 0) return 1;

@@ -50,7 +50,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
     /**
      * Escape hatch to disable this check completely.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean BYPASS = SystemProperties.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
 
     private static final Logger LOGGER = Logger.getLogger(DefaultFilePathFilter.class.getName());

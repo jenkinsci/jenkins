@@ -27,10 +27,10 @@
                     <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input" value="${request.getParameter('q')}" role="searchbox" />
 
                     <span class="main-search__icon-leading">
-                        <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+                        <l:ionicon name="search-outline"/>
                     </span>
                     <a href="${searchHelpUrl}" class="main-search__icon-trailing">
-                        <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_outline_24px" />
+                        <l:ionicon name="help-circle-outline"/>
                     </a>
 
                     <div id="search-box-completion" />

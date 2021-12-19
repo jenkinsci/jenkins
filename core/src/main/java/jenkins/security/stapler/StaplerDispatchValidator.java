@@ -90,7 +90,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     /**
      * Escape hatch to disable dispatch validation.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* script-console editable */ boolean DISABLED = SystemProperties.getBoolean(ESCAPE_HATCH);
 
     private static @CheckForNull Boolean setStatus(@NonNull StaplerRequest req, @CheckForNull Boolean status) {

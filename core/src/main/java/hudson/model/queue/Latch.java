@@ -64,8 +64,7 @@ class Latch {
      * Waits for N threads to enter the {@link #synchronize()} method, then
      * returns.
      *
-     * @return
-     *      returns normally if N threads successfully synchronized.
+     * returns normally if N threads successfully synchronized.
      * @throws InterruptedException
      *      if any of the threads that were synchronizing get interrupted,
      *      or if the {@link #abort(Throwable)} is called.

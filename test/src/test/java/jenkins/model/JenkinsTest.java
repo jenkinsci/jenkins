@@ -247,7 +247,8 @@ public class JenkinsTest {
     @Test
     public void testDoCheckViewName_GoodName() throws Exception {
         String[] viewNames = new String[] {
-            "", "Jenkins"    
+            "",
+            "Jenkins",
         };
         
         Jenkins jenkins = Jenkins.get();
@@ -260,8 +261,16 @@ public class JenkinsTest {
     @Test
     public void testDoCheckViewName_NotGoodName() throws Exception {
         String[] viewNames = new String[] {
-            "Jenkins?", "Jenkins*", "Jenkin/s", "Jenkin\\s", "jenkins%", 
-            "Jenkins!", "Jenkins[]", "Jenkin<>s", "^Jenkins", ".."    
+            "Jenkins?",
+            "Jenkins*",
+            "Jenkin/s",
+            "Jenkin\\s",
+            "jenkins%",
+            "Jenkins!",
+            "Jenkins[]",
+            "Jenkin<>s",
+            "^Jenkins",
+            "..",
         };
         
         Jenkins jenkins = Jenkins.get();
@@ -611,12 +620,12 @@ public class JenkinsTest {
         assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
     }
 
-    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) {
         assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
     }
 
-    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) {
         assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
                 j.jenkins.getAgentProtocols(), hasItem(protocolName));
     }

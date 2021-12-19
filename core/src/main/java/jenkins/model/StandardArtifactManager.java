@@ -52,7 +52,7 @@ public class StandardArtifactManager extends ArtifactManager {
 
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static FilePath.TarCompression TAR_COMPRESSION = SystemProperties.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;

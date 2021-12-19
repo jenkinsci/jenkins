@@ -62,7 +62,7 @@ public class LogRotator extends BuildDiscarder {
     
     /** @deprecated Replaced by more generic {@link CompositeIOException}. */
     @Deprecated
-    public class CollatedLogRotatorException extends IOException {
+    public static class CollatedLogRotatorException extends IOException {
         private static final long serialVersionUID = 5944233808072651101L;
         
         public final Collection<Exception> collated;

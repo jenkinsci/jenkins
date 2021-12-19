@@ -310,7 +310,11 @@ public final class CronTab {
         };
 
         private static final CalendarField[] ADJUST_ORDER = {
-            MONTH, DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE
+            MONTH,
+            DAY_OF_MONTH,
+            DAY_OF_WEEK,
+            HOUR,
+            MINUTE,
         };
     }
 

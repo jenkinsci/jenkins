@@ -27,6 +27,7 @@ package hudson.tools;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -103,12 +104,12 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
     @Deprecated
-    public ToolInstallation(String name, String home) {
+    protected ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
     }
 
-    public ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+    protected ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         this.name = name;
         this.home = home;
         if(properties!=null) {
@@ -223,6 +224,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Invoked by XStream when this object is read into memory.
      */
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "nothing should be competing with XStream during deserialization")
     protected Object readResolve() {
         if (properties != null) {
             for (ToolProperty<?> p : properties) {
@@ -258,7 +260,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Subclasses can extend this for data migration from old field storing home directory.
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
-        public ToolConverter(XStream2 xstream) { super(xstream); }
+        protected ToolConverter(XStream2 xstream) { super(xstream); }
         @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;

@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.Objects;
 import net.sf.json.JSONObject;
@@ -39,11 +41,11 @@ public class TextParameterDefinition extends StringParameterDefinition {
      * @since 2.281
      */
     @DataBoundConstructor
-    public TextParameterDefinition(String name) {
+    public TextParameterDefinition(@NonNull String name) {
         super(name);
     }
 
-    public TextParameterDefinition(String name, String defaultValue, String description) {
+    public TextParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);

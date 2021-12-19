@@ -129,7 +129,10 @@ public class WhoAmITest {
          *    "authorities": [],
          *    "details": "org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0",
          *    "name": "user",
-         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a: Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true; Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0; Granted Authorities: "
+         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a:
+         *        Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true;
+         *        Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0;
+         *        Granted Authorities: "
          * }
          */
         assertThat(content, not(anyOf(

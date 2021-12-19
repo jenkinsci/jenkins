@@ -73,12 +73,8 @@ public class TimerTest {
                     futures[j] = exec.schedule(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                startLatch.countDown();
-                                contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            startLatch.countDown();
+                            contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
                         }
                     }, 0, TimeUnit.SECONDS);
                 }

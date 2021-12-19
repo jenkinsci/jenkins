@@ -128,7 +128,7 @@ public class ResourceController {
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception");
+            throw new IllegalStateException("Inner callable does not throw exception", e);
         }
     }
 
@@ -149,7 +149,7 @@ public class ResourceController {
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception");
+            throw new IllegalStateException("Inner callable does not throw exception", e);
         }
     }
 

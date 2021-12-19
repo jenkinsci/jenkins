@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractList;
@@ -33,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -322,7 +322,7 @@ public class Iterators {
      * Wraps another iterator and throws away nulls.
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
-        return com.google.common.collect.Iterators.filter(itr, Predicates.notNull());
+        return com.google.common.collect.Iterators.filter(itr, Objects::nonNull);
     }
 
     /**

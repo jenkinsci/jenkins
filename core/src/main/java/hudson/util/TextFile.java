@@ -57,8 +57,8 @@ public class TextFile {
         return file.exists();
     }
 
-    public void delete() {
-        file.delete();
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
 
     /**
@@ -96,7 +96,7 @@ public class TextFile {
      * Overwrites the file by the given string.
      */
     public void write(String text) throws IOException {
-        file.getParentFile().mkdirs();
+        Files.createDirectories(Util.fileToPath(file.getParentFile()));
         try (AtomicFileWriter w = new AtomicFileWriter(file)) {
             try {
                 w.write(text);
