@@ -138,7 +138,6 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     @Override
-    @SuppressFBWarnings(value = "DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED", justification = "Jenkins is not designed to work with a security manager")
     public void contextInitialized(ServletContextEvent event) {
         // Nicer console log formatting when using mvn jetty:run.
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {

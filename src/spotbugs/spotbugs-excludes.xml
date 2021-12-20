@@ -7,6 +7,8 @@
     <Or>
       <!-- We don't care about this behavior -->
       <Bug pattern="CRLF_INJECTION_LOGS"/>
+      <!-- Pending https://github.com/spotbugs/spotbugs/issues/1515 -->
+      <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
       <!-- Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals. -->
       <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
       <!-- Jenkins handles this issue differently or doesn't care about it -->
