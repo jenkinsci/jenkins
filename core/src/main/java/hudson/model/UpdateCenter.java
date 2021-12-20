@@ -69,6 +69,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -2025,11 +2026,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         if (caseSensitive) {
-            if (MessageDigest.isEqual(expectedDigest.getBytes(Charset.defaultCharset()), actualDigest.getBytes(Charset.defaultCharset()))) {
+            if (MessageDigest.isEqual(expectedDigest.getBytes(StandardCharsets.US_ASCII), actualDigest.getBytes(Charset.defaultCharset()))) {
                 return VerificationResult.PASS;
             }
         } else {
-            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(Charset.defaultCharset()), actualDigest.toLowerCase().getBytes(Charset.defaultCharset()))) {
+            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(StandardCharsets.US_ASCII), actualDigest.toLowerCase().getBytes(Charset.defaultCharset()))) {
                 return VerificationResult.PASS;
             }
         }
