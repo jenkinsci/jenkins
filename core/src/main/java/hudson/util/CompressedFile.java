@@ -102,7 +102,9 @@ public class CompressedFile {
 
     /**
      * Loads the file content as a string.
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public String loadAsString() throws IOException {
         long sizeGuess;
         if(file.exists())
