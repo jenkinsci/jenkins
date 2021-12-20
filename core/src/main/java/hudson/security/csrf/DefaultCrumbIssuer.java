@@ -10,7 +10,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.ModelObject;
 import hudson.model.PersistentDescriptor;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -84,8 +83,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                     buffer.append(req.getSession().getId());
                 }
 
-                md.update(buffer.toString().getBytes(Charset.defaultCharset()));
-                return Util.toHexString(md.digest(salt.getBytes(Charset.defaultCharset())));
+                md.update(buffer.toString().getBytes(StandardCharsets.UTF_8));
+                return Util.toHexString(md.digest(salt.getBytes(StandardCharsets.UTF_8)));
             }
         }
         return null;
