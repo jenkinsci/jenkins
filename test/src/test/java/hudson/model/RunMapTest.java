@@ -18,19 +18,21 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 
 public class RunMapTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
-    // TODO https://github.com/jenkinsci/jenkins/pull/2438: @Rule public LoggerRule logs = new LoggerRule();
+    @Rule public LoggerRule logs = new LoggerRule();
 
     /**
      * Makes sure that reloading the project while a build is in progress won't clobber that in-progress build.
@@ -43,7 +45,7 @@ public class RunMapTest {
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
 
         // now create a build that hangs until we signal the OneShotEvent
-        p.getBuildersList().add(new SleepBuilder(9999999));
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         FreeStyleBuild b2 = p.scheduleBuild2(0).waitForStart();
         assertEquals(2, b2.number);
 
@@ -65,9 +67,9 @@ public class RunMapTest {
 
     @Issue("JENKINS-27530")
     @Test public void reloadWhileBuildIsInQueue() throws Exception {
-        //logs.record(Queue.class, Level.FINE);
+        logs.record(Queue.class, Level.FINE);
         FreeStyleProject p = r.createFreeStyleProject("p");
-        p.getBuildersList().add(new SleepBuilder(9999999));
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         r.jenkins.setNumExecutors(1);
         assertEquals(1, p.scheduleBuild2(0).waitForStart().number);
         p.scheduleBuild2(0);
