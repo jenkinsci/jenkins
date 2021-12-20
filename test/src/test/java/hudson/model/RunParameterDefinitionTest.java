@@ -113,7 +113,7 @@ public class RunParameterDefinitionTest {
                                                                              null));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(project.getLastBuild().getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
@@ -145,7 +145,7 @@ public class RunParameterDefinitionTest {
                                                                              RunParameterFilter.ALL));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(project.getLastBuild().getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
@@ -176,7 +176,7 @@ public class RunParameterDefinitionTest {
                                                                              RunParameterFilter.COMPLETED));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(abortedBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
@@ -207,7 +207,7 @@ public class RunParameterDefinitionTest {
                                                                              RunParameterFilter.SUCCESSFUL));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(unstableBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
@@ -239,7 +239,7 @@ public class RunParameterDefinitionTest {
                                                                              RunParameterFilter.STABLE));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(successfulBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
@@ -259,7 +259,7 @@ public class RunParameterDefinitionTest {
                                                                              RunParameterFilter.ALL));
         paramProject.addProperty(pdp);
 
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(paramProject);
         assertEquals(Integer.toString(project.getLastBuild().getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
 
