@@ -5,3 +5,5 @@ ath:
   athImage: "jenkins/ath:1.97-pre"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
+  jdks:
+    - 11

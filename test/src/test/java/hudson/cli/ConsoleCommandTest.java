@@ -143,7 +143,7 @@ public class ConsoleCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\""));
 
-        project.getBuildersList().add(new Shell("echo 1"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1") : new Shell("echo 1"));
         j.buildAndAssertSuccess(project);
 
         result = command
