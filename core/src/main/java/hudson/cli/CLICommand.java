@@ -406,7 +406,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printSingleLineUsage(out);
         try {
-            return out.toString(Charset.defaultCharset().name());
+            return out.toString(getClientCharset().name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -420,7 +420,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printUsage(out);
         try {
-            return out.toString(Charset.defaultCharset().name());
+            return out.toString(getClientCharset().name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -437,7 +437,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         printUsageSummary(ps);
         ps.close();
         try {
-            return out.toString(Charset.defaultCharset().name());
+            return out.toString(getClientCharset().name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -470,7 +470,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.encoding = encoding;
     }
 
-    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
+    protected @NonNull Charset getClientCharset() {
         if (encoding != null) {
             return encoding;
         }
