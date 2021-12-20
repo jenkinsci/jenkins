@@ -113,7 +113,7 @@ public class ClassFilterImplTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new S2MBuilder());
-        r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0));
+        r.buildAndAssertStatus(Result.FAILURE, p);
     }
     public static class S2MBuilder extends Builder {
         @Override

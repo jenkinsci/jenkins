@@ -109,8 +109,6 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker-highmem") {
         // Just to be safe
@@ -120,7 +118,7 @@ builds.ath = {
         dir("sources") {
             checkout scm
             def mvnCmd = 'mvn --batch-mode --show-version -ntp -Pquick-build -am -pl war package -Dmaven.repo.local=$WORKSPACE_TMP/m2repo'
-            infra.runWithMaven(mvnCmd, "8", javaOpts, true)
+            infra.runWithMaven(mvnCmd, "11", javaOpts, true)
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"
             }

@@ -64,10 +64,10 @@ public class AlternativeUiTextProviderTest {
     public void basics() throws Exception {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
-        assertThat(j.createWebClient().getPage(p).asText(), containsString("newschool:aaa"));
+        assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("newschool:aaa"));
 
         Impl.oldschool = true;
-        assertThat(j.createWebClient().getPage(p).asText(), containsString("oldschool:aaa"));
+        assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("oldschool:aaa"));
     }
 
     /**
@@ -79,11 +79,11 @@ public class AlternativeUiTextProviderTest {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", null)));
-        String pageText = j.createWebClient().getPage(p).asText();
+        String pageText = j.createWebClient().getPage(p).asNormalizedText();
         assertThat(pageText, containsString("newschool:aaa"));
 
         Impl.oldschool = true;
-        pageText = j.createWebClient().getPage(p).asText();
+        pageText = j.createWebClient().getPage(p).asNormalizedText();
         assertThat(pageText, containsString("oldschool:aaa"));
     }
 }

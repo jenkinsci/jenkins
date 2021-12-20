@@ -252,7 +252,7 @@ public final class XmlFile {
     }
     
     public void mkdirs() throws IOException {
-        Files.createDirectories(Util.fileToPath(file.getParentFile()));
+        Util.createDirectories(Util.fileToPath(file.getParentFile()));
     }
 
     @Override

@@ -745,7 +745,7 @@ public class ProjectTest {
          * Assert that the log contains the correct message.
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
-        String logastext = log.asText();
+        String logastext = log.asNormalizedText();
         assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
         
     }

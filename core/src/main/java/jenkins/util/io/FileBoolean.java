@@ -1,5 +1,6 @@
 package jenkins.util.io;
 
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,7 +60,7 @@ public class FileBoolean {
 
     public void on() {
         try {
-            Files.createDirectories(file.getParentFile().toPath());
+            Util.createDirectories(file.getParentFile().toPath());
             Files.newOutputStream(file.toPath()).close();
             get();  // update state
         } catch (IOException | InvalidPathException e) {

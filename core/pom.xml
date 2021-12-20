@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <xmlunit.version>2.8.3</xmlunit.version>
+    <xmlunit.version>2.8.4</xmlunit.version>
   </properties>
 
   <dependencyManagement>
@@ -127,12 +127,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <exclusions>
-        <exclusion> <!-- pick up from SpotBugs Annotations -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -517,12 +511,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <dependency>

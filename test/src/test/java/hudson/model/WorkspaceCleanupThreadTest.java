@@ -61,7 +61,7 @@ public class WorkspaceCleanupThreadTest {
         FilePath ws1 = createOldWorkspaceOn(r.createOnlineSlave(), p);
 
         p.setAssignedNode(r.jenkins);
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         assertEquals(r.jenkins, b.getBuiltOn());
         FilePath ws2 = b.getWorkspace();
 
@@ -189,7 +189,7 @@ public class WorkspaceCleanupThreadTest {
 
     private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {
         p.setAssignedNode(slave);
-        FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         assertEquals(slave, b1.getBuiltOn());
         FilePath ws = b1.getWorkspace();
         assertNotNull(ws);
