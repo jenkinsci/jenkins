@@ -399,14 +399,13 @@ public class QueueTest {
 
         // View for build should group duplicates
         JenkinsRule.WebClient wc = r.createWebClient();
-        String nl = System.getProperty("line.separator");
-        String buildPage = wc.getPage(build, "").asNormalizedText().replace(nl," ");
+        String buildPage = wc.getPage(build, "").asNormalizedText();
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
-                   buildPage.contains("Started by user SYSTEM (2 times) "
-                        + "Started by an SCM change (3 times) "
-                        + "Started by timer (2 times) "
-                        + "Started by remote host 1.2.3.4 with note: test (2 times) "
-                        + "Started by remote host 4.3.2.1 with note: test "
+                   buildPage.contains("Started by user SYSTEM (2 times)\n"
+                        + "Started by an SCM change (3 times)\n"
+                        + "Started by timer (2 times)\n"
+                        + "Started by remote host 1.2.3.4 with note: test (2 times)\n"
+                        + "Started by remote host 4.3.2.1 with note: test\n"
                         + "Started by remote host 1.2.3.4 with note: foo"));
         System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }

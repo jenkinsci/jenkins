@@ -667,6 +667,7 @@ public class UtilTest {
     @Test
     @Issue("JENKINS-67372")
     public void createDirectoriesInRoot() throws Exception {
+        assumeFalse(Functions.isWindows());
         Path newDirInRoot = Paths.get("/new-dir-in-root");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
         try {

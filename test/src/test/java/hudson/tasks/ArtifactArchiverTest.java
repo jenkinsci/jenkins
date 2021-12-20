@@ -199,7 +199,7 @@ public class ArtifactArchiverTest {
 
         FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
 
-        FreeStyleBuild b = j.buildAndAssertSuccess(p);
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
