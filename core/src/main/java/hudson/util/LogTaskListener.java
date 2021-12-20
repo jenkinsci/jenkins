@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -90,7 +90,7 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
             if (baos.size() > 0) {
                 LogRecord lr;
                 try {
-                    lr = new LogRecord(level, baos.toString(Charset.defaultCharset().name()));
+                    lr = new LogRecord(level, baos.toString(StandardCharsets.UTF_8.name()));
                 } catch (UnsupportedEncodingException e) {
                     throw new AssertionError(e);
                 }
