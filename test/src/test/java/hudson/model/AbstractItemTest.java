@@ -43,7 +43,7 @@ public class AbstractItemTest {
         FreeStyleProject p = jenkins.createProject(FreeStyleProject.class, "foo");
         p.setDescription("Hello World");
 
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.setDescription("This is my build");
 
         // update on disk representation
@@ -76,8 +76,9 @@ public class AbstractItemTest {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("bar", "", false));
         assertThat(checkNameAndReturnError(p, "foo1"), equalTo(jenkins.model.Messages.Hudson_JobNameConventionNotApplyed("foo1", "bar")));
 
-        p.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild b = p.scheduleBuild2(0).waitForStart();
         assertThat(checkNameAndReturnError(p, "bar"), equalTo(Messages.Job_NoRenameWhileBuilding()));
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
     }
 
     @Test

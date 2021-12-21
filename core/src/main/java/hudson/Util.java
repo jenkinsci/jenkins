@@ -67,6 +67,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
@@ -460,7 +461,7 @@ public class Util {
                 try {
                     ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
                     return rb.getString("error"+m.group(1));
-                } catch (Exception ignored) {
+                } catch (RuntimeException ignored) {
                     // silently recover from resource related failures
                 }
             }
@@ -1070,7 +1071,7 @@ public class Util {
      */
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
-        cp.setProject(new org.apache.tools.ant.Project());
+        cp.setProject(new Project());
         cp.setTofile(dst);
         cp.setFile(src);
         cp.setOverwrite(true);
@@ -1429,7 +1430,7 @@ public class Util {
             return null;
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }
@@ -1727,6 +1728,63 @@ public class Util {
         }
     }
     
+    /**
+     * Create a directory by creating all nonexistent parent directories first.
+     *
+     * <p>Unlike {@link Files#createDirectory}, an exception is not thrown
+     * if the directory could not be created because it already exists.
+     * Unlike {@link Files#createDirectories}, an exception is not thrown
+     * if the directory (or one of its parents) is a symbolic link.
+     *
+     * <p>The {@code attrs} parameter contains optional {@link FileAttribute file attributes}
+     * to set atomically when creating the nonexistent directories.
+     * Each file attribute is identified by its {@link FileAttribute#name}.
+     * If more than one attribute of the same name is included in the array,
+     * then all but the last occurrence is ignored.
+     *
+     * <p>If this method fails,
+     * then it may do so after creating some, but not all, of the parent directories.
+     *
+     * @param dir The directory to create.
+     * @param attrs An optional list of file attributes to set atomically
+     *     when creating the directory.
+     * @return The directory.
+     * @throws UnsupportedOperationException If the array contains an attribute
+     *     that cannot be set atomically when creating the directory.
+     * @throws FileAlreadyExistsException If {@code dir} exists but is not a directory.
+     * @throws IOException If an I/O error occurs.
+     * @see Files#createDirectories(Path, FileAttribute[])
+     */
+    @Restricted(NoExternalUse.class)
+    public static Path createDirectories(@NonNull Path dir, FileAttribute<?>... attrs) throws IOException {
+        dir = dir.toAbsolutePath();
+
+        Path parent;
+        for (parent = dir.getParent(); parent != null; parent = parent.getParent()) {
+            if (Files.exists(parent)) {
+                break;
+            }
+        }
+
+        if (parent == null) {
+            if (Files.isDirectory(dir)) {
+                return dir;
+            } else {
+                return Files.createDirectory(dir, attrs);
+            }
+        }
+
+        Path child = parent;
+        for (Path name : parent.relativize(dir)) {
+            child = child.resolve(name);
+            if (!Files.isDirectory(child)) {
+                Files.createDirectory(child, attrs);
+            }
+        }
+
+        return dir;
+    }
+
     /**
      * Compute the number of calendar days elapsed since the given date.
      * As it's only the calendar days difference that matter, "11.00pm" to "2.00am the day after" returns 1,

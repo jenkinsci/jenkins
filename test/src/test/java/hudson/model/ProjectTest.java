@@ -388,8 +388,9 @@ public class ProjectTest {
         b2.get();
 
         downstream.setBlockBuildWhenUpstreamBuilding(true);
-        waitForStart(p);
+        QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
         assertInstanceOf("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), BecauseOfUpstreamBuildInProgress.class);
+        b3.get();
     }
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
@@ -465,7 +466,6 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         SCM scm = new NullSCM();
         p.setScm(null);
-        SCM alwaysChange = new AlwaysChangedSCM();
         assertEquals("Project with null scm should have have polling result no change.", PollingResult.Change.NONE, p.poll(TaskListener.NULL).change);
         p.setScm(scm);
         p.disable();
@@ -479,6 +479,7 @@ public class ProjectTest {
         while(p.getLastBuild()==null)
             Thread.sleep(100); //wait until build start
         assertEquals("Project should have polling result no change", PollingResult.Change.NONE, p.poll(TaskListener.NULL).change);
+        SCM alwaysChange = new AlwaysChangedSCM();
         p.setScm(alwaysChange);
         j.buildAndAssertSuccess(p);
         assertEquals("Project should have polling result significant", PollingResult.Change.SIGNIFICANT, p.poll(TaskListener.NULL).change);
@@ -744,7 +745,7 @@ public class ProjectTest {
          * Assert that the log contains the correct message.
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
-        String logastext = log.asText();
+        String logastext = log.asNormalizedText();
         assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
         
     }

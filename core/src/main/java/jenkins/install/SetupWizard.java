@@ -54,7 +54,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
-import jenkins.security.s2m.AdminWhitelistRule;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
@@ -175,11 +174,7 @@ public class SetupWizard extends PageDecorator {
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
-    
-                    // set controller -> agent security:
-                    jenkins.getInjector().getInstance(AdminWhitelistRule.class)
-                        .setMasterKillSwitch(false);
-                
+
                     jenkins.save(); // TODO could probably be removed since some of the above setters already call save
                     bc.commit();
                 }
@@ -209,7 +204,7 @@ public class SetupWizard extends PageDecorator {
         try {
             // Make sure plugin metadata is up to date
             UpdateCenter.updateDefaultSite();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
@@ -290,7 +285,7 @@ public class SetupWizard extends PageDecorator {
         try {
             return !Jenkins.get().getInstallState().isSetupComplete()
                     && isUsingSecurityDefaults();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // ignore
         }
         return false;
@@ -589,7 +584,7 @@ public class SetupWizard extends PageDecorator {
                     } else {
                         try {
                             initialPluginList = JSONArray.fromObject(initialPluginJson);
-                        } catch (Exception ex) {
+                        } catch (RuntimeException ex) {
                             /* Second attempt: It's not a remote file, but still wrapped */
                             initialPluginList = JSONObject.fromObject(initialPluginJson).getJSONArray("categories");
                         }

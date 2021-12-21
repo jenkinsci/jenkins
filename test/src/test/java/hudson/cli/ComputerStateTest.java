@@ -147,7 +147,7 @@ public class ComputerStateTest {
 
         assertLinkDoesNotExist(page, "System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), not(containsString("Environment Variables")));
+        assertThat(info.asNormalizedText(), not(containsString("Environment Variables")));
     }
 
     private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
@@ -160,7 +160,7 @@ public class ComputerStateTest {
 
         main.getAnchorByText("System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), containsString("Environment Variables"));
+        assertThat(info.asNormalizedText(), containsString("Environment Variables"));
     }
 
     private void assertLinkDoesNotExist(HtmlPage page, String text) {

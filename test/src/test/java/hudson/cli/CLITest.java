@@ -46,7 +46,6 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -97,7 +96,7 @@ public class CLITest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         FreeStyleProject p = r.createFreeStyleProject("p");
-        p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         doInterrupt(p, "-http", "-auth", "admin:admin");
         doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }

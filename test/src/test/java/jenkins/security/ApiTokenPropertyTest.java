@@ -153,7 +153,7 @@ public class ApiTokenPropertyTest {
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
 //        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
         assertEquals("Update token response is incorrect", 
-                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
+                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asNormalizedText() + "</div>");
     }
 
     @Test

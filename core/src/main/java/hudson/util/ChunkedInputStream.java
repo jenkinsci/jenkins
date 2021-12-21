@@ -271,7 +271,7 @@ public class ChunkedInputStream extends InputStream {
         try {
             result = Integer.parseInt(dataString.trim(), 16);
         } catch (NumberFormatException e) {
-            throw new IOException ("Bad chunk size: " + dataString);
+            throw new IOException ("Bad chunk size: " + dataString, e);
         }
         return result;
     }

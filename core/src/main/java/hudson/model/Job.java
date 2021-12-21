@@ -29,6 +29,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -71,6 +72,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -130,6 +132,7 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "TODO needs triage")
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
@@ -660,13 +663,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            if (!newBuildDir.getParentFile().isDirectory()) {
-                newBuildDir.getParentFile().mkdirs();
-            }
-            if (!oldBuildDir.renameTo(newBuildDir)) {
-                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
-            }
+        if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
+            Util.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir));
         }
     }
 
@@ -813,7 +812,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 throw new CmdLineException(null, "No such build '#"+n+"' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(null, id+ "is not a number");
+            throw new CmdLineException(null, id+ "is not a number", e);
         }
     }
 

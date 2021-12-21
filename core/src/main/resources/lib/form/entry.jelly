@@ -72,7 +72,7 @@ THE SOFTWARE.
   <!-- expose this so that we can look up the @field value later from prepareDatabinding.jelly -->
   <j:set var="entry" value="${attrs}" />
   <j:set var="possiblyEscapedTitle" value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
-  <div class="jenkins-form-item ${attrs.class}">
+  <div class="jenkins-form-item tr ${attrs.class}">
     <j:choose>
       <j:when test="${possiblyEscapedTitle!=null}">
         <div class="jenkins-form-label help-sibling">

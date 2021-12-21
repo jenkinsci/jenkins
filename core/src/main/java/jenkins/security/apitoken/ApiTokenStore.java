@@ -26,7 +26,6 @@ package jenkins.security.apitoken;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.Secret;
 import java.io.Serializable;
@@ -86,7 +85,6 @@ public class ApiTokenStore {
         }
     }
     
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public synchronized @NonNull Collection<HashedToken> getTokenListSortedByName() {
         return tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
@@ -241,7 +239,7 @@ public class ApiTokenStore {
         try {
             digest = MessageDigest.getInstance(HASH_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
+            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system", e);
         }
         return digest.digest(tokenBytes);
     }

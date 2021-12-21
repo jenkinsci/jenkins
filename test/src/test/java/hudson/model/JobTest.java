@@ -53,8 +53,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -305,13 +305,13 @@ public class JobTest {
         final FreeStyleProject p = j.createFreeStyleProject();
         RunLoadCounter.prepare(p);
         p.getBuildersList().add(new FailureBuilder());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
         p.getBuildersList().remove(FailureBuilder.class);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
             @Override public Integer call() {
@@ -324,7 +324,7 @@ public class JobTest {
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
         final FreeStyleProject p = j.createFreeStyleProject();
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
         p.renameTo("different-name");
     }
 
@@ -493,13 +493,14 @@ public class JobTest {
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         j.jenkins.setNumExecutors(2);
         Queue.getInstance().maintain();
         final FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("dummy", "0")));
         p.setConcurrentBuild(true);
-        p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));  // we want the uninterrupted job to run for long time
         FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
         FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
         QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
@@ -507,13 +508,14 @@ public class JobTest {
         p.delete();
         long end = System.nanoTime();
         assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
-        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build3.isCancelled(), Matchers.is(true));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build2));
+        assertTrue(build3.isCancelled());
     }
 
     @Issue("SECURITY-1868")
     @Test public void noXssPossible() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         String desiredNodeName = "agent is a better name2 <script>alert(123)</script>";
         String initialNodeName = "agent is a better name";
 
@@ -525,7 +527,7 @@ public class JobTest {
         j.jenkins.setNumExecutors(0);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         node.setVirtualName(desiredNodeName);
 
@@ -550,7 +552,7 @@ public class JobTest {
         private String virtualName;
 
         NameChangingNode(JenkinsRule j, String name) throws Exception {
-            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
+            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.emptyList());
         }
 
         public void setVirtualName(String virtualName) {

@@ -29,10 +29,12 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.model.UsageStatistics;
+import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -42,6 +44,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -151,6 +155,24 @@ public abstract class Telemetry implements ExtensionPoint {
         return now.isAfter(getStart()) && now.isBefore(getEnd());
     }
 
+    /**
+     * Produces a list of Jenkins core and plugin version numbers
+     * to include in telemetry implementations for which this would be relevant.
+     * @return a map in a format suitable for a value of {@link #createContent}
+     * @since TODO
+     */
+    protected final Map<String, String> buildComponentInformation() {
+        Map<String, String> components = new TreeMap<>();
+        VersionNumber core = Jenkins.getVersion();
+        components.put("jenkins-core", core == null ? "" : core.toString());
+        for (PluginWrapper plugin : Jenkins.get().pluginManager.getPlugins()) {
+            if (plugin.isActive()) {
+                components.put(plugin.getShortName(), plugin.getVersion());
+            }
+        }
+        return components;
+    }
+
     @Extension
     public static class TelemetryReporter extends AsyncPeriodicWork {
 
@@ -182,7 +204,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 JSONObject data = new JSONObject();
                 try {
                     data = telemetry.createContent();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
                 }
 

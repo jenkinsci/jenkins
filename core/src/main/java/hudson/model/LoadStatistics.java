@@ -378,7 +378,7 @@ public abstract class LoadStatistics {
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", (int)TimeUnit.SECONDS.toMillis(10));
 
     /**

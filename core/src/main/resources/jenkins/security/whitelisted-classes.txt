@@ -1,12 +1,15 @@
 com.google.common.collect.AbstractListMultimap
+com.google.common.collect.AbstractMapBasedMultimap
 com.google.common.collect.AbstractMultimap
 com.google.common.collect.AbstractSetMultimap
 # Artifactory - https://issues.jenkins.io/browse/JENKINS-48991
 com.google.common.collect.ArrayListMultimap
+com.google.common.collect.ArrayListMultimapGwtSerializationDependencies
 com.google.common.collect.EmptyImmutableList
 com.google.common.collect.EmptyImmutableSet
 com.google.common.collect.EmptyImmutableSortedSet
 com.google.common.collect.HashMultimap
+com.google.common.collect.HashMultimapGwtSerializationDependencies
 # First hit: https://github.com/jenkinsci/pitmutation-plugin/
 com.google.common.collect.HashMultiset
 com.google.common.collect.ImmutableList

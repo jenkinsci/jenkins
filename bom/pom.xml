@@ -39,9 +39,10 @@ THE SOFTWARE.
 
 
   <properties>
+    <asm.version>9.2</asm.version>
     <slf4jVersion>1.7.32</slf4jVersion>
-    <stapler.version>1593.v0e838714faae</stapler.version>
-    <groovy.version>2.4.12</groovy.version>
+    <stapler.version>1612.v2a13b906bf3a</stapler.version>
+    <groovy.version>2.4.21</groovy.version>
   </properties>
 
   <dependencyManagement>
@@ -49,7 +50,7 @@ THE SOFTWARE.
       <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.5.3</version>
+        <version>5.6.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -95,8 +96,10 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
-        <version>4.0</version>
+        <artifactId>guice-bom</artifactId>
+        <version>5.0.1</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -176,12 +179,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.7</version>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.5</version>
+        <version>1.7</version>
       </dependency>
       <dependency>
         <groupId>org.connectbot.jbcrypt</groupId>
@@ -189,9 +192,34 @@ THE SOFTWARE.
         <version>1.0.0</version>
       </dependency>
       <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-analysis</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-tree</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-util</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.11</version>
+        <version>3.1.14</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -206,7 +234,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.5</version>
+        <version>1.7</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -256,17 +284,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.9</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.9.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>libpam4j</artifactId>
-        <version>1.11</version>
+        <version>5.10.0</version>
       </dependency>
       <dependency>
         <groupId>com.sun.solaris</groupId>
@@ -287,6 +310,11 @@ THE SOFTWARE.
         <groupId>org.jvnet.robust-http-client</groupId>
         <artifactId>robust-http-client</artifactId>
         <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>symbol-annotation</artifactId>
+        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>com.sun.mail</groupId>

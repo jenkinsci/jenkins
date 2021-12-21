@@ -738,7 +738,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all()) {
             try {
                 ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Could not load actions from " + tpaf + " for " + this, e);
             }
         }
@@ -1657,7 +1657,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * For each given build, find the build number range of the given project and put that into the map.
      */
-    private void checkAndRecord(AbstractProject that, TreeMap<Integer, RangeSet> r, Collection<R> builds) {
+    private void checkAndRecord(AbstractProject that, TreeMap<Integer, RangeSet> r, Iterable<R> builds) {
         for (R build : builds) {
             RangeSet rs = build.getDownstreamRelationship(that);
             if(rs==null || rs.isEmpty())
@@ -1720,7 +1720,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
             return Integer.parseInt(delay);
         } catch (NumberFormatException e) {
-            throw new ServletException("Invalid delay parameter value: "+delay);
+            throw new ServletException("Invalid delay parameter value: "+delay, e);
         }
     }
 

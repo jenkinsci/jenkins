@@ -285,19 +285,18 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Creates the classloader that can load all the specified jar files and delegate to the given parent.
      */
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
-        if (atts != null) {
-            String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
-            if (Boolean.parseBoolean( usePluginFirstClassLoader )) {
-                PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
-                classLoader.setParentFirst( false );
-                classLoader.setParent( parent );
-                classLoader.addPathFiles( paths );
-                return classLoader;
-            }
-        }
+        boolean usePluginFirstClassLoader =
+                atts != null && Boolean.parseBoolean(atts.getValue("PluginFirstClassLoader"));
 
         if (useAntClassLoader) {
-            AntClassLoader classLoader = new AntClassLoader(parent, true);
+            AntClassLoader classLoader;
+            if (usePluginFirstClassLoader) {
+                classLoader = new PluginFirstClassLoader();
+                classLoader.setParentFirst(false);
+                classLoader.setParent(parent);
+            } else {
+                classLoader = new AntClassLoader(parent, true);
+            }
             classLoader.addPathFiles(paths);
             return classLoader;
         } else {
@@ -305,7 +304,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
             for (File path : paths) {
                 urls.add(path.toURI().toURL());
             }
-            return new URLClassLoader2(urls.toArray(new URL[0]), parent);
+            URLClassLoader2 classLoader;
+            if (usePluginFirstClassLoader) {
+                classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
+            } else {
+                classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
+            }
+            return classLoader;
         }
     }
 
@@ -414,7 +419,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     public void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
         DependencyClassLoader classLoader = findAncestorDependencyClassLoader(depender.classLoader);
         if (classLoader != null) {
-            classLoader.updateTransientDependencies();
+            classLoader.updateTransitiveDependencies();
             LOGGER.log(Level.INFO, "Updated dependency of {0}", depender.getShortName());
         }
     }
@@ -475,7 +480,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Explodes the plugin into a directory, if necessary.
      */
     private static void explode(File archive, File destDir) throws IOException {
-        destDir.mkdirs();
+        Util.createDirectories(Util.fileToPath(destDir));
 
         // timestamp check
         File explodeTime = new File(destDir,".timestamp2");
@@ -544,7 +549,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             };
             z.setProject(prj);
             z.setTaskType("zip");
-            classesJar.getParentFile().mkdirs();
+            Util.createDirectories(Util.fileToPath(classesJar.getParentFile()));
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();
@@ -580,9 +585,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         private final PluginManager pluginManager;
 
         /**
-         * Topologically sorted list of transient dependencies. Lazily initialized via double-checked locking.
+         * Topologically sorted list of transitive dependencies. Lazily initialized via double-checked locking.
          */
-        private volatile List<PluginWrapper> transientDependencies;
+        private volatile List<PluginWrapper> transitiveDependencies;
 
         static {
             registerAsParallelCapable();
@@ -595,17 +600,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.pluginManager = pluginManager;
         }
 
-        private void updateTransientDependencies() {
+        private void updateTransitiveDependencies() {
             // This will be recalculated at the next time.
-            transientDependencies = null;
+            transitiveDependencies = null;
         }
 
         private List<PluginWrapper> getTransitiveDependencies() {
-          List<PluginWrapper> localTransientDependencies = transientDependencies;
-          if (localTransientDependencies == null) {
+          List<PluginWrapper> localTransitiveDependencies = transitiveDependencies;
+          if (localTransitiveDependencies == null) {
             synchronized (this) {
-              localTransientDependencies = transientDependencies;
-              if (localTransientDependencies == null) {
+              localTransitiveDependencies = transitiveDependencies;
+              if (localTransitiveDependencies == null) {
                 CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
@@ -629,11 +634,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     throw new AssertionError(e);    // such error should have been reported earlier
                 }
 
-                transientDependencies = localTransientDependencies = cgd.getSorted();
+                transitiveDependencies = localTransitiveDependencies = cgd.getSorted();
               }
             }
           }
-          return localTransientDependencies;
+          return localTransitiveDependencies;
         }
 
         @Override
@@ -641,9 +646,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
-                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
-                        if (c!=null)    return c;
-                        return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
+                        return ClassLoaderReflectionToolkit.loadClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
                         //not found. try next
                     }

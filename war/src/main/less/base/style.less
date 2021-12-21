@@ -86,16 +86,6 @@ td.center-align {
   border-collapse: collapse;
 }
 
-#top-panel {
-  margin-bottom: 3pt;
-  height: 34px;
-  background: url(../../images/topbar.png) repeat-x;
-}
-
-#top-panel a {
-  text-decoration: none;
-}
-
 .skiplink {
     position: absolute;
     left: -20000px;
@@ -226,10 +216,6 @@ td.tab {
   vertical-align: middle;
   border: 1px #090 solid;
   background: #f0f0f0;
-}
-
-.dashboard td {
-  padding: 4px 4px 4px 4px;
 }
 
 pre {
@@ -726,17 +712,12 @@ table.parameters > tbody:hover {
   display: none;
   margin-left: 20px;
   padding: 0;
+  --table-border-radius: 7px;
 
-  table * {
-    font-size: 0.8rem;
-    border-top: none!important;
-    border-bottom: none!important;
+  table {
+    border-radius: 0;
+    min-width: 450px;
   }
-}
-
-.healthReport:hover,
-.healthReport.hover { /* fix IE6 bug with :hover */
-    background: transparent;
 }
 
 .healthReport:hover div.healthReportDetails,
@@ -744,17 +725,7 @@ table.parameters > tbody:hover {
   display: block;
 }
 
-.healthReport div.healthReportDetails table {
-    border-collapse: collapse;
-    width: 450px; /* fix IE bug with width */
-}
-
 /* ========================= build history ========================= */
-#buildHistory .healthReport {
-    display: inline;
-    margin-right: 1em;
-}
-
 #buildHistory a:visited {
   color: fuchsia;
 }
@@ -1037,103 +1008,6 @@ table.fingerprint-in-build td {
   padding-right: 1em;
 }
 
-
-
-
-/* ========================= plugin manager ========================= */
-#plugins {
-  margin-top: 0;
-  border-top: none;
-}
-
-#plugins.bigtable {
-  // Add this fallback because tables with hidden rows will
-  // not have a bottom border
-  border-bottom: 1px solid var(--bigtable-row-border-color);
-}
-
-#pluginsAdv tr:hover {
-  background-color: inherit;
-}
-
-#plugins tr.already-upgraded {
-  background-color: var(--plugin-manager-bg-color-already-upgraded);
-}
-
-#plugins tr.all-dependents-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-dependents input,
-#plugins tr.has-disabled-dependency .enable input {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-#plugins tr.has-dependents-but-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-disabled-dependency .enable input {
-  opacity: 0.4;
-}
-
-#plugins tr.deleted input {
-  visibility: hidden !important;
-}
-
-#plugins .dependent-list,
-#plugins .dependency-list {
-  display: none;
-}
-
-#plugins .enable-state-info,
-#plugins .uninstall-state-info {
-    padding: 5px 20px;
-    max-width: 70%;
-    border: solid 1px var(--warning);
-    border-radius: 3px;
-    text-align: center;
-}
-
-#plugins .enable-state-info {
-    float: left;
-}
-
-#plugins .uninstall-state-info {
-    float: right;
-}
-
-#plugins .plugin-dependency-info .title,
-#plugins .plugin-dependency-info .subtitle {
-    opacity: 0.7;
-}
-
-#plugins .plugin-dependency-info .title {
-    margin-bottom: 5px;
-    font-size: larger;
-    font-weight: bolder;
-}
-
-#plugins .plugin-dependency-info span {
-    margin: 5px 5px 0 0;
-    background-color: var(--primary);
-    display: inline-block;
-    padding: 0.2em 0.6em 0.3em;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    line-height: 1;
-    color: var(--white);
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25em;
-}
-
 /* ========================= repeatable elements ========================= */
 
 .repeated-chunk {
@@ -1201,15 +1075,22 @@ div.to-be-removed { display: none; }
 
 textarea {
     margin-bottom: 0;
+    resize: vertical;
 }
 
+// Remove styling + textarea-handle.gif when IE11 is no longer supported
 div.textarea-handle {
-    height: 5px;
+    height: 6px;
     font-size: 0;
     background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
     border: 1px solid var(--medium-grey);
     border-top: none;
     cursor: s-resize;
+
+    // Hide .textarea-handle on devices that support native textarea resizing
+    @supports (resize: both) {
+        display: none;
+    }
 }
 
 textarea.rich-editor {
@@ -1260,19 +1141,6 @@ textarea.rich-editor {
   }
 }
 
-/* ========================= plugin update center ========================= */
-
-#plugins .excerpt {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: var(--text-color-secondary);
-}
-
-#plugins .excerpt a {
-  text-decoration: underline;
-}
-
 /*
  * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
  *                  remove once there are no more dependencies
@@ -1289,16 +1157,6 @@ textarea.rich-editor {
     margin-top: 0.5em;
     padding-left: 2em;
     color: #f00;
-}
-
-#pluginsAdv {
-  padding: 0.5rem;
-}
-
-#pluginsAdv section {
-  &:not(:last-child) {
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ========================= progress bar ========================= */
@@ -1560,7 +1418,7 @@ select.select-ajax-pending {
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: var(--form-input-border-radius);
 }
 
 .alert a {
@@ -1670,7 +1528,7 @@ svg.icon-xlg {
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2em;
+  height: 2rem;
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */

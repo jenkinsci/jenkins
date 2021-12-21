@@ -35,6 +35,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.Hudson;
+import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
@@ -43,6 +44,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -52,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Future;
+import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
@@ -59,7 +62,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,9 +69,12 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -108,6 +113,40 @@ public class PluginManagerTest {
 
         // uploaded legacy plugins get renamed to *.jpi
         assertTrue( new File(r.jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
+    }
+
+    @Test public void deployJpiFromUrl() throws Exception {
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        f.getInputByName("pluginUrl").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        r.submit(f);
+
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
+    }
+
+    @TestExtension("deployJpiFromUrl")
+    public static final class ReturnPluginJpiAction implements RootAction {
+
+        @Override
+        public String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "URL to retrieve a plugin jpi";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "pluginManagerGetPlugin";
+        }
+
+        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("application/octet");
+            staplerResponse.setStatus(200);
+            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+        }
     }
     
     /**
@@ -155,7 +194,7 @@ public class PluginManagerTest {
                     // plugins should be already visible in the UberClassLoader
                     assertFalse(activePlugins.isEmpty());
 
-                    uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
+                    assertNotNull(uberClassLoader.loadClass("htmlpublisher.HtmlPublisher"));
 
                     super.startPlugin(plugin);
                 }
@@ -204,9 +243,9 @@ public class PluginManagerTest {
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
-        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
+        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes())));
         assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
-        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>"));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes()));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());
@@ -552,6 +591,7 @@ public class PluginManagerTest {
     @Issue("JENKINS-59136")
     @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
     public void testDeprecationNotices() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/deprecations-update-center.json");
@@ -615,6 +655,7 @@ public class PluginManagerTest {
 
     @Test @Issue("JENKINS-64840")
     public void searchMultipleUpdateSites() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");

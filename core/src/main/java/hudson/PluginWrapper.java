@@ -411,7 +411,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * plugin</a>. *
      * 
      * @throws Exception if the File could not be inserted into the classpath for some reason.
-     * @since TODO
+     * @since 2.313
      */
     @Restricted(Beta.class)
     public void injectJarsToClasspath(File... jars) throws Exception {
@@ -767,6 +767,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
      * {@link #disable(PluginDisableStrategy)}
+     * @deprecated use {@link #disable(PluginDisableStrategy)}
      */
     @Deprecated //see https://issues.jenkins.io/browse/JENKINS-27177
     public void disable() throws IOException {
@@ -1190,6 +1191,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
+     * @deprecated removed without replacement
      */
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
@@ -1376,7 +1378,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         Jenkins jenkins = Jenkins.get();
         
         jenkins.checkPermission(Jenkins.ADMINISTER);
-        archive.delete();
+        Files.deleteIfExists(Util.fileToPath(archive));
 
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();
@@ -1407,6 +1409,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             }
         }
         return deprecations;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public String getIssueTrackerReportUrl() {
+        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
+        if (updateCenter.isSiteDataReady()) {
+            for (UpdateSite site : updateCenter.getSites()) {
+                final UpdateSite.Plugin sitePlugin = site.getPlugin(this.shortName);
+                if (sitePlugin != null && sitePlugin.issueTrackers != null) {
+                    for (UpdateSite.IssueTracker issueTracker : sitePlugin.issueTrackers) {
+                        if (issueTracker.reportUrl != null) {
+                            return issueTracker.reportUrl;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());

@@ -23,12 +23,17 @@
  */
 package org.jenkins.ui.icon;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * An icon set.
@@ -37,13 +42,16 @@ import org.apache.commons.jelly.JellyContext;
  */
 public class IconSet {
 
+
     public static final IconSet icons = new IconSet();
+    private static final Map<String, String> IONICONS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
     private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
 
+    private static final String PLACEHOLDER_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><title>Ellipse</title><circle cx=\"256\" cy=\"256\" r=\"192\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\"/></svg>";
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
     public IconSet() {
@@ -55,6 +63,43 @@ public class IconSet {
 
     public static void initPageVariables(JellyContext context) {
         context.setVariable("icons", icons);
+    }
+
+    private static String prependTitleIfRequired(String icon, String title) {
+        if (StringUtils.isNotBlank(title)) {
+            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+        }
+        return icon;
+    }
+
+    public static String getIonicon(String name, String title) {
+        if (IONICONS.containsKey(name)) {
+            String icon = IONICONS.get(name);
+            return prependTitleIfRequired(icon, title);
+        }
+
+        // Load icon if it exists
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
+        String ionicon = null;
+
+        try {
+            if (inputStream != null) {
+                ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            // ignored
+        }
+        if (ionicon == null) {
+            ionicon = PLACEHOLDER_SVG;
+        }
+
+        ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+
+        IONICONS.put(name, ionicon);
+
+        return prependTitleIfRequired(ionicon, title);
     }
 
     public IconSet addIcon(Icon icon) {
@@ -318,7 +363,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-computer-flash icon-md", "24x24/computer-flash.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE, true));
-        icons.addIcon(new Icon("icon-document-properties icon-md", "24x24/document-properties.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green icon-md", "24x24/green.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-md", "24x24/green_anime.gif", Icon.ICON_MEDIUM_STYLE));
@@ -335,7 +379,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-md", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE, true));
-        icons.addIcon(new Icon("icon-document-properties icon-md", "24x24/document-properties.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.png", Icon.ICON_MEDIUM_STYLE));
 
@@ -471,6 +514,7 @@ public class IconSet {
         images.add("user");
         images.add("video");
         images.add("warning");
+        images.add("document-properties");
 
         Map<String, String> materialIcons = new HashMap<>();
         materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");

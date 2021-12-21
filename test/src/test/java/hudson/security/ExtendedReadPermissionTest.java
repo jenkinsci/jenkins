@@ -62,7 +62,10 @@ public class ExtendedReadPermissionTest {
         assertNull(saveButton);
     }
 
-    @Ignore("This was actually testing a design of matrix-auth rather than core: that permissions, though formerly granted, are ignored if currently disabled. Permission.enabled Javadoc only discusses visibility. MockAuthorizationStrategy does not implement this check.")
+    @Ignore(
+            "This was actually testing a design of matrix-auth rather than core: that permissions, though formerly granted, are ignored if currently disabled."
+                + " Permission.enabled Javadoc only discusses visibility."
+                + " MockAuthorizationStrategy does not implement this check.")
     @Test public void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
         

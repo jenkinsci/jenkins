@@ -42,7 +42,9 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @see hudson.security.HttpSessionContextIntegrationFilter2
  * @since 1.509
  */
-@SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
+@SuppressFBWarnings(
+        value = {"SE_NO_SERIALVERSIONID", "SE_TRANSIENT_FIELD_NOT_RESTORED"},
+        justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
 @Restricted(NoExternalUse.class)
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;

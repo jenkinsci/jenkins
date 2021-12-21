@@ -31,6 +31,8 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.TypeLiteral;
+import com.google.inject.spi.Element;
+import com.google.inject.spi.InjectionPoint;
 import com.google.inject.spi.TypeConverterBinding;
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -133,5 +135,15 @@ public abstract class ProxyInjector implements Injector {
     @Override
     public Set<TypeConverterBinding> getTypeConverterBindings() {
         return resolve().getTypeConverterBindings();
+    }
+
+    @Override
+    public List<Element> getElements() {
+        return resolve().getElements();
+    }
+
+    @Override
+    public Map<TypeLiteral<?>, List<InjectionPoint>> getAllMembersInjectorInjectionPoints() {
+        return resolve().getAllMembersInjectorInjectionPoints();
     }
 }

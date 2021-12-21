@@ -78,6 +78,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -112,6 +115,7 @@ import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import net.jcip.annotations.GuardedBy;
@@ -380,7 +384,7 @@ public class Queue extends ResourceController implements Saveable {
             pendings.clear();
 
             File queueFile = getXMLQueueFile();
-            if (queueFile.exists()) {
+            if (Files.exists(queueFile.toPath())) {
                 Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
                 List items;
 
@@ -429,11 +433,9 @@ public class Queue extends ResourceController implements Saveable {
                 // I don't know how this problem happened, but to diagnose this problem better
                 // when it happens again, save the old queue file for introspection.
                 File bk = new File(queueFile.getPath() + ".bak");
-                bk.delete();
-                queueFile.renameTo(bk);
-                queueFile.delete();
+                Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
@@ -2076,7 +2078,7 @@ public class Queue extends ResourceController implements Saveable {
          * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
          * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
          * @return a <em>distinct</em> executable (never {@code this}, unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
-         * @since TODO, but implementations can already implement this with a lower core dependency.
+         * @since 2.313, but implementations can already implement this with a lower core dependency.
          */
         default @CheckForNull Executable getParentExecutable() {
             return null;
@@ -2453,7 +2455,7 @@ public class Queue extends ResourceController implements Saveable {
     @Restricted(NoExternalUse.class)
     @ExportedBean(defaultVisibility = 999)
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "it is exported, so it might be used")
-    public class StubItem {
+    public static class StubItem {
 
         @Exported public StubTask task;
 
@@ -2550,14 +2552,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             if (q.waitingList.add(this)) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onEnterWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onEnterWaiting(this));
             }
         }
 
@@ -2565,14 +2560,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = q.waitingList.remove(this);
             if (r) {
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveWaiting(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveWaiting(this));
             }
             return r;
         }
@@ -2643,14 +2631,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBlocked(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBlocked(this));
         }
 
                     @Override
@@ -2658,14 +2639,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = blockedProjects.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBlocked(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBlocked(this));
             }
             return r;
         }
@@ -2752,14 +2726,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         /*package*/ void enter(Queue q) {
             q.buildables.add(this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterBuildable(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onEnterBuildable(this));
         }
 
         @Override
@@ -2767,14 +2734,7 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = q.buildables.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveBuildable(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
+                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBuildable(this));
             }
             return r;
         }
@@ -2830,14 +2790,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         void enter(Queue q) {
             q.leftItems.put(getId(),this);
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onLeft(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
+            Listeners.notify(QueueListener.class, true, l -> l.onLeft(this));
         }
 
         @Override
@@ -3103,7 +3056,12 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
-        h.getQueue().load();
+        Queue queue = h.getQueue();
+        Item[] items = queue.getItems();
+        if (items.length > 0) {
+            LOGGER.warning(() -> "Loading queue will discard previously scheduled items: " + Arrays.toString(items));
+        }
+        queue.load();
     }
 
     /**

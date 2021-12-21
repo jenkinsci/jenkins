@@ -79,7 +79,7 @@ THE SOFTWARE.
     <st:attribute name="checkMethod" use="optional" type="String">
       Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
       If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.TODO.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
