@@ -8,7 +8,6 @@
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
-def runTests = true
 def failFast = false
 // Same memory sizing for both builds and ATH
 def javaOpts = ["JAVA_OPTS=-Xmx1536m -Xms512m","MAVEN_OPTS=-Xmx1536m -Xms512m"]
@@ -48,21 +47,21 @@ for(j = 0; j < jdks.size(); j++) {
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 300, unit: 'MINUTES') {
+                      realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
                         // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                         // -ntp requires Maven >= 3.6.1
-                        def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
+                        def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install -Dmaven.test.failure.ignore -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
                         infra.runWithMaven(mvnCmd, jdk.toString(), javaOpts, true)
 
                         if(isUnix()) {
                             sh 'git add . && git diff --exit-code HEAD'
                         }
+                      }
                     }
                 }
 
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
-                    if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                         if (! fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml') ) {
                             error 'junit 4 tests are no longer being run for the core package'
@@ -73,7 +72,6 @@ for(j = 0; j < jdks.size(); j++) {
                         if (failFast && currentBuild.result == 'UNSTABLE') {
                             error 'There were test failures; halting early'
                         }
-                    }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
                         def folders = env.JOB_NAME.split('/')
                         if (folders.length > 1) {
