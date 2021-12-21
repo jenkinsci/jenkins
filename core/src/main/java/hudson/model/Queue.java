@@ -46,6 +46,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.init.Initializer;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
@@ -78,9 +79,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -384,7 +382,7 @@ public class Queue extends ResourceController implements Saveable {
             pendings.clear();
 
             File queueFile = getXMLQueueFile();
-            if (Files.exists(queueFile.toPath())) {
+            if (queueFile.exists()) {
                 Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
                 List items;
 
@@ -433,9 +431,11 @@ public class Queue extends ResourceController implements Saveable {
                 // I don't know how this problem happened, but to diagnose this problem better
                 // when it happens again, save the old queue file for introspection.
                 File bk = new File(queueFile.getPath() + ".bak");
-                Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                bk.delete();
+                queueFile.renameTo(bk);
+                queueFile.delete();
             }
-        } catch (IOException | InvalidPathException e) {
+        } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
@@ -850,7 +850,7 @@ public class Queue extends ResourceController implements Saveable {
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
         if (t.task instanceof hudson.model.Item) {
             hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
-            if (!taskAsItem.hasPermission(hudson.model.Item.READ) 
+            if (!taskAsItem.hasPermission(hudson.model.Item.READ)
                     && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
             }
@@ -947,7 +947,7 @@ public class Queue extends ResourceController implements Saveable {
     protected List<BlockedItem> getBlockedItems() {
         return new ArrayList<>(snapshot.blockedProjects);
     }
-    
+
     /**
      * Returns the snapshot of all {@link LeftItem}s.
      *
@@ -1010,7 +1010,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param l Label to be checked. If null, any label will be accepted.
      *    If you want to count {@link BuildableItem}s without assigned labels,
      *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
-     * @return Number of {@link BuildableItem}s for the specified label. 
+     * @return Number of {@link BuildableItem}s for the specified label.
      */
     public /* @java.annotation.Nonnegative */ int countBuildableItemsFor(@CheckForNull Label l) {
         Snapshot snapshot = this.snapshot;
@@ -1025,7 +1025,7 @@ public class Queue extends ResourceController implements Saveable {
                     r++;
         return r;
     }
-    
+
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
      * <p>
@@ -1331,7 +1331,7 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
     /**
-     * Wraps a {@link Runnable} with the  {@link Queue} lock held. 
+     * Wraps a {@link Runnable} with the  {@link Queue} lock held.
      *
      * @param runnable the operation to wrap.
      * @since 1.618
@@ -1344,7 +1344,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held. 
+     * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held.
      *
      * @param callable the operation to wrap.
      * @since 1.618
@@ -1357,7 +1357,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held. 
+     * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held.
      *
      * @param callable the operation to wrap.
      * @since 1.618
@@ -1509,8 +1509,8 @@ public class Queue extends ResourceController implements Saveable {
                 for (BuildableItem p: lostPendings) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.log(Level.FINE,
-                            "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
-                            p.task.getFullDisplayName());
+                                "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
+                                p.task.getFullDisplayName());
                     }
                     p.isPending = false;
                     pendings.remove(p);
@@ -1592,10 +1592,10 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
                 }
             }
-            
+
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
-            
+
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<>(
                     buildables)) {// copy as we'll mutate the list in the loop
@@ -1727,13 +1727,31 @@ public class Queue extends ResourceController implements Saveable {
      */
     @CheckForNull
     private Runnable makeFlyWeightTaskBuildable(final BuildableItem p){
+        Computer masterComputer = null;
         //we double check if this is a flyweight task
         if (p.task instanceof FlyweightTask) {
+            Computer[] computerList = Jenkins.get().getComputers();
+            if (computerList.length > 1) {
+                search: {
+                    for (Computer mComputer : computerList) {
+                        Set<LabelAtom> lbl = mComputer.getAssignedLabels();
+                        for (LabelAtom label: lbl) {
+                            if (label.name.contains("flyweight") && mComputer.isAcceptingTasks()) {
+                                masterComputer = mComputer;
+                                break search;
+                            }
+                            else {
+                                masterComputer = computerList[0];
+                            }
+                        }
+                    }
+                }
+            }
+
             Jenkins h = Jenkins.get();
 
             Label lbl = p.getAssignedLabel();
 
-            Computer masterComputer = h.toComputer();
             if (lbl != null && lbl.equals(h.getSelfLabel())) {
                 // the flyweight task is bound to the master
                 if (h.canTake(p) == null) {
@@ -2216,7 +2234,7 @@ public class Queue extends ResourceController implements Saveable {
          * Test if the specified {@link SubTask} needs to be run on a node with a particular label.
          * <p>
          * This method takes {@link LabelAssignmentAction} into account, the first
-         * non-null assignment will be returned. 
+         * non-null assignment will be returned.
          * Otherwise falls back to {@link SubTask#getAssignedLabel()}
          * @param st {@link SubTask} to be checked.
          * @return Required {@link Label}. Otherwise null, indicating it can run on anywhere.
@@ -2464,7 +2482,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
     }
-    
+
     /**
      * An optional interface for actions on Queue.Item.
      * Lets the action cooperate in queue management.
@@ -2550,17 +2568,17 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         @Override
-        /*package*/ void enter(Queue q) {
+            /*package*/ void enter(Queue q) {
             if (q.waitingList.add(this)) {
-                Listeners.notify(QueueListener.class, true, l -> l.onEnterWaiting(this));
+                Listeners.notify(QueueListener.class, l -> l.onEnterWaiting(this));
             }
         }
 
         @Override
-        /*package*/ boolean leave(Queue q) {
+            /*package*/ boolean leave(Queue q) {
             boolean r = q.waitingList.remove(this);
             if (r) {
-                Listeners.notify(QueueListener.class, true, l -> l.onLeaveWaiting(this));
+                Listeners.notify(QueueListener.class, l -> l.onLeaveWaiting(this));
             }
             return r;
         }
@@ -2627,19 +2645,19 @@ public class Queue extends ResourceController implements Saveable {
             return getCauseOfBlockageForItem(this);
         }
 
-                    @Override
-        /*package*/ void enter(Queue q) {
+        @Override
+            /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
-            Listeners.notify(QueueListener.class, true, l -> l.onEnterBlocked(this));
+            Listeners.notify(QueueListener.class, l -> l.onEnterBlocked(this));
         }
 
-                    @Override
-        /*package*/ boolean leave(Queue q) {
+        @Override
+            /*package*/ boolean leave(Queue q) {
             boolean r = blockedProjects.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBlocked(this));
+                Listeners.notify(QueueListener.class, l -> l.onLeaveBlocked(this));
             }
             return r;
         }
@@ -2724,17 +2742,17 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         @Override
-        /*package*/ void enter(Queue q) {
+            /*package*/ void enter(Queue q) {
             q.buildables.add(this);
-            Listeners.notify(QueueListener.class, true, l -> l.onEnterBuildable(this));
+            Listeners.notify(QueueListener.class, l -> l.onEnterBuildable(this));
         }
 
         @Override
-        /*package*/ boolean leave(Queue q) {
+            /*package*/ boolean leave(Queue q) {
             boolean r = q.buildables.remove(this);
             if (r) {
                 LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                Listeners.notify(QueueListener.class, true, l -> l.onLeaveBuildable(this));
+                Listeners.notify(QueueListener.class, l -> l.onLeaveBuildable(this));
             }
             return r;
         }
@@ -2790,7 +2808,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         void enter(Queue q) {
             q.leftItems.put(getId(),this);
-            Listeners.notify(QueueListener.class, true, l -> l.onLeft(this));
+            Listeners.notify(QueueListener.class, l -> l.onLeft(this));
         }
 
         @Override
@@ -2959,7 +2977,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
-                              + "FindBugs recommends suppressing warnings in such case")
+                        + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<>(this))
                 t.cancel(Queue.this);
@@ -2974,7 +2992,7 @@ public class Queue extends ResourceController implements Saveable {
         private final List<BuildableItem> pendings;
 
         Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
-                        List<BuildableItem> pendings) {
+                 List<BuildableItem> pendings) {
             this.waitingList = new LinkedHashSet<>(waitingList);
             this.blockedProjects = new ArrayList<>(blockedProjects);
             this.buildables = new ArrayList<>(buildables);
@@ -2986,7 +3004,7 @@ public class Queue extends ResourceController implements Saveable {
             return "Queue.Snapshot{waitingList=" + waitingList + ";blockedProjects=" + blockedProjects + ";buildables=" + buildables + ";pendings=" + pendings + "}";
         }
     }
-    
+
     private static class LockedRunnable implements Runnable  {
         private final Runnable delegate;
 
@@ -3130,7 +3148,7 @@ public class Queue extends ResourceController implements Saveable {
                 return nextSave == null
                         ? Futures.precomputed(null)
                         : nextSave
-                ;
+                        ;
             }
         }
     }
