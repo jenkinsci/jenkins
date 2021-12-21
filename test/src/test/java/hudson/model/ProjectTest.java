@@ -388,8 +388,9 @@ public class ProjectTest {
         b2.get();
 
         downstream.setBlockBuildWhenUpstreamBuilding(true);
-        waitForStart(p);
+        QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
         assertInstanceOf("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), BecauseOfUpstreamBuildInProgress.class);
+        b3.get();
     }
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
@@ -744,7 +745,7 @@ public class ProjectTest {
          * Assert that the log contains the correct message.
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
-        String logastext = log.asText();
+        String logastext = log.asNormalizedText();
         assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
         
     }

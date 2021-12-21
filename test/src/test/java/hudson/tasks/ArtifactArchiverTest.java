@@ -151,7 +151,7 @@ public class ArtifactArchiverTest {
         ArtifactArchiver aa = new ArtifactArchiver("dir/lodge");
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
@@ -186,7 +186,7 @@ public class ArtifactArchiverTest {
         aa.setFollowSymlinks(false);
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
@@ -227,7 +227,7 @@ public class ArtifactArchiverTest {
             }
         });
         p.getPublishersList().add(new ArtifactArchiver("hack", "", false, true));
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
@@ -387,9 +387,8 @@ public class ArtifactArchiverTest {
         p.getPublishersList().add(new ArtifactArchiver(FILENAME));
         p.setAssignedNode(slave);
 
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         assumeFalse(FILENAME + " should not be readable by " + System.getProperty("user.name"), new File(build.getWorkspace().child(FILENAME).getRemote()).canRead());
-        j.assertBuildStatus(Result.FAILURE, build);
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
@@ -416,7 +415,7 @@ public class ArtifactArchiverTest {
         ArtifactArchiver aa = new ArtifactArchiver("dir/**");
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();

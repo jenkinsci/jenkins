@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.326</revision>
+    <revision>2.327</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -98,11 +98,11 @@ THE SOFTWARE.
     <spotbugs.threshold>Medium</spotbugs.threshold>
     <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.25</access-modifier.version>
-    <bridge-method-injector.version>1.22</bridge-method-injector.version>
+    <access-modifier.version>1.27</access-modifier.version>
+    <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.1.0</mockito.version>
-    <spotless.version>2.17.6</spotless.version>
+    <mockito.version>4.2.0</mockito.version>
+    <spotless.version>2.17.7</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted

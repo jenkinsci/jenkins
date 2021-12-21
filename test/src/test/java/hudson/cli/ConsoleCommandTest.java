@@ -143,8 +143,8 @@ public class ConsoleCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\""));
 
-        project.getBuildersList().add(new Shell("echo 1"));
-        project.scheduleBuild2(0).get();
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1") : new Shell("echo 1"));
+        j.buildAndAssertSuccess(project);
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -249,7 +249,7 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5"));
         }
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
         assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 1"));
         assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 5"));
 

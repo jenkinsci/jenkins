@@ -54,7 +54,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
-import jenkins.security.s2m.AdminWhitelistRule;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
@@ -175,11 +174,7 @@ public class SetupWizard extends PageDecorator {
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
-    
-                    // set controller -> agent security:
-                    jenkins.getInjector().getInstance(AdminWhitelistRule.class)
-                        .setMasterKillSwitch(false);
-                
+
                     jenkins.save(); // TODO could probably be removed since some of the above setters already call save
                     bc.commit();
                 }

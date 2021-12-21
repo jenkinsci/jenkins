@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
 import static org.junit.Assume.assumeTrue;
 
 import hudson.model.TaskListener;
@@ -43,8 +44,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -628,6 +631,53 @@ public class UtilTest {
         // intermediate symlinks are NOT resolved
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa")));
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa/aa.txt")));
+    }
+
+    @Test
+    @Issue("JENKINS-67372")
+    public void createDirectories() throws Exception {
+        assumeFalse(Functions.isWindows());
+        //  root
+        //      /a
+        //          /a1
+        //          /a2 => symlink to a1
+        //      /b => symlink to a
+        Path root = tmp.getRoot().toPath();
+        Path a = root.resolve("a");
+        Path a1 = a.resolve("a1");
+        Files.createDirectories(a1);
+
+        Path a2 = a.resolve("a2");
+        Util.createSymlink(a2.getParent().toFile(), a1.getFileName().toString(), a2.getFileName().toString(), TaskListener.NULL);
+
+        Path b = root.resolve("b");
+        Util.createSymlink(b.getParent().toFile(), a.getFileName().toString(), b.getFileName().toString(), TaskListener.NULL);
+
+        assertTrue(Files.isSymbolicLink(a2));
+        assertTrue(Files.isSymbolicLink(b));
+
+        assertEquals(a.resolve("new1"), Util.createDirectories(a.resolve("new1")).toRealPath());
+        assertEquals(a1.resolve("new2"), Util.createDirectories(a1.resolve("new2")).toRealPath());
+        assertEquals(a1.resolve("new3"), Util.createDirectories(a2.resolve("new3")).toRealPath());
+        assertEquals(a.resolve("new4"), Util.createDirectories(b.resolve("new4")).toRealPath());
+        assertEquals(a1.resolve("new5"), Util.createDirectories(b.resolve("a1").resolve("new5")).toRealPath());
+        assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
+    }
+
+    @Test
+    @Issue("JENKINS-67372")
+    public void createDirectoriesInRoot() throws Exception {
+        assumeFalse(Functions.isWindows());
+        Path newDirInRoot = Paths.get("/new-dir-in-root");
+        Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
+        try {
+            assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
+            Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
+            assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
+        } catch (AccessDeniedException e) {
+            // Not running as root
+            assumeNoException(e);
+        }
     }
 
     @Test

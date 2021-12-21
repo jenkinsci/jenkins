@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.Objects;
 import net.sf.json.JSONObject;
@@ -43,11 +45,11 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
      * @since 2.281
      */
     @DataBoundConstructor
-    public BooleanParameterDefinition(String name) {
+    public BooleanParameterDefinition(@NonNull String name) {
         super(name);
     }
 
-    public BooleanParameterDefinition(String name, boolean defaultValue, String description) {
+    public BooleanParameterDefinition(@NonNull String name, boolean defaultValue, @CheckForNull String description) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);

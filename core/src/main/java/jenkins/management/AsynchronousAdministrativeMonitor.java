@@ -3,6 +3,7 @@ package jenkins.management;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Functions;
+import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.TaskListener;
@@ -13,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -60,7 +60,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
     protected File getLogFile() {
         File base = getBaseDir();
         try {
-            Files.createDirectories(base.toPath());
+            Util.createDirectories(base.toPath());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

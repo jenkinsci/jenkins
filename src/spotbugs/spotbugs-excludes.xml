@@ -177,22 +177,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="IS2_INCONSISTENT_SYNC"/>
-        <Or>
-          <Class name="hudson.model.Fingerprint"/>
-          <Class name="hudson.model.View"/>
-          <Class name="hudson.security.csrf.DefaultCrumbIssuer"/>
-          <Class name="hudson.slaves.SimpleScheduledRetentionStrategy"/>
-          <Class name="hudson.tasks.Fingerprinter$FingerprintAction"/>
-          <Class name="hudson.tools.ToolInstallation"/>
-          <Class name="hudson.util.ProcessTree$Darwin$DarwinProcess"/>
-          <Class name="hudson.util.SequentialExecutionQueue"/>
-          <Class name="hudson.util.SequentialExecutionQueue$QueueEntry"/>
-          <Class name="jenkins.model.RunIdMigrator"/>
-          <Class name="jenkins.security.apitoken.ApiTokenStats"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
         <Or>
           <Class name="hudson.triggers.Trigger"/>
@@ -666,13 +650,6 @@
       <And>
         <Bug pattern="XXE_DTD_TRANSFORM_FACTORY"/>
         <Class name="hudson.WebAppMain"/>
-      </And>
-      <And>
-        <Bug pattern="XXE_SAXPARSER"/>
-        <Or>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.XmlFile"/>
-        </Or>
       </And>
       <And>
         <Bug pattern="XXE_XSLT_TRANSFORM_FACTORY"/>

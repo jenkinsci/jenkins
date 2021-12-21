@@ -12,6 +12,7 @@ updates:
       # see https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638
       # it would be good to update it at some point, but requires significant testing
       - dependency-name: "org.codehaus.groovy:groovy-all"
+        versions: [">=2.5.0"]
       # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
       - dependency-name: "org.fusesource.jansi:jansi"
       # see https://github.com/jenkinsci/jenkins/pull/5144#pullrequestreview-559661934

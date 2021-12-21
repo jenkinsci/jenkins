@@ -96,7 +96,7 @@ public class TextFile {
      * Overwrites the file by the given string.
      */
     public void write(String text) throws IOException {
-        Files.createDirectories(Util.fileToPath(file.getParentFile()));
+        Util.createDirectories(Util.fileToPath(file.getParentFile()));
         try (AtomicFileWriter w = new AtomicFileWriter(file)) {
             try {
                 w.write(text);

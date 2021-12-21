@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -40,6 +41,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -146,6 +148,7 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     public void buildStabilityReports() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;
@@ -156,8 +159,10 @@ public class FreeStyleProjectTest {
                     if (j <= 16) {
                         expectedFails++;
                     }
+                    this.j.buildAndAssertStatus(Result.FAILURE, p);
+                } else {
+                    this.j.buildAndAssertSuccess(p);
                 }
-                p.scheduleBuild2(0).get();
             }
             HealthReport health = p.getBuildHealth();
 

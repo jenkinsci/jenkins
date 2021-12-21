@@ -18,8 +18,7 @@ properties([
     disableConcurrentBuilds(abortPrevious: true)
 ])
 
-// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-def buildTypes = ['Linux']
+def buildTypes = ['Linux', 'Windows']
 def jdks = [8, 11]
 
 def builds = [:]
@@ -27,9 +26,16 @@ for(i = 0; i < buildTypes.size(); i++) {
 for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
+    if (buildType == 'Windows' && jdk == 8) {
+        continue // unnecessary use of hardware
+    }
     builds["${buildType}-jdk${jdk}"] = {
         // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
+        String agentContainerLabel = jdk == 8 ? 'maven' : 'maven-11'
+        if (buildType == 'Windows') {
+            agentContainerLabel += '-windows'
+        }
+        node(agentContainerLabel) {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -109,8 +115,6 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker-highmem") {
         // Just to be safe
@@ -120,7 +124,7 @@ builds.ath = {
         dir("sources") {
             checkout scm
             def mvnCmd = 'mvn --batch-mode --show-version -ntp -Pquick-build -am -pl war package -Dmaven.repo.local=$WORKSPACE_TMP/m2repo'
-            infra.runWithMaven(mvnCmd, "8", javaOpts, true)
+            infra.runWithMaven(mvnCmd, "11", javaOpts, true)
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"
             }

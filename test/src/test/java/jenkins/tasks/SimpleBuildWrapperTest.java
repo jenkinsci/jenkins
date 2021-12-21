@@ -189,7 +189,7 @@ public class SimpleBuildWrapperTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setScm(new FailingSCM());
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        FreeStyleBuild b = r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertStatus(Result.FAILURE, p);
         r.assertLogContains("ran DisposerImpl #1", b);
         r.assertLogNotContains("ran DisposerImpl #2", b);
     }
@@ -221,7 +221,7 @@ public class SimpleBuildWrapperTest {
         p.getBuildWrappersList().add(new WrapperWithDisposer());
         p.getBuildWrappersList().add(new InterruptedDisposerWrapper());
         // build is ABORTED because of InterruptedException during tearDown (trumps the FAILURE result)
-        FreeStyleBuild b = r.assertBuildStatus(Result.ABORTED, p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertStatus(Result.ABORTED, p);
         r.assertLogContains("tearDown InterruptedDisposerImpl", b);
         r.assertLogContains("ran DisposerImpl", b); // ran despite earlier InterruptedException
     }

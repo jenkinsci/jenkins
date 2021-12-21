@@ -254,7 +254,7 @@ public class QueueTest {
     @Test
     public void queue_id_to_run_mapping() throws Exception {
         FreeStyleProject testProject = r.createFreeStyleProject("test");
-        FreeStyleBuild build = r.assertBuildStatusSuccess(testProject.scheduleBuild2(0));
+        FreeStyleBuild build = r.buildAndAssertSuccess(testProject);
         Assert.assertNotEquals(Run.QUEUE_ID_UNKNOWN, build.getQueueId());
     }
 
@@ -399,14 +399,13 @@ public class QueueTest {
 
         // View for build should group duplicates
         JenkinsRule.WebClient wc = r.createWebClient();
-        String nl = System.getProperty("line.separator");
-        String buildPage = wc.getPage(build, "").asText().replace(nl," ");
+        String buildPage = wc.getPage(build, "").asNormalizedText();
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
-                   buildPage.contains("Started by user SYSTEM (2 times) "
-                        + "Started by an SCM change (3 times) "
-                        + "Started by timer (2 times) "
-                        + "Started by remote host 1.2.3.4 with note: test (2 times) "
-                        + "Started by remote host 4.3.2.1 with note: test "
+                   buildPage.contains("Started by user SYSTEM (2 times)\n"
+                        + "Started by an SCM change (3 times)\n"
+                        + "Started by timer (2 times)\n"
+                        + "Started by remote host 1.2.3.4 with note: test (2 times)\n"
+                        + "Started by remote host 4.3.2.1 with note: test\n"
                         + "Started by remote host 1.2.3.4 with note: foo"));
         System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
@@ -670,7 +669,7 @@ public class QueueTest {
                 return true;
             }
         });
-        r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        r.buildAndAssertSuccess(p);
     }
 
     private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
@@ -698,8 +697,8 @@ public class QueueTest {
             }
         });
 
-        final FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        final FreeStyleBuild b2 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        final FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        final FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
 
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
@@ -708,7 +707,7 @@ public class QueueTest {
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
-            FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
@@ -877,7 +876,7 @@ public class QueueTest {
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
         matrixProject.setAssignedLabel(label);
-        r.assertBuildStatusSuccess(matrixProject.scheduleBuild2(0));
+        r.buildAndAssertSuccess(matrixProject);
         assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 
@@ -1010,9 +1009,9 @@ public class QueueTest {
             if (element.getNodeName().equals("task")) {
                 for (DomNode child: ((DomElement) element).getChildNodes()) {
                     if (child.getNodeName().equals("name")) {
-                        assertEquals("project", child.asText());
+                        assertEquals("project", child.asNormalizedText());
                     } else if (child.getNodeName().equals("url")) {
-                        assertNotNull(child.asText());
+                        assertNotNull(child.asNormalizedText());
                     }
                 }
             }

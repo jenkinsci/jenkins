@@ -57,7 +57,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return this;
     }
 
-    private void initializeMessageDigest() {
+    private synchronized void initializeMessageDigest() {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {

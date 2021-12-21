@@ -41,8 +41,8 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.2</asm.version>
     <slf4jVersion>1.7.32</slf4jVersion>
-    <stapler.version>1593.v0e838714faae</stapler.version>
-    <groovy.version>2.4.12</groovy.version>
+    <stapler.version>1612.v2a13b906bf3a</stapler.version>
+    <groovy.version>2.4.21</groovy.version>
   </properties>
 
   <dependencyManagement>
@@ -179,12 +179,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.8</version>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.6</version>
+        <version>1.7</version>
       </dependency>
       <dependency>
         <groupId>org.connectbot.jbcrypt</groupId>
@@ -234,7 +234,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.6</version>
+        <version>1.7</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -284,7 +284,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
