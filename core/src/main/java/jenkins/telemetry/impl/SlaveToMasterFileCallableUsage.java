@@ -27,9 +27,11 @@ package jenkins.telemetry.impl;
 import hudson.Extension;
 import hudson.Functions;
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.security.s2m.DefaultFilePathFilter;
 import jenkins.telemetry.Telemetry;
@@ -63,13 +65,22 @@ public class SlaveToMasterFileCallableUsage extends Telemetry {
 
     @Override
     public synchronized JSONObject createContent() {
-        JSONObject json = JSONObject.fromObject(Collections.singletonMap("traces", traces));
+        Map<String, Object> info = new TreeMap<>();
+        info.put("traces", traces);
+        info.put("components", buildComponentInformation());
+        JSONObject json = JSONObject.fromObject(info);
         traces.clear();
         return json;
     }
 
     public synchronized void recordTrace(Throwable trace) {
-        traces.add(Functions.printThrowable(trace).replaceAll("@[a-f0-9]+", "@…"));
+        traces.add(generalize(Functions.printThrowable(trace)));
     }
 
+    protected static String generalize(String trace) {
+        return trace
+                .replaceAll("@[a-f0-9]+", "@…")
+                .replaceAll("]\\([0-9]+\\) created at", "](…) created at")
+                .replaceAll("com[.]sun[.]proxy[.][$]Proxy[0-9]+[.]", Matcher.quoteReplacement("com.sun.proxy.$Proxy…."));
+    }
 }

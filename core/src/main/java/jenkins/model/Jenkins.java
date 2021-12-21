@@ -2239,14 +2239,38 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * but we also call this periodically to self-heal any data out-of-sync issue.
      */
     /*package*/ void trimLabels() {
+        trimLabels((Set) null);
+    }
+
+    /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param nodes the nodes taken as reference to update labels
+     */
+    void trimLabels(Node... nodes) {
+        Set<LabelAtom> includedLabels = new HashSet<>();
+        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        trimLabels(includedLabels);
+    }
+
+    /**
+     * Reset labels and remove invalid ones for the given nodes.
+     * @param includedLabels the labels taken as reference to update labels. If {@code null}, all labels are considered.
+     */
+    private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
         Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (nodeLabels.contains(l) || this.clouds.stream().anyMatch(c -> c.canProvision(l))) {
-                resetLabel(l);
-            } else {
-                itr.remove();
+            if (includedLabels == null || includedLabels.contains(l)) {
+                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
+                    // there is at least one static agent or one cloud that currently claims it can handle the label.
+                    // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
+                    // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.
+                    // not checking `cloud.canProvision()` here prevents a potential call that will only be repeated later
+                    resetLabel(l);
+                } else {
+                    itr.remove();
+                }
             }
         }
     }
