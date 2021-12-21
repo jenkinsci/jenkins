@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
 import hudson.Functions;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Result;
@@ -84,7 +85,7 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
         
         final CLICommandInvoker.Result result = command	
                 .authorizedTo(Jenkins.READ, Item.READ)	
@@ -163,7 +164,7 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -181,9 +182,9 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo ${BUILD_NUMBER}"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 3"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project));
+        j.assertLogContains("echo 3", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -249,9 +250,9 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5"));
         }
-        j.buildAndAssertSuccess(project);
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 1"));
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 5"));
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        j.assertLogContains("echo 1", build);
+        j.assertLogContains("echo 5", build);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
