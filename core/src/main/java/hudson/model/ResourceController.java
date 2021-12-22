@@ -24,6 +24,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.AdaptedIterator;
 import java.util.AbstractCollection;
 import java.util.Collection;
@@ -166,6 +167,7 @@ public class ResourceController {
         return null;
     }
 
+    @SuppressFBWarnings(value = "WA_NOT_IN_LOOP", justification = "the caller does indeed call this method in a loop")
     protected void _await() throws InterruptedException {
         wait();
     }

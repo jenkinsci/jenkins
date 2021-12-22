@@ -46,7 +46,7 @@ public class NioChannelSelector {
     /**
      * Escape hatch to disable use of NIO.
      */
-    public static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
+    static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
 
     private static final Logger LOGGER = Logger.getLogger(NioChannelSelector.class.getName());
 }
