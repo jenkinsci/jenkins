@@ -325,10 +325,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Preamble of the encoded form. ANSI escape sequence to stop echo back
      * plus a few magic characters.
      */
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "used in several plugins")
     public static final byte[] PREAMBLE = PREAMBLE_STR.getBytes();
     /**
      * Post amble is the ANSI escape sequence that brings back the echo.
      */
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "used in several plugins")
     public static final byte[] POSTAMBLE = POSTAMBLE_STR.getBytes();
 
     /**

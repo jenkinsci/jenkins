@@ -20,6 +20,7 @@ import static com.sun.jna.Library.OPTION_TYPE_MAPPER;
 
 import com.sun.jna.win32.W32APIFunctionMapper;
 import com.sun.jna.win32.W32APITypeMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * @author TB
  */
+@SuppressFBWarnings(value = "MS_OOI_PKGPROTECT", justification = "for backward compatibility")
 public interface Options {
   Map<String, Object> UNICODE_OPTIONS = new HashMap<String, Object>() {
     {

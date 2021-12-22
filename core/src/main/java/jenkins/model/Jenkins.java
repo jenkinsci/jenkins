@@ -4857,6 +4857,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Extension list that {@link #doResources(StaplerRequest, StaplerResponse)} can serve.
      * This set is mutable to allow plugins to add additional extensions.
      */
+    @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "mutable to allow plugins to add additional extensions")
     public static final Set<String> ALLOWED_RESOURCE_EXTENSIONS = new HashSet<>(Arrays.asList(
             "js|css|jpeg|jpg|png|gif|html|htm".split("\\|")
     ));
