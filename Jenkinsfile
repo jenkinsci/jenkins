@@ -7,7 +7,6 @@
 
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
-// TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def failFast = false
 // Same memory sizing for both builds and ATH
 def javaOpts = ["JAVA_OPTS=-Xmx1536m -Xms512m","MAVEN_OPTS=-Xmx1536m -Xms512m"]
