@@ -47,7 +47,7 @@ THE SOFTWARE.
         <input class="jenkins-radio__input" type="radio" name="${attrs.name}" onclick="${attrs.onclick}"
                id="${attrs.id}" value="${attrs.value}" checked="${attrs.checked?'true':null}"
                disabled="${readOnlyMode?'true':null}" />
-        <label class="jenkins-radio__label" for="${attrs.id}">${attrs.title}</label>
+        <label class="jenkins-radio__label ${attrs.id != null ? '' : 'attach-previous'}" for="${attrs.id}">${attrs.title}</label>
         <div class="jenkins-radio__children">
             <d:invokeBody />
         </div>

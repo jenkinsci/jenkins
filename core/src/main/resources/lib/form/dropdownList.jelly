@@ -39,7 +39,7 @@ THE SOFTWARE.
   </st:documentation>
 
     <div class='jenkins-form-item'>
-        <div class="setting-name help-sibling">
+        <div class="jenkins-form-label help-sibling">
             ${attrs.title}
             <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>

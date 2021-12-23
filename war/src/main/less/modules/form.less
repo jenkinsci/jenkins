@@ -245,7 +245,7 @@
     max-width: 100% !important; // TODO remove important after https://github.com/jenkinsci/credentials-plugin/pull/255
     border-radius: 6px;
     box-shadow: 0 0 0 10px transparent;
-    transition: 0.2s ease;
+    transition: var(--standard-transition);
     min-height: 38px;
 
     &:hover {
@@ -262,6 +262,25 @@
     &:disabled {
       pointer-events: none;
     }
+  }
+}
+
+.jenkins-multi-select {
+  position: relative;
+  width: 100%;
+  border: 2px solid var(--input-border);
+  border-radius: var(--form-input-border-radius);
+  box-shadow: 0 0 0 10px transparent;
+  transition: var(--standard-transition);
+  outline: none;
+
+  &:focus {
+    border-color: var(--focus-input-border);
+    box-shadow: 0 0 0 5px var(--focus-input-glow);
+  }
+
+  &:disabled {
+    pointer-events: none;
   }
 }
 
