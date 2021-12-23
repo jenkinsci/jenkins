@@ -83,8 +83,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                     buffer.append(req.getSession().getId());
                 }
 
-                md.update(buffer.toString().getBytes());
-                return Util.toHexString(md.digest(salt.getBytes()));
+                md.update(buffer.toString().getBytes(StandardCharsets.UTF_8));
+                return Util.toHexString(md.digest(salt.getBytes(StandardCharsets.US_ASCII)));
             }
         }
         return null;

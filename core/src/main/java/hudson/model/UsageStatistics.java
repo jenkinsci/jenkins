@@ -193,7 +193,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 o.write(w);
             }
 
-            return new String(Base64.getEncoder().encode(baos.toByteArray()));
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
         } catch (Throwable e) { // the exception could be GeneralSecurityException, InvalidParameterException or any other depending on the security provider you have installed
             LOG.log(Level.INFO, "Usage statistics could not be sent ({0})", e.getMessage());
             LOG.log(Level.FINE, "Error sending usage statistics", e);
