@@ -4,8 +4,10 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.WebAppMain;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,7 +62,7 @@ public abstract class BootFailure extends ErrorObject {
             File f = getBootFailureFile(home);
             try {
                 if (f.exists()) {
-                    try (BufferedReader failureFileReader = new BufferedReader(new FileReader(f))) {
+                    try (BufferedReader failureFileReader = Files.newBufferedReader(f.toPath(), Charset.defaultCharset())) {
                         String line;
                         DateFormat df = DateFormat.getDateInstance();
                         while ((line=failureFileReader.readLine())!=null) {
@@ -72,7 +74,7 @@ public abstract class BootFailure extends ErrorObject {
                         }
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | InvalidPathException e) {
                 LOGGER.log(Level.WARNING,"Failed to parse "+f,e);
             } 
         }

@@ -8,7 +8,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import java.io.IOException;
 import java.util.Collections;
@@ -168,11 +167,8 @@ public class EnvironmentVariableNodePropertyTest {
 		project.getBuildersList().add(builder);
 		project.setAssignedLabel(node.getSelfLabel());
 
-		// use a timeout so we don't wait infinitely in case of failure
-		FreeStyleBuild build = project.scheduleBuild2(0).get(/*10, TimeUnit.SECONDS*/);
+		FreeStyleBuild build = j.buildAndAssertSuccess(project);
 		
-		assertEquals(Result.SUCCESS, build.getResult());
-
 		return builder.getEnvVars();
 	}
 

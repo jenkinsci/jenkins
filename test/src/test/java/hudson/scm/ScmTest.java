@@ -23,7 +23,6 @@
  */
 package hudson.scm;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import hudson.FilePath;
@@ -31,7 +30,6 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.Result;
@@ -69,7 +67,7 @@ public class ScmTest {
                 return new NullSCM();
             }
         });
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
         p.delete();
         assertTrue(callback[0]);
     }
@@ -92,7 +90,6 @@ public class ScmTest {
             }
         });
 
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
-        assertEquals(Result.ABORTED, build.getResult());
+        j.buildAndAssertStatus(Result.ABORTED, p);
     }
 }

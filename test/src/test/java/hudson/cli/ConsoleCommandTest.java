@@ -31,12 +31,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import hudson.Functions;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
-import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -84,7 +84,7 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
         
         final CLICommandInvoker.Result result = command	
                 .authorizedTo(Jenkins.READ, Item.READ)	
@@ -143,8 +143,8 @@ public class ConsoleCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\""));
 
-        project.getBuildersList().add(new Shell("echo 1"));
-        project.scheduleBuild2(0).get();
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1") : new Shell("echo 1"));
+        j.buildAndAssertSuccess(project);
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -163,7 +163,7 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -181,9 +181,9 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo ${BUILD_NUMBER}"));
         }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 3"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project));
+        j.assertLogContains("echo 3", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -203,23 +203,10 @@ public class ConsoleCommandTest {
             project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10s\n"
                     + "echo after sleep - ${BUILD_NUMBER}"));
         }
-        if (!project.scheduleBuild(0)) {
-            fail("Job wasn't scheduled properly");
-        }
-
-        // Wait until project is started (at least 1s)
-        while(!project.isBuilding()) {
-            System.out.println("Waiting for build to start and sleep 1s...");
-            Thread.sleep(1000);
-        }
-
-        // Wait for the first message
-        if(!project.getBuildByNumber(1).getLog().contains("start - 1")) {
-            Thread.sleep(1000);
-        }
-
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("start - 1"));
-        assertThat(project.getBuildByNumber(1).getLog(), not(containsString("after sleep - 1")));
+        FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("start - 1", build);
+        j.assertLogContains("start - 1", build);
+        j.assertLogNotContains("after sleep - 1", build);
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -236,9 +223,8 @@ public class ConsoleCommandTest {
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("after sleep - 1"));
 
-        assertThat(project.getBuildByNumber(1).isBuilding(), equalTo(false));
-        assertThat(project.getBuildByNumber(1).getResult(), equalTo(Result.SUCCESS));
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("after sleep - 1"));
+        j.assertBuildStatusSuccess(j.waitForCompletion(build));
+        j.assertLogContains("after sleep - 1", build);
     }
 
     @Test public void consoleShouldSuccessWithLastNLines() throws Exception {
@@ -249,9 +235,9 @@ public class ConsoleCommandTest {
         } else {
             project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5"));
         }
-        project.scheduleBuild2(0).get();
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 1"));
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 5"));
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        j.assertLogContains("echo 1", build);
+        j.assertLogContains("echo 5", build);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -276,23 +262,11 @@ public class ConsoleCommandTest {
                     + "echo 6\necho 7\necho 8\necho 9"));
         }
 
-        if (!project.scheduleBuild(0)) {
-            fail("Job wasn't scheduled properly");
-        }
+        FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
 
-        // Wait until project is started (at least 1s)
-        while(!project.isBuilding()) {
-            System.out.println("Waiting for build to start and sleep 1s...");
-            Thread.sleep(1000);
-        }
-
-        // Wait for the first sleep
-        if(!project.getBuildByNumber(1).getLog().contains("echo 5")) {
-            Thread.sleep(1000);
-        }
-
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 5"));
-        assertThat(project.getBuildByNumber(1).getLog(), not(containsString("echo 6")));
+        j.waitForMessage("echo 5", build);
+        j.assertLogContains("echo 5", build);
+        j.assertLogNotContains("echo 6", build);
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -304,9 +278,8 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 6"));
         assertThat(result.stdout(), containsString("echo 9"));
 
-        assertThat(project.getBuildByNumber(1).isBuilding(), equalTo(false));
-        assertThat(project.getBuildByNumber(1).getResult(), equalTo(Result.SUCCESS));
-        assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 9"));
+        j.assertBuildStatusSuccess(j.waitForCompletion(build));
+        j.assertLogContains("echo 9", build);
     }
 
     @Test public void consoleShouldFailIfTheBuildIsStuckInTheQueue() throws Exception {
@@ -315,7 +288,7 @@ public class ConsoleCommandTest {
         project.getBuildersList().add(new Shell("echo 1\nsleep 10s"));
         project.setAssignedLabel(new LabelAtom("never_created"));
 
-        assertThat("Job wasn't scheduled properly", project.scheduleBuild(0), equalTo(true));
+        assertNotNull(project.scheduleBuild2(0));
         Thread.sleep(1000);
         assertThat("Job wasn't scheduled properly - it isn't in the queue", project.isInQueue(), equalTo(true));
         assertThat("Job wasn't scheduled properly - it is running on non-exist node", project.isBuilding(), equalTo(false));

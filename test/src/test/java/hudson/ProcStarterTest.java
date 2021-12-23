@@ -77,9 +77,8 @@ public class ProcStarterTest {
 
         FreeStyleProject project = rule.createFreeStyleProject();
         project.getBuildersList().add(new EchoBuilder());
-        FreeStyleBuild run = project.scheduleBuild2(0).get();
+        FreeStyleBuild run = rule.buildAndAssertStatus(Result.FAILURE, project);
         
-        rule.assertBuildStatus(Result.FAILURE, run);
         rule.assertLogContains("java.io.IOException: Process working directory", run);
     }
 

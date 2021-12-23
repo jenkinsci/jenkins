@@ -43,7 +43,7 @@ public class InitialUserContent {
     public static void init(Jenkins h) throws IOException {
         File userContentDir = new File(h.getRootDir(), "userContent");
         if (!Files.isDirectory(Util.fileToPath(userContentDir))) {
-            Files.createDirectories(Util.fileToPath(userContentDir));
+            Util.createDirectories(Util.fileToPath(userContentDir));
             FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
         }
     }

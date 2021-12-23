@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -100,7 +101,7 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
             PrintWriter out;
             try {
-                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
+                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream(), StandardCharsets.UTF_8));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }

@@ -121,7 +121,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     // if we failed to resurrect an annotation, ignore it.
-                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest)) + "\"", e);
+                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest, Charset.defaultCharset())) + "\"", e);
                 }
 
                 int bytesUsed = rest - b.available(); // bytes consumed by annotations

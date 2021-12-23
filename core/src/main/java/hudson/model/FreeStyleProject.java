@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import jenkins.model.item_category.StandaloneProjectsCategory;
@@ -70,10 +71,12 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ DescriptorImpl DESCRIPTOR;
 
     @Extension(ordinal=1000) @Symbol({"freeStyle","freeStyleJob"})
     public static class DescriptorImpl extends AbstractProjectDescriptor {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }

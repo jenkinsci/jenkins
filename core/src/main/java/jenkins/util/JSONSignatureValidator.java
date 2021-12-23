@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -52,6 +53,7 @@ public class JSONSignatureValidator {
     /**
      * Verifies the signature in the update center data file.
      */
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-512 is not available")
     public FormValidation verifySignature(JSONObject o) throws IOException {
         try {
             FormValidation warning = null;
@@ -239,7 +241,7 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.getEncoder().encode(digest)));
+        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
     }
 
 

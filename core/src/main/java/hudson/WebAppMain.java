@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
@@ -71,8 +72,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletResponse;
 import javax.servlet.SessionTrackingMode;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
@@ -190,7 +189,7 @@ public class WebAppMain implements ServletContextListener {
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             try {
-                Files.createDirectories(home.toPath());
+                Util.createDirectories(home.toPath());
             } catch (IOException | InvalidPathException e) {
                 throw (NoHomeDir)new NoHomeDir(home).initCause(e);
             }
@@ -233,23 +232,6 @@ public class WebAppMain implements ServletContextListener {
                 }
             } catch (IOException e) {
                 throw new NoTempDir(e);
-            }
-
-            // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
-            // try to correct it
-            try {
-                TransformerFactory.newInstance();
-                // if this works we are all happy
-            } catch (TransformerFactoryConfigurationError x) {
-                // no it didn't.
-                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See https://bz.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
-                System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
-                try {
-                    TransformerFactory.newInstance();
-                    LOGGER.info("XSLT is set to the JAXP RI in JRE");
-                } catch(TransformerFactoryConfigurationError y) {
-                    LOGGER.log(SEVERE, "Failed to correct the problem.");
-                }
             }
 
             installExpressionFactory(event);
@@ -312,7 +294,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes());
+            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes(Charset.defaultCharset()));
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }

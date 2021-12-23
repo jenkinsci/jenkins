@@ -186,7 +186,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.close();
         StaplerResponse rsp = Stapler.getCurrentResponse();
         if (rsp!=null)
-            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.getEncoder().encode(baos.toByteArray())));
+            rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
         return r;
     }
 

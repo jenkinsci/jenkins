@@ -43,7 +43,7 @@ public class AbstractItemTest {
         FreeStyleProject p = jenkins.createProject(FreeStyleProject.class, "foo");
         p.setDescription("Hello World");
 
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.setDescription("This is my build");
 
         // update on disk representation

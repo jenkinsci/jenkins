@@ -185,7 +185,7 @@ public class AbstractBuildTest {
         // 2nd build
         scm.addChange().withAuthor("bob");
         p.getBuildersList().add(new FailureBuilder());
-        b = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        b = j.buildAndAssertStatus(Result.FAILURE, p);
         assertCulprits(b, "bob");
 
         // 3rd build. bob continues to be in culprit
@@ -203,12 +203,12 @@ public class AbstractBuildTest {
         // 4th build, unstable. culprit list should continue
         scm.addChange().withAuthor("dave");
         p.getBuildersList().replaceBy(Collections.singleton(new UnstableBuilder()));
-        b = j.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        b = j.buildAndAssertStatus(Result.UNSTABLE, p);
         assertCulprits(b, "bob", "charlie", "dave");
 
         // 5th build, unstable. culprit list should continue
         scm.addChange().withAuthor("eve");
-        b = j.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        b = j.buildAndAssertStatus(Result.UNSTABLE, p);
         assertCulprits(b, "bob", "charlie", "dave", "eve");
 
         // 6th build, success, accumulation continues up to this point
@@ -241,8 +241,7 @@ public class AbstractBuildTest {
     public void doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new ThrowBuilder());
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.FAILURE, build);
+        FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         j.assertLogContains("Finished: FAILURE", build);
         j.assertLogContains("Build step 'ThrowBuilder' marked build as failure", build);
     }

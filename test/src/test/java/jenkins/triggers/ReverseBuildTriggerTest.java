@@ -206,7 +206,7 @@ public class ReverseBuildTriggerTest {
         r.configRoundtrip(downstreamJob2);
 
         r.jenkins.rebuildDependencyGraph();
-        final FreeStyleBuild build = upstreamJob.scheduleBuild2(0).get();
+        final FreeStyleBuild build = r.buildAndAssertSuccess(upstreamJob);
         r.waitUntilNoActivity();
 
         r.assertLogNotContains("java.lang.NullPointerException", build);

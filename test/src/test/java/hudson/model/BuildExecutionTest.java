@@ -44,7 +44,7 @@ public class BuildExecutionTest {
     @Test public void workspaceReliablyReleased() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getPublishersList().add(new BrokenPublisher());
-        FreeStyleBuild b = r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        FreeStyleBuild b = r.buildAndAssertStatus(Result.FAILURE, p);
         r.assertLogContains(Messages.Build_post_build_steps_failed(), b);
         FilePath ws = r.jenkins.getWorkspaceFor(p);
         try (WorkspaceList.Lease lease = r.jenkins.toComputer().getWorkspaceList().allocate(ws)) {

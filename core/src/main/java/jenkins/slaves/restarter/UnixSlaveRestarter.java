@@ -13,6 +13,7 @@ import com.sun.jna.StringArray;
 import hudson.Extension;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Logger;
 import jenkins.util.JavaVMArguments;
@@ -107,7 +108,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
 
             byte[] buf = new byte[r];
             m.read(0, buf, 0, r);
-            return new String(buf);
+            return new String(buf, StandardCharsets.UTF_8);
         }
 
         throw new IOException("Failed to readlink " + link);
