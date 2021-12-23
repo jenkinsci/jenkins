@@ -84,7 +84,7 @@ public class VirtualFileTest {
     
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File ws = tmp.newFolder("ws");
         FileUtils.write(new File(ws, "safe"), "safe", StandardCharsets.US_ASCII, false);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
@@ -231,6 +231,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -361,7 +362,7 @@ public class VirtualFileTest {
 
     @Issue("JENKINS-26810")
     @Test public void readLink() throws Exception {
-        assumeFalse("Symlinks do not work well on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File root = tmp.getRoot();
         FilePath rootF = new FilePath(root);
         rootF.child("plain").write("", null);
@@ -424,6 +425,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -441,6 +443,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -457,6 +460,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -473,6 +477,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -489,6 +494,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -610,6 +616,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -669,6 +676,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which has limited behavior.
         prepareFileStructureForIsDescendant(tmp.getRoot());
@@ -688,6 +696,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_WithSymlink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         prepareFileStructureForIsDescendant(tmp.getRoot());
@@ -763,6 +772,7 @@ public class VirtualFileTest {
 
     @Issue("SECURITY-904")
     @Test public void forFile_isDescendant() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -779,6 +789,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-904")
     public void forFilePath_isDescendant() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -851,6 +862,7 @@ public class VirtualFileTest {
     @Test
     @Issue("JENKINS-55050")
     public void forFile_listOnlyDescendants_withoutIllegal() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -866,6 +878,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-904")
     public void forFilePath_listOnlyDescendants_withoutIllegal() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -1101,6 +1114,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void testOpenNoFollowLinks_FollowsLink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
@@ -1423,6 +1437,7 @@ public class VirtualFileTest {
 
     @Test
     public void hasSymlink_True_FilePathVF() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp.getRoot());
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);
@@ -1440,6 +1455,7 @@ public class VirtualFileTest {
 
     @Test
     public void hasSymlink_True_FileVF() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp.getRoot());
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);

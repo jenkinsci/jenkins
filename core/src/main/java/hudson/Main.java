@@ -24,6 +24,7 @@
 package hudson;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import hudson.util.IOUtils;
@@ -199,7 +200,7 @@ public class Main {
                 }
             }
         } finally {
-            tmpFile.delete();
+            Files.delete(Util.fileToPath(tmpFile));
         }
     }
 
@@ -216,12 +217,14 @@ public class Main {
     /**
      * Set to true if we are running unit tests.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean isUnitTest = false;
 
     /**
      * Set to true if we are running inside {@code mvn jetty:run}.
      * This is also set if running inside {@code mvn hpi:run} since plugins parent POM 2.30.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 
     /**

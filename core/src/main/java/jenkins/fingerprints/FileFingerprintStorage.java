@@ -39,6 +39,10 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
@@ -99,7 +103,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             Fingerprint f = (Fingerprint) loaded;
             return f;
         } catch (IOException e) {
-            if(file.exists() && file.length() == 0) {
+            if (Files.exists(Util.fileToPath(file)) && Files.size(Util.fileToPath(file)) == 0) {
                 // Despite the use of AtomicFile, there are reports indicating that people often see
                 // empty XML file, presumably either due to file system corruption (perhaps by sudden
                 // power loss, etc.) or abnormal program termination.
@@ -107,13 +111,13 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 // but if the file size is 0, which is what's reported in JENKINS-2012, then it seems
                 // like recovering it silently by deleting the file is not a bad idea.
                 logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
-                file.delete();
+                Files.delete(Util.fileToPath(file));
                 return null;
             }
             String parseError = messageOfParseException(e);
             if (parseError != null) {
                 logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
-                file.delete();
+                Files.deleteIfExists(Util.fileToPath(file));
                 return null;
             }
             logger.log(Level.WARNING, "Failed to load " + configFile, e);
@@ -143,7 +147,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     public static void save(Fingerprint fp, File file) throws IOException {
         if (fp.getPersistedFacets().isEmpty()) {
-            file.getParentFile().mkdirs();
+            Files.createDirectories(Util.fileToPath(file.getParentFile()));
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try (PrintWriter w = new PrintWriter(new BufferedWriter(afw))) {
@@ -265,7 +269,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             Fingerprint fp = loadFingerprint(fingerprintFile);
             if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
-                fingerprintFile.delete();
+                Files.deleteIfExists(fingerprintFile.toPath());
                 return true;
             } else {
                 if (!fp.isAlive()) {
@@ -277,7 +281,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 fp = getFingerprint(fp);
                 return fp.trim();
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
             return false;
         }
@@ -322,10 +326,19 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Deletes a directory if it's empty.
      */
     private void deleteIfEmpty(File dir) {
-        String[] r = dir.list();
-        if(r==null)     return; // can happen in a rare occasion
-        if(r.length==0)
-            dir.delete();
+        try {
+            if (Files.isDirectory(dir.toPath())) {
+                boolean isEmpty;
+                try (DirectoryStream<Path> directory = Files.newDirectoryStream(dir.toPath())) {
+                    isEmpty = !directory.iterator().hasNext();
+                }
+                if (isEmpty) {
+                    Files.delete(dir.toPath());
+                }
+            }
+        } catch (IOException | InvalidPathException e) {
+            logger.log(Level.WARNING, null, e);
+        }
     }
 
     protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {

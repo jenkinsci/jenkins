@@ -250,7 +250,7 @@ public abstract class FormFieldValidator {
     @Deprecated
     public abstract static class URLCheck extends FormFieldValidator {
 
-        public URLCheck(StaplerRequest request, StaplerResponse response) {
+        protected URLCheck(StaplerRequest request, StaplerResponse response) {
             // can be used to check the existence of any file in file system
             // or other HTTP URLs inside firewall, so limit this to the admin.
             super(request, response, true);

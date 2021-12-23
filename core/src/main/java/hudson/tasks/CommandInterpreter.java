@@ -67,7 +67,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
     @Restricted(Beta.class)
     protected List<EnvVarsFilterLocalRule> configuredLocalRules = new ArrayList<>();
 
-    public CommandInterpreter(String command) {
+    protected CommandInterpreter(String command) {
         this.command = command;
     }
 

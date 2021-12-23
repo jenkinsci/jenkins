@@ -24,6 +24,8 @@
 
 package hudson.logging;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -113,12 +115,7 @@ public class LogRecorderTest {
         lr.handler.publish(r5);
         lr.handler.publish(r6);
 
-        assertTrue(lr.handler.getView().contains(r1));
-        assertFalse(lr.handler.getView().contains(r2));
-        assertFalse(lr.handler.getView().contains(r3));
-        assertFalse(lr.handler.getView().contains(r4));
-        assertTrue(lr.handler.getView().contains(r5));
-        assertTrue(lr.handler.getView().contains(r6));
+        assertThat(lr.handler.getView(), contains(r6, r5, r1));
     }
 
     private static LogRecord createLogRecord(String logger, Level level, String message) {

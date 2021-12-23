@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2021, Jenkins Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,22 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="Jenkins">
-    <l:header />
-    <l:side-panel />
-    <l:main-panel>
-      <h1><l:icon class="icon-error icon-xlg"/><st:nbsp/>${%Failed to load JNA}</h1>
-      <p>${%blurb}</p>
-      <pre>${it.stackTraceString}</pre>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    <st:attribute name="title" use="required">
+      The title for the application bar
+    </st:attribute>
+    Generates a row containing the page title and an optional set of controls
+  </st:documentation>
+
+  <j:if test="${mode=='app-bar'}">
+    <div class="jenkins-app-bar">
+      <div class="jenkins-app-bar__content">
+        <h1>${title}</h1>
+      </div>
+      <div class="jenkins-app-bar__controls">
+        <d:invokeBody/>
+      </div>
+    </div>
+  </j:if>
 </j:jelly>

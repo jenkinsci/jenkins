@@ -738,7 +738,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all()) {
             try {
                 ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Could not load actions from " + tpaf + " for " + this, e);
             }
         }
@@ -1720,7 +1720,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
             return Integer.parseInt(delay);
         } catch (NumberFormatException e) {
-            throw new ServletException("Invalid delay parameter value: "+delay);
+            throw new ServletException("Invalid delay parameter value: "+delay, e);
         }
     }
 

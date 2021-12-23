@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
@@ -47,24 +48,24 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      * @since 2.281
      */
     @DataBoundConstructor
-    public StringParameterDefinition(String name) {
+    public StringParameterDefinition(@NonNull String name) {
         super(name);
     }
 
-    public StringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description, boolean trim) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);
         setTrim(trim);
     }
 
-    public StringParameterDefinition(String name, String defaultValue, String description) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);
     }
     
-    public StringParameterDefinition(String name, String defaultValue) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue) {
         this(name);
         setDefaultValue(defaultValue);
     }
@@ -79,6 +80,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
+    @NonNull
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -96,7 +98,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     @DataBoundSetter
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(@CheckForNull String defaultValue) {
         this.defaultValue = Util.fixEmpty(defaultValue);
     }
 

@@ -26,6 +26,7 @@ package hudson.os;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import com.sun.solaris.EmbeddedSu;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -81,6 +82,7 @@ public abstract class SU {
                     return "sudo";
                 }
 
+                @SuppressFBWarnings(value = {"COMMAND_INJECTION", "DM_DEFAULT_ENCODING"}, justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(),"-S");
@@ -105,6 +107,7 @@ public abstract class SU {
                     return "/usr/bin/pfexec";
                 }
 
+                @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     listener.getLogger().println("Running with embedded_su");

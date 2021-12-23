@@ -155,8 +155,11 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         }
         
         public Renderable[][] getArrayOfArray() {
-            return new Renderable[][]{
-                    new Renderable[]{new Renderable(), new Renderable()}
+            return new Renderable[][] {
+                new Renderable[] {
+                    new Renderable(),
+                    new Renderable(),
+                },
             };
         }
         

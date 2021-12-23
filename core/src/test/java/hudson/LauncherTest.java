@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
@@ -39,7 +40,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -52,7 +52,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test public void remoteKill() throws Exception {
-        Assume.assumeFalse("Skipping, currently Unix-specific test", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         File tmp = temp.newFile();
 
