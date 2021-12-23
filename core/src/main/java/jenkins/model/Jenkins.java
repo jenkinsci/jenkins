@@ -247,7 +247,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -499,7 +498,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient volatile DependencyGraph dependencyGraph;
     private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
-    private transient Future<DependencyGraph> futureDependencyGraphUndergoingCalculation;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
     private transient Object dependencyGraphLock = new Object();
 
     /**
@@ -4895,11 +4894,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (scheduledFutureDependencyGraph != null) {
                 return scheduledFutureDependencyGraph;
             }
-            //Running future will be the most recent one --> Return 
-            if (futureDependencyGraphUndergoingCalculation != null ) {
-                return futureDependencyGraphUndergoingCalculation;
+            //Calculating future will be the most recent one --> Return 
+            if (calculatingFutureDependencyGraph != null ) {
+                return calculatingFutureDependencyGraph;
             }
-            //No scheduled or running future --> Already completed dependency graph is the most recent one 
+            //No scheduled or calculating future --> Already completed dependency graph is the most recent one 
             return CompletableFuture.completedFuture(dependencyGraph);
         }
     }
@@ -4945,13 +4944,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return Timer.get().schedule(() -> {
             
             //Wait for the currently running calculation to finish
-            while (futureDependencyGraphUndergoingCalculation != null && !futureDependencyGraphUndergoingCalculation.isDone()) {
+            while (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
                 Thread.sleep(100);
             }
 
-            // Scheduled future becomes the currently running future
+            // Scheduled future becomes the currently calculating future
             synchronized (dependencyGraphLock) {
-                futureDependencyGraphUndergoingCalculation = scheduledFutureDependencyGraph;
+                calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
                 scheduledFutureDependencyGraph = null;
             }
 
@@ -4959,7 +4958,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             
             // Mark that we finished calculating the dependency graph
             synchronized (dependencyGraphLock) {
-                futureDependencyGraphUndergoingCalculation = null;
+                calculatingFutureDependencyGraph = null;
             }
             return dependencyGraph;
         }, delay, unit);
