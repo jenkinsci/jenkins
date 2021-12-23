@@ -84,8 +84,8 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <java.level>8</java.level>
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+    <java.level>11</java.level>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
@@ -536,7 +536,7 @@ THE SOFTWARE.
           <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>
+          <goals>-DskipTests javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
@@ -581,8 +581,7 @@ THE SOFTWARE.
         <artifactId>maven-compiler-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
-          <source>1.${java.level}</source>
-          <target>1.${java.level}</target>
+          <release>${java.level}</release>
           <!-- default reuseCreated is more performant
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -742,23 +741,6 @@ THE SOFTWARE.
       <properties>
         <failIfNoTests>false</failIfNoTests>
       </properties>
-    </profile>
-    <profile>
-      <id>jdk11</id>
-      <properties>
-        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
-        <doclint>none</doclint>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- release is needed for reliable cross compilation. It is supported
-        starting JDK 9, but as the only earlier version we support is 8, it would
-        be either compiled by javac from 8 or one from a newer compiler that
-        correctly handle the release flag. This will replace both source and target
-        once we drop support for JDK 8 that only recognize source and target. -->
-        <maven.compiler.release>${java.level}</maven.compiler.release>
-      </properties>
-      <activation>
-        <jdk>11</jdk>
-      </activation>
     </profile>
   </profiles>
 </project>
