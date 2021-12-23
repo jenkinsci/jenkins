@@ -25,6 +25,7 @@ package jenkins.security.apitoken;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -160,6 +161,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     }
     
     @RequirePOST
+    @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", justification = "written to by Stapler")
     public HttpResponse doRevokeAllSelected(@JsonBody RevokeAllSelectedModel content) throws IOException {
         for (RevokeAllSelectedUserAndUuid value : content.values) {
             if (value.userId == null) {

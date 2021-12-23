@@ -434,7 +434,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * that JVM runs in, or in the worst case return the default one
      * that's not capable of killing descendants at all.
      */
-    public static ProcessTree get() {
+    public static synchronized ProcessTree get() {
         if(!enabled)
             return DEFAULT;
 
