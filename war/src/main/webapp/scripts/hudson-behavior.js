@@ -835,11 +835,14 @@ function expandButton(e) {
 function labelAttachPreviousOnClick() {
     var e = $(this).previous();
     while (e!=null) {
-        if (e.tagName=="INPUT") {
-            e.click();
-            break;
-        }
-        e = e.previous();
+      if (e.classList.contains("jenkins-radio")) {
+        e = e.querySelector("input");
+      }
+      if (e.tagName=="INPUT") {
+        e.click();
+        break;
+      }
+      e = e.previous();
     }
 }
 
