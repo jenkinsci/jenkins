@@ -61,7 +61,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailWithoutJobReadPermission() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -74,7 +74,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailWithoutRunUpdatePermission1() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Jenkins.READ)
@@ -88,7 +88,7 @@ public class SetBuildDescriptionCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleBuild build = j.buildAndAssertSuccess(project);
-        assertThat(build.getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", build);
         assertThat(build.getDescription(), equalTo(null));
 
         CLICommandInvoker.Result result = command
@@ -133,7 +133,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailIfBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Jenkins.READ)

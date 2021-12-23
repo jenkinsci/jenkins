@@ -353,6 +353,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
+    @SuppressFBWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD", justification = "no big deal")
     protected void renameTo(final String newName) throws IOException {
 
         if (!isNameEditable()) {

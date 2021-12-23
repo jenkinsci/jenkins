@@ -3,6 +3,7 @@ package jenkins.util.groovy;
 import static java.util.logging.Level.WARNING;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
@@ -129,6 +130,7 @@ public class GroovyHookScript {
         }
     }
 
+    @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "Groovy hook scripts are a feature, not a bug")
     protected void execute(GroovyCodeSource s) {
         try {
             createShell().evaluate(s);

@@ -2,6 +2,7 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -146,6 +147,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         }
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private static @NonNull Map<String, Integer> load(@NonNull File buildDir) {
         Map<String, Integer> cache = new TreeMap<>();
         File storage = storageFor(buildDir);

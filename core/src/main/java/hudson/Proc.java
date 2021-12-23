@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -354,7 +355,7 @@ public abstract class Proc {
 //                    } catch (IOException x) {
 //                        LOGGER.log(Level.FINE,"stderr termination failed",x);
 //                    }
-                    out.write(msg.getBytes());
+                    out.write(msg.getBytes(Charset.defaultCharset()));
                     out.write('\n');
                 }
                 return r;

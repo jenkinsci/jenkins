@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
@@ -151,5 +152,5 @@ public class DefaultConfidentialStore extends ConfidentialStore {
         return random;
     }
 
-    private static final byte[] MAGIC = "::::MAGIC::::".getBytes();
+    private static final byte[] MAGIC = "::::MAGIC::::".getBytes(StandardCharsets.US_ASCII);
 }

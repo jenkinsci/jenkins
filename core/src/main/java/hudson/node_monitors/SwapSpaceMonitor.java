@@ -23,6 +23,7 @@
  */
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -89,6 +90,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
 
     @Extension @Symbol("swapSpace")
     public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<MemoryUsage> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }

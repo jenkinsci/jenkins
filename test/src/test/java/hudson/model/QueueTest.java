@@ -174,7 +174,7 @@ public class QueueTest {
         r.jenkins.setNumExecutors(0);
 
         FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
+        assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
         System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"), StandardCharsets.UTF_8));
@@ -222,7 +222,7 @@ public class QueueTest {
         r.jenkins.setNumExecutors(0);
 
         FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
+        assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
         System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
@@ -277,10 +277,12 @@ public class QueueTest {
         });
 
         Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
         // get another going
         Future<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+        assertNotNull(b2);
 
         q.scheduleMaintenance().get();
         Queue.Item[] items = q.getItems();
@@ -361,22 +363,22 @@ public class QueueTest {
         });
 
         // Start one build to block others
-        assertTrue(project.scheduleBuild(new UserIdCause()));
+        project.scheduleBuild2(0, new UserIdCause()).waitForStart();
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
-        Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
+        final Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
         assertNotNull(fb);
-        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
-        assertTrue(project.scheduleBuild(new UserIdCause()));
-        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
-        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertTrue(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
-        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
-        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
+        assertNotNull(project.scheduleBuild2(0, new SCMTriggerCause("")));
+        assertNotNull(project.scheduleBuild2(0, new UserIdCause()));
+        assertNotNull(project.scheduleBuild2(0, new TimerTriggerCause()));
+        assertNotNull(project.scheduleBuild2(0, new RemoteCause("1.2.3.4", "test")));
+        assertNotNull(project.scheduleBuild2(0, new RemoteCause("4.3.2.1", "test")));
+        assertNotNull(project.scheduleBuild2(0, new SCMTriggerCause("")));
+        assertNotNull(project.scheduleBuild2(0, new RemoteCause("1.2.3.4", "test")));
+        assertNotNull(project.scheduleBuild2(0, new RemoteCause("1.2.3.4", "foo")));
+        assertNotNull(project.scheduleBuild2(0, new SCMTriggerCause("")));
+        assertNotNull(project.scheduleBuild2(0, new TimerTriggerCause()));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();
@@ -1123,7 +1125,7 @@ public class QueueTest {
         assertThat(q.getItems().length, equalTo(0));
 
         FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
+        assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
 
         Queue.Item[] items = q.getItems();
         assertThat(items.length, equalTo(1));

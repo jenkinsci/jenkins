@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -101,7 +102,9 @@ public class CompressedFile {
 
     /**
      * Loads the file content as a string.
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public String loadAsString() throws IOException {
         long sizeGuess;
         if(file.exists())
@@ -115,7 +118,7 @@ public class CompressedFile {
         StringBuilder str = new StringBuilder((int)sizeGuess);
 
         try (InputStream is = read();
-             Reader r = new InputStreamReader(is)) {
+             Reader r = new InputStreamReader(is, Charset.defaultCharset())) {
             char[] buf = new char[8192];
             int len;
             while((len=r.read(buf,0,buf.length))>0)
