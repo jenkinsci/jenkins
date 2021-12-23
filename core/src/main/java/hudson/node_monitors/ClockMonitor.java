@@ -23,6 +23,7 @@
  */
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -53,10 +54,12 @@ public class ClockMonitor extends NodeMonitor {
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR;
 
     @Extension @Symbol("clock")
     public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<ClockDifference> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }

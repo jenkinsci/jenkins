@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.regex.Pattern;
 import jenkins.util.SystemProperties;
@@ -302,7 +303,7 @@ public class FileParameterValue extends ParameterValue {
 
         @Override
         public String getString() {
-            return new String(get());
+            return new String(get(), Charset.defaultCharset());
         }
 
         @Override

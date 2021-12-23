@@ -26,6 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
@@ -129,6 +130,7 @@ public abstract class Cause {
      */
     @Deprecated
     public static class LegacyCodeCause extends Cause {
+        @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "for backward compatibility")
         private StackTraceElement [] stackTrace;
         public LegacyCodeCause() {
             stackTrace = new Exception().getStackTrace();

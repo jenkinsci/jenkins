@@ -1370,6 +1370,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     @Override
+    @SuppressFBWarnings(value = "WA_AWAIT_NOT_IN_LOOP", justification = "the caller does indeed call this method in a loop")
     protected void _await() throws InterruptedException {
         condition.await();
     }
