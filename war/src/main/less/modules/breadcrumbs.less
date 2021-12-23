@@ -66,52 +66,105 @@
     // '>' separator between two items
     .children,
     .separator {
+      position: relative;
       cursor: pointer;
       width: 14px;
       height: 14px;
-      background: var(--text-color);
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
       margin: 6px;
-      opacity: 0.5;
-      transition: var(--standard-transition);
 
       &:hover {
-        opacity: 1;
-        transform: rotate(90deg);
+        &::after {
+          opacity: 1;
+          transform: rotate(90deg);
+        }
       }
 
       &:active {
-        transform: translateY(2px) rotate(90deg);
+        &::after {
+          transform: translateY(2px) rotate(90deg);
+          opacity: 0.5;
+        }
+      }
+
+      // Increase the hit target
+      &::before {
+        content: "";
+        position: absolute;
+        top: -14px;
+        left: -5px;
+        bottom: -14px;
+        right: -5px;
+        background: transparent;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
         opacity: 0.5;
+        transition: var(--standard-transition);
+        background: var(--text-color);
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
       }
     }
   }
 }
 
 .jenkins-menu-dropdown-chevron {
+  position: relative;
   display: inline;
   width: 14px;
   height: 14px;
-  opacity: 0;
   border: none;
   outline: none;
-  background: var(--text-color);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
-  mask-position: center;
-  transition: var(--standard-transition);
   cursor: pointer;
   padding: 0;
   margin-left: -14px;
   pointer-events: none;
   vertical-align: middle;
+  transition: var(--standard-transition);
+  background: transparent;
 
   &:hover {
-    opacity: 1 !important;
+    &::after {
+      opacity: 1 !important;
+    }
   }
 
   &:active {
-    transform: translateY(2px);
-    opacity: 0.5;
+    &::after {
+      transform: translateY(2px);
+      opacity: 0.5 !important;
+    }
+  }
+
+  // Increase the hit target
+  &::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    bottom: -7px;
+    right: -10px;
+    width: 24px;
+    background: transparent;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    background: var(--text-color);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
+    mask-position: center;
+    mask-repeat: no-repeat;
   }
 }
 
@@ -121,8 +174,11 @@
   &:hover {
     .jenkins-menu-dropdown-chevron {
       margin-left: 1ch;
-      opacity: 0.5;
       pointer-events: all;
+
+      &::after {
+        opacity: 0.5;
+      }
     }
 
     // For links with badges next to them, eg build monitor page, we need to shrink the margins of
