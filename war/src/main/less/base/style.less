@@ -447,8 +447,20 @@ div.behavior-loading {
 }
 
 .bottom-sticker-inner {
+  position: relative;
+  padding: 1em 0;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(-2rem - 2px);
+    bottom: 0;
+    right: 0;
     background: var(--background);
-    padding: 1em 0;
+    z-index: -1;
+  }
 }
 
 .top-sticker,
