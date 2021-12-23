@@ -29,17 +29,17 @@ THE SOFTWARE.
             <j:set var="id" value="${h.generateId()}"/>
             <j:set var="href" value="${jobBaseUrl}${job.shortUrl}build?delay=0sec"/>
             <div class="jenkins-table__cell__button-wrapper">
-              <a id="${id}" class="jenkins-table__button jenkins-table__button--green" href="${href}">
-                  <j:choose>
-                      <j:when test="${job.parameterized}">
-                          <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                      </j:when>
-                      <j:otherwise>
-                          <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
-                          <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                      </j:otherwise>
-                  </j:choose>
-                  <l:ionicon name="play-outline" title="${title}" />
+              <j:choose>
+                <j:when test="${job.parameterized}">
+                  <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+                </j:when>
+                <j:otherwise>
+                  <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
+                  <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+                </j:otherwise>
+              </j:choose>
+              <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-table__button--green" href="${href}">
+                  <l:ionicon name="play-outline" />
                   <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
             </div>
