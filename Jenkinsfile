@@ -49,8 +49,10 @@ for(j = 0; j < jdks.size(); j++) {
                       realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
                         // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                         // -ntp requires Maven >= 3.6.1
-                        def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install -Dmaven.test.failure.ignore -V -B -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
-                        infra.runWithMaven(mvnCmd, jdk.toString(), javaOpts, true)
+                        ansiColor('xterm') {
+                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install -Dmaven.test.failure.ignore -V -B -Dstyle.color=always -ntp -Dmaven.repo.local=$m2repo -Dspotbugs.failOnError=false -Dcheckstyle.failOnViolation=false -e"
+                            infra.runWithMaven(mvnCmd, jdk.toString(), javaOpts, true)
+                        }
 
                         if(isUnix()) {
                             sh 'git add . && git diff --exit-code HEAD'
