@@ -12,6 +12,7 @@
   min-height:2.5em;
   .border-radius-top(@border-radius);
   z-index:5;
+  overflow: hidden;
 
   nav:before, nav:after {
     display: none;
@@ -50,7 +51,6 @@
 
   .form-config.tabBarFrame {
     position: relative;
-    border-bottom: solid 1px var(--medium-grey);
 
     .config-section-activators {
       margin: 0;
@@ -99,10 +99,11 @@
 }
 #jenkins{
   .jenkins-config {
-    border:1px solid var(--input-border);
-    padding: 2rem;
-    border-top:none;
-    background:var(--bright-bg-color);
+    border: 1px solid var(--input-border);
+    padding: 2rem 2rem 0 2rem;
+    border-top: none;
+    border-bottom: none;
+    background: var(--bright-bg-color);
     .border-radius-bottom(@border-radius);
 
     .showTabs{
