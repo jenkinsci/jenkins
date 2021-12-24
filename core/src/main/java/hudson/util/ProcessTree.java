@@ -434,7 +434,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * that JVM runs in, or in the worst case return the default one
      * that's not capable of killing descendants at all.
      */
-    public static synchronized ProcessTree get() {
+    public static ProcessTree get() {
+        boolean vetoes;
+        synchronized(ProcessTree.class) {
         if(!enabled)
             return DEFAULT;
 
@@ -459,7 +461,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         // Null-check in case the previous call worked
-        boolean vetoes = vetoersExist == null ? true : vetoersExist;
+        vetoes = vetoersExist == null ? true : vetoersExist;
+        }
         
         try {
             if(File.pathSeparatorChar==';')
