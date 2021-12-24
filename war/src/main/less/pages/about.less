@@ -7,6 +7,10 @@
   padding: 2rem;
   pointer-events: none;
 
+  @media (max-width: 970px) {
+    height: 200px;
+  }
+
   .app-about-branding__logo {
     position: fixed;
     top: 0;
@@ -15,6 +19,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    @media (max-width: 970px) {
+      position: relative;
+    }
 
     img {
       height: 12.5vh;

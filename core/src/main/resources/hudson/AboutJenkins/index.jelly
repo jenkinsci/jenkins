@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:side-panel>
       <style>
         #side-panel {
-          padding: 0;
+          padding: 0 !important;
           border-right: none;
         }
       </style>
