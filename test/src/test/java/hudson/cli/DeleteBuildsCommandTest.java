@@ -31,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
@@ -155,7 +156,7 @@ public class DeleteBuildsCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(new Shell("echo 1"));
         project.setAssignedLabel(new LabelAtom("never_created"));
-        assertThat("Job wasn't scheduled properly", project.scheduleBuild(0), equalTo(true));
+        assertNotNull(project.scheduleBuild2(0));
         Thread.sleep(1000);
         assertThat("Job wasn't scheduled properly - it isn't in the queue", project.isInQueue(), equalTo(true));
         assertThat("Job wasn't scheduled properly - it is running on non-exist node", project.isBuilding(), equalTo(false));

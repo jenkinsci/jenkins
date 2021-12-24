@@ -82,6 +82,7 @@ public class SCMTriggerTest {
         p.setScm(new TestSCM(checkoutStarted));
 
         Future<FreeStyleBuild> build = p.scheduleBuild2(0, new Cause.UserCause());
+        assertNotNull(build);
         checkoutStarted.block();
         assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(StreamTaskListener.fromStdout()));
         build.get();  // let mock build finish
@@ -155,15 +156,15 @@ public class SCMTriggerTest {
         p.addTrigger(t);
 
         // Start one build to block others
-        assertTrue(p.scheduleBuild(new Cause.UserCause()));
+        p.scheduleBuild2(0, new Cause.UserCause()).waitForStart();
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new Cause.UserCause());
         assertNotNull(fb);
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("First poll")));
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("Second poll")));
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("Third poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("First poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("Second poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("Third poll")));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();
