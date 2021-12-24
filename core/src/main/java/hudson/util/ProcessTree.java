@@ -427,7 +427,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
 
-    /* package */ static Boolean vetoersExist;
+    /* package */ static volatile Boolean vetoersExist;
     
     /**
      * Gets the {@link ProcessTree} of the current system
@@ -435,8 +435,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * that's not capable of killing descendants at all.
      */
     public static ProcessTree get() {
-        boolean vetoes;
-        synchronized(ProcessTree.class) {
         if(!enabled)
             return DEFAULT;
 
@@ -461,8 +459,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         // Null-check in case the previous call worked
-        vetoes = vetoersExist == null ? true : vetoersExist;
-        }
+        boolean vetoes = vetoersExist == null ? true : vetoersExist;
         
         try {
             if(File.pathSeparatorChar==';')
