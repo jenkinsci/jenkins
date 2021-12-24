@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     var element
                     // modern buttons aren't wrapped in spans
                     if (e.classList.contains('jenkins-button') || e.classList.contains('repeatable-delete')) {
+                        p = findParent(e);
                         element = e
                     } else {
                         p = findParent(e);
