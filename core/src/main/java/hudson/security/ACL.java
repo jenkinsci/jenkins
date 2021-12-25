@@ -355,7 +355,7 @@ public abstract class ACL {
      */
     public static final Sid ANONYMOUS = new PrincipalSid(ANONYMOUS_USERNAME);
 
-    protected static final Sid[] AUTOMATIC_SIDS = new Sid[]{EVERYONE,ANONYMOUS};
+    static final Sid[] AUTOMATIC_SIDS = new Sid[]{EVERYONE,ANONYMOUS};
 
     /**
      * The username for the system user

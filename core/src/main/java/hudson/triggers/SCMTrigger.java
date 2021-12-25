@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -209,7 +210,7 @@ public class SCMTrigger extends Trigger<Item> {
      * Returns the file that records the last/current polling activity.
      */
     public File getLogFile() {
-        return new File(job.getRootDir(),"scm-polling.log");
+        return new File(Objects.requireNonNull(job).getRootDir(),"scm-polling.log");
     }
 
     @Extension @Symbol("pollSCM")
@@ -691,7 +692,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Override
         public int hashCode() {
-            return job.hashCode();
+            return Objects.requireNonNull(job).hashCode();
         }
     }
 

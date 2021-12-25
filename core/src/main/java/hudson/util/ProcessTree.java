@@ -50,15 +50,17 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -425,7 +427,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
 
-    /* package */ static Boolean vetoersExist;
+    /* package */ static volatile Boolean vetoersExist;
     
     /**
      * Gets the {@link ProcessTree} of the current system
@@ -983,7 +985,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             LinuxProcess(int pid) throws IOException {
                 super(pid);
 
-                try (BufferedReader r = new BufferedReader(new FileReader(getFile("status")))) {
+                try (BufferedReader r = Files.newBufferedReader(Util.fileToPath(getFile("status")), StandardCharsets.UTF_8)) {
                     String line;
                     while((line=r.readLine())!=null) {
                         line=line.toLowerCase(Locale.ENGLISH);
@@ -1015,7 +1017,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
                         if(b==0) {
-                            arguments.add(new String(cmdline,pos,i-pos));
+                            arguments.add(new String(cmdline,pos,i-pos, StandardCharsets.UTF_8));
                             pos=i+1;
                         }
                     }
@@ -1039,7 +1041,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
                         if(b==0) {
-                            envVars.addLine(new String(environ,pos,i-pos));
+                            envVars.addLine(new String(environ,pos,i-pos, StandardCharsets.UTF_8));
                             pos=i+1;
                         }
                     }
@@ -1345,7 +1347,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line = buf.toString();
+                String line;
+                try {
+                    line = buf.toString(StandardCharsets.UTF_8.name());
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
                 if(LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix+" was "+line);
                 return line;
@@ -1616,7 +1623,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line = buf.toString();
+                String line;
+                try {
+                    line = buf.toString(StandardCharsets.UTF_8.name());
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
                 if(LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix+" was "+line);
                 return line;
@@ -1779,13 +1791,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             return getByte(offset);
                         }
 
-                        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
                         String readString() {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             byte ch;
                             while(offset < length && (ch = getByte(offset++))!='\0')
                                 baos.write(ch);
-                            return baos.toString();
+                            try {
+                                return baos.toString(StandardCharsets.UTF_8.name());
+                            } catch (UnsupportedEncodingException e) {
+                                throw new AssertionError(e);
+                            }
                         }
 
                         void skip0() {
@@ -2098,7 +2113,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     while ((ch = m.getByte(offset++)) != '\0') {
                         baos.write(ch);
                     }
-                    consumer.accept(baos.toString());
+                    try {
+                        consumer.accept(baos.toString(StandardCharsets.UTF_8.name()));
+                    } catch (UnsupportedEncodingException e) {
+                        throw new AssertionError(e);
+                    }
                     baos.reset();
                 }
             }
@@ -2242,6 +2261,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * in case there's a fatal problem.
      *
      */
-    public static boolean enabled = !SystemProperties.getBoolean("hudson.util.ProcessTreeKiller.disable")
+    static boolean enabled = !SystemProperties.getBoolean("hudson.util.ProcessTreeKiller.disable")
             && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

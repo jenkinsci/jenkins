@@ -23,7 +23,6 @@
  */
 package hudson.cli;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
@@ -32,6 +31,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
@@ -134,7 +134,7 @@ public class PrivateKeyProvider {
              DataInputStream dis = new DataInputStream(is)) {
             byte[] bytes = new byte[(int) f.length()];
             dis.readFully(bytes);
-            return new String(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
@@ -143,7 +143,7 @@ public class PrivateKeyProvider {
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
         Iterable<KeyPair> itr = SecurityUtils.loadKeyPairIdentities(null,
                 new PathResource(Paths.get("key")),
-                new ByteArrayInputStream(pemString.getBytes(UTF_8)),
+                new ByteArrayInputStream(pemString.getBytes(StandardCharsets.UTF_8)),
                 FilePasswordProvider.of(passwd));
         long numLoaded = itr == null ? 0 : StreamSupport.stream(itr.spliterator(), false).count();
         if (numLoaded <= 0) {

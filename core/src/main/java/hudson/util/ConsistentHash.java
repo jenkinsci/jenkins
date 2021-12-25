@@ -24,6 +24,7 @@
 package hudson.util;
 
 import hudson.util.Iterators.DuplicateFilterIterator;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -304,7 +305,7 @@ public class ConsistentHash<T> {
     private int digest(String s) {
         try {
             MessageDigest messageDigest = createMessageDigest();
-            messageDigest.update(s.getBytes());
+            messageDigest.update(s.getBytes(StandardCharsets.UTF_8));
             byte[] digest = messageDigest.digest();
 
             // 16 bytes -> 4 bytes

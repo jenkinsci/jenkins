@@ -1509,11 +1509,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	}
     	
         String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes(Charset.defaultCharset()));
     }
    
     public @NonNull Reader getLogReader() throws IOException {
-        if (charset==null)  return new InputStreamReader(getLogInputStream());
+        if (charset==null)  return new InputStreamReader(getLogInputStream(),Charset.defaultCharset());
         else                return new InputStreamReader(getLogInputStream(),charset);
     }
 
@@ -1782,7 +1782,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * @throws Exception
          *      exception will be recorded and the build will be considered a failure.
          */
-        public abstract @NonNull Result run(@NonNull BuildListener listener ) throws Exception, RunnerAbortedException;
+        public abstract @NonNull Result run(@NonNull BuildListener listener ) throws Exception;
 
         /**
          * Performs the post-build action.

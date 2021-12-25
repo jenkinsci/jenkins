@@ -199,12 +199,8 @@ public class MavenTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
         project.getBuildersList().add(new Maven("clean package",null));
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        @SuppressWarnings("deprecation")
-        String buildLog = build.getLog();
-        assertNotNull(buildLog);
-	    System.out.println(buildLog);
-        assertFalse(buildLog.contains("-Dpassword=12345"));
+        FreeStyleBuild build = j.waitForCompletion(project.scheduleBuild2(0).waitForStart());
+        j.assertLogNotContains("-Dpassword=12345", build);
     }
     
     @Test
@@ -222,19 +218,9 @@ public class MavenTest {
                 new EnvironmentVariablesNodeProperty(envVar)
         ));
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        @SuppressWarnings("deprecation")
-        String buildLog = build.getLog();
-
-        assertNotNull(buildLog);
-        assertTrue(
-                "Parameter my.path should preserve backslashes in:\n" + buildLog,
-                buildLog.contains("-Dmy.path=C:\\Windows\\Dir")
-        );
-        assertTrue(
-                "Parameter global.path should preserve backslashes in:\n" + buildLog,
-                buildLog.contains("-Dglobal.path=D:\\Jenkins")
-        );
+        FreeStyleBuild build = j.waitForCompletion(project.scheduleBuild2(0).waitForStart());
+        j.assertLogContains("-Dmy.path=C:\\Windows\\Dir", build);
+        j.assertLogContains("-Dglobal.path=D:\\Jenkins", build);
     }
 
     @Test public void defaultSettingsProvider() throws Exception {
@@ -314,21 +300,21 @@ public class MavenTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
-        String log = j.buildAndAssertSuccess(p).getLog();
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
         assertTrue("Build variables injection should be enabled by default when loading from XML", p.getBuildersList().get(Maven.class).isInjectBuildVariables());
-        assertTrue("Build variables should be injected by default when loading from XML", log.contains("-DNAME=VALUE"));
+        j.assertLogContains("-DNAME=VALUE", build);
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, false/*do not inject*/));
 
-        log = j.buildAndAssertSuccess(p).getLog();
-        assertFalse("Build variables should not be injected", log.contains("-DNAME=VALUE"));
+        build = j.buildAndAssertSuccess(p);
+        j.assertLogNotContains("-DNAME=VALUE", build);
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, true/*do inject*/));
 
-        log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue("Build variables should be injected", log.contains("-DNAME=VALUE"));
+        build = j.buildAndAssertSuccess(p);
+        j.assertLogContains("-DNAME=VALUE", build);
 
         assertFalse("Build variables injection should be disabled by default", new Maven("", "").isInjectBuildVariables());
     }
@@ -341,16 +327,16 @@ public class MavenTest {
 
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
                 null, false/*do not inject build variables*/));
-        String log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue("Properties should always be injected, even when build variables injection is disabled",
-                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+        j.assertLogContains("-DTEST_PROP1=VAL1", build);
+        j.assertLogContains("-DTEST_PROP2=VAL2", build);
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
                 null, true/*do inject build variables*/));
-        log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue("Properties should always be injected, even when build variables injection is enabled",
-                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+        build = j.buildAndAssertSuccess(p);
+        j.assertLogContains("-DTEST_PROP1=VAL1", build);
+        j.assertLogContains("-DTEST_PROP2=VAL2", build);
     }
 
     @Issue("JENKINS-34138")

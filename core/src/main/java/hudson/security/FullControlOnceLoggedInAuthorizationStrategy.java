@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.util.Collections;
@@ -96,6 +97,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
 
     @Extension @Symbol("loggedInUsersCanDoAnything")
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }
