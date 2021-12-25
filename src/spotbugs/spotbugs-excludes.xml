@@ -135,7 +135,6 @@
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
         <Or>
           <Class name="hudson.triggers.Trigger"/>
-          <Class name="hudson.util.ProcessTree"/>
         </Or>
       </And>
       <And>
@@ -170,13 +169,6 @@
           <Class name="hudson.security.SparseACL"/>
           <Class name="jenkins.security.stapler.StaplerDispatchValidator"/>
           <Class name="jenkins.YesNoMaybe"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
-        <Or>
-          <Class name="jenkins.security.MasterToSlaveCallable"/>
-          <Class name="jenkins.util.JSONSignatureValidator"/>
         </Or>
       </And>
       <And>
@@ -503,14 +495,6 @@
       <And>
         <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
         <Class name="hudson.slaves.SlaveComputer"/>
-      </And>
-      <And>
-        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Or>
-          <Class name="hudson.security.HudsonPrivateSecurityRealm$SignupInfo"/>
-          <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor$RevokeAllSelectedModel"/>
-          <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor$RevokeAllSelectedUserAndUuid"/>
-        </Or>
       </And>
       <And>
         <Bug pattern="XSS_SERVLET"/>
