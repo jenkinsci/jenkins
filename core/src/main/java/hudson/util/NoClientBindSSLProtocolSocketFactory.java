@@ -70,7 +70,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
         int port,
         InetAddress clientHost,
         int clientPort)
-        throws IOException, UnknownHostException {
+        throws IOException {
             return createSocket(host,port);
     }
 
@@ -130,7 +130,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
      */
     @Override
     public Socket createSocket(String host, int port)
-        throws IOException, UnknownHostException {
+        throws IOException {
         return SSLSocketFactory.getDefault().createSocket(
             host,
             port
@@ -146,7 +146,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
         String host,
         int port,
         boolean autoClose)
-        throws IOException, UnknownHostException {
+        throws IOException {
         return ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(
             socket,
             host,

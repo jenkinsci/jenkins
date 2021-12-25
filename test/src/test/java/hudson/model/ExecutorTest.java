@@ -90,13 +90,13 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         // make sure this information is recorded
-        assertEquals(Result.FAILURE, b.getResult());
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
         assertEquals(1,iba.getCauses().size());
         assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
 
         // make sure it shows up in the log
-        assertTrue(b.getLog().contains(johnny.getId()));
+        j.assertLogContains(johnny.getId(), b);
     }
 
     @Test
@@ -114,12 +114,11 @@ public class ExecutorTest {
 
         FreeStyleBuild b = r.get();
 
-        String log = b.getLog();
-        assertEquals(Result.FAILURE, b.getResult());
-        assertThat(log, containsString("Finished: FAILURE"));
-        assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
-        assertThat(log, containsString("Agent went offline during the build"));
-        assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your build"));
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+        j.assertLogContains("Finished: FAILURE", b);
+        j.assertLogContains("Build step 'BlockingBuilder' marked build as failure", b);
+        j.assertLogContains("Agent went offline during the build", b);
+        j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
     }
 
     @Issue("SECURITY-611")
