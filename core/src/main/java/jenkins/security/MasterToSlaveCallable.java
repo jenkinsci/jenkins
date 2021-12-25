@@ -30,7 +30,7 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
     public Channel getChannelOrFail() throws ChannelClosedException {
         final Channel ch = Channel.current();
         if (ch == null) {
-            throw new ChannelClosedException(ch, new IllegalStateException("No channel associated with the thread"));
+            throw new ChannelClosedException((Channel) null, new IllegalStateException("No channel associated with the thread"));
         }
         return ch;
     }
