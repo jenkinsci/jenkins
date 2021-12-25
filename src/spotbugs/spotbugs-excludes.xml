@@ -151,13 +151,6 @@
         <Class name="jenkins.security.UserDetailsCache"/>
       </And>
       <And>
-        <Bug pattern="MS_CANNOT_BE_FINAL"/>
-        <Or>
-          <Class name="hudson.triggers.Trigger"/>
-          <Class name="jenkins.model.Jenkins"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="MS_EXPOSE_REP"/>
         <Or>
           <Class name="hudson.model.ComputerSet"/>
