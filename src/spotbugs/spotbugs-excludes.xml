@@ -403,14 +403,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
-        <Or>
-          <Class name="jenkins.agents.WebSocketAgents$Session"/>
-          <Class name="jenkins.slaves.restarter.JnlpSlaveRestarterInstaller"/>
-          <Class name="jenkins.util.AtmostOneTaskExecutor"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
         <Class name="hudson.model.queue.BackFiller"/>
       </And>
