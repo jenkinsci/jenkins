@@ -395,14 +395,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
-        <Or>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.triggers.SCMTrigger$BuildAction"/>
-          <Class name="hudson.triggers.SCMTrigger$SCMAction"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
         <Or>
           <Class name="jenkins.agents.WebSocketAgents$Session"/>
