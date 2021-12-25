@@ -411,10 +411,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
-        <Class name="hudson.model.queue.BackFiller"/>
-      </And>
-      <And>
         <Bug pattern="SE_BAD_FIELD"/>
         <Class name="hudson.scm.PollingResult"/>
       </And>
