@@ -529,21 +529,6 @@ public class UpdateSite {
     }
 
     /**
-     * Is this the legacy default update center site?
-     */
-    public boolean isLegacyDefault() {
-        return isHudsonCI() || isUpdatesFromHudsonLabs();
-    }
-
-    private boolean isHudsonCI() {
-        return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
-    }
-
-    private boolean isUpdatesFromHudsonLabs() {
-        return url != null && url.startsWith("http://updates.hudson-labs.org/");
-    }
-
-    /**
      * In-memory representation of the update center data.
      */
     public final class Data {

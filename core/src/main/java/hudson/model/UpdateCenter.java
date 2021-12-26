@@ -946,11 +946,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             boolean defaultSiteExists = false;
             for (UpdateSite site : sites) {
-                // replace the legacy site with the new site
-                if (site.isLegacyDefault()) {
-                    sites.remove(site);
-                } else if (ID_DEFAULT.equals(site.getId())) {
+                if (ID_DEFAULT.equals(site.getId())) {
                     defaultSiteExists = true;
+                    break;
                 }
             }
             if (!defaultSiteExists) {
