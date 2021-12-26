@@ -3,7 +3,6 @@ package hudson.cli;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Fingerprint.RangeSet;
-import java.io.IOException;
 import java.util.List;
 import org.kohsuke.args4j.Argument;
 
@@ -28,5 +27,5 @@ public abstract class AbstractBuildRangeCommand extends CLICommand {
         return act((List)job.getBuilds(rs));
     }
 
-    protected abstract int act(List<AbstractBuild<?,?>> builds) throws IOException;
+    protected abstract int act(List<AbstractBuild<?,?>> builds);
 }

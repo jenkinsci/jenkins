@@ -1698,13 +1698,13 @@ public class UpdateSite {
          * Making the installation web bound.
          */
         @RequirePOST
-        public HttpResponse doInstall() throws IOException {
+        public HttpResponse doInstall() {
             deploy(false);
             return HttpResponses.redirectTo("../..");
         }
 
         @RequirePOST
-        public HttpResponse doInstallNow() throws IOException {
+        public HttpResponse doInstallNow() {
             deploy(true);
             return HttpResponses.redirectTo("../..");
         }
@@ -1713,7 +1713,7 @@ public class UpdateSite {
          * Performs the downgrade of the plugin.
          */
         @RequirePOST
-        public HttpResponse doDowngrade() throws IOException {
+        public HttpResponse doDowngrade() {
             deployBackup();
             return HttpResponses.redirectTo("../..");
         }

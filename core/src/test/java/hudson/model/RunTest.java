@@ -116,7 +116,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation1() throws Exception {
+    public void artifactListDisambiguation1() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
         assertEquals("c.xml", a.get(0).getDisplayPath());
         assertEquals("g.xml", a.get(1).getDisplayPath());
@@ -124,7 +124,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation2() throws Exception {
+    public void artifactListDisambiguation2() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
         assertEquals("c.xml", a.get(0).getDisplayPath());
         assertEquals("f/g.xml", a.get(1).getDisplayPath());
@@ -132,7 +132,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation3() throws Exception {
+    public void artifactListDisambiguation3() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
         assertEquals("a.xml", a.get(0).getDisplayPath());
         assertEquals("a/a.xml", a.get(1).getDisplayPath());

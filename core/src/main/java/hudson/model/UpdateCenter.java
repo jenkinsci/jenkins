@@ -733,7 +733,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Schedules a Jenkins restart.
      */
     @RequirePOST
-    public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
+    public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             if (!isRestartScheduled()) {
@@ -748,7 +748,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Cancel all scheduled jenkins restarts
      */
     @RequirePOST
-    public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
+    public void doCancelRestart(StaplerResponse response) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
@@ -1223,9 +1223,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @param job The download job that is invoking this strategy. This job is
          *          responsible for managing the status of the download and installation.
          * @param src The location of the downloaded resource.
-         * @throws IOException if the validation fails.
          */
-        public void postValidate(DownloadJob job, File src) throws IOException {
+        public void postValidate(DownloadJob job, File src) {
         }
 
         /**

@@ -25,7 +25,6 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -109,7 +108,7 @@ public class AllView extends View {
     }
 
     @Override
-    protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest req) {
         // noop
     }
 

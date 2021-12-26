@@ -1172,7 +1172,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }

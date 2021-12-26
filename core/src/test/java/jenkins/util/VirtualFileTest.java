@@ -191,7 +191,7 @@ public class VirtualFileTest {
             return 0;
         }
         @Override
-        public boolean canRead() throws IOException {
+        public boolean canRead() {
             return isFile();
         }
         @Override

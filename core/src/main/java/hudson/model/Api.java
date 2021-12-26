@@ -212,7 +212,7 @@ public class Api extends AbstractModelObject {
     /**
      * Generate schema.
      */
-    public void doSchema(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doSchema(StaplerRequest req, StaplerResponse rsp) throws IOException {
         setHeaders(rsp);
         rsp.setContentType("application/xml");
         StreamResult r = new StreamResult(rsp.getOutputStream());

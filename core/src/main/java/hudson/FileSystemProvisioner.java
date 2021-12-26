@@ -51,11 +51,11 @@ public abstract class FileSystemProvisioner implements Describable<FileSystemPro
 
     public static final class Default extends FileSystemProvisioner {
         @Override
-        public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+        public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) {
         }
 
         @Override
-        public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
+        public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) {
         }
 
         @Override

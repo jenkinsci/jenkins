@@ -33,7 +33,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.FieldSetter;
@@ -68,7 +67,7 @@ class MethodBinder {
             // TODO: collection and map support
             Setter setter = new Setter() {
                 @Override
-                public void addValue(Object value) throws CmdLineException {
+                public void addValue(Object value) {
                     arguments[index] = value;
                 }
 

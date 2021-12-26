@@ -194,7 +194,7 @@ public class Connection {
      * @return
      *      A new {@link Connection} object that includes the transport encryption.
      */
-    public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws IOException, GeneralSecurityException {
+    public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws GeneralSecurityException {
         Cipher cout = Cipher.getInstance(algorithm);
         cout.init(Cipher.ENCRYPT_MODE, sessionKey, createIv(sessionKey));
         CipherOutputStream o = new CipherOutputStream(out, cout);

@@ -199,7 +199,7 @@ public class Nodes implements Saveable {
         try {
             exists = Queue.withLock(new Callable<Boolean>() {
                 @Override
-                public Boolean call() throws Exception {
+                public Boolean call() {
                     if (node == nodes.get(node.getNodeName())) {
                         jenkins.trimLabels(node);
                         return true;

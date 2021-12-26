@@ -329,7 +329,7 @@ public abstract class Slave extends Node implements Serializable {
 
     @Override
     @DataBoundSetter
-    public void setLabelString(String labelString) throws IOException {
+    public void setLabelString(String labelString) {
         this.label = Util.fixNull(labelString).trim();
         // Compute labels now.
         getAssignedLabels();
@@ -595,7 +595,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Performs syntactical check on the remote FS for agents.
          */
-        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckRemoteFS(@QueryParameter String value) {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 

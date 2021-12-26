@@ -85,7 +85,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) {
             return new ResponseTimeMonitor();
         }
     };

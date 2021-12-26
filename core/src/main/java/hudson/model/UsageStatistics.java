@@ -128,7 +128,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Gets the encrypted usage stat data to be sent to the Hudson server. 
      * Used exclusively by jelly: resources/hudson/model/UsageStatistics/footer.jelly
      */
-    public String getStatData() throws IOException {
+    public String getStatData() {
         Jenkins j = Jenkins.get();
 
         JSONObject o = new JSONObject();

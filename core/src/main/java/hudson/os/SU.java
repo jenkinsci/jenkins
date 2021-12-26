@@ -147,7 +147,7 @@ public abstract class SU {
 
         protected abstract Process sudoWithPass(ArgumentListBuilder args) throws IOException;
 
-        VirtualChannel start(TaskListener listener, String rootPassword) throws IOException, InterruptedException {
+        VirtualChannel start(TaskListener listener, String rootPassword) throws IOException {
             final int uid = LIBC.geteuid();
 
             if(uid==0)  // already running as root

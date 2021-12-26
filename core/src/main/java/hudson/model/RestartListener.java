@@ -51,7 +51,7 @@ public abstract class RestartListener implements ExtensionPoint {
     @Extension
     public static class Default extends RestartListener {
         @Override
-        public boolean isReadyToRestart() throws IOException, InterruptedException {
+        public boolean isReadyToRestart() {
             for (Computer c : Jenkins.get().getComputers()) {
                 if (c.isOnline()) {
                     for (Executor e : c.getAllExecutors()) {

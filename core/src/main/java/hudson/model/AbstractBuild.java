@@ -632,7 +632,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return l;
         }
 
-        public void defaultCheckout() throws IOException, InterruptedException {
+        public void defaultCheckout() throws InterruptedException {
             AbstractBuild<?,?> build = AbstractBuild.this;
             AbstractProject<?, ?> project = build.getProject();
 
@@ -754,7 +754,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *
          * @return false if any build step failed
          */
-        protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+        protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) {
             boolean r = true;
             for (BuildStep bs : buildSteps) {
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
@@ -877,7 +877,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private static class TearDownCheckEnvironment extends Environment {
         private boolean tornDown = false;
         @Override
-        public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+        public boolean tearDown(AbstractBuild build, BuildListener listener) {
             this.tornDown = true;
             return true;
         }
@@ -1398,7 +1398,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.489
      */
     @RequirePOST
-    public synchronized HttpResponse doStop() throws IOException, ServletException {
+    public synchronized HttpResponse doStop() {
         Executor e = getExecutor();
         if (e==null)
             e = getOneOffExecutor();

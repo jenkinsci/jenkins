@@ -45,7 +45,7 @@ public class BulkChangeTest {
         @SuppressWarnings("unused")
         int x,y;
 
-        public void setX(int x) throws IOException {
+        public void setX(int x) {
             this.x = x;
             save();
         }

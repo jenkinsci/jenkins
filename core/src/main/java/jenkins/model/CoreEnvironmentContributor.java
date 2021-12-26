@@ -39,7 +39,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
     }
 
     @Override
-    public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+    public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) {
         env.put("CI", "true");
 
         Jenkins jenkins = Jenkins.get();

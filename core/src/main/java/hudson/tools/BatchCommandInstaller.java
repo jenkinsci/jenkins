@@ -27,7 +27,6 @@ package hudson.tools;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.LineEndingConversion;
-import java.io.ObjectStreamException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -53,7 +52,7 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
         return new String[]{"cmd", "/c", "call", script.getRemote()};
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         return new BatchCommandInstaller(getLabel(), getCommand(), getToolHome());
     }
  

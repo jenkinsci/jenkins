@@ -40,7 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 @Restricted(NoExternalUse.class)
 public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) {
         JSONArray monitors = json.optJSONArray("administrativeMonitor");
         for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
             try {

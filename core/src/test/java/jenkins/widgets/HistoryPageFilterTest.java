@@ -347,7 +347,7 @@ public class HistoryPageFilterTest {
 
     @Test
     @Issue("JENKINS-40718")
-    public void should_search_builds_by_build_params() throws IOException {
+    public void should_search_builds_by_build_params() {
         Iterable<ModelObject> runs = Arrays.asList(
                 new MockBuild(2).withBuildParameters(Collections.singletonMap("env", "dummyEnv")),
                 new MockBuild(1).withBuildParameters(Collections.singletonMap("env", "otherEnv")));
@@ -356,7 +356,7 @@ public class HistoryPageFilterTest {
 
     @Test
     @Issue("JENKINS-40718")
-    public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
+    public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() {
         Iterable<ModelObject> runs = Arrays.asList(
                 new MockBuild(2).withBuildParameters(Collections.singletonMap("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));

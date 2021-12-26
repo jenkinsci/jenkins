@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.User;
-import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.Date;
 import jenkins.model.Jenkins;
@@ -157,7 +156,7 @@ public abstract class OfflineCause {
         }
 
         // Storing the User in a filed was a mistake, switch to userId
-        private Object readResolve() throws ObjectStreamException {
+        private Object readResolve() {
             if (user != null) {
                 String id = user.getId();
                 if (id != null) {

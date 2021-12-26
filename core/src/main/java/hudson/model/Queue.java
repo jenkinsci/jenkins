@@ -325,7 +325,7 @@ public class Queue extends ResourceController implements Saveable {
 
     private final transient AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<>(new Callable<Void>() {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
             maintain();
             return null;
         }

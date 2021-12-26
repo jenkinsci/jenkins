@@ -646,7 +646,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(CONFIGURE);
 
         setDescription(req.getParameter("description"));
@@ -660,7 +660,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * which should now be unused by core but is left in case plugins are still using it.
      */
     @RequirePOST
-    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, InterruptedException {
         delete();
         if (req == null || rsp == null) { // CLI
             return;

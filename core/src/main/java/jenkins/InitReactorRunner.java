@@ -60,7 +60,7 @@ public class InitReactorRunner {
      * At this point plugins are not loaded yet, so we fall back to the META-INF/services look up to discover implementations.
      * As such there's no way for plugins to participate into this process.
      */
-    private ReactorListener buildReactorListener() throws IOException {
+    private ReactorListener buildReactorListener() {
         List<ReactorListener> r = StreamSupport.stream(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()).spliterator(), false).collect(Collectors.toList());
         r.add(new ReactorListener() {
             final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );

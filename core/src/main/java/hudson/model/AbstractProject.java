@@ -679,7 +679,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Validates the retry count Regex
      */
-    public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException,ServletException{
+    public FormValidation doCheckRetryCount(@QueryParameter String value) {
         // retry count is optional so this is ok
         if(value == null || value.trim().equals(""))
             return FormValidation.ok();
@@ -1731,7 +1731,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override // in case schedulePolling was overridden
-    public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         BuildAuthorizationToken.checkPermission((Job) this, authToken, req, rsp);
         schedulePolling();
         rsp.sendRedirect(".");
@@ -1858,7 +1858,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Wipes out the workspace.
      */
     @RequirePOST
-    public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
+    public HttpResponse doDoWipeOutWorkspace() throws IOException, InterruptedException {
         checkPermission(Functions.isWipeOutPermissionEnabled() ? WIPEOUT : BUILD);
         R b = getSomeBuildWithWorkspace();
         FilePath ws = b!=null ? b.getWorkspace() : null;

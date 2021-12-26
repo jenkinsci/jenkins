@@ -79,7 +79,7 @@ public class HistoricalSecrets {
      * to be able to decrypt what's already persisted.
      */
     @Deprecated
-    /*package*/ static SecretKey getLegacyKey() throws GeneralSecurityException {
+    /*package*/ static SecretKey getLegacyKey() {
         if (Secret.SECRET != null) {
             return Util.toAes128Key(Secret.SECRET);
         }

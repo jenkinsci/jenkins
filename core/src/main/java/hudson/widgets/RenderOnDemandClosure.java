@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -94,7 +93,7 @@ public class RenderOnDemandClosure {
     public HttpResponse render() {
         return new HttpResponse() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
                 req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
                 try {
                     new DefaultScriptInvoker() {

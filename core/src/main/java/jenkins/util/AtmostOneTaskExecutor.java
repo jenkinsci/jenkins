@@ -96,7 +96,7 @@ public class AtmostOneTaskExecutor<V> {
         if (inprogress==null && pending!=null) {
             base.submit(new Callable<Void>() {
                 @Override
-                public Void call() throws Exception {
+                public Void call() {
                     synchronized (AtmostOneTaskExecutor.this) {
                         // everyone who submits after this should form a next batch
                         inprogress = pending;

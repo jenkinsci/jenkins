@@ -97,7 +97,7 @@ public abstract class AbstractCloudSlave extends Slave {
     /**
      * Performs the removal of the underlying resource from the cloud.
      */
-    protected abstract void _terminate(TaskListener listener) throws IOException, InterruptedException;
+    protected abstract void _terminate(TaskListener listener);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCloudSlave.class.getName());
 }

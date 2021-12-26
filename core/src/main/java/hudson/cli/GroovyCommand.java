@@ -75,7 +75,7 @@ public class GroovyCommand extends CLICommand {
     /**
      * Loads the script from the argument.
      */
-    private String loadScript() throws CmdLineException, IOException, InterruptedException {
+    private String loadScript() throws CmdLineException, IOException {
         if(script==null)
             throw new CmdLineException(null, "No script is specified");
         if (script.equals("="))
