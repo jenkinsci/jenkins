@@ -64,9 +64,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -337,24 +334,7 @@ public class WebAppMain implements ServletContextListener {
      * @return the File alongside with some description to help the user troubleshoot issues
      */
     public FileAndDescription getHomeDir(ServletContextEvent event) {
-        // check JNDI for the home directory first
-        for (String name : HOME_NAMES) {
-            try {
-                InitialContext iniCtxt = new InitialContext();
-                Context env = (Context) iniCtxt.lookup("java:comp/env");
-                String value = (String) env.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
-                // look at one more place. See issue JENKINS-1314
-                value = (String) iniCtxt.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
-            } catch (NamingException e) {
-                // ignore
-            }
-        }
-
-        // next the system property
+        // check the system property for the home directory first
         for (String name : HOME_NAMES) {
             String sysProp = SystemProperties.getString(name);
             if(sysProp!=null)
