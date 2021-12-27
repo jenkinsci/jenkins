@@ -2312,6 +2312,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final List<PluginWrapper> batch;
         private final long start;
         @Exported(inline = true)
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public volatile CompleteBatchJobStatus status = new CompleteBatchJob.Pending();
 
         public CompleteBatchJob(List<PluginWrapper> batch, long start, UUID correlationId) {

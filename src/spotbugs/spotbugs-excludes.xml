@@ -437,22 +437,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Or>
-          <Class name="hudson.model.UpdateCenter$CompleteBatchJob"/>
-          <Class name="hudson.org.apache.tools.tar.TarOutputStream"/>
-          <Class name="hudson.search.Search$Item"/>
-          <Class name="hudson.security.HudsonPrivateSecurityRealm$SignupInfo"/>
-          <Class name="hudson.triggers.SCMTrigger$BuildAction"/>
-          <Class name="hudson.widgets.HistoryWidget"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.ModelObjectWithContextMenu$ContextMenu"/>
-          <Class name="jenkins.model.ModelObjectWithContextMenu$MenuItem"/>
-          <Class name="jenkins.util.groovy.AbstractGroovyViewModule"/>
-          <Class name="jenkins.widgets.HistoryPageFilter"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="URLCONNECTION_SSRF_FD"/>
         <Or>
           <Class name="hudson.FilePath"/>

@@ -416,6 +416,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class BuildAction implements RunAction2 {
         private transient /*final*/ Run<?,?> run;
         @Deprecated
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "for backward compatibility")
         public transient /*final*/ AbstractBuild build;
 
         /**
