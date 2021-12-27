@@ -164,16 +164,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
-        <Or>
-          <Class name="hudson.logging.LogRecorder$Target"/>
-          <Class name="hudson.security.SidACL"/>
-          <Class name="hudson.security.SparseACL"/>
-          <Class name="jenkins.security.stapler.StaplerDispatchValidator"/>
-          <Class name="jenkins.YesNoMaybe"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
         <Class name="jenkins.util.SystemProperties"/>
       </And>
