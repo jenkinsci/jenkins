@@ -37,9 +37,11 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
-    <jacocoSurefireArgs /><!-- empty by default -->
+    <!-- empty by default -->
+    <jacocoSurefireArgs />
   </properties>
 
   <dependencyManagement>
@@ -196,11 +198,11 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>old-remoting-for-test</id>
-            <phase>generate-test-resources</phase>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
               <goal>copy</goal>
             </goals>
+            <phase>generate-test-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -314,10 +316,10 @@ THE SOFTWARE.
               -->
               <execution>
                 <id>post-unit-test</id>
-                <phase>test</phase>
                 <goals>
                   <goal>report</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
                   <!-- Sets the path to the file which contains the execution data. -->
                   <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
