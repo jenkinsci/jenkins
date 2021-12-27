@@ -399,16 +399,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
-        <Or>
-          <Class name="hudson.slaves.SlaveComputer$SlaveInitializer"/>
-          <Class name="hudson.tasks.ArtifactArchiver$DescriptorImpl"/>
-          <Class name="jenkins.security.QueueItemAuthenticatorMonitor"/>
-          <Class name="jenkins.security.UserDetailsCache"/>
-          <Class name="jenkins.slaves.NioChannelSelector"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
         <Or>
           <Class name="hudson.model.ListView"/>
