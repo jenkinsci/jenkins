@@ -353,14 +353,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
-        <Class name="hudson.tasks.Fingerprinter"/>
-      </And>
-      <And>
-        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"/>
-        <Class name="jenkins.util.JSONSignatureValidator"/>
-      </And>
-      <And>
         <Bug pattern="REDOS"/>
         <Or>
           <Class name="hudson.model.Computer"/>
