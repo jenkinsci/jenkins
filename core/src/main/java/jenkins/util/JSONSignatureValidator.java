@@ -245,6 +245,7 @@ public class JSONSignatureValidator {
     }
 
 
+    @SuppressFBWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all

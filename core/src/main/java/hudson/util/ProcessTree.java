@@ -427,7 +427,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
 
-    /* package */ static Boolean vetoersExist;
+    /* package */ static volatile Boolean vetoersExist;
     
     /**
      * Gets the {@link ProcessTree} of the current system
