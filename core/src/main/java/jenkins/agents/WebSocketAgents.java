@@ -24,6 +24,7 @@
 
 package jenkins.agents;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Computer;
@@ -114,6 +115,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             this.remoteCapability = remoteCapability;
         }
 
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
         @Override
         protected void opened() {
             Computer.threadPoolForRemoting.submit(() -> {

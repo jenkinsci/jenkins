@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
@@ -92,6 +93,7 @@ public class AtmostOneTaskExecutor<V> {
      * but {@link #inprogress} is null (meaning none is executing right now),
      * get one going.
      */
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     private synchronized void maybeRun() {
         if (inprogress==null && pending!=null) {
             base.submit(new Callable<Void>() {

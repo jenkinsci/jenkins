@@ -3,6 +3,7 @@ package jenkins.slaves.restarter;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Computer;
@@ -31,6 +32,7 @@ import jenkins.security.MasterToSlaveCallable;
  */
 @Extension
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
         Computer.threadPoolForRemoting.submit(new Install(c, listener));
