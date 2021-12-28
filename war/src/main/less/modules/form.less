@@ -421,25 +421,23 @@
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
 
-  &:not(:disabled) {
-    &:checked {
-      & + label {
-        &:active,
-        &:focus {
-          &::before {
-            box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
-          }
+  &:checked {
+    & + label {
+      &:active,
+      &:focus {
+        &::before {
+          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
         }
       }
+    }
 
-      & + label {
-        &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border);
-        }
+    & + label {
+      &::before {
+        box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border);
+      }
 
-        &::after {
-          transform: scale(1);
-        }
+      &::after {
+        transform: scale(1);
       }
     }
   }
@@ -459,6 +457,7 @@
         &::before {
           box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border) !important;
         }
+        
         &::after {
           transform: scale(1) !important;
         }
