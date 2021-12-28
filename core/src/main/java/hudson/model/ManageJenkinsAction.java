@@ -24,9 +24,13 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -64,5 +68,20 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this, request, response, "index");
+    }
+
+    /**
+     * Workaround to ensuring that links in context menus resolve correctly in the submenu of the top-level 'Dashboard'
+     * menu.
+     */
+    @Restricted(NoExternalUse.class)
+    public void addContextMenuItem(ContextMenu menu, String url, String icon, String text, boolean post, boolean requiresConfirmation) {
+        if (Stapler.getCurrentRequest().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
+            // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
+            menu.add(url, icon, text, post, requiresConfirmation);
+            return;
+        }
+        // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
+        menu.add("manage/" + url, icon, text, post, requiresConfirmation);
     }
 }
