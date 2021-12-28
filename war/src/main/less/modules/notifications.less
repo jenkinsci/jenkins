@@ -1,0 +1,74 @@
+.jenkins-notification {
+  position: fixed;
+  left: 1.2rem;
+  bottom: 1.2rem;
+  min-width: 321px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: 1.5ch;
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-weight: 500;
+  line-height: 1.66;
+  background: var(--background);
+  color: var(--text-color);
+  box-shadow: 0 10px 30px rgba(darken(#024cb6, 25%), 0.25);
+  will-change: opacity, transform;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+#notification-bar.notif-alert-success {
+  background-color: var(--green);
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 150, 0, 0.2);
+}
+
+#notification-bar.notif-alert-warn {
+  background-color: var(--orange);
+  color: white;
+  box-shadow: 0 10px 30px rgba(darken(#fe820a, 25%), 0.25);
+}
+
+#notification-bar.notif-alert-err {
+  background-color: var(--red);
+  color: white;
+  box-shadow: 0 10px 30px rgba(150, 0, 0, 0.2);
+}
+
+#notification-bar.notif-alert-show {
+  animation: show-notification 200ms ease-out 1 normal forwards;
+}
+
+#notification-bar.notif-alert-clear {
+  animation: hide-notification 150ms ease-in 1 normal forwards;
+}
+
+@keyframes show-notification {
+  from {
+    opacity: 0;
+    transform: translateY(1.2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
+}
+
+@keyframes hide-notification {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+    visibility: hidden;
+  }
+}

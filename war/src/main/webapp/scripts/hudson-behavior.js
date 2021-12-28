@@ -2520,26 +2520,26 @@ var notificationBar = {
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
     defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
-    defaultAlertClass: "notif-alert-default",
+    defaultAlertClass: "jenkins-notification",
 
     OK : {// standard option values for typical OK notification
         icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
-        alertClass: "notif-alert-success",
+        alertClass: "jenkins-notification notif-alert-success",
     },
     WARNING : {// likewise, for warning
         icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
-        alertClass: "notif-alert-warn",
+        alertClass: "jenkins-notification notif-alert-warn",
     },
     ERROR : {// likewise, for error
         icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-        alertClass: "notif-alert-err",
+        alertClass: "jenkins-notification notif-alert-err",
         sticky: true
     },
 
     init : function() {
         if (this.div==null) {
             this.div = document.createElement("div");
-            YAHOO.util.Dom.setStyle(this.div,"opacity",0);
+			// this.div.style.opacity = 0;
             this.div.id="notification-bar";
             document.body.insertBefore(this.div, document.body.firstElementChild);
             var self = this;
@@ -2567,7 +2567,9 @@ var notificationBar = {
         options = options || {};
         this.init();
         var icon = this.div.appendChild(document.createElement("div"));
-        icon.style.display = "inline-block";
+		icon.style.display = "inline-flex";
+		icon.style.alignItems = "center";
+		icon.style.justifyContent = "center";
         if (options.iconColor || this.defaultIconColor) {
             icon.style.color = options.iconColor || this.defaultIconColor;
         }
