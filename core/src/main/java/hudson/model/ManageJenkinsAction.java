@@ -25,8 +25,11 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithContextMenu;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Adds the "Manage Jenkins" link to the top page.
@@ -34,7 +37,7 @@ import org.kohsuke.stapler.StaplerFallback;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal=100) @Symbol("manageJenkins")
-public class ManageJenkinsAction implements RootAction, StaplerFallback {
+public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelObjectWithContextMenu {
     @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
@@ -56,5 +59,10 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback {
     @Override
     public Object getStaplerFallback() {
         return Jenkins.get();
+    }
+
+    @Override
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        return new ContextMenu().from(this, request, response, "index");
     }
 }
