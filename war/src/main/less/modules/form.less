@@ -434,6 +434,17 @@
   &:checked + label:after {
     transform: scale(1)!important;
   }
+
+  &:disabled {
+    & + label {
+      cursor: default;
+      pointer-events: none;
+
+      &::before {
+        opacity: 0.3 !important;
+      }
+    }
+  }
 }
 
 .jenkins-checkbox label {
@@ -489,6 +500,12 @@
     &::before {
       border: 5px solid var(--focus-input-border);
       box-shadow: 0 0 0 5px var(--focus-input-glow);
+    }
+  }
+
+  &:empty {
+    &::before {
+      margin-right: 0;
     }
   }
 }
