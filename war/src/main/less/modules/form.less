@@ -421,27 +421,47 @@
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
 
-  &:focus + label:before, &:active + label:before {
-    border-width: 5px;
-    border-color: var(--focus-input-border);
-    box-shadow: var(--form-input-glow--focus);
-  }
+  &:not(:disabled) {
+    &:checked {
+      & + label {
+        &:active,
+        &:focus {
+          &::before {
+            box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+          }
+        }
+      }
 
-  &:checked + label:before {
-    border: 11px solid var(--focus-input-border);
-  }
+      & + label {
+        &::before {
+          box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border);
+        }
 
-  &:checked + label:after {
-    transform: scale(1)!important;
+        &::after {
+          transform: scale(1);
+        }
+      }
+    }
   }
 
   &:disabled {
     & + label {
-      cursor: default;
-      pointer-events: none;
+      cursor: not-allowed;
 
       &::before {
-        opacity: 0.3 !important;
+        opacity: 0.35 !important;
+        box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border) !important;
+      }
+    }
+
+    &:checked {
+      & + label {
+        &::before {
+          box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border) !important;
+        }
+        &::after {
+          transform: scale(1) !important;
+        }
       }
     }
   }
@@ -458,16 +478,15 @@
   font-weight: 600;
 
   &::before {
-    display: inline-block;
     content: "";
+    display: inline-block;
     position: relative;
     min-width: 22px;
     min-height: 22px;
-    border: 2px solid var(--input-border);
     border-radius: 6px;
-    transition: 0.2s ease;
+    transition: var(--standard-transition);
     margin-right: 11px;
-    box-shadow: 0 0 0 10px transparent;
+    box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border);
   }
 
   &::after {
@@ -478,7 +497,6 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
     width: 22px;
     height: 22px;
     background: var(--background);
@@ -486,26 +504,26 @@
     mask-size: 10px 10px;
     mask-repeat: no-repeat;
     mask-position: center;
-    transition: var(--standard-transition);
+    transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
     transform: scale(0);
-  }
-
-  &:hover {
-    &::before {
-      border: 5px solid var(--input-border-hover);
-    }
-  }
-
-  &:active, &:focus {
-    &::before {
-      border: 5px solid var(--focus-input-border);
-      box-shadow: 0 0 0 5px var(--focus-input-glow);
-    }
   }
 
   &:empty {
     &::before {
       margin-right: 0;
+    }
+  }
+
+  &:hover {
+    &::before {
+      box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
     }
   }
 }
