@@ -61,8 +61,7 @@ public class TextFile {
     }
 
     /**
-     * Reads the entire contents and returns it. Bytes from the file are decoded into characters
-     * using the {@link StandardCharsets#UTF_8 UTF-8} {@link Charset charset}.
+     * Reads the entire contents and returns it.
      */
     public String read() throws IOException {
         StringWriter out = new StringWriter();
@@ -108,13 +107,12 @@ public class TextFile {
     }
 
     /**
-     * Reads the first N characters or until we hit EOF. Bytes from the file are decoded into
-     * characters using the {@link StandardCharsets#UTF_8 UTF-8} {@link Charset charset}.
+     * Reads the first N characters or until we hit EOF.
      */
     public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        try (Reader r = Files.newBufferedReader(Util.fileToPath(file), StandardCharsets.UTF_8)) {
+        try (Reader r = Files.newBufferedReader(Util.fileToPath(file), Charset.defaultCharset())) {
             while (read<numChars) {
                 int d = r.read(buf,read,buf.length-read);
                 if (d<0)
@@ -175,11 +173,10 @@ public class TextFile {
     }
 
     /**
-     * Bytes from the file are decoded into characters using the {@link StandardCharsets#UTF_8
-     * UTF-8} {@link Charset charset}.
+     * Uses the platform default encoding.
      */
     public @NonNull String fastTail(int numChars) throws IOException {
-        return fastTail(numChars, StandardCharsets.UTF_8);
+        return fastTail(numChars,Charset.defaultCharset());
     }
 
 
