@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.StaplerFallback;
 
 /**
  * Adds the "Manage Jenkins" link to the top page.
@@ -33,7 +34,7 @@ import org.jenkinsci.Symbol;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal=100) @Symbol("manageJenkins")
-public class ManageJenkinsAction implements RootAction {
+public class ManageJenkinsAction implements RootAction, StaplerFallback {
     @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
@@ -50,5 +51,10 @@ public class ManageJenkinsAction implements RootAction {
     @Override
     public String getUrlName() {
         return "/manage";
+    }
+
+    @Override
+    public Object getStaplerFallback() {
+        return Jenkins.get();
     }
 }
