@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
@@ -31,29 +32,29 @@ public class TextFileTest {
     @Test
     public void shortHead() throws Exception {
         File f = tmp.newFile();
-        FileUtils.write(f, "hello", Charset.defaultCharset());
+        FileUtils.write(f, "hello", StandardCharsets.UTF_8);
 
         TextFile t = new TextFile(f);
-        assertEquals("hello", t.head(35));
+        assertEquals("hello", t.head(35, StandardCharsets.UTF_8));
     }
 
     @Test
     public void tail() throws Exception {
         File f = tmp.newFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
-        String whole = FileUtils.readFileToString(f, Charset.defaultCharset());
+        String whole = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
         TextFile t = new TextFile(f);
         String tailStr = whole.substring(whole.length() - 34);
-        assertEquals(tailStr, t.fastTail(tailStr.length()));
+        assertEquals(tailStr, t.fastTail(tailStr.length(), StandardCharsets.UTF_8));
     }
 
     @Test
     public void shortTail() throws Exception {
         File f = tmp.newFile();
-        FileUtils.write(f, "hello", Charset.defaultCharset());
+        FileUtils.write(f, "hello", StandardCharsets.UTF_8);
 
         TextFile t = new TextFile(f);
-        assertEquals("hello", t.fastTail(35));
+        assertEquals("hello", t.fastTail(35, StandardCharsets.UTF_8));
     }
 
     /**
