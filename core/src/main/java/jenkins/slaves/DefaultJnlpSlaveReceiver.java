@@ -154,7 +154,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        try (PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, Charset.defaultCharset()), true)) {
+        try (PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true)) {
             logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         }
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
@@ -174,7 +174,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
-            PrintWriter logw = new PrintWriter(new OutputStreamWriter(state.getLog(), Charset.defaultCharset()), true);
+            PrintWriter logw = new PrintWriter(new OutputStreamWriter(state.getLog(), /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true);
             Functions.printStackTrace(e, logw);
             try {
                 event.getChannel().close();
