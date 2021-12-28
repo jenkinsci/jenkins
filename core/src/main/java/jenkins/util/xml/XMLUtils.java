@@ -1,6 +1,7 @@
 package jenkins.util.xml;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,6 +110,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the steam.
      * @since 2.265
      */
+    @SuppressFBWarnings(value = "XXE_DOCUMENT", justification = "newDocumentBuilderFactory() does what FindSecBugs recommends, yet FindSecBugs cannot see this")
     public static @NonNull Document parse(@NonNull InputStream stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
 
@@ -133,6 +135,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the steam.
      * @since 2.0
      */
+    @SuppressFBWarnings(value = "XXE_DOCUMENT", justification = "newDocumentBuilderFactory() does what FindSecBugs recommends, yet FindSecBugs cannot see this")
     public static @NonNull Document parse(@NonNull Reader stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
 

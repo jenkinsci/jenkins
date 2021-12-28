@@ -31,6 +31,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -86,7 +88,12 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
         @Override
         public void flush() throws IOException {
             if (baos.size() > 0) {
-                LogRecord lr = new LogRecord(level, baos.toString());
+                LogRecord lr;
+                try {
+                    lr = new LogRecord(level, baos.toString(StandardCharsets.UTF_8.name()));
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
                 lr.setLoggerName(logger.getName());
                 lr.setSourceClassName(caller.getClassName());
                 lr.setSourceMethodName(caller.getMethodName());

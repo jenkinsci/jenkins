@@ -26,6 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Functions;
 import hudson.Util;
 import hudson.search.SearchableModelObject;
@@ -39,7 +40,6 @@ import java.util.Collection;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
-import jline.internal.Nullable;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

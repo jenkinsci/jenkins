@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -209,7 +210,7 @@ public class SCMTrigger extends Trigger<Item> {
      * Returns the file that records the last/current polling activity.
      */
     public File getLogFile() {
-        return new File(job.getRootDir(),"scm-polling.log");
+        return new File(Objects.requireNonNull(job).getRootDir(),"scm-polling.log");
     }
 
     @Extension @Symbol("pollSCM")
@@ -478,6 +479,7 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support
             getPollingLogText().writeHtmlTo(offset, out.asWriter());
@@ -536,6 +538,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Writes the annotated log to the given output.
          * @since 1.350
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writeLogTo(XMLOutput out) throws IOException {
             new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), true, this).writeHtmlTo(0,out.asWriter());
         }
@@ -691,7 +694,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Override
         public int hashCode() {
-            return job.hashCode();
+            return Objects.requireNonNull(job).hashCode();
         }
     }
 

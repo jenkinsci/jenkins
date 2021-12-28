@@ -148,7 +148,7 @@ public final class Secret implements Serializable {
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
-            return "{"+new String(Base64.getEncoder().encode(payload))+"}";
+            return "{" + Base64.getEncoder().encodeToString(payload) + "}";
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }

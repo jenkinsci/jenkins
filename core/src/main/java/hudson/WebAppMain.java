@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
@@ -63,16 +64,11 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletResponse;
 import javax.servlet.SessionTrackingMode;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
@@ -235,23 +231,6 @@ public class WebAppMain implements ServletContextListener {
                 throw new NoTempDir(e);
             }
 
-            // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
-            // try to correct it
-            try {
-                TransformerFactory.newInstance();
-                // if this works we are all happy
-            } catch (TransformerFactoryConfigurationError x) {
-                // no it didn't.
-                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See https://bz.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
-                System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
-                try {
-                    TransformerFactory.newInstance();
-                    LOGGER.info("XSLT is set to the JAXP RI in JRE");
-                } catch(TransformerFactoryConfigurationError y) {
-                    LOGGER.log(SEVERE, "Failed to correct the problem.");
-                }
-            }
-
             installExpressionFactory(event);
 
             context.setAttribute(APP,new HudsonIsLoading());
@@ -312,7 +291,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes());
+            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes(Charset.defaultCharset()));
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }
@@ -355,24 +334,7 @@ public class WebAppMain implements ServletContextListener {
      * @return the File alongside with some description to help the user troubleshoot issues
      */
     public FileAndDescription getHomeDir(ServletContextEvent event) {
-        // check JNDI for the home directory first
-        for (String name : HOME_NAMES) {
-            try {
-                InitialContext iniCtxt = new InitialContext();
-                Context env = (Context) iniCtxt.lookup("java:comp/env");
-                String value = (String) env.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
-                // look at one more place. See issue JENKINS-1314
-                value = (String) iniCtxt.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
-            } catch (NamingException e) {
-                // ignore
-            }
-        }
-
-        // next the system property
+        // check the system property for the home directory first
         for (String name : HOME_NAMES) {
             String sysProp = SystemProperties.getString(name);
             if(sysProp!=null)

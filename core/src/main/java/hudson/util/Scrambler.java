@@ -40,7 +40,7 @@ public class Scrambler {
 
     public static String scramble(String secret) {
         if(secret==null)    return null;
-        return new String(Base64.getEncoder().encode(secret.getBytes(StandardCharsets.UTF_8)));
+        return Base64.getEncoder().encodeToString(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String descramble(String scrambled) {

@@ -26,6 +26,7 @@ import java.util.jar.Manifest;
 import jenkins.model.Jenkins;
 import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,9 @@ public class PluginWrapperTest {
 
     @AfterAll
     public static void after() {
-        Locale.setDefault(loc);
+        if (loc != null) {
+            Locale.setDefault(loc);
+        }
     }
     
     @Test
@@ -71,7 +74,7 @@ public class PluginWrapperTest {
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
-        assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
+        assertContains(ex, "Failed to load: Fake (fake 42)", "Jenkins (3.0) or higher required");
     }
 
     @Test
@@ -79,7 +82,7 @@ public class PluginWrapperTest {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:42").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
-        assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Plugin is missing: dependency (42)");
     }
 
     @Test
@@ -88,7 +91,7 @@ public class PluginWrapperTest {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:5").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
-        assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Update required: Dependency (dependency 3) to be updated to 5 or higher");
     }
 
     @Test
@@ -97,7 +100,7 @@ public class PluginWrapperTest {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:3").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
-        assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Failed to load: Dependency (dependency 5)");
     }
 
     @Issue("JENKINS-66563")
@@ -196,9 +199,10 @@ public class PluginWrapperTest {
         private PluginWrapper build() {
             Manifest manifest = new Manifest();
             Attributes attributes = manifest.getMainAttributes();
-            attributes.put(new Attributes.Name("Short-Name"), name);
-            attributes.put(new Attributes.Name("Jenkins-Version"), requiredCoreVersion);
-            attributes.put(new Attributes.Name("Plugin-Version"), version);
+            attributes.putValue("Short-Name", name);
+            attributes.putValue("Long-Name", StringUtils.capitalize(name));
+            attributes.putValue("Jenkins-Version", requiredCoreVersion);
+            attributes.putValue("Plugin-Version", version);
             return new PluginWrapper(
                     pm,
                     new File("/tmp/" + name + ".jpi"),

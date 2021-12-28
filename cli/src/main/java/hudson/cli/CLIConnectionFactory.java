@@ -1,5 +1,6 @@
 package hudson.cli;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
@@ -33,7 +34,7 @@ public class CLIConnectionFactory {
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
      */
     public CLIConnectionFactory basicAuth(String userInfo) {
-        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes()));
+        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**

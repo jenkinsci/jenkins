@@ -323,10 +323,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
         for (Record r : ws.act(new FindRecords(targets, excludes, defaultExcludes, caseSensitive, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
-            if(fp==null) {
-                listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));
-                continue;
-            }
             fp.addFor(build);
             record.put(r.relativePath,fp.getHashString());
         }

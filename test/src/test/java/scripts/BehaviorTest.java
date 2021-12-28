@@ -36,7 +36,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
- * Tests <tt>behaviour.js</tt>
+ * Tests <code>behaviour.js</code>
  *
  * @author Kohsuke Kawaguchi
  */

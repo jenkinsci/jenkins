@@ -68,6 +68,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -1240,6 +1241,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if there were problems downloading the resource.
          * @see DownloadJob
          */
+        @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available")
         public File download(DownloadJob job, URL src) throws IOException {
             MessageDigest sha1 = null;
             MessageDigest sha256 = null;
@@ -2024,11 +2026,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         if (caseSensitive) {
-            if (MessageDigest.isEqual(expectedDigest.getBytes(), actualDigest.getBytes())) {
+            if (MessageDigest.isEqual(expectedDigest.getBytes(StandardCharsets.US_ASCII), actualDigest.getBytes(StandardCharsets.US_ASCII))) {
                 return VerificationResult.PASS;
             }
         } else {
-            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(), actualDigest.toLowerCase().getBytes())) {
+            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(StandardCharsets.US_ASCII), actualDigest.toLowerCase().getBytes(StandardCharsets.US_ASCII))) {
                 return VerificationResult.PASS;
             }
         }
