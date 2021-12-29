@@ -384,13 +384,6 @@
         <Class name="hudson.scm.PollingResult"/>
       </And>
       <And>
-        <Bug pattern="SE_INNER_CLASS"/>
-        <Or>
-          <Class name="hudson.util.ProcessTree$Remote$RemoteProcess"/>
-          <Class name="hudson.util.ProcessTree$SerializedProcess"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="STATIC_IV"/>
         <Or>
           <Class name="hudson.cli.Connection"/>

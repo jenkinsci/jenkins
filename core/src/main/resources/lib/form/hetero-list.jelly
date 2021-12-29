@@ -70,8 +70,8 @@ THE SOFTWARE.
       to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
     <st:attribute name="titleClassMethod">
-      If set to an item of the form <tt>className#classMethod</tt>, it will be used
-      to call <tt>className.classMethod(descriptor)</tt> to calculate each item title.
+      If set to an item of the form <code>className#classMethod</code>, it will be used
+      to call <code>className.classMethod(descriptor)</code> to calculate each item title.
     </st:attribute>
     <st:attribute name="disableDragAndDrop" type="java.lang.Boolean">
       If true the drag and drop will not be activated. This just removes the drag and
