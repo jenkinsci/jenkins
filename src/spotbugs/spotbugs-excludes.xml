@@ -151,10 +151,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
-        <Class name="jenkins.util.SystemProperties"/>
-      </And>
-      <And>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
         <Or>
           <Class name="hudson.cli.BuildCommand"/>

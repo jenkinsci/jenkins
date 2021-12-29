@@ -87,6 +87,7 @@ public class SystemProperties {
 
     private static final Handler NULL_HANDLER = key -> null;
 
+    @SuppressFBWarnings(value = "NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR", justification = "the field is initialized by a static initializer, not a constructor")
     private static @NonNull Handler handler = NULL_HANDLER;
 
     // declared in WEB-INF/web.xml
