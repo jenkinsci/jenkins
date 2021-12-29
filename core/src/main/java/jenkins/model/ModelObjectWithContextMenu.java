@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.Action;
@@ -255,37 +256,46 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Human readable caption of the menu item. Do not use HTML.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String displayName;
 
         /**
          * Optional URL to the icon image. Rendered as 24x24.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String icon;
 
         /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
-        @Exported public boolean post;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean post;
 
         /**
          * True to require confirmation after a click.
          * @since 1.512
          */
-        @Exported public boolean requiresConfirmation;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean requiresConfirmation;
 
 
         /**
          * True to display this item as a section header.
          * @since 2.231
          */
-        @Exported public boolean header;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean header;
 
         /**
          * If this is a submenu, definition of subitems.
          */
         @Exported(inline=true)
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
 
         public MenuItem(String url, String icon, String displayName) {
