@@ -132,7 +132,7 @@ public class DirectoryBrowserSupportTest {
     }
 
     /**
-     * <strike>Also makes sure '\\' in the file name for Unix is handled correctly</strike>.
+     * <del>Also makes sure '\\' in the file name for Unix is handled correctly</del>.
      *
      * To prevent directory traversal attack, we now treat '\\' just like '/'.
      */

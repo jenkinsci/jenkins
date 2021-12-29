@@ -27,6 +27,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.logging.Logger;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -65,6 +66,7 @@ public abstract class SidACL extends ACL {
      *      true or false if {@link #hasPermission(Sid, Permission)} returns it.
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
+    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
     protected Boolean _hasPermission(@NonNull Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(new PrincipalSid(a),permission);

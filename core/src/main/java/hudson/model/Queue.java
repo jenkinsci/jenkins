@@ -2455,7 +2455,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Restricted(NoExternalUse.class)
     @ExportedBean(defaultVisibility = 999)
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "it is exported, so it might be used")
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public static class StubItem {
 
         @Exported public StubTask task;
