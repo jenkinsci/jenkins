@@ -99,19 +99,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="EQ_GETCLASS_AND_CLASS_CONSTANT"/>
-        <Or>
-          <Class name="hudson.model.BooleanParameterDefinition"/>
-          <Class name="hudson.model.ChoiceParameterDefinition"/>
-          <Class name="hudson.model.FileParameterDefinition"/>
-          <Class name="hudson.model.PasswordParameterDefinition"/>
-          <Class name="hudson.model.RunParameterDefinition"/>
-          <Class name="hudson.model.StringParameterDefinition"/>
-          <Class name="hudson.model.TextParameterDefinition"/>
-          <Class name="hudson.util.NoClientBindProtocolSocketFactory"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="FILE_UPLOAD_FILENAME"/>
         <Or>
           <Class name="hudson.model.FileParameterDefinition"/>
@@ -161,16 +148,6 @@
           <Class name="hudson.util.FormValidation"/>
           <Class name="hudson.util.ProcessTree"/>
           <Class name="jenkins.tasks.filters.EnvVarsFilterGlobalConfiguration"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
-        <Or>
-          <Class name="hudson.logging.LogRecorder$Target"/>
-          <Class name="hudson.security.SidACL"/>
-          <Class name="hudson.security.SparseACL"/>
-          <Class name="jenkins.security.stapler.StaplerDispatchValidator"/>
-          <Class name="jenkins.YesNoMaybe"/>
         </Or>
       </And>
       <And>
@@ -392,16 +369,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
-        <Or>
-          <Class name="hudson.slaves.SlaveComputer$SlaveInitializer"/>
-          <Class name="hudson.tasks.ArtifactArchiver$DescriptorImpl"/>
-          <Class name="jenkins.security.QueueItemAuthenticatorMonitor"/>
-          <Class name="jenkins.security.UserDetailsCache"/>
-          <Class name="jenkins.slaves.NioChannelSelector"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
         <Or>
           <Class name="hudson.model.ListView"/>
@@ -427,22 +394,6 @@
           <Class name="jenkins.security.ApiTokenProperty"/>
           <Class name="jenkins.security.ApiTokenProperty$DescriptorImpl"/>
           <Class name="jenkins.util.SystemProperties"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Or>
-          <Class name="hudson.model.UpdateCenter$CompleteBatchJob"/>
-          <Class name="hudson.org.apache.tools.tar.TarOutputStream"/>
-          <Class name="hudson.search.Search$Item"/>
-          <Class name="hudson.security.HudsonPrivateSecurityRealm$SignupInfo"/>
-          <Class name="hudson.triggers.SCMTrigger$BuildAction"/>
-          <Class name="hudson.widgets.HistoryWidget"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.ModelObjectWithContextMenu$ContextMenu"/>
-          <Class name="jenkins.model.ModelObjectWithContextMenu$MenuItem"/>
-          <Class name="jenkins.util.groovy.AbstractGroovyViewModule"/>
-          <Class name="jenkins.widgets.HistoryPageFilter"/>
         </Or>
       </And>
       <And>

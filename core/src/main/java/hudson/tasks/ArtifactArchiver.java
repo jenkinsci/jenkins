@@ -336,6 +336,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Extension @Symbol("archiveArtifacts")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this; // backward compatibility
         }

@@ -3,6 +3,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
@@ -181,6 +182,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (ChoiceParameterDefinition.class != getClass())
             return super.equals(obj);
