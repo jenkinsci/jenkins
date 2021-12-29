@@ -1,5 +1,6 @@
 package jenkins.util.groovy;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import lib.FormTagLib;
 import lib.JenkinsTagLib;
@@ -20,9 +21,13 @@ import org.kohsuke.stapler.jelly.groovy.Namespace;
 public abstract class AbstractGroovyViewModule extends GroovyObjectSupport {
 
     public JellyBuilder builder;
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public FormTagLib f;
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public LayoutTagLib l;
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public JenkinsTagLib t;
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public Namespace st;
 
     protected AbstractGroovyViewModule(JellyBuilder b) {
