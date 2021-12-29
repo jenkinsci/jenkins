@@ -134,10 +134,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="LI_LAZY_INIT_UPDATE_STATIC"/>
-        <Class name="jenkins.security.UserDetailsCache"/>
-      </And>
-      <And>
         <Bug pattern="MS_EXPOSE_REP"/>
         <Or>
           <Class name="hudson.model.ComputerSet"/>
