@@ -394,6 +394,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Serialized form of {@link OSProcess} is the PID and {@link ProcessTree}
      */
+    @SuppressFBWarnings(value = "SE_INNER_CLASS", justification = "Serializing the outer instance is intended")
     private final class SerializedProcess implements Serializable {
         private final int pid;
         private static final long serialVersionUID = 1L;
@@ -2177,6 +2178,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         private static final long serialVersionUID = 1L;
 
+        @SuppressFBWarnings(value = "SE_INNER_CLASS", justification = "Serializing the outer instance is intended")
         private class RemoteProcess extends OSProcess implements Serializable {
             private final IOSProcess proxy;
 

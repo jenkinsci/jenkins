@@ -8,12 +8,12 @@
 
     <p>
     This tunneling option allows you to route this connection to another host/port, and useful for those situations.
-    The field can either take "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>", or "<tt>HOST:</tt>". In the first format,
+    The field can either take "<code>HOST:PORT</code>", "<code>:PORT</code>", or "<code>HOST:</code>". In the first format,
     the agent will connect to the given TCP port on the given host, and assume that you've configured your
     network so that this port forwards the connection to Jenkins’ agent TCP port.
 
     <p>
     In the latter two formats, the default host name and port number (that is, the host name that Jenkins runs,
-    and the TCP port that Jenkins opened) are used to augment the missing values. In particular the <tt>HOST:</tt> format
+    and the TCP port that Jenkins opened) are used to augment the missing values. In particular the <code>HOST:</code> format
     is useful if the HTTP reverse proxy is used and Jenkins actually runs on another system. 
 </div>
