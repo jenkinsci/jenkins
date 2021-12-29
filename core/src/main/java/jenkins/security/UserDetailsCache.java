@@ -28,6 +28,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.security.UserMayOrMayNotExistException2;
@@ -61,6 +62,7 @@ public final class UserDetailsCache {
      * Constructor intended to be instantiated by Jenkins only.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for script console")
     public UserDetailsCache() {
         if (EXPIRE_AFTER_WRITE_SEC == null || EXPIRE_AFTER_WRITE_SEC <= 0) {
             //just in case someone is trying to trick us
