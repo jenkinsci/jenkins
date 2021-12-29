@@ -221,10 +221,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Class name="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor"/>
-      </And>
-      <And>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
         <Or>
           <Class name="hudson.ClassicPluginStrategy"/>
