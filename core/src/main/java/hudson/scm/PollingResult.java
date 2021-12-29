@@ -6,7 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
-import java.io.Serializable;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 
 /**
  * Immutable object that represents the result of {@linkplain SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState) SCM polling}.
@@ -18,7 +18,7 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  * @since 1.345
  */
-public final class PollingResult implements Serializable {
+public final class PollingResult implements SerializableOnlyOverRemoting {
     /**
      * Baseline of the comparison.
      * (This comes from either the workspace, or from the remote repository as of the last polling.
