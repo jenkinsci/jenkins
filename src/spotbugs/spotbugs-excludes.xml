@@ -99,19 +99,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="EQ_GETCLASS_AND_CLASS_CONSTANT"/>
-        <Or>
-          <Class name="hudson.model.BooleanParameterDefinition"/>
-          <Class name="hudson.model.ChoiceParameterDefinition"/>
-          <Class name="hudson.model.FileParameterDefinition"/>
-          <Class name="hudson.model.PasswordParameterDefinition"/>
-          <Class name="hudson.model.RunParameterDefinition"/>
-          <Class name="hudson.model.StringParameterDefinition"/>
-          <Class name="hudson.model.TextParameterDefinition"/>
-          <Class name="hudson.util.NoClientBindProtocolSocketFactory"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="FILE_UPLOAD_FILENAME"/>
         <Or>
           <Class name="hudson.model.FileParameterDefinition"/>

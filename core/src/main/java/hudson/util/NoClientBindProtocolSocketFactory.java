@@ -109,7 +109,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
      */
     @Override
     public boolean equals(Object obj) {
-        return obj != null && obj.getClass().equals(NoClientBindProtocolSocketFactory.class);
+        return obj != null && obj.getClass().equals(getClass());
     }
 
     /**
