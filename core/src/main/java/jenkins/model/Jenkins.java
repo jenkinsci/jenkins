@@ -891,7 +891,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      If non-null, use existing plugin manager.  create a new one.
      */
     @SuppressFBWarnings({
-        "DMI_RANDOM_USED_ONLY_ONCE", // TODO needs triage
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
         "DM_EXIT" // Exit is wanted here
     })
@@ -934,9 +933,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(secretFile.exists()) {
                 secretKey = secretFile.readTrim();
             } else {
-                SecureRandom sr = new SecureRandom();
                 byte[] random = new byte[32];
-                sr.nextBytes(random);
+                RANDOM.nextBytes(random);
                 secretKey = Util.toHexString(random);
                 secretFile.write(secretKey);
 
@@ -5509,6 +5507,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
