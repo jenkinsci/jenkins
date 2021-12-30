@@ -1,20 +1,20 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder,
  * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -198,7 +198,7 @@ import org.kohsuke.stapler.Stapler;
  * <p>
  * When {@link FileCallable} is transferred to a remote node, it will be done so
  * by using the same Java serialization scheme that the remoting module uses.
- * See {@link Channel} for more about this. 
+ * See {@link Channel} for more about this.
  *
  * <p>
  * {@link FilePath} itself can be sent over to a remote node as a part of {@link Callable}
@@ -229,7 +229,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * This is used to determine whether we are running on the controller / the built-in node, or an agent.
      */
     private transient VirtualChannel channel;
-    
+
     /**
      * Represent the path to the file in the controller or the agent
      * Since the platform of the agent might be different, can't use java.io.File
@@ -369,7 +369,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         // if the path represents a local path, there' no need to guess.
         if(!isRemote())
             return File.pathSeparatorChar!=';';
-            
+
         // note that we can't use the usual File.pathSeparator and etc., as the OS of
         // the machine where this code runs and the OS that this FilePath refers to may be different.
 
@@ -411,7 +411,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             zip(os);
         }
     }
-    
+
     /**
      * Creates a zip file from this directory by using the specified filter,
      * and sends the result to the given output stream.
@@ -808,7 +808,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return null;
         }
     }
-    
+
     /**
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
@@ -843,7 +843,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public int hashCode() {
         return 31 * (channel != null ? channel.hashCode() : 0) + remote.hashCode();
     }
-    
+
     /**
      * Supported tar file compression methods.
      */
@@ -1083,7 +1083,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Convenience method to call {@link FilePath#copyTo(FilePath)}.
-     * 
+     *
      * @since 1.311
      */
     public void copyFrom(FilePath src) throws IOException, InterruptedException {
@@ -1345,7 +1345,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return mkdirs(f) || f.exists();
         }
     }
-    
+
     /**
      * Deletes all suffixes recursively.
      * @throws IOException if it exists but could not be successfully deleted
@@ -1368,7 +1368,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     Util.deleteRecursive(file.toPath(), path -> path.toFile());
                 }
             }
-            
+
             return null;
         }
     }
@@ -1734,7 +1734,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 return null;
             }
     }
-    
+
     private void setLastModifiedIfPossible(final long timestamp) throws IOException, InterruptedException {
         String message = act(new SetLastModified(timestamp));
 
@@ -1776,7 +1776,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return f.isDirectory();
         }
     }
-    
+
     /**
      * Returns the file size in bytes.
      *
@@ -2242,18 +2242,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         actAsync(new OffsetPipeSecureFileCallable(p, offset));
         return new java.util.zip.GZIPInputStream(p.getIn());
     }
-    
+
     private static class OffsetPipeSecureFileCallable extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
-        
+
         private Pipe p;
         private long offset;
-        
+
         private OffsetPipeSecureFileCallable(Pipe p, long offset) {
             this.p = p;
             this.offset = offset;
         }
-        
+
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream os = p.getOut();
@@ -2275,9 +2275,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public String readToString() throws IOException, InterruptedException {
         return act(new ReadToString());
-    } 
+    }
     private static class ReadToString extends MasterToSlaveFileCallable<String> {
-        private static final long serialVersionUID = 1L;       
+        private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return new String(Files.readAllBytes(fileToPath(f)), Charset.defaultCharset());
@@ -2536,10 +2536,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Copies the contents of this directory recursively into the specified target directory.
-     * 
+     *
      * @return
      *      the number of files copied.
-     * @since 1.312 
+     * @since 1.312
      */
     public int copyRecursiveTo(FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo("**/*",target);
@@ -2685,8 +2685,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (exceptionEncountered) {
                             Files.copy(fileToPath(f), targetPath, StandardCopyOption.REPLACE_EXISTING);
                             if (!logMessageShown) {
-                                LOGGER.log(Level.INFO, 
-                                    "JENKINS-52325: Jenkins failed to retain attributes when copying to {0}, so proceeding without attributes.", 
+                                LOGGER.log(Level.INFO,
+                                    "JENKINS-52325: Jenkins failed to retain attributes when copying to {0}, so proceeding without attributes.",
                                     dest.getAbsolutePath());
                                 logMessageShown = true;
                             }
@@ -2958,7 +2958,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     final String fileMask = tokens.nextToken().trim();
                     if(hasMatch(dir,fileMask,caseSensitive))
                         continue;   // no error on this portion
-                    
+
                     // JENKINS-5253 - if we can get some match in case insensitive mode
                     // and user requested case sensitive match, notify the user
                     if (caseSensitive && hasMatch(dir, fileMask, false)) {
@@ -3126,7 +3126,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static FormValidation validateFileMask(@CheckForNull FilePath path, String value) throws IOException {
         return FilePath.validateFileMask(path, value, true);
     }
-    
+
     /**
      * Shortcut for {@link #validateFileMask(String,boolean,boolean)} with {@code errorIfNotExist} true, as the left-hand side can be null.
      */
@@ -3136,14 +3136,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Short for {@code validateFileMask(value, true, true)} 
+     * Short for {@code validateFileMask(value, true, true)}
      */
     public FormValidation validateFileMask(String value) throws IOException {
         return validateFileMask(value, true, true);
     }
-    
+
     /**
-     * Short for {@code validateFileMask(value, errorIfNotExist, true)} 
+     * Short for {@code validateFileMask(value, errorIfNotExist, true)}
      */
     public FormValidation validateFileMask(String value, boolean errorIfNotExist) throws IOException {
         return validateFileMask(value, errorIfNotExist, true);
@@ -3226,7 +3226,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 }
             }
 
-            String msg = expectingFile ? Messages.FilePath_validateRelativePath_noSuchFile(value) : 
+            String msg = expectingFile ? Messages.FilePath_validateRelativePath_noSuchFile(value) :
                 Messages.FilePath_validateRelativePath_noSuchDirectory(value);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
@@ -3266,7 +3266,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Returns true if this {@link FilePath} represents a remote file. 
+     * Returns true if this {@link FilePath} represents a remote file.
      */
     public boolean isRemote() {
         return channel!=null;
@@ -3424,7 +3424,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                             new NamingThreadFactory(new DaemonThreadFactory(), "FilePath.localPool"))
             ));
 
-    
+
     /**
      * Channel to the current instance.
      */
@@ -3490,7 +3490,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
-    
+
             Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
             Path parentRealPath;
             try {
@@ -3538,7 +3538,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     }
                 } catch (NoSuchFileException e) {
                     // nonexistent file / Windows Server 2016 + MSFT docker
-                    // in case this folder / file will be copied somewhere else, 
+                    // in case this folder / file will be copied somewhere else,
                     // it becomes the responsibility of that system to check the isDescendant with the existing links
                     // we are not taking the parentRealPath to avoid possible problem
                     Path child = currentFileAbsolutePath.normalize();
@@ -3560,7 +3560,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
             return current;
         }
-        
+
         private @NonNull Path windowsToRealPath(@NonNull Path path) throws IOException {
             try {
                 return path.toRealPath();

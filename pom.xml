@@ -512,6 +512,7 @@ THE SOFTWARE.
               <endWithNewline />
               <importOrder />
               <removeUnusedImports />
+              <trimTrailingWhitespace />
             </java>
           </configuration>
           <executions>

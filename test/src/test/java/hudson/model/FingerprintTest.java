@@ -145,10 +145,10 @@ public class FingerprintTest {
         project.getBuildersList().add(new CreateFileBuilder("test.txt", "Hello, world!"));
         project.getPublishersList().add(new Fingerprinter("test.txt", false));
         FreeStyleBuild build = rule.buildAndAssertSuccess(project);
-        
+
         Fingerprint fp = getFingerprint(build, "test.txt");
     }
-    
+
     @Test
     public void shouldCreateFingerprintsForArtifacts() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();
@@ -157,32 +157,32 @@ public class FingerprintTest {
         archiver.setFingerprint(true);
         project.getPublishersList().add(archiver);
         FreeStyleBuild build = rule.buildAndAssertSuccess(project);
-        
+
         Fingerprint fp = getFingerprint(build, "test.txt");
     }
-    
+
     @Test
     public void shouldCreateUsageLinks() throws Exception {
-        // Project 1 
+        // Project 1
         FreeStyleProject project = createAndRunProjectWithPublisher("fpProducer", "test.txt");
         final FreeStyleBuild build = project.getLastBuild();
-        
+
         // Project 2
         FreeStyleProject project2 = rule.createFreeStyleProject();
         project2.getBuildersList().add(new WorkspaceCopyFileBuilder("test.txt", project.getName(), build.getNumber()));
         project2.getPublishersList().add(new Fingerprinter("test.txt"));
         FreeStyleBuild build2 = rule.buildAndAssertSuccess(project2);
-        
+
         Fingerprint fp = getFingerprint(build, "test.txt");
-        
+
         // Check references
         Fingerprint.BuildPtr original = fp.getOriginal();
         assertEquals("Original reference contains a wrong job name", project.getName(), original.getName());
         assertEquals("Original reference contains a wrong build number", build.getNumber(), original.getNumber());
-        
+
         Hashtable<String, Fingerprint.RangeSet> usages = fp.getUsages();
         assertTrue("Usages do not have a reference to " + project, usages.containsKey(project.getName()));
-        assertTrue("Usages do not have a reference to " + project2, usages.containsKey(project2.getName()));       
+        assertTrue("Usages do not have a reference to " + project2, usages.containsKey(project2.getName()));
     }
 
     @Test
@@ -198,28 +198,28 @@ public class FingerprintTest {
         }
         fail("Expected IOException");
     }
-    
+
     @Test
     @Issue("SECURITY-153")
     public void shouldBeUnableToSeeJobsIfNoPermissions() throws Exception {
-        // Project 1 
+        // Project 1
         final FreeStyleProject project1 = createAndRunProjectWithPublisher("fpProducer", "test.txt");
         final FreeStyleBuild build = project1.getLastBuild();
-        
+
         // Project 2
         final FreeStyleProject project2 = rule.createFreeStyleProject("project2");
         project2.getBuildersList().add(new WorkspaceCopyFileBuilder("test.txt", project1.getName(), build.getNumber()));
         project2.getPublishersList().add(new Fingerprinter("test.txt"));
         final FreeStyleBuild build2 = rule.buildAndAssertSuccess(project2);
-        
+
         // Get fingerprint
         final Fingerprint fp = getFingerprint(build, "test.txt");
-        
+
         // Init Users
         User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
         User user2 = User.getOrCreateByIdOrFullName("user2"); // can access project2
         User user3 = User.getOrCreateByIdOrFullName("user3"); // cannot access anything
-          
+
         // Project permissions
         setupProjectMatrixAuthStrategy(Jenkins.READ);
         setJobPermissionsOnce(project1, "user1", Item.READ, Item.DISCOVER);
@@ -246,16 +246,16 @@ public class FingerprintTest {
             assertEquals("All usages should be invisible for user3", 0, fp._getUsages().size());
         }
     }
-    
+
     @Test
     public void shouldBeAbleToSeeOriginalWithDiscoverPermissionOnly() throws Exception {
         // Setup the environment
         final FreeStyleProject project = createAndRunProjectWithPublisher("project", "test.txt");
         final FreeStyleBuild build = project.getLastBuild();
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
-        
+
         // Init Users and security
-        User user1 = User.get("user1");   
+        User user1 = User.get("user1");
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
 
         try (ACLContext acl = ACL.as(user1)) {
@@ -266,20 +266,20 @@ public class FingerprintTest {
             assertEquals("Usage ref in fingerprint should be visible to user1", 1, fingerprint._getUsages().size());
         }
     }
-    
+
     @Test
     public void shouldBeAbleToSeeFingerprintsInReadableFolder() throws Exception {
         final SecuredMockFolder folder = rule.jenkins.createProject(SecuredMockFolder.class, "folder");
         final FreeStyleProject project = createAndRunProjectWithPublisher(folder, "project", "test.txt");
         final FreeStyleBuild build = project.getLastBuild();
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
-        
+
         // Init Users and security
         User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(false, Jenkins.READ, Item.DISCOVER);
         setJobPermissionsOnce(project, "user1", Item.DISCOVER); // Prevents the fallback to the folder ACL
         folder.setPermissions("user1", Item.READ);
-        
+
         // Ensure we can read the original from user account
         try (ACLContext acl = ACL.as(user1)) {
             assertTrue("Test framework issue: User1 should be able to read the folder", folder.hasPermission(Item.READ));
@@ -293,18 +293,18 @@ public class FingerprintTest {
             assertThat("User should be unable do retrieve the job due to the missing read", original.getJob(), nullValue());
         }
     }
-    
+
     @Test
     public void shouldBeUnableToSeeFingerprintsInUnreadableFolder() throws Exception {
         final SecuredMockFolder folder = rule.jenkins.createProject(SecuredMockFolder.class, "folder");
         final FreeStyleProject project = createAndRunProjectWithPublisher(folder, "project", "test.txt");
         final FreeStyleBuild build = project.getLastBuild();
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
-        
+
         // Init Users and security
         User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
-        
+
         // Ensure we can read the original from user account
         try (ACLContext acl = ACL.as(user1)) {
             assertFalse("Test framework issue: User1 should be unable to read the folder", folder.hasPermission(Item.READ));
@@ -312,7 +312,7 @@ public class FingerprintTest {
             assertEquals("No jobs should be visible to user1", 0, fingerprint._getUsages().size());
         }
     }
-    
+
     /**
      * A common non-admin user should not be able to see references to a
      * deleted job even if he used to have READ permissions before the deletion.
@@ -325,7 +325,7 @@ public class FingerprintTest {
         FreeStyleProject project = createAndRunProjectWithPublisher("project", "test.txt");
         FreeStyleBuild build = project.getLastBuild();
         final Fingerprint fp = getFingerprint(build, "test.txt");
-        
+
         // Init Users and security
         User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.READ, Item.DISCOVER);
@@ -336,14 +336,14 @@ public class FingerprintTest {
             assertEquals("No jobs should be visible to user1", 0, fp._getUsages().size());
         }
     }
-    
+
     @Test
     public void adminShouldBeAbleToSeeReferencesOfDeletedJobs() throws Exception {
         // Setup the environment
         final FreeStyleProject project = createAndRunProjectWithPublisher("project", "test.txt");
         final FreeStyleBuild build = project.getLastBuild();
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
-        
+
         // Init Users and security
         User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.ADMINISTER);
@@ -592,7 +592,7 @@ public class FingerprintTest {
         }
         assertTrue(targetFile.exists());
     }
-    
+
     @NonNull
     private Fingerprint getFingerprint(@CheckForNull Run<?, ?> run, @NonNull String filename) {
         assertNotNull("Input run is null", run);
@@ -603,15 +603,15 @@ public class FingerprintTest {
         assertNotNull("No reference to '" + filename + "' from the Fingerprint action", fp);
         return fp;
     }
-    
+
     @NonNull
-    private FreeStyleProject createAndRunProjectWithPublisher(String projectName, String fpFileName) 
+    private FreeStyleProject createAndRunProjectWithPublisher(String projectName, String fpFileName)
             throws Exception {
         return createAndRunProjectWithPublisher(null, projectName, fpFileName);
     }
-    
+
     @NonNull
-    private FreeStyleProject createAndRunProjectWithPublisher(@CheckForNull MockFolder folder, 
+    private FreeStyleProject createAndRunProjectWithPublisher(@CheckForNull MockFolder folder,
             String projectName, String fpFileName) throws Exception {
         final FreeStyleProject project;
         if (folder == null) {
@@ -626,13 +626,13 @@ public class FingerprintTest {
         rule.buildAndAssertSuccess(project);
         return project;
     }
-    
+
     private void setupProjectMatrixAuthStrategy(@NonNull Permission ... permissions) {
         setupProjectMatrixAuthStrategy(true, permissions);
     }
-    
+
     private void setupProjectMatrixAuthStrategy(boolean inheritFromFolders, @NonNull Permission ... permissions) {
-        ProjectMatrixAuthorizationStrategy str = inheritFromFolders 
+        ProjectMatrixAuthorizationStrategy str = inheritFromFolders
                 ? new ProjectMatrixAuthorizationStrategy()
                 : new NoInheritanceProjectMatrixAuthorizationStrategy();
         for (Permission p : permissions) {
@@ -644,22 +644,22 @@ public class FingerprintTest {
     private void setJobPermissionsOnce(Job<?,?> job, String username, @NonNull Permission ... s)
             throws IOException {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
-        
+
         Map<Permission, Set<String>> permissions = new HashMap<>();
         HashSet<String> userSpec = new HashSet<>(Collections.singletonList(username));
 
         for (Permission p : s) {
             permissions.put(p, userSpec);
         }
-        AuthorizationMatrixProperty property = new AuthorizationMatrixProperty(permissions);      
+        AuthorizationMatrixProperty property = new AuthorizationMatrixProperty(permissions);
         job.addProperty(property);
     }
-    
+
     /**
      * Security strategy, which prevents the permission inheritance from upper folders.
      */
     private static class NoInheritanceProjectMatrixAuthorizationStrategy extends ProjectMatrixAuthorizationStrategy {
-        
+
         @Override
         public ACL getACL(Job<?, ?> project) {
             AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);

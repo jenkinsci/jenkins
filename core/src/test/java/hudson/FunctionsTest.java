@@ -124,7 +124,7 @@ public class FunctionsTest {
             }
         }
     }
-    
+
     @Test
     public void testGetRelativeLinkTo_JobContainedInView() {
         String contextPath = "/jenkins";
@@ -187,9 +187,9 @@ public class FunctionsTest {
             assertEquals("/jenkins/job/i/", result);
         }
     }
-    
+
     private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
-    
+
     @Test
     public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
         String contextPath = "/jenkins";
@@ -240,7 +240,7 @@ public class FunctionsTest {
         when(i.getFullDisplayName()).thenReturn("displayName");
         assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
     }
-    
+
     @Test
     public void testGetRelativeDisplayNameInsideItemGroup() {
         Item i = mock(Item.class);
@@ -265,7 +265,7 @@ public class FunctionsTest {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
         when(req.getAncestors()).thenReturn(ancestorsList);
     }
-    
+
     private TopLevelItem createMockItem(ItemGroup p, String shortUrl) {
         return createMockItem(p, shortUrl, shortUrl);
     }
@@ -283,7 +283,7 @@ public class FunctionsTest {
         mockedJenkins.when(Jenkins::get).thenReturn(j);
         return j;
     }
-    
+
     private static Ancestor createAncestor(Object o, String relativePath) {
         Ancestor a = mock(Ancestor.class);
         when(a.getObject()).thenReturn(o);

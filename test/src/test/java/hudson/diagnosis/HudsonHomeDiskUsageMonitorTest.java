@@ -61,7 +61,7 @@ public class HudsonHomeDiskUsageMonitorTest {
     @Test
     public void noAccessForNonAdmin() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 

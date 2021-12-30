@@ -75,22 +75,22 @@ public class SetupWizardTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Rule
     public TemporaryFolder tmpdir = new TemporaryFolder();
-    
-    @Before 
+
+    @Before
     public void initSetupWizard() throws IOException, InterruptedException {
         final SetupWizard wizard = j.jenkins.getSetupWizard();
         wizard.init(true);
-        
+
         // Retrieve admin credentials
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
         final String password = ostream.toString();
     }
-    
+
     @Test
     public void shouldReturnPluginListsByDefault() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -99,7 +99,7 @@ public class SetupWizardTest {
         j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
         // wc.setCredentialsProvider(adminCredentialsProvider);
         // wc.login("admin");
-        
+
         String response = jsonRequest(wc, "setupWizard/platformPluginList");
         assertThat("Missing plugin is suggestions ", response, containsString("active-directory"));
         assertThat("Missing category is suggestions ", response, containsString("Pipelines and Continuous Delivery"));

@@ -26,10 +26,10 @@ public class CoreEnvironmentContributorTest {
 
     @Mock
     Job job;
-    
+
     @Mock
     TaskListener listener;
-    
+
     @After
     public void tearDown() throws Exception {
         mocks.close();

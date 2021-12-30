@@ -87,7 +87,7 @@ public class ListViewTest {
     @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
-    
+
     @Test
     public void testJobLinksAreValid() throws Exception {
       /*
@@ -101,7 +101,7 @@ public class ListViewTest {
       FreeStyleProject job1 = folder1.createProject(FreeStyleProject.class, "job1");
       MockFolder folder2 = folder1.createProject(MockFolder.class, "folder2");
       FreeStyleProject job2 = folder2.createProject(FreeStyleProject.class, "job2");
-      
+
       ListView lv = new ListView("myview");
       lv.setRecurse(true);
       lv.setIncludeRegex(".*");
@@ -119,7 +119,7 @@ public class ListViewTest {
       checkLinkFromItemExistsAndIsValid(folder2, folder1, folder1, webClient);
       checkLinkFromViewExistsAndIsValid(job2, folder1, lv2, webClient);
     }
-    
+
     private void checkLinkFromViewExistsAndIsValid(Item item, ItemGroup ig, View view, WebClient webClient) throws IOException, SAXException {
       HtmlPage page = webClient.goTo(view.getUrl());
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
