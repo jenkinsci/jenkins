@@ -301,7 +301,6 @@ public class Search implements StaplerProxy {
                 prefixMatch = i.getPath().startsWith(tokenList)?1:0;
             }
 
-            @SuppressFBWarnings(value = "EQ_COMPARETO_USE_OBJECT_EQUALS", justification = "TODO needs triage")
             @Override
             public int compareTo(Tag that) {
                 int r = this.prefixMatch -that.prefixMatch;
