@@ -47,10 +47,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author Lucie Votypkova
  */
 public class MyViewsPropertyTest {
-   
+
     @Rule
     public JenkinsRule rule = new JenkinsRule();
-    
+
     @Test
     public void testReadResolve() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User");
@@ -84,7 +84,7 @@ public class MyViewsPropertyTest {
         assertEquals("Property should have primary view " + view.name + " instead of " + property.getPrimaryViewName(), view.name, property.getPrimaryViewName());
     }
     */
-    
+
     @Test
     public void testGetViews() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User");
@@ -96,7 +96,7 @@ public class MyViewsPropertyTest {
         property.addView(view);
         assertTrue("Property should contain " + view.name, property.getViews().contains(view));
     }
-    
+
     @Test
     public void testGetView() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User");
@@ -109,7 +109,7 @@ public class MyViewsPropertyTest {
         property.addView(view);
         assertEquals("Property should contain " + view.name, view, property.getView(view.name));
     }
-    
+
     @Test
     public void testGetPrimaryView() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User");
@@ -123,7 +123,7 @@ public class MyViewsPropertyTest {
         property.setPrimaryViewName(view.name);
         assertEquals("Property should have primary view " + view.name + " instead of " + property.getPrimaryView().name, view, property.getPrimaryView());
     }
-    
+
     @Test
     public void testCanDelete() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User");
@@ -183,8 +183,8 @@ public class MyViewsPropertyTest {
         View view = new ListView("foo", property);
         property.addView(view);
         property.setPrimaryViewName(view.name);
-        view.rename("primary-renamed");       
-        assertEquals("Property should rename its primary view ", "primary-renamed", property.getPrimaryViewName());        
+        view.rename("primary-renamed");
+        assertEquals("Property should rename its primary view ", "primary-renamed", property.getPrimaryViewName());
     }
 
     @Test
@@ -219,7 +219,7 @@ public class MyViewsPropertyTest {
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         rule.submit(form);
-        assertNotNull("Property should contain view foo", property.getView("foo")); 
+        assertNotNull("Property should contain view foo", property.getView("foo"));
         }
         rule.jenkins.reload();
         {
@@ -248,8 +248,8 @@ public class MyViewsPropertyTest {
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
-        rule.jenkins.setAuthorizationStrategy(auth);     
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        rule.jenkins.setAuthorizationStrategy(auth);
         user.addProperty(property);
         boolean ex = false;
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
@@ -285,8 +285,8 @@ public class MyViewsPropertyTest {
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
-        rule.jenkins.setAuthorizationStrategy(auth);    
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        rule.jenkins.setAuthorizationStrategy(auth);
         user.addProperty(property);
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         assertFalse("User User2 should not configure permission for user User",property.hasPermission(Permission.CONFIGURE));
@@ -310,5 +310,5 @@ public class MyViewsPropertyTest {
         property.addView(new AllView("foobar"));
         property.readResolve();
     }
-    
+
 }

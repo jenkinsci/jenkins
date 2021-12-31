@@ -51,7 +51,7 @@ import org.jvnet.hudson.reactor.Task;
  * The method in question can be either {@code static} or an instance method. When used with instance
  * methods, those methods have to be on a class annotated with {@link Extension} and marked as
  * {@link #after()} {@link InitMilestone#PLUGINS_PREPARED}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Indexed
@@ -99,7 +99,7 @@ public @interface Initializer {
     /**
      * Should the failure in this task prevent Hudson from starting up?
      *
-     * @see Task#failureIsFatal() 
+     * @see Task#failureIsFatal()
      */
     boolean fatal() default true;
 }

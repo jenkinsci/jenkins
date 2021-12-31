@@ -139,7 +139,7 @@ public class ComputerLauncherTest {
                 "OpenJDK Runtime Environment Zulu11.35+15-CA (build 11.0.5+10-LTS)\n" +
                 "OpenJDK 64-Bit Server VM Zulu11.35+15-CA (build 11.0.5+10-LTS, mixed mode)", "11.0.5");
     }
-    
+
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ComputerLauncher.checkJavaVersion(new PrintStream(os), "bin/java", new BufferedReader(new StringReader(text)));
