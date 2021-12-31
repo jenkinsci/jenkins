@@ -38,7 +38,7 @@ THE SOFTWARE.
       <j:if test="${c.offline}">
         <st:nbsp/>
         <j:choose>
-          <j:when test="${true or (c.offlineCause!=null and !c.connecting)}">
+          <j:when test="${c.offlineCause!=null and !c.connecting}">
             (<l:icon class="icon-error icon-sm" title="${c.offlineCause}"/> ${%offline})
           </j:when>
           <j:when test="${c.connecting}">
