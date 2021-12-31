@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Thomas J. Black
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -227,7 +227,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
-        
+
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
             String columnCaption = nodeMonitor.getColumnCaption();
@@ -298,7 +298,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", fixedName);
-        
+
         // TODO type is probably NodeDescriptor.id but confirm
         Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
         app.addNode(result);
@@ -333,7 +333,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
         if(Util.fixEmpty(value)==null)
             return FormValidation.ok();
-        
+
         try {
             checkName(value);
             return FormValidation.ok();
@@ -341,7 +341,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             return FormValidation.error(e.getMessage());
         }
     }
-    
+
     /**
      * Accepts submission from the configuration page.
      */

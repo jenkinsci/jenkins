@@ -34,10 +34,10 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class ControllerExecutorsAgentsTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void testInitial() {
         ControllerExecutorsAgents monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(ControllerExecutorsAgents.class);

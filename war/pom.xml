@@ -40,9 +40,12 @@ THE SOFTWARE.
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/jenkins</contextPath><!-- context path during test -->
-    <host>localhost</host><!-- HTTP listener host/interface -->
-    <port>8080</port><!-- HTTP listener port -->
+    <!-- context path during test -->
+    <contextPath>/jenkins</contextPath>
+    <!-- HTTP listener host/interface -->
+    <host>localhost</host>
+    <!-- HTTP listener port -->
+    <port>8080</port>
     <node.version>14.16.0</node.version>
     <yarn.version>1.22.10</yarn.version>
   </properties>
@@ -80,8 +83,8 @@ THE SOFTWARE.
         </exclusion>
         <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
         <exclusion>
-          <artifactId>metainf-services</artifactId>
           <groupId>org.kohsuke.metainf-services</groupId>
+          <artifactId>metainf-services</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.code.findbugs</groupId>
@@ -195,10 +198,10 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>list-dependencies</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>list</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <outputFile>${project.build.outputDirectory}/dependencies.txt</outputFile>
             </configuration>
@@ -206,10 +209,10 @@ THE SOFTWARE.
           <execution>
             <!-- put executable war header -->
             <id>executable-war-header</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>unpack-dependencies</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <includeGroupIds>org.jenkins-ci</includeGroupIds>
               <includeArtifactIds>executable-war</includeArtifactIds>
@@ -220,10 +223,10 @@ THE SOFTWARE.
           </execution>
           <execution>
             <id>resgen</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
@@ -243,10 +246,10 @@ THE SOFTWARE.
           </execution>
           <execution>
             <id>detached-plugins</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <!--
@@ -372,12 +375,13 @@ THE SOFTWARE.
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
-          <execution> <!-- see jetty-maven-plugin config and WebAppMain -->
+          <execution>
+            <!-- see jetty-maven-plugin config and WebAppMain -->
             <id>support-log-formatter</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -395,7 +399,8 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      <plugin><!-- generate licenses.xml -->
+      <plugin>
+        <!-- generate licenses.xml -->
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -403,15 +408,13 @@ THE SOFTWARE.
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
           <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
           <attach>true</attach>
-          <inlineScript>
-            filter {
+          <inlineScript>filter {
                 // add Winstone since we are bundling it.
                 def d = project.dependencies.find { it.artifactId=="winstone" };
                 def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
                 def p = mojo.projectBuilder.buildFromRepository(a, project.getRemoteArtifactRepositories(), mojo.localRepository)
                 models.put(a,p);
-            }
-          </inlineScript>
+            }</inlineScript>
         </configuration>
       </plugin>
       <plugin>
@@ -461,16 +464,13 @@ THE SOFTWARE.
             <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
-              <value>
-                  ../core/src/main/resources;
-              </value>
+              <value>../core/src/main/resources;</value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value><!-- run "mvn install" once will generate the.hpl -->
-                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
-              </value>
+              <!-- run "mvn install" once will generate the.hpl -->
+              <value>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi</value>
             </systemProperty>
             <systemProperty>
               <!-- stat collection pointless -->
@@ -487,7 +487,8 @@ THE SOFTWARE.
             <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
-            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
+            <!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
+            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern>
           </webApp>
         </configuration>
       </plugin>
@@ -505,10 +506,10 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <id>signWar</id>
-                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>pre-integration-test</phase>
                 <configuration>
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                   <arguments>
@@ -522,7 +523,6 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
-
 
     <!--
       The following profiles are required to integration the node/yarn build into this maven build.
@@ -564,15 +564,15 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
             <executions>
 
               <execution>
-                <phase>initialize</phase>
                 <id>install node and yarn</id>
                 <goals>
                   <goal>install-node-and-yarn</goal>
                 </goals>
+                <phase>initialize</phase>
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
                   <yarnVersion>v${yarn.version}</yarnVersion>
@@ -582,11 +582,11 @@ THE SOFTWARE.
               </execution>
 
               <execution>
-                <phase>initialize</phase>
                 <id>yarn install</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>initialize</phase>
                 <configuration>
                   <!-- ensure only one concurrent 'yarn install' -->
                   <!-- when yarn cache is empty, multiple yarns performing network fetches frequently results in opaque errors -->
@@ -595,22 +595,22 @@ THE SOFTWARE.
               </execution>
 
               <execution>
-                <phase>generate-sources</phase>
                 <id>yarn build</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>generate-sources</phase>
                 <configuration>
                   <arguments>build</arguments>
                 </configuration>
               </execution>
 
               <execution>
-                <phase>test</phase>
                 <id>yarn test</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
                   <arguments>test</arguments>
                   <skip>${skipTests}</skip>
@@ -618,11 +618,11 @@ THE SOFTWARE.
               </execution>
 
               <execution>
-                <phase>test</phase>
                 <id>yarn lint</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
                   <arguments>lint</arguments>
                   <skip>${skipTests}</skip>
@@ -637,12 +637,12 @@ THE SOFTWARE.
     <profile>
       <id>clean-node</id>
       <activation>
-        <file>
-          <exists>package.json</exists>
-        </file>
         <property>
           <name>cleanNode</name>
         </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
       </activation>
       <build>
         <plugins>

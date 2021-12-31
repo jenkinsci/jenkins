@@ -12,8 +12,6 @@ import org.junit.Test;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"PMD", "all"})
-//CHECKSTYLE:OFF
 public class TreeStringBuilderTest {
     /**
      * Tests the simple operations inside the builder.
