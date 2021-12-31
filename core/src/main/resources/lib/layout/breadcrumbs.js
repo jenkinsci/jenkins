@@ -109,9 +109,7 @@ var breadcrumbs = (function() {
      * @param {String} contextMenuUrl
      *      The URL that renders JSON for context menu. Optional.
      */
-    function invokeContextMenu(e,contextMenuUrl) {
-        contextMenuUrl = contextMenuUrl || "contextMenu";
-
+    function invokeContextMenu(e) {
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
@@ -129,10 +127,13 @@ var breadcrumbs = (function() {
 
         if (e.items) {// use what's already loaded
             showMenu(e.items());
-        } else {// fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
+        } else {
+          var items = []
+
+          // fetch menu on demand
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), "contextMenu"), {
                 onComplete:function (x) {
-                    var a = x.responseText.evalJSON().items;
+                    items = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
                         if (e.header) {
                             e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
@@ -149,12 +150,38 @@ var breadcrumbs = (function() {
                             delete e.url;
                         }
                     }
-                    a.each(fillMenuItem);
-
-                    e.items = function() { return a };
-                    showMenu(a);
+                    items.each(fillMenuItem);
                 }
             });
+
+          // items.append("")
+
+          // fetch menu on demand
+          xhr2 = new Ajax.Request(combinePath(e.getAttribute("href"), "childrenContextMenu"), {
+            onComplete:function (x) {
+              tempItems = x.responseText.evalJSON().items;
+              function fillMenuItem(e) {
+                if (e.header) {
+                  e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                } else {
+                  e.text = makeMenuHtml(e.icon, e.displayName);
+                }
+                if (e.subMenu!=null)
+                  e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
+                if (e.requiresConfirmation) {
+                  e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
+                  delete e.url;
+                } else if (e.post) {
+                  e.onclick = {fn: postRequest, obj: e.url};
+                  delete e.url;
+                }
+              }
+              tempItems.each(fillMenuItem);
+            }
+          });
+
+            e.items = function() { return [...items, ...tempItems] };
+            showMenu([...items, ...tempItems]);
         }
 
         return false;
@@ -172,12 +199,8 @@ var breadcrumbs = (function() {
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
         a.observe("click", function() {
-            invokeContextMenu(this,"childrenContextMenu");
+            invokeContextMenu(this,null);
         })
-    });
-
-    Behaviour.specify("#breadcrumbs A", 'breadcrumbs', 0, function (a) {
-        $(a).addClassName('breadcrumbBarAnchor');
     });
 
     /**
