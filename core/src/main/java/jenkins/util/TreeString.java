@@ -43,8 +43,6 @@ import org.apache.commons.lang.StringUtils;
  * @author Kohsuke Kawaguchi
  * @since 1.473
  */
-// CHECKSTYLE:OFF
-@SuppressWarnings("PMD")
 public final class TreeString implements Serializable {
     private static final long serialVersionUID = 3621959682117480904L;
 
@@ -191,7 +189,6 @@ public final class TreeString implements Serializable {
      * Default {@link Converter} implementation for XStream that does interning
      * scoped to one unmarshalling.
      */
-    @SuppressWarnings("all")
     public static final class ConverterImpl implements Converter {
         public ConverterImpl(final XStream xs) {}
 

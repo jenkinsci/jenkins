@@ -268,7 +268,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Lets the current user silently login as the given user and report back accordingly.
      */
-    @SuppressWarnings("ACL.impersonate")
     private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session != null) {
