@@ -133,7 +133,7 @@ public class ExtensionFinderTest {
     public static class BrokenExtension extends PageDecorator {
         public BrokenExtension() {
             super(InjectingExtension.class);
-            
+
             throw new Error();
         }
     }

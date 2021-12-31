@@ -47,10 +47,10 @@ import org.kohsuke.stapler.WebMethod;
 public class StopButtonTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     private static final String hrefPayload = "\",document.title='hacked',\"";
     private static final String postPayload = "\",document.title='hacked',\"";
-    
+
     @Test
     public void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
@@ -61,86 +61,86 @@ public class StopButtonTest {
         checkInjectionInHrefWithConfirm(testParams);
         checkInjectionInConfirm(testParams);
     }
-    
+
     private void checkRegularCase(TestRootAction testParams) throws Exception {
         testParams.paramHref = "#";
         testParams.paramAlt = "Message to confirm the click";
         testParams.paramConfirm = null;
-        
+
         HtmlPage p = j.createWebClient().goTo("test");
         assertTrue(p.getWebResponse().getContentAsString().contains("Message to confirm the click"));
     }
-    
+
     private void checkInjectionInHref(TestRootAction testParams) throws Exception {
         testParams.paramHref = hrefPayload;
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = null;
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-    
+
         HtmlElementUtil.click(getStopLink(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(p.getWebResponse().getContentAsString().contains("Alternative text for icon"));
     }
-    
+
     private void checkInjectionInHrefWithConfirm(TestRootAction testParams) throws Exception {
         testParams.paramHref = hrefPayload;
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = "Confirm message";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-    
+
         HtmlElementUtil.click(getStopLink(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(p.getWebResponse().getContentAsString().contains("Alternative text for icon"));
     }
-    
+
     private void checkInjectionInConfirm(TestRootAction testParams) throws Exception {
         testParams.paramHref = "#";
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = postPayload;
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-    
+
         HtmlElementUtil.click(getStopLink(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(p.getWebResponse().getContentAsString().contains("Alternative text for icon"));
     }
-    
+
     private HtmlAnchor getStopLink(HtmlPage page){
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
         return (HtmlAnchor) anchors.get(0);
     }
-    
+
     @TestExtension("noInjectionArePossible")
     public static class TestRootAction implements UnprotectedRootAction {
-        
+
         public String paramHref = "";
         public String paramAlt = "";
         public String paramConfirm;
-        
+
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getUrlName() {
             return "test";
         }
-        
+
         @WebMethod(name = "submit")
         public HttpResponse doSubmit(StaplerRequest request) {
             return HttpResponses.plainText("method:" + request.getMethod());

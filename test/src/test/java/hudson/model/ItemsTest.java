@@ -70,7 +70,7 @@ public class ItemsTest {
     public void setupLegacyBehavior(){
         ApiTokenTestHelper.enableLegacyBehavior();
     }
-    
+
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
@@ -171,7 +171,7 @@ public class ItemsTest {
         assertFalse(new File(tmp, "foo/test/1").exists());
         assertTrue(new File(tmp, "bar/test/1").exists());
     }
-    
+
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
 
     private void overwriteTargetSetUp() throws Exception {

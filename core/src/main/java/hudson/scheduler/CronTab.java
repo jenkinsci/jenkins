@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -62,7 +62,7 @@ public final class CronTab {
     private String spec;
 
     /**
-     * Optional timezone string for calendar 
+     * Optional timezone string for calendar
      */
     private @CheckForNull String specTimezone;
 
@@ -73,7 +73,7 @@ public final class CronTab {
     public CronTab(String format, Hash hash) throws ANTLRException {
         this(format,1,hash);
     }
-    
+
     /**
      * @deprecated as of 1.448
      *      Use {@link #CronTab(String, int, Hash)}
@@ -94,14 +94,14 @@ public final class CronTab {
 
     /**
      * @param timezone
-     *      Used to schedule cron in a different timezone. Null to use the default system 
+     *      Used to schedule cron in a different timezone. Null to use the default system
      *      timezone
      * @since 1.615
      */
     public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) throws ANTLRException {
         set(format, line, hash, timezone);
     }
-    
+
     private void set(String format, int line, Hash hash) throws ANTLRException {
         set(format, line, hash, null);
     }

@@ -71,7 +71,7 @@ public class SecurityContextExecutorServiceTest {
             SecurityContextHolder.clearContext();
             nullContext = SecurityContextHolder.getContext();
 
-            // Create a wrapped service 
+            // Create a wrapped service
             wrappedService = new SecurityContextExecutorService(service);
         }
     };

@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class NewViewLinkTest {
-	
+
     private NewViewLink newViewLink;
 
     private View view = mock(View.class);

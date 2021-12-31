@@ -182,7 +182,6 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      to the caller of your "doXyz" method, it will either render an error page or initiate
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
-        @SuppressWarnings("ACL.impersonate")
         @NonNull
         public User signin() throws UnclaimedIdentityException {
             User u = locateUser();

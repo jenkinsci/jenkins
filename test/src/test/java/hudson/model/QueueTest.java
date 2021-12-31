@@ -533,7 +533,7 @@ public class QueueTest {
         String tagName = queueItem.getDocumentElement().getTagName();
         assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
     }
-    
+
     @Issue("JENKINS-28926")
     @Test
     public void upstreamDownstreamCycle() throws Exception {
@@ -833,32 +833,32 @@ public class QueueTest {
     @Test public void testBlockBuildWhenUpstreamBuildingLock() throws Exception {
         final String prefix = "JENKINS-27871";
         r.getInstance().setNumExecutors(4);
-        
+
         final FreeStyleProject projectA = r.createFreeStyleProject(prefix+"A");
         projectA.getBuildersList().add(new SleepBuilder(5000));
-        
+
         final FreeStyleProject projectB = r.createFreeStyleProject(prefix+"B");
-        projectB.getBuildersList().add(new SleepBuilder(10000));     
+        projectB.getBuildersList().add(new SleepBuilder(10000));
         projectB.setBlockBuildWhenUpstreamBuilding(true);
 
         final FreeStyleProject projectC = r.createFreeStyleProject(prefix+"C");
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
-        
+
         projectA.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectB), Result.SUCCESS));
         projectB.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectC), Result.SUCCESS));
-        
+
         final QueueTaskFuture<FreeStyleBuild> taskA = projectA.scheduleBuild2(0, new TimerTriggerCause());
         Thread.sleep(1000);
         final QueueTaskFuture<FreeStyleBuild> taskB = projectB.scheduleBuild2(0, new TimerTriggerCause());
         final QueueTaskFuture<FreeStyleBuild> taskC = projectC.scheduleBuild2(0, new TimerTriggerCause());
-        
-        final FreeStyleBuild buildA = taskA.get(60, TimeUnit.SECONDS);       
-        final FreeStyleBuild buildB = taskB.get(60, TimeUnit.SECONDS);     
+
+        final FreeStyleBuild buildA = taskA.get(60, TimeUnit.SECONDS);
+        final FreeStyleBuild buildB = taskB.get(60, TimeUnit.SECONDS);
         final FreeStyleBuild buildC = taskC.get(60, TimeUnit.SECONDS);
         long buildBEndTime = buildB.getStartTimeInMillis() + buildB.getDuration();
         assertTrue("Project B build should be finished before the build of project C starts. " +
-                "B finished at " + buildBEndTime + ", C started at " + buildC.getStartTimeInMillis(), 
+                "B finished at " + buildBEndTime + ", C started at " + buildC.getStartTimeInMillis(),
                 buildC.getStartTimeInMillis() >= buildBEndTime);
     }
 

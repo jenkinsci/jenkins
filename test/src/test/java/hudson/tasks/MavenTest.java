@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -202,7 +202,7 @@ public class MavenTest {
         FreeStyleBuild build = j.waitForCompletion(project.scheduleBuild2(0).waitForStart());
         j.assertLogNotContains("-Dpassword=12345", build);
     }
-    
+
     @Test
     public void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
         final String properties = "global.path=$GLOBAL_PATH\nmy.path=$PATH\\\\Dir";
@@ -227,22 +227,22 @@ public class MavenTest {
         {
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("a", null, "a.pom", "c=d", "-e", true));
-    
+
             Maven m = p.getBuildersList().get(Maven.class);
             assertNotNull(m);
             assertEquals(DefaultSettingsProvider.class, m.getSettings().getClass());
             assertEquals(DefaultGlobalSettingsProvider.class, m.getGlobalSettings().getClass());
         }
-        
+
         {
             GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
             assertNotNull("No global Maven Config available", globalMavenConfig);
             globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settings.xml"));
             globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settings.xml"));
-            
+
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
-            
+
             Maven m = p.getBuildersList().get(Maven.class);
             assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
             assertEquals("/tmp/settings.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());

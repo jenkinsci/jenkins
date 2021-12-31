@@ -115,7 +115,7 @@ public class CLI {
 
         if (url==null)
             url = System.getenv("HUDSON_URL");
-        
+
         boolean noKeyAuth = false;
 
         // TODO perhaps allow mode to be defined by environment variable too (assuming $JENKINS_USER_ID can be used for -user)

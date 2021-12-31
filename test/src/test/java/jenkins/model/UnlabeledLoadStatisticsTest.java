@@ -44,35 +44,35 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Oleg Nenashev
  */
 public class UnlabeledLoadStatisticsTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     private final LoadStatistics unlabeledLoad = new UnlabeledLoadStatistics();
-    
+
     @After
     public void clearQueue() {
         j.getInstance().getQueue().clear();
     }
-    
+
     @Test
     @Issue("JENKINS-28446")
     public void computeQueueLength() throws Exception {
-        final Queue queue = j.jenkins.getQueue(); 
+        final Queue queue = j.jenkins.getQueue();
         assertEquals("Queue must be empty when the test starts", 0, queue.getBuildableItems().size());
         assertEquals("Statistics must return 0 when the test starts", 0, unlabeledLoad.computeQueueLength());
-        
+
         // Disable builds by default, create an agent to prevent assigning of "built-in" labels
         j.jenkins.setNumExecutors(0);
         DumbSlave slave = j.createOnlineSlave(new LabelAtom("testLabel"));
         slave.setMode(Node.Mode.EXCLUSIVE);
-        
+
         // Init project
         FreeStyleProject unlabeledProject = j.createFreeStyleProject("UnlabeledProject");
         unlabeledProject.setConcurrentBuild(true);
         FreeStyleProject labeledProject = j.createFreeStyleProject("LabeledProject");
         labeledProject.setAssignedLabel(new LabelAtom("foo"));
-         
+
         // Put unlabeled build into the queue
         unlabeledProject.scheduleBuild2(0, new ParametersAction(new StringParameterValue("FOO", "BAR1")));
         queue.maintain();
@@ -80,12 +80,12 @@ public class UnlabeledLoadStatisticsTest {
         unlabeledProject.scheduleBuild2(0, new ParametersAction(new StringParameterValue("FOO", "BAR2")));
         queue.maintain();
         assertEquals("Second Unlabeled build must be taken into account", 2, unlabeledLoad.computeQueueLength());
-        
+
         // Put labeled build into the queue
         labeledProject.scheduleBuild2(0);
         queue.maintain();
         assertEquals("Labeled builds must be ignored", 2, unlabeledLoad.computeQueueLength());
-        
+
         // Allow executions of unlabeled builds on built-in node, all unlabeled builds should pass
         j.jenkins.setNumExecutors(1);
         j.buildAndAssertSuccess(unlabeledProject);
@@ -93,5 +93,5 @@ public class UnlabeledLoadStatisticsTest {
         assertEquals("Queue must contain the labeled project build", 1, queue.getBuildableItems().size());
         assertEquals("Statistics must return 0 after all builds", 0, unlabeledLoad.computeQueueLength());
     }
-     
+
 }

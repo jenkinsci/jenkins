@@ -98,7 +98,7 @@ public class HudsonPrivateSecurityRealmTest {
     public void fullNameCollisionPassword() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        
+
         User u1 = securityRealm.createAccount("user1", "password1");
         u1.setFullName("User One");
         u1.save();
@@ -113,17 +113,17 @@ public class HudsonPrivateSecurityRealmTest {
         WebClient wc2 = j.createWebClient();
         wc2.login("user2", "password2");
 
-        
+
         // Check both users can use their token
         XmlPage w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
-        
+
         XmlPage w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
 
         u1.setFullName("user2");
         u1.save();
-        
+
         // check the tokens still work
         wc1 = j.createWebClient();
         wc1.login("user1", "password1");
@@ -135,7 +135,7 @@ public class HudsonPrivateSecurityRealmTest {
         // belt and braces in case the failed login no longer throws exceptions.
         w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
-        
+
         w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
     }
@@ -144,10 +144,10 @@ public class HudsonPrivateSecurityRealmTest {
     @Test
     public void fullNameCollisionToken() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        
+
         User u1 = securityRealm.createAccount("user1", "password1");
         u1.setFullName("User One");
         u1.save();
@@ -165,11 +165,11 @@ public class HudsonPrivateSecurityRealmTest {
         WebClient wc2 = j.createWebClient();
         wc2.addRequestHeader("Authorization", basicHeader("user2", u2Token));
         //wc2.setCredentialsProvider(new FixedCredentialsProvider("user2", u1Token));
-        
+
         // Check both users can use their token
         XmlPage w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
-        
+
         XmlPage w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
 
@@ -179,7 +179,7 @@ public class HudsonPrivateSecurityRealmTest {
         // check the tokens still work
         w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
-        
+
         w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
     }
@@ -424,11 +424,11 @@ public class HudsonPrivateSecurityRealmTest {
     public void controlCharacterAreNoMoreValid() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        
+
         String password = "testPwd";
         String email = "test@test.com";
         int i = 0;
-        
+
         // regular case = only accepting a-zA-Z0-9 + "-_"
         checkUserCanBeCreatedWith(securityRealm, "test" + i, password, "Test" + i, email);
         assertNotNull(User.getById("test" + i, false));
@@ -454,23 +454,23 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith(securityRealm, "te\u0000st" + i, password, "Test" + i, email);
         }
     }
-    
+
     @Issue("SECURITY-786")
     @Test
     public void controlCharacterAreNoMoreValid_CustomRegex() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        
+
         String currentRegex = "^[A-Z]+[0-9]*$";
-        
+
         Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
         field.setAccessible(true);
         field.set(null, currentRegex);
-        
+
         String password = "testPwd";
         String email = "test@test.com";
         int i = 0;
-        
+
         // regular case = only accepting a-zA-Z0-9 + "-_"
         checkUserCanBeCreatedWith(securityRealm, "TEST" + i, password, "Test" + i, email);
         assertNotNull(User.getById("TEST" + i, false));
@@ -489,7 +489,7 @@ public class HudsonPrivateSecurityRealmTest {
         { // we can even change regex on the fly
             currentRegex = "^[0-9]*$";
             field.set(null, currentRegex);
-    
+
             checkUserCanBeCreatedWith(securityRealm, "125213" + i, password, "Test" + i, email);
             assertNotNull(User.getById("125213" + i, false));
             i++;
@@ -557,7 +557,7 @@ public class HudsonPrivateSecurityRealmTest {
     public void ensureHashingVersion_2y_isNotSupported() {
         assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
     }
-    
+
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
@@ -568,7 +568,7 @@ public class HudsonPrivateSecurityRealmTest {
         HtmlPage success = signup.submit(j);
         assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
     }
-    
+
     private void checkUserCannotBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
@@ -580,7 +580,7 @@ public class HudsonPrivateSecurityRealmTest {
         assertThat(success.getElementById("main-panel").getTextContent(), not(containsString("Success")));
         assertThat(success.getElementById("main-panel").getTextContent(), containsString(Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharacters()));
     }
-    
+
     private void checkUserCannotBeCreatedWith_custom(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email, String regex) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));

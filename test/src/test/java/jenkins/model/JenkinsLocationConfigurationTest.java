@@ -51,7 +51,7 @@ public class JenkinsLocationConfigurationTest {
             return super.getURL();
         }
     };
-    
+
     /**
      * Makes sure the use of "localhost" in the Hudson URL reports a warning.
      */

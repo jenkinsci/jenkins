@@ -105,8 +105,8 @@ public class CreateItemTest {
                 .withThrowExceptionOnFailingStatusCode(false)
                 .getPage(request);
 
-        assertEquals("Creating job from copy should fail.", 
-                HttpURLConnection.HTTP_BAD_REQUEST, 
+        assertEquals("Creating job from copy should fail.",
+                HttpURLConnection.HTTP_BAD_REQUEST,
                 p.getWebResponse().getStatusCode());
         assertThat(rule.jenkins.getItem("newJob"), nullValue());
     }
