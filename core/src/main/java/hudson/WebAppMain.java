@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -97,7 +97,7 @@ public class WebAppMain implements ServletContextListener {
      * <p>
      * The SecurityRealm should be corrected but this is a hardening in Jenkins core.
      * <p>
-     * As this property is read during startup, you will not be able to change it at runtime 
+     * As this property is read during startup, you will not be able to change it at runtime
      * depending on your application server (not possible with Jetty nor Tomcat)
      * <p>
      * When running hpi:run, the default tracking is COOKIE+URL.
@@ -108,7 +108,7 @@ public class WebAppMain implements ServletContextListener {
     public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
     private final RingBufferLogHandler handler = new RingBufferLogHandler(WebAppMain.getDefaultRingBufferSize()) {
-      
+
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
@@ -329,7 +329,7 @@ public class WebAppMain implements ServletContextListener {
      * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
-     * 
+     *
      * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */

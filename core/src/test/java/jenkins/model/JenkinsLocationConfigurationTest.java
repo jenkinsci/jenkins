@@ -37,29 +37,29 @@ import org.mockito.stubbing.Answer;
  * @author Oleg Nenashev
  */
 public class JenkinsLocationConfigurationTest {
-    
+
     JenkinsLocationConfiguration config;
-    
+
     @Before
     public void setUp() {
         config = mock(JenkinsLocationConfiguration.class, Mockito.CALLS_REAL_METHODS);
         Answer<String> mockVoid = invocation -> "stub";
-        Mockito.doAnswer(mockVoid).when(config).save();      
+        Mockito.doAnswer(mockVoid).when(config).save();
         Mockito.doAnswer(mockVoid).when(config).save();
     }
-    
+
     @Test
     public void setAdminEmail() {
         final String email="test@foo.bar";
         final String email2="test@bar.foo";
-        
+
         // Assert the default value
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());
-        
+
         // Basic case
         config.setAdminAddress(email);
         assertEquals(email, config.getAdminAddress());
-        
+
         // Quoted value
         config.setAdminAddress("\""+email2+"\"");
         assertEquals(email2, config.getAdminAddress());
@@ -67,16 +67,16 @@ public class JenkinsLocationConfigurationTest {
         config.setAdminAddress("    test@foo.bar     ");
         assertEquals(email,config.getAdminAddress());
     }
-    
+
     @Test
     @Issue("JENKINS-28419")
     public void resetAdminEmail() {
         final String email="test@foo.bar";
-        
+
         // Set the e-mail
         config.setAdminAddress(email);
         assertEquals(email, config.getAdminAddress());
-        
+
         // Reset it
         config.setAdminAddress(null);
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());

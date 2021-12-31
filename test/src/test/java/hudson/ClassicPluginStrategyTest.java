@@ -55,7 +55,7 @@ public class ClassicPluginStrategyTest {
     @Override
     protected Hudson newHudson() throws Exception {
         File home = homeLoader.allocate();
-        
+
         for (JenkinsRecipe.Runner r : recipes) {
             r.decorateHome(this,home);
         }

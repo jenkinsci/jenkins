@@ -161,7 +161,12 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     }
     
     @RequirePOST
-    @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", justification = "written to by Stapler")
+    @SuppressFBWarnings(
+            value = {
+                "NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
+                "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"
+            },
+            justification = "written to by Stapler")
     public HttpResponse doRevokeAllSelected(@JsonBody RevokeAllSelectedModel content) throws IOException {
         for (RevokeAllSelectedUserAndUuid value : content.values) {
             if (value.userId == null) {

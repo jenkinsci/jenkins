@@ -37,33 +37,33 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class ApiTokenPropertyConfigurationTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @Issue("JENKINS-32776")
     public void newUserTokenConfiguration() throws Exception {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        
+
         config.setTokenGenerationOnCreationEnabled(true);
         {
             User userWith = User.getById("userWith", true);
             ApiTokenProperty withToken = userWith.getProperty(ApiTokenProperty.class);
             assertTrue(withToken.hasLegacyToken());
             assertEquals(1, withToken.getTokenList().size());
-            
+
             String tokenValue = withToken.getApiToken();
             Assert.assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }
-        
+
         config.setTokenGenerationOnCreationEnabled(false);
         {
             User userWithout = User.getById("userWithout", true);
             ApiTokenProperty withoutToken = userWithout.getProperty(ApiTokenProperty.class);
             assertFalse(withoutToken.hasLegacyToken());
             assertEquals(0, withoutToken.getTokenList().size());
-            
+
             String tokenValue = withoutToken.getApiToken();
             Assert.assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }

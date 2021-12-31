@@ -81,7 +81,7 @@ public class AbstractLazyLoadRunMapTest {
             };
         }
     };
- 
+
     private final Map<Integer,Semaphore> slowBuilderStartSemaphores = new HashMap<>();
     private final Map<Integer,Semaphore> slowBuilderEndSemaphores = new HashMap<>();
     private final Map<Integer,AtomicInteger> slowBuilderLoadCount = new HashMap<>();
@@ -105,7 +105,7 @@ public class AbstractLazyLoadRunMapTest {
             };
         }
     };
-    
+
     @BeforeClass
     public static void setUpClass() {
         AbstractLazyLoadRunMap.LOGGER.setLevel(Level.OFF);

@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe,
  *                          Andrew Bayer
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -219,7 +219,7 @@ public class UpdateSite {
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
-    
+
     private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
@@ -314,7 +314,7 @@ public class UpdateSite {
         long now = System.currentTimeMillis();
 
         retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
-        
+
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
         if(due) {
             lastAttempt = now;
@@ -447,7 +447,7 @@ public class UpdateSite {
         return new TextFile(new File(Jenkins.get().getRootDir(),
                                      "updates/" + getId()+".json"));
     }
-    
+
     /**
      * Returns the list of plugins that are updates to currently installed ones.
      *
@@ -458,16 +458,16 @@ public class UpdateSite {
     public List<Plugin> getUpdates() {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
-        
+
         List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
         }
-        
+
         return r;
     }
-    
+
     /**
      * Does any of the plugin has updates?
      */
@@ -475,17 +475,17 @@ public class UpdateSite {
     public boolean hasUpdates() {
         Data data = getData();
         if(data==null)      return false;
-        
+
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
-                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
+                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins.
                 return true;
         }
         return false;
     }
-    
-    
+
+
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
      * in JavaScript.
@@ -1164,7 +1164,7 @@ public class UpdateSite {
          */
         @Exported
         public final Map<String,String> dependencies;
-        
+
         /**
          * Optional dependencies of this plugin.
          */

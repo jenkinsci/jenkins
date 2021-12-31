@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
  * Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -139,7 +139,7 @@ import org.xml.sax.SAXException;
  * <li>
  * {@link View} subtypes need the {@code newViewDetail.jelly} page,
  * which is included in the "new view" page. This page should have some
- * description of what the view is about. 
+ * description of what the view is about.
  * </ul>
  *
  * @author Kohsuke Kawaguchi
@@ -164,7 +164,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
-    
+
     /**
      * If true, only show relevant executors
      */
@@ -174,7 +174,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant queue items
      */
     protected boolean filterQueue;
-    
+
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -385,7 +385,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-    
+
     /**
      * Used to enable or disable automatic refreshes of the view.
      *
@@ -397,14 +397,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isAutomaticRefreshEnabled() {
         return false;
     }
-    
+
     /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
         return filterExecutors;
     }
-    
+
     /**
      * If true, only show relevant queue items
      */
@@ -443,7 +443,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return getOwner().getPrimaryView()==this;
     }
-    
+
     public List<Computer> getComputers() {
         Computer[] computers = Jenkins.get().getComputers();
 
@@ -958,13 +958,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
-            
+
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
-        }        
+        }
     }
 
     /**
@@ -991,7 +991,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
         makeSearchIndex(sib);
-        
+
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
 
@@ -1060,7 +1060,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <p>
      * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
-     * 
+     *
      * @return
      *      null if fails.
      */
@@ -1160,11 +1160,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }
-    
+
     public RunList getBuilds() {
         return new RunList(this);
     }
-    
+
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
@@ -1336,7 +1336,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static Permission getItemCreatePermission() {
         return Item.CREATE;
     }
-    
+
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
         String mode = req.getParameter("mode");

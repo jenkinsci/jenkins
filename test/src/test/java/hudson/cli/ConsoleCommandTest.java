@@ -75,23 +75,23 @@ public class ConsoleCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
-    
+
     @Issue("JENKINS-52181")
-    @Test public void consoleShouldBeAccessibleForUserWithRead() throws Exception {	
-        FreeStyleProject project = j.createFreeStyleProject("aProject");	
+    @Test public void consoleShouldBeAccessibleForUserWithRead() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("aProject");
         if (Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo 1"));
         } else {
             project.getBuildersList().add(new Shell("echo 1"));
         }
         j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
-        
-        final CLICommandInvoker.Result result = command	
-                .authorizedTo(Jenkins.READ, Item.READ)	
-                .invokeWithArgs("aProject");	
-        
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ, Item.READ)
+                .invokeWithArgs("aProject");
+
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("echo 1"));	
+        assertThat(result.stdout(), containsString("echo 1"));
     }
 
     @Test public void consoleShouldFailWhenProjectDoesNotExist() {
