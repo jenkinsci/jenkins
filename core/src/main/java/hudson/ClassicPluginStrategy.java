@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -121,7 +121,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     private static Manifest loadLinkedManifest(File archive) throws IOException {
-            // resolve the .hpl file to the location of the manifest file        
+            // resolve the .hpl file to the location of the manifest file
             try {
                 // Locate the manifest
                 String firstLine;
@@ -137,7 +137,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     // indirection
                     archive = resolve(archive, firstLine);
                 }
-                
+
                 // Read the manifest
                 try (InputStream manifestInput = Files.newInputStream(archive.toPath())) {
                     return new Manifest(manifestInput);
@@ -232,7 +232,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
         }
-        
+
         fix(atts,optionalDependencies);
 
         // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
@@ -253,7 +253,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
         String pluginName = atts.getValue("Short-Name");
-        
+
         String jenkinsVersion = atts.getValue("Jenkins-Version");
         if (jenkinsVersion==null)
             jenkinsVersion = atts.getValue("Hudson-Version");
@@ -430,7 +430,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (classLoader instanceof DependencyClassLoader) {
                 return (DependencyClassLoader)classLoader;
             }
-            
+
             if (classLoader instanceof AntClassLoader) {
                 // AntClassLoaders hold parents not only as AntClassLoader#getParent()
                 // but also as AntClassLoader#getConfiguredParent()

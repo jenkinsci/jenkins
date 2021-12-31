@@ -982,7 +982,7 @@ public class ViewTest {
         }
 
     }
-    
+
     //Duplication with ViewTest.CompositeView from core unit test module - unfortunately it is inaccessible from here
     private static class DummyCompositeView extends View implements ViewGroup {
 

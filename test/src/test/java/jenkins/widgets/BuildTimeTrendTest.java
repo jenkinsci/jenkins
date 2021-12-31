@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2020, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -105,7 +105,7 @@ public class BuildTimeTrendTest {
 
         p.setAssignedNode(j.jenkins);
         j.buildAndAssertSuccess(p);
-        
+
         p.setAssignedNode(agent);
         j.buildAndAssertSuccess(p);
 
@@ -156,10 +156,10 @@ public class BuildTimeTrendTest {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
-        
+
         // Before the correction, if there was an agent and the build was not inheriting from AbstractBuild, we got
         // Uncaught TypeError: Cannot read property 'escapeHTML' of undefined
-        
+
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -189,14 +189,14 @@ public class BuildTimeTrendTest {
             super(parent, name);
         }
 
-        @Override 
+        @Override
         public boolean isBuildable() {
             return true;
         }
 
         private RunMap<NonAbstractBuild> runMap;
-        
-        @Override 
+
+        @Override
         protected SortedMap<Integer, NonAbstractBuild> _getRuns() {
             if (runMap == null){
                 runMap = new RunMap<>(this.getBuildDir(), this::createBuildFromDir);
@@ -211,19 +211,19 @@ public class BuildTimeTrendTest {
             return build;
         }
 
-        @Override 
+        @Override
         protected void removeRun(NonAbstractBuild run) {
-            
+
         }
 
-        @Override 
+        @Override
         public DescriptorImpl getDescriptor() {
             return (NonAbstractJob.DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
         }
 
         @TestExtension
         public static class DescriptorImpl extends TopLevelItemDescriptor {
-            @Override 
+            @Override
             public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new NonAbstractJob(parent, name);
             }

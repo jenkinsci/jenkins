@@ -47,7 +47,7 @@ public class EnvironmentVariableNodePropertyTest {
 		Map<String, String> envVars = executeBuild(agent);
 		assertEquals("agentValue", envVars.get("KEY"));
 	}
-	
+
 	/**
 	 * Built-in node properties are available
 	 */
@@ -96,7 +96,7 @@ public class EnvironmentVariableNodePropertyTest {
 
 		assertEquals("parameterValue", envVars.get("KEY"));
 	}
-	
+
 	@Test
 	public void testVariableResolving() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
@@ -106,20 +106,20 @@ public class EnvironmentVariableNodePropertyTest {
 		assertEquals("value", envVars.get("KEY1"));
 		assertEquals("value", envVars.get("KEY2"));
 	}
-	
+
 	@Test
 	public void testFormRoundTripForController() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "value"))));
-		
+
 		WebClient webClient = j.createWebClient();
 		HtmlPage page = webClient.getPage(j.jenkins, "configure");
 		HtmlForm form = page.getFormByName("config");
 		j.submit(form);
-		
+
 		assertEquals(1, j.jenkins.getGlobalNodeProperties().toList().size());
-		
+
 		EnvironmentVariablesNodeProperty prop = j.jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
 		assertEquals(1, prop.getEnvVars().size());
 		assertEquals("value", prop.getEnvVars().get("KEY"));
@@ -133,14 +133,14 @@ public class EnvironmentVariableNodePropertyTest {
 		HtmlPage page = webClient.getPage(agent, "configure");
 		HtmlForm form = page.getFormByName("config");
 		j.submit(form);
-		
+
 		assertEquals(1, agent.getNodeProperties().toList().size());
-		
+
 		EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
 		assertEquals(1, prop.getEnvVars().size());
 		assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
-	
+
 	// //////////////////////// setup //////////////////////////////////////////
 
 	@Before
@@ -168,7 +168,7 @@ public class EnvironmentVariableNodePropertyTest {
 		project.setAssignedLabel(node.getSelfLabel());
 
 		FreeStyleBuild build = j.buildAndAssertSuccess(project);
-		
+
 		return builder.getEnvVars();
 	}
 

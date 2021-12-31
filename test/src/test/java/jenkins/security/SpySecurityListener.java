@@ -45,7 +45,7 @@ public abstract class SpySecurityListener extends SecurityListener {
     public final EventQueue<String> loggedInCalls = new EventQueue<>();
     public final EventQueue<String> failedToLogInCalls = new EventQueue<>();
     public final EventQueue<String> loggedOutCalls = new EventQueue<>();
-    
+
     public void clearPreviousCalls(){
         this.authenticatedCalls.clear();
         this.failedToAuthenticateCalls.clear();
@@ -53,31 +53,31 @@ public abstract class SpySecurityListener extends SecurityListener {
         this.failedToLogInCalls.clear();
         this.loggedOutCalls.clear();
     }
-    
+
     @Override
     protected void authenticated2(@NonNull UserDetails details) {
         this.authenticatedCalls.add(details);
     }
-    
+
     @Override
     protected void failedToAuthenticate(@NonNull String username) {
         this.failedToAuthenticateCalls.add(username);
     }
-    
+
     @Override
     protected void loggedIn(@NonNull String username) {
         this.loggedInCalls.add(username);
     }
-    
+
     @Override
     protected void failedToLogIn(@NonNull String username) {
         this.failedToLogInCalls.add(username);
     }
-    
+
     @Override
     protected void loggedOut(@NonNull String username) {
         this.loggedOutCalls.add(username);
-    
+
     }
 
     public static class EventQueue<T> {

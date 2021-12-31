@@ -149,7 +149,7 @@ public class RekeySecretAdminMonitorTest {
         if (index > 0) {
             buttonStream = buttonStream.skip(index);
         }
-        
+
         return buttonStream
                 .findFirst()
                 .orElse(null);

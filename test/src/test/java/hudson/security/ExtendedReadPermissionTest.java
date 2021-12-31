@@ -68,7 +68,7 @@ public class ExtendedReadPermissionTest {
                 + " MockAuthorizationStrategy does not implement this check.")
     @Test public void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
-        
+
         JenkinsRule.WebClient wc = r.createWebClient();
         wc.withBasicCredentials("charlie");
 
