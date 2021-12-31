@@ -41,27 +41,27 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Oleg Nenashev
  */
 public class GlobalDefaultViewConfigurationTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @Issue("JENKINS-42717")
     public void shouldNotFailIfTheDefaultViewIsMissing() {
         String viewName = "NonExistentView";
         GlobalDefaultViewConfiguration c = new GlobalDefaultViewConfiguration();
-        
+
         StaplerRequest create = new MockStaplerRequestBuilder(j, "/configure").build();
         JSONObject params = new JSONObject();
         params.accumulate("primaryView", viewName);
         try {
             c.configure(create, params);
         } catch(Descriptor.FormException ex) {
-            assertThat("Wrong exception message for the form failure", 
+            assertThat("Wrong exception message for the form failure",
                     ex.getMessage(), containsString(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName)));
             return;
         }
         Assert.fail("Expected FormException");
     }
-    
+
 }

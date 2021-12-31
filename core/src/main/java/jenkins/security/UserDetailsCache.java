@@ -64,13 +64,15 @@ public final class UserDetailsCache {
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for script console")
     public UserDetailsCache() {
-        if (EXPIRE_AFTER_WRITE_SEC == null || EXPIRE_AFTER_WRITE_SEC <= 0) {
+        Integer expireAfterWriteSec = EXPIRE_AFTER_WRITE_SEC;
+        if (expireAfterWriteSec == null || expireAfterWriteSec <= 0) {
             //just in case someone is trying to trick us
-            EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
-            if (EXPIRE_AFTER_WRITE_SEC <= 0) {
+            expireAfterWriteSec = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
+            if (expireAfterWriteSec <= 0) {
                 //The property could also be set to a negative value
-                EXPIRE_AFTER_WRITE_SEC = (int)TimeUnit.MINUTES.toSeconds(2);
+                expireAfterWriteSec = (int)TimeUnit.MINUTES.toSeconds(2);
             }
+            EXPIRE_AFTER_WRITE_SEC = expireAfterWriteSec;
         }
         detailsCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
         existenceCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();

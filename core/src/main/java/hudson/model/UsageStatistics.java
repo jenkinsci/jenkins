@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -73,7 +73,7 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private static final Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
-    
+
     private final String keyImage;
 
     /**
@@ -103,7 +103,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     public boolean isDue() {
         // user opted out. no data collection.
         if(!Jenkins.get().isUsageStatisticsCollected() || DISABLED)     return false;
-        
+
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
             lastAttempt = now;
@@ -125,7 +125,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     /**
-     * Gets the encrypted usage stat data to be sent to the Hudson server. 
+     * Gets the encrypted usage stat data to be sent to the Hudson server.
      * Used exclusively by jelly: resources/hudson/model/UsageStatistics/footer.jelly
      */
     public String getStatData() throws IOException {

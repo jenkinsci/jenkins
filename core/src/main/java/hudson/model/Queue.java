@@ -850,7 +850,7 @@ public class Queue extends ResourceController implements Saveable {
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
         if (t.task instanceof hudson.model.Item) {
             hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
-            if (!taskAsItem.hasPermission(hudson.model.Item.READ) 
+            if (!taskAsItem.hasPermission(hudson.model.Item.READ)
                     && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
             }
@@ -947,7 +947,7 @@ public class Queue extends ResourceController implements Saveable {
     protected List<BlockedItem> getBlockedItems() {
         return new ArrayList<>(snapshot.blockedProjects);
     }
-    
+
     /**
      * Returns the snapshot of all {@link LeftItem}s.
      *
@@ -1010,7 +1010,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param l Label to be checked. If null, any label will be accepted.
      *    If you want to count {@link BuildableItem}s without assigned labels,
      *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
-     * @return Number of {@link BuildableItem}s for the specified label. 
+     * @return Number of {@link BuildableItem}s for the specified label.
      */
     public /* @java.annotation.Nonnegative */ int countBuildableItemsFor(@CheckForNull Label l) {
         Snapshot snapshot = this.snapshot;
@@ -1025,7 +1025,7 @@ public class Queue extends ResourceController implements Saveable {
                     r++;
         return r;
     }
-    
+
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
      * <p>
@@ -1331,7 +1331,7 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
     /**
-     * Wraps a {@link Runnable} with the  {@link Queue} lock held. 
+     * Wraps a {@link Runnable} with the  {@link Queue} lock held.
      *
      * @param runnable the operation to wrap.
      * @since 1.618
@@ -1344,7 +1344,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held. 
+     * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held.
      *
      * @param callable the operation to wrap.
      * @since 1.618
@@ -1357,7 +1357,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held. 
+     * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held.
      *
      * @param callable the operation to wrap.
      * @since 1.618
@@ -1593,10 +1593,10 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
                 }
             }
-            
+
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
-            
+
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<>(
                     buildables)) {// copy as we'll mutate the list in the loop
@@ -2217,7 +2217,7 @@ public class Queue extends ResourceController implements Saveable {
          * Test if the specified {@link SubTask} needs to be run on a node with a particular label.
          * <p>
          * This method takes {@link LabelAssignmentAction} into account, the first
-         * non-null assignment will be returned. 
+         * non-null assignment will be returned.
          * Otherwise falls back to {@link SubTask#getAssignedLabel()}
          * @param st {@link SubTask} to be checked.
          * @return Required {@link Label}. Otherwise null, indicating it can run on anywhere.
@@ -2465,7 +2465,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
     }
-    
+
     /**
      * An optional interface for actions on Queue.Item.
      * Lets the action cooperate in queue management.
@@ -2987,7 +2987,7 @@ public class Queue extends ResourceController implements Saveable {
             return "Queue.Snapshot{waitingList=" + waitingList + ";blockedProjects=" + blockedProjects + ";buildables=" + buildables + ";pendings=" + pendings + "}";
         }
     }
-    
+
     private static class LockedRunnable implements Runnable  {
         private final Runnable delegate;
 

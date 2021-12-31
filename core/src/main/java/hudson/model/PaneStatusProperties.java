@@ -10,15 +10,15 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.Stapler;
 
 public class PaneStatusProperties extends UserProperty implements Saveable {
-	
+
 	private final PersistedList<String> collapsed = new PersistedList<>(this);
-	
+
 	private static final PaneStatusProperties FALLBACK = new PaneStatusPropertiesSessionFallback();
-	
+
 	public boolean isCollapsed(String paneId) {
 		return collapsed.contains(paneId);
 	}
-	
+
 	/**
 	 * @param paneId panel name
 	 * @return the actual state of panel
@@ -32,17 +32,17 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 			return true;
 		}
 	}
-	
+
 	@Override
 	public void save() throws IOException {
         user.save();
     }
-	
+
 	private Object readResolve() {
 		collapsed.setOwner(this);
 		return this;
 	}
-	
+
 	@Extension @Symbol("paneStatus")
 	public static class DescriptorImpl extends UserPropertyDescriptor {
 
@@ -55,13 +55,13 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 		public boolean isEnabled() {
 			return false;
 		}
-		
+
 	}
-	
+
 	private static class PaneStatusPropertiesSessionFallback extends PaneStatusProperties {
-		
+
 		private static final String attribute = "jenkins_pane_%s_collapsed";
-		
+
 		@Override
 		public boolean isCollapsed(String paneId) {
 			final HttpSession session = Stapler.getCurrentRequest().getSession();

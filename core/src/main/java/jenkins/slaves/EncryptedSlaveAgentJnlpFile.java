@@ -1,6 +1,5 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -40,6 +39,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
 
     private static final Logger LOG = Logger.getLogger(EncryptedSlaveAgentJnlpFile.class.getName());
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * The object that owns the Jelly view that renders JNLP file.
@@ -69,7 +69,6 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         this.slaveName = slaveName;
     }
 
-    @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "TODO needs triage")
     @Override
     public void generateResponse(StaplerRequest req, final StaplerResponse res, Object node) throws IOException, ServletException {
         RequestDispatcher view = req.getView(it, viewName);
@@ -86,7 +85,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             view.forward(req, temp);
 
             byte[] iv = new byte[128/8];
-            new SecureRandom().nextBytes(iv);
+            RANDOM.nextBytes(iv);
 
             byte[] jnlpMac;
             if(it instanceof SlaveComputer) {

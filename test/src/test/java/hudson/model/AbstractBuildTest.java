@@ -76,35 +76,35 @@ public class AbstractBuildTest {
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @Issue("JENKINS-30730")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
         ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();
         prj.addProperty(erroneousJobProperty);
-        QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
+        QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);
         assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
         FreeStyleBuild build = future.get();
         j.assertLogContains(ErroneousJobProperty.ERROR_MESSAGE, build);
         j.assertLogNotContains(ClassCastException.class.getName(), build);
     }
-    
+
     /**
      * Job property, which always fails with an exception.
      */
     public static class ErroneousJobProperty extends JobProperty<FreeStyleProject> {
 
         public static final String ERROR_MESSAGE = "This publisher fails by design";
-        
+
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
             throw new IOException(ERROR_MESSAGE);
         }
-        
+
         @TestExtension("reportErrorShouldNotFailForNonPublisherClass")
         public static class DescriptorImpl extends JobPropertyDescriptor {}
     }

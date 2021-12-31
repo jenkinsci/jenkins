@@ -27,7 +27,7 @@ public class InitMilestoneTest {
     }
 
     // Using @Initializer in static methods to check all the InitMilestones are loaded in all tests instances and make them fail,
-    // so using a TestExtension and checking only the InitMilestone after EXTENSION_AUGMENTED 
+    // so using a TestExtension and checking only the InitMilestone after EXTENSION_AUGMENTED
     @TestExtension("testInitMilestones")
     public static class Initializers {
         private int order = 0;

@@ -87,42 +87,42 @@ public class PluginManagerTest {
         assertThat(ex.getCause(), instanceOf(SAXException.class));
         assertThat(ex.getCause().getMessage(), containsString("DOCTYPE is disallowed"));
     }
-    
+
     @Test
     public void shouldProperlyParseManifestFromJar() throws IOException {
         File jar = createHpiWithManifest();
         final Manifest manifest = PluginManager.parsePluginManifest(jar.toURI().toURL());
-        
+
         assertThat("manifest should have been read from the sample", manifest, notNullValue());
         assertAttribute(manifest, "Created-By", "Apache Maven");
         assertAttribute(manifest, "Short-Name", "matrix-auth");
-        
+
         // Multi-line entries
         assertAttribute(manifest, "Specification-Title", "Offers matrix-based security authorization strategies (global and per-project).");
         assertAttribute(manifest, "Url", "http://wiki.jenkins-ci.org/display/JENKINS/Matrix+Authorization+Strategy+Plugin");
-    
+
         // Empty field
         assertAttribute(manifest, "Plugin-Developers", null);
     }
-    
+
     @Test
     public void shouldProperlyRetrieveModificationDate() throws IOException {
         File jar = createHpiWithManifest();
         URL url = toManifestUrl(jar);
-        assertThat("Manifest last modified date should be equal to the file date", 
-                PluginManager.getModificationDate(url), 
+        assertThat("Manifest last modified date should be equal to the file date",
+                PluginManager.getModificationDate(url),
                 equalTo(jar.lastModified()));
     }
-    
+
     private static void assertAttribute(Manifest manifest, String attributeName, String value) {
         Attributes attributes = manifest.getMainAttributes();
         assertThat("Main attributes must not be empty", attributes, notNullValue());
-        assertThat("Attribute '" + attributeName + "' does not match the sample", 
-                attributes.getValue(attributeName), 
+        assertThat("Attribute '" + attributeName + "' does not match the sample",
+                attributes.getValue(attributeName),
                 equalTo(value));
-        
+
     }
-    
+
     private static final String SAMPLE_MANIFEST_FILE = "Manifest-Version: 1.0\n" +
                 "Archiver-Version: Plexus Archiver\n" +
                 "Created-By: Apache Maven\n" +
@@ -146,12 +146,12 @@ public class PluginManagerTest {
                 "Plugin-Dependencies: icon-shim:2.0.3,cloudbees-folder:5.2.2;resolution\n" +
                 " :=optional\n" +
                 "Plugin-Developers: ";
-    
+
     private File createHpiWithManifest() throws IOException {
         String manifestPath = "META-INF/MANIFEST.MF";
         new File("META-INF").mkdir();
         FileUtils.write(new File(tmp.toFile(), manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
-        
+
         final File f = new File(tmp.toFile(), "my.hpi");
         try(ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
             ZipEntry e = new ZipEntry(manifestPath);
@@ -162,10 +162,10 @@ public class PluginManagerTest {
         }
         return f;
     }
-        
-    
+
+
     private URL toManifestUrl(File jarFile) throws MalformedURLException {
         final String manifestPath = "META-INF/MANIFEST.MF";
         return new URL("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath);
-    }  
+    }
 }
