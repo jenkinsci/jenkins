@@ -247,7 +247,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     /**
      * Historical holder for map.
-     * 
+     *
      * TODO all this mess including {@link #numberOnDisk} could probably be simplified to a single {@code TreeMap<Integer,BuildReference<R>>}
      * where a null value means not yet loaded and a broken entry just uses {@code NoHolder}.
      *
@@ -317,7 +317,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public final void updateBaseDir(File dir) {
         this.dir = dir;
     }
-    
+
     /**
      * Let go of all the loaded references.
      *
@@ -625,7 +625,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     /**
      * Tries to load the record #N.
-     * 
+     *
      * @return null if the data failed to load.
      */
     private R load(int n, Index editInPlace) {

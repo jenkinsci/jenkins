@@ -98,7 +98,7 @@ public class ComputerTest {
 
         Page page = j.submit(form);
         assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
-        assertThat(NOTE, page.getWebResponse().getContentAsString(), 
+        assertThat(NOTE, page.getWebResponse().getContentAsString(),
                 containsString("Agent called ‘nodeA’ already exists"));
     }
 

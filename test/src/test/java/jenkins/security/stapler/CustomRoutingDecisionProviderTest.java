@@ -45,10 +45,10 @@ import org.kohsuke.stapler.WebMethod;
 @Issue("SECURITY-400")
 @For(RoutingDecisionProvider.class)
 public class CustomRoutingDecisionProviderTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @TestExtension("customRoutingWhitelistProvider")
     public static class XxxBlacklister extends RoutingDecisionProvider {
         @Override
@@ -59,40 +59,40 @@ public class CustomRoutingDecisionProviderTest {
             return Decision.UNKNOWN;
         }
     }
-    
+
     @TestExtension
     public static class OneMethodIsBlacklisted implements UnprotectedRootAction {
         @Override
         public @CheckForNull String getUrlName() {
             return "custom";
         }
-        
+
         @Override
         public String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public String getIconFileName() {
             return null;
         }
-        
+
         public StaplerAbstractTest.Renderable getLegitGetter() {
             return new StaplerAbstractTest.Renderable();
         }
-        
+
         public StaplerAbstractTest.Renderable getLegitxxxGetter() {
             return new StaplerAbstractTest.Renderable();
         }
     }
-    
+
     private static class Renderable {
         public void doIndex() {replyOk();}
-        
+
         @WebMethod(name = "valid")
         public void valid() {replyOk();}
     }
-    
+
     private static void replyOk() {
         StaplerResponse resp = Stapler.getCurrentResponse();
         try {
@@ -102,12 +102,12 @@ public class CustomRoutingDecisionProviderTest {
             throw new UncheckedIOException(e);
         }
     }
-    
+
     @Test
     public void customRoutingWhitelistProvider() throws Exception {
         Page okPage = j.createWebClient().goTo("custom/legitGetter", null);
         assertThat(okPage.getWebResponse().getStatusCode(), is(200));
-        
+
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         Page errorPage = wc.goTo("custom/legitxxxGetter", null);

@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot, id:cactusman
  *               2015 Kanstantsin Shautsou
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -96,14 +96,14 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * You can add UI elements under the SCM section by creating a
  * config.jelly or config.groovy in the resources area for
- * your class that inherits from SCMTrigger and has the 
- * {@link Extension} annotation. The UI should 
+ * your class that inherits from SCMTrigger and has the
+ * {@link Extension} annotation. The UI should
  * be wrapped in an f:section element to denote it.
  *
  * @author Kohsuke Kawaguchi
  */
 public class SCMTrigger extends Trigger<Item> {
-    
+
     private boolean ignorePostCommitHooks;
 
     @DataBoundConstructor
@@ -131,7 +131,7 @@ public class SCMTrigger extends Trigger<Item> {
      * This trigger wants to ignore post-commit hooks.
      * <p>
      * SCM plugins must respect this and not run this trigger for post-commit notifications.
-     * 
+     *
      * @since 1.493
      */
     public boolean isIgnorePostCommitHooks() {
@@ -167,7 +167,7 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
      * to trigger a build at a specific revision number.
-     * 
+     *
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
@@ -426,7 +426,7 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = run;
             build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
-        
+
         @Deprecated
         public BuildAction(AbstractBuild build) {
             this((Run) build);
@@ -476,7 +476,7 @@ public class SCMTrigger extends Trigger<Item> {
         public AnnotatedLargeText getPollingLogText() {
             return new AnnotatedLargeText<>(getPollingLogFile(), Charset.defaultCharset(), true, this);
         }
-        
+
         /**
          * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
@@ -562,7 +562,7 @@ public class SCMTrigger extends Trigger<Item> {
         public Runner() {
             this(null);
         }
-        
+
         @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
         public Runner(Action[] actions) {
             if (job == null) {
@@ -575,7 +575,7 @@ public class SCMTrigger extends Trigger<Item> {
                 additionalActions = Arrays.copyOf(actions, actions.length);
             }
         }
-        
+
         /**
          * Where the log file is written.
          */

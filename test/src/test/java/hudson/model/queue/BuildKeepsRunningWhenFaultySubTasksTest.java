@@ -24,7 +24,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
     public JenkinsRule j = new JenkinsRule();
 
     public static final String ERROR_MESSAGE = "My unexpected exception";
-    
+
     // When using SubTaskContributor (FailingSubTaskContributor) the build never ends
     @Test
     @Issue("JENKINS-59793")
@@ -36,7 +36,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
         // We don't get stalled waiting the finalization of the job
         future.get(5, TimeUnit.SECONDS);
     }
-    
+
     // A SubTask failing with an exception
     @TestExtension
     public static class FailingSubTaskContributor extends SubTaskContributor {

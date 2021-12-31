@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -85,7 +85,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  *
  * @author Kohsuke Kawaguchi
- * @see FilePath#createLauncher(TaskListener) 
+ * @see FilePath#createLauncher(TaskListener)
  */
 public abstract class Launcher {
 
@@ -146,7 +146,7 @@ public abstract class Launcher {
     /**
      * Gets the {@link TaskListener} that this launcher uses to
      * report the commands that it's executing.
-     * 
+     *
      * @return Task listener
      */
     @NonNull
@@ -289,7 +289,7 @@ public abstract class Launcher {
 
         /**
          * Sets the current directory.
-         * 
+         *
          * @param workDir Work directory to be used.
          *                If {@code null}, the default/current directory will be used by the process starter
          * @return {@code this}
@@ -314,8 +314,8 @@ public abstract class Launcher {
 
         /**
          * Sets STDOUT destination.
-         * 
-         * @param out Output stream. 
+         *
+         * @param out Output stream.
          *            Use {@code null} to send STDOUT to {@code /dev/null}.
          * @return {@code this}
          */
@@ -327,7 +327,7 @@ public abstract class Launcher {
 
         /**
          * Sends the stdout to the given {@link TaskListener}.
-         * 
+         *
          * @param out Task listener (must be safely remotable)
          * @return {@code this}
          */
@@ -339,7 +339,7 @@ public abstract class Launcher {
 
         /**
          * Gets current STDOUT destination.
-         * 
+         *
          * @return STDOUT output stream. {@code null} if STDOUT is suppressed or undefined.
          */
         @CheckForNull
@@ -358,7 +358,7 @@ public abstract class Launcher {
 
         /**
          * Gets current STDERR destination.
-         * 
+         *
          * @return STDERR output stream. {@code null} if suppressed or undefined.
          */
         @CheckForNull
@@ -369,7 +369,7 @@ public abstract class Launcher {
         /**
          * Controls where the stdin of the process comes from.
          * By default, {@code /dev/null}.
-         * 
+         *
          * @return {@code this}
          */
         @NonNull
@@ -380,7 +380,7 @@ public abstract class Launcher {
 
         /**
          * Gets current STDIN destination.
-         * 
+         *
          * @return STDIN output stream. {@code null} if suppressed or undefined.
          */
         @CheckForNull
@@ -395,7 +395,7 @@ public abstract class Launcher {
          * In addition to what the current process
          * is inherited (if this is going to be launched from a agent agent, that
          * becomes the "current" process), these variables will be also set.
-         * 
+         *
          * @param overrides Environment variables to be overridden
          * @return {@code this}
          */
@@ -407,7 +407,7 @@ public abstract class Launcher {
         /**
          * @param overrides
          *      List of "VAR=VALUE". See {@link #envs(Map)} for the semantics.
-         * 
+         *
          * @return {@code this}
          */
         public ProcStarter envs(@CheckForNull String... overrides) {
@@ -425,7 +425,7 @@ public abstract class Launcher {
         /**
          * Gets a list of environment variables to be set.
          * Returns an empty array if envs field has not been initialized.
-         * 
+         *
          * @return If initialized, returns a copy of internal envs array. Otherwise - a new empty array.
          */
         @NonNull
@@ -470,7 +470,7 @@ public abstract class Launcher {
          * Indicates that the caller will directly write to the child process {@link #stdin()} via {@link Proc#getStdin()}.
          * (Whereas by default you call {@link #stdin(InputStream)}
          * and let Jenkins pump your {@link InputStream} of choosing to stdin.)
-         * 
+         *
          * @return {@code this}
          * @since 1.399
          */
@@ -518,7 +518,7 @@ public abstract class Launcher {
             // The logging around procHolderForJoin prevents the preliminary object deallocation we saw in JENKINS-23271
             final Proc procHolderForJoin = start();
             LOGGER.log(Level.FINER, "Started the process {0}", procHolderForJoin);
-            
+
             if (procHolderForJoin instanceof ProcWithJenkins23271Patch) {
                 return procHolderForJoin.join();
             } else {
@@ -762,7 +762,7 @@ public abstract class Launcher {
      * <p>
      * When the returned channel is terminated, the process will be killed.
      *
-     * @param cmd 
+     * @param cmd
      *      The commands.
      * @param out
      *      Where the stderr from the launched process will be sent.
@@ -774,7 +774,7 @@ public abstract class Launcher {
      *      is inherited (if this is going to be launched from an agent, that
      *      becomes the "current" process), these variables will be also set.
      */
-    public abstract Channel launchChannel(@NonNull String[] cmd, @NonNull OutputStream out, 
+    public abstract Channel launchChannel(@NonNull String[] cmd, @NonNull OutputStream out,
             @CheckForNull FilePath workDir, @NonNull Map<String,String> envVars) throws IOException, InterruptedException;
 
     /**
@@ -831,7 +831,7 @@ public abstract class Launcher {
             printCommandLine(cmd.toArray(new String[0]),workDir);
             return;
         }
-        
+
         assert mask.length == cmd.size();
         final String[] masked = new String[cmd.size()];
         for (int i = 0; i < cmd.size(); i++) {
@@ -843,14 +843,14 @@ public abstract class Launcher {
         }
         printCommandLine(masked, workDir);
     }
-    
+
     protected final void maskedPrintCommandLine(@NonNull String[] cmd, @NonNull boolean[] mask, @CheckForNull FilePath workDir) {
         maskedPrintCommandLine(Arrays.asList(cmd),mask,workDir);
     }
 
     /**
      * Returns a decorated {@link Launcher} for the given node.
-     * 
+     *
      * @param node Node for which this launcher is created.
      * @return Decorated instance of the Launcher.
      */
@@ -877,7 +877,7 @@ public abstract class Launcher {
             public boolean isUnix() {
                 return outer.isUnix();
             }
- 
+
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
@@ -1111,7 +1111,7 @@ public abstract class Launcher {
             final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream in = ps.stdin == null || ps.stdin == NULL_INPUT_STREAM ? null : new RemoteInputStream(ps.stdin, false);
-            
+
             final FilePath psPwd = ps.pwd;
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
@@ -1230,14 +1230,14 @@ public abstract class Launcher {
             }
         }
     }
-    
+
     /**
-     * A launcher which delegates to a provided inner launcher. 
+     * A launcher which delegates to a provided inner launcher.
      * Allows subclasses to only implement methods they want to override.
-     * Originally, this launcher has been implemented in 
+     * Originally, this launcher has been implemented in
      * <a href="https://plugins.jenkins.io/custom-tools-plugin">
      * Custom Tools Plugin</a>.
-     * 
+     *
      * @author rcampbell
      * @author Oleg Nenashev, Synopsys Inc.
      * @since 1.568
@@ -1301,9 +1301,9 @@ public abstract class Launcher {
 
         @Override
         public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
-            return inner.launch(cmd, env, in, out, workDir); 
+            return inner.launch(cmd, env, in, out, workDir);
         }
-   
+
         /**
          * Gets nested launcher.
          * @return Inner launcher
@@ -1311,7 +1311,7 @@ public abstract class Launcher {
         @NonNull
         public Launcher getInner() {
             return inner;
-        }    
+        }
     }
 
     public static class IOTriplet implements Serializable {
@@ -1328,7 +1328,7 @@ public abstract class Launcher {
         int join() throws InterruptedException, IOException;
         void kill() throws IOException, InterruptedException;
         boolean isAlive() throws IOException, InterruptedException;
-        
+
         @NonNull
         IOTriplet getIOtriplet();
     }
@@ -1350,8 +1350,8 @@ public abstract class Launcher {
 
         RemoteLaunchCallable(@NonNull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
                 @CheckForNull InputStream in, boolean reverseStdin,
-                @CheckForNull OutputStream out, boolean reverseStdout, 
-                @CheckForNull OutputStream err, boolean reverseStderr, 
+                @CheckForNull OutputStream out, boolean reverseStdout,
+                @CheckForNull OutputStream err, boolean reverseStderr,
                 boolean quiet, @CheckForNull String workDir, @NonNull TaskListener listener, @CheckForNull TaskListener stdoutListener) {
             this.cmd = new ArrayList<>(cmd);
             this.masks = masks;
@@ -1448,7 +1448,7 @@ public abstract class Launcher {
         @NonNull
         private final Map<String,String> envOverrides;
 
-        RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err, 
+        RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err,
                 @CheckForNull String workDir, @NonNull Map<String,String> envOverrides) {
             this.cmd = cmd;
             this.out = out;
@@ -1501,7 +1501,7 @@ public abstract class Launcher {
         m.overrideExpandingAll(overrides);
         return m;
     }
-    
+
     /**
      * Debug option to display full current path instead of just the last token.
      */

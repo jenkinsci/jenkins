@@ -370,9 +370,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Deprecated
     private InstallState installState;
-    
+
     /**
-     * If we're in the process of an initial setup, 
+     * If we're in the process of an initial setup,
      * this will be set
      */
     private transient SetupWizard setupWizard;
@@ -891,7 +891,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      If non-null, use existing plugin manager.  create a new one.
      */
     @SuppressFBWarnings({
-        "DMI_RANDOM_USED_ONLY_ONCE", // TODO needs triage
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
         "DM_EXIT" // Exit is wanted here
     })
@@ -934,9 +933,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(secretFile.exists()) {
                 secretKey = secretFile.readTrim();
             } else {
-                SecureRandom sr = new SecureRandom();
                 byte[] random = new byte[32];
-                sr.nextBytes(random);
+                RANDOM.nextBytes(random);
                 secretKey = Util.toHexString(random);
                 secretFile.write(secretKey);
 
@@ -1093,7 +1091,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Set the proxy configuration.
-     * 
+     *
      * @param proxy the proxy to set
      * @since 2.205
      */
@@ -1116,7 +1114,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Update the current install state. This will invoke state.initializeState() 
+     * Update the current install state. This will invoke state.initializeState()
      * when the state has been transitioned.
      */
     public void setInstallState(@NonNull InstallState newState) {
@@ -2425,7 +2423,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * It is done in this order so that it can work correctly even in the face
      * of a reverse proxy.
      *
-     * @return {@code null} if this parameter is not configured by the user and the calling thread is not in an HTTP request; 
+     * @return {@code null} if this parameter is not configured by the user and the calling thread is not in an HTTP request;
      *                      otherwise the returned URL will always have the trailing {@code /}
      * @throws IllegalStateException {@link JenkinsLocationConfiguration} cannot be retrieved.
      *                      Jenkins instance may be not ready, or there is an extension loading glitch.
@@ -3951,7 +3949,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
-            
+
             save();
             updateComputerList();
             if(result)
@@ -4201,7 +4199,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new Failure(Messages.Hudson_TrailingDot());
             }
         }
-        
+
         // looks good
     }
 
@@ -4940,7 +4938,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return byCategory;
     }
-    
+
     /**
      * If set, a currently active setup wizard - e.g. installation
      *
@@ -4950,7 +4948,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public SetupWizard getSetupWizard() {
         return setupWizard;
     }
-    
+
     /**
      * Exposes the current user to {@code /me} URL.
      */
@@ -4986,7 +4984,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return this;
     }
-    
+
     /**
      * Test a path to see if it is subject to mandatory read permission checks by container-managed security
      * @param restOfPath the URI, excluding the Jenkins root URI and query string
@@ -5307,7 +5305,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.log(WARNING, e, () -> "Unable to read Jenkins version: " + e.getMessage());
             }
         }
-        
+
         VERSION = ver;
         context.setAttribute("version",ver);
 
@@ -5463,9 +5461,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Name of the system property escape hatch for SECURITY-2424. It allows to have back the legacy (and vulnerable)
      * behavior allowing a "good name" to end with a dot. This could be used to exploit two names colliding in the file
      * system to extract information. The files ending with a dot are only a problem on Windows.
-     * 
+     *
      * The default value is true.
-     * 
+     *
      * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
      * @see #checkGoodName(String)
      */
@@ -5509,6 +5507,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
