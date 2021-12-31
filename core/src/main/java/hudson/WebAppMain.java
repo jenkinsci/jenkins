@@ -301,7 +301,7 @@ public class WebAppMain implements ServletContextListener {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
     }
 
-	/**
+    /**
      * Installs log handler to monitor all Hudson logs.
      */
     @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")

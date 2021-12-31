@@ -695,9 +695,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private boolean checkMinVersion(@CheckForNull Plugin p, @CheckForNull VersionNumber minVersion) {
         return p != null
                 && (minVersion == null || !minVersion.isNewerThan(new VersionNumber(p.version)));
-	}
+    }
 
-	/**
+    /**
      * Schedules a Jenkins upgrade.
      */
     @RequirePOST

@@ -514,6 +514,9 @@ THE SOFTWARE.
             <java>
               <endWithNewline />
               <importOrder />
+              <indent>
+                <spaces>true</spaces>
+              </indent>
               <removeUnusedImports />
               <trimTrailingWhitespace />
             </java>

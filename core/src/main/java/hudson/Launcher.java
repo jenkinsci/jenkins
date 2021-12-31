@@ -987,7 +987,7 @@ public abstract class Launcher {
             // replace variables in command line
             String[] jobCmd = new String[ps.commands.size()];
             for ( int idx = 0 ; idx < jobCmd.length; idx++ )
-            	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
+                jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
 
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,

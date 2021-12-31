@@ -95,7 +95,7 @@ public class MavenTest {
         assertEquals("b.pom", m.pom);
         assertEquals("c=d", m.properties);
         assertEquals("-e", m.jvmOptions);
-	assertTrue(m.usesPrivateRepository());
+        assertTrue(m.usesPrivateRepository());
     }
 
     @Test public void withNodeProperty() throws Exception {

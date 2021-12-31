@@ -100,7 +100,7 @@ public class UtilTest {
         assertEquals("a.B", Util.replaceMacro("$A.B", m));
         assertEquals("a-b", Util.replaceMacro("${A.B}", m));
 
-    	// test that more complex scenarios work
+        // test that more complex scenarios work
         assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
         assertEquals("a-aa", Util.replaceMacro("$A-$AA",m));
         assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?",m));
@@ -354,50 +354,50 @@ public class UtilTest {
     @Issue("JENKINS-10346")
     @Test
     public void testDigestThreadSafety() throws InterruptedException {
-    	String a = "abcdefgh";
-    	String b = "123456789";
+        String a = "abcdefgh";
+        String b = "123456789";
 
-    	String digestA = Util.getDigestOf(a);
-    	String digestB = Util.getDigestOf(b);
+        String digestA = Util.getDigestOf(a);
+        String digestB = Util.getDigestOf(b);
 
-    	DigesterThread t1 = new DigesterThread(a, digestA);
-    	DigesterThread t2 = new DigesterThread(b, digestB);
+        DigesterThread t1 = new DigesterThread(a, digestA);
+        DigesterThread t2 = new DigesterThread(b, digestB);
 
-    	t1.start();
-    	t2.start();
+        t1.start();
+        t2.start();
 
-    	t1.join();
-    	t2.join();
+        t1.join();
+        t2.join();
 
-    	if (t1.error != null) {
-    		fail(t1.error);
-    	}
-    	if (t2.error != null) {
-    		fail(t2.error);
-    	}
+        if (t1.error != null) {
+            fail(t1.error);
+        }
+        if (t2.error != null) {
+            fail(t2.error);
+        }
     }
 
     private static class DigesterThread extends Thread {
-    	private String string;
-		private String expectedDigest;
+        private String string;
+        private String expectedDigest;
 
-		private String error;
+        private String error;
 
-		DigesterThread(String string, String expectedDigest) {
-    		this.string = string;
-    		this.expectedDigest = expectedDigest;
-    	}
+        DigesterThread(String string, String expectedDigest) {
+            this.string = string;
+            this.expectedDigest = expectedDigest;
+        }
 
-		@Override
-		public void run() {
-			for (int i=0; i < 1000; i++) {
-				String digest = Util.getDigestOf(this.string);
-				if (!this.expectedDigest.equals(digest)) {
-					this.error = "Expected " + this.expectedDigest + ", but got " + digest;
-					break;
-				}
-			}
-		}
+        @Override
+        public void run() {
+            for (int i=0; i < 1000; i++) {
+                String digest = Util.getDigestOf(this.string);
+                if (!this.expectedDigest.equals(digest)) {
+                    this.error = "Expected " + this.expectedDigest + ", but got " + digest;
+                    break;
+                }
+            }
+        }
     }
 
     @Test
