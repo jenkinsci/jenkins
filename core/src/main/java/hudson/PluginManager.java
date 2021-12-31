@@ -219,7 +219,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @NonNull 
+            @NonNull
             PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
                                    @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
@@ -1090,7 +1090,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         return null;
     }
-    
+
     /**
      * Retrieves input stream for the Manifest url.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1103,11 +1103,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
-        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak
         if (uc instanceof JarURLConnection) {
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
-            
+
             try(JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
@@ -1121,16 +1121,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                url);
                 }
             }
-        } 
+        }
 
         // If input stream is undefined, use the default implementation
         if (in == null) {
             in = url.openStream();
         }
-        
+
         return in;
     }
-    
+
     /**
      * Retrieves modification date of the specified file.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1141,7 +1141,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @NonNull
     /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
-        
+
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
@@ -1160,7 +1160,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
         }
-        
+
         // Fallbak to the default implementation
         return uc.getLastModified();
     }
@@ -1347,7 +1347,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static boolean isNonMetaLabel(String label) {
         return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
     }
-    
+
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
         List<JSONObject> plugins = new ArrayList<>();
@@ -1458,10 +1458,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         JSONArray mappedPlugins = new JSONArray();
         mappedPlugins.addAll(plugins);
-        
+
         return hudson.util.HttpResponses.okJSON(mappedPlugins);
     }
-    
+
     /**
      * Get the list of all plugins - available and installed.
      * @return The list of all plugins - available and installed.
@@ -1532,9 +1532,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         return new HttpRedirect("./sites");
     }
-    
+
     /**
-     * Called to progress status beyond installing plugins, e.g. if 
+     * Called to progress status beyond installing plugins, e.g. if
      * there were failures that prevented installation from naturally proceeding
      */
     @RequirePOST
@@ -1651,7 +1651,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     index = n.indexOf('.', index + 1);
                 }
             }
-            
+
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }

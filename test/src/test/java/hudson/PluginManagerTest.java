@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -148,7 +148,7 @@ public class PluginManagerTest {
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
     }
-    
+
     /**
      * Tests the effect of {@link WithPlugin}.
      */
@@ -156,7 +156,7 @@ public class PluginManagerTest {
     @Test public void withRecipeJpi() {
         assertNotNull(r.jenkins.getPlugin("htmlpublisher"));
     }
-    
+
     /**
      * Tests the effect of {@link WithPlugin}.
      */
@@ -265,10 +265,10 @@ public class PluginManagerTest {
     //       return "dependee";
     //     }
     //   }
-    //   
+    //
     //   public abstract class DependeeExtensionPoint implements ExtensionPoint {
     //   }
-    //   
+    //
     // org.jenkinsci.plugins.dependencytest.depender:
     //   public class Depender {
     //     public static String getValue() {
@@ -278,12 +278,12 @@ public class PluginManagerTest {
     //       return "depender";
     //     }
     //   }
-    //   
+    //
     //   @Extension(optional=true)
     //   public class DependerExtension extends DependeeExtensionPoint {
     //   }
-    
-    
+
+
     /**
      * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
      */
@@ -292,7 +292,7 @@ public class PluginManagerTest {
         Method m = c.getMethod("getValue");
         return (String)m.invoke(null);
     }
-    
+
     /**
      * Load "dependee" and then load "depender".
      * Asserts that "depender" can access to "dependee".
@@ -302,25 +302,25 @@ public class PluginManagerTest {
         {
             dynamicLoad("dependee.hpi");
         }
-        
+
         // before load depender, of course failed to call Depender.getValue()
         assertThrows(ClassNotFoundException.class, this::callDependerValue);
-        
+
         // No extensions exist.
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
-        
+
         // Load depender.
         {
             dynamicLoad("depender.hpi");
         }
-        
+
         // depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
-        
+
         // Extension in depender is loaded.
         assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
-    
+
     /**
      * Load "depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
@@ -331,10 +331,10 @@ public class PluginManagerTest {
         {
             dynamicLoad("depender.hpi");
         }
-        
+
         // before load dependee, depender does not access to dependee.
         assertEquals("depender", callDependerValue());
-        
+
         // before load dependee, of course failed to list extensions for dependee.
         assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
         // Extension extending a dependee class can't be loaded either
@@ -344,7 +344,7 @@ public class PluginManagerTest {
         {
             dynamicLoad("dependee.hpi");
         }
-        
+
         // (MUST) Not throws an exception
         // (SHOULD) depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
@@ -535,7 +535,7 @@ public class PluginManagerTest {
 		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
 			j.status instanceof UpdateCenter.DownloadJob.Installing);
-                }		
+                }
             }
         } while(!done);
 

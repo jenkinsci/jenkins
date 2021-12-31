@@ -75,7 +75,7 @@ public class BootFailureTest {
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
                     context.addBean(new AbstractLifeCycle() {
-                        @Override 
+                        @Override
                         protected void doStart() {
                             // default behavior of noListenerConfiguration
                             context.setEventListeners(null);

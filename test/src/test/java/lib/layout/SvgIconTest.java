@@ -57,7 +57,7 @@ public class SvgIconTest  {
         HtmlPage p = j.createWebClient().goTo(testRootAction.getUrlName());
         assertThat(p.getWebResponse().getContentAsString(), containsString(desiredTooltip));
     }
-    
+
     @Test
     @Issue("JENKINS-60920")
     public void onlyQuotesAreEscaped() throws Exception {
@@ -76,7 +76,7 @@ public class SvgIconTest  {
                 not(containsString(pristineTooltip))
         ));
     }
-   
+
     @Test
     @Issue("SECURITY-1955")
     public void preventXssFromTooltip() throws Exception {
@@ -106,7 +106,7 @@ public class SvgIconTest  {
         assertThat(jsControlResult, instanceOf(String.class));
         String jsControlString = (String) jsControlResult;
         assertThat("The title attribute is not populated", jsControlString, containsString(validationPart));
-        
+
         page.executeJavaScript("document.querySelector('#test-panel svg').dispatchEvent(new Event('mouseover'));");
         wc.waitForBackgroundJavaScript(1000);
         ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");

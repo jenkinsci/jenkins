@@ -142,13 +142,13 @@ import org.springframework.security.core.Authentication;
  * <p>
  * <b>Extending Update Centers</b>. The update center in {@code Jenkins} can be replaced by defining a
  * System Property ({@code hudson.model.UpdateCenter.className}). See {@link #createUpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
- * This className should be available on early startup, so it cannot come only from a library 
+ * This className should be available on early startup, so it cannot come only from a library
  * (e.g. Jenkins module or Extra library dependency in the WAR file project).
  * Plugins cannot be used for such purpose.
- * In order to be correctly instantiated, the class definition must have two constructors: 
+ * In order to be correctly instantiated, the class definition must have two constructors:
  * {@link #UpdateCenter()} and {@link #UpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
  * If the class does not comply with the requirements, a fallback to the default UpdateCenter will be performed.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
@@ -268,7 +268,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     UpdateCenter(@NonNull UpdateCenterConfiguration configuration) {
         configure(configuration);
     }
-    
+
     /**
      * Creates an update center.
      * @param config Requested configuration. May be {@code null} if defaults should be used
@@ -283,7 +283,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             LOGGER.log(Level.FINE, "Using the default Update Center implementation");
             return createDefaultUpdateCenter(config);
         }
-        
+
         LOGGER.log(Level.FINE, "Using the custom update center: {0}", requiredClassName);
         try {
             final Class<?> clazz = Class.forName(requiredClassName).asSubclass(UpdateCenter.class);
@@ -308,7 +308,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         return createDefaultUpdateCenter(config);
     }
-    
+
     @NonNull
     private static UpdateCenter createDefaultUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         return config != null ? new UpdateCenter(config) : new UpdateCenter();
@@ -1663,7 +1663,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 addStatus(e);
                 error = e;
             }
-            
+
             if(internetCheck != null) {
                 try {
                     // Wait for internet check to complete
@@ -1686,7 +1686,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
 
     }
-    
+
     /**
      * Enables a required plugin, provides feedback in the update center
      */
@@ -1694,11 +1694,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public EnableJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin, boolean dynamicLoad) {
             super(plugin, site, auth, dynamicLoad);
         }
-        
+
         public Plugin getPlugin() {
             return plugin;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -1712,7 +1712,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             error = e;
                             status = new DownloadJob.Failure(e);
                         }
-                        
+
                         if (dynamicLoad) {
                             try {
                                 // remove the existing, disabled inactive plugin to force a new one to load
@@ -1739,7 +1739,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
     }
-    
+
     /**
      * A no-op, e.g. this plugin is already installed
      */
@@ -1760,7 +1760,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         String getComputedSHA256();
         String getComputedSHA512();
     }
-    
+
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */

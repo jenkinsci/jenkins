@@ -48,7 +48,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static /* not final */ boolean DISABLE_URL_VALIDATION =
             SystemProperties.getBoolean(JenkinsLocationConfiguration.class.getName() + ".disableUrlValidation");
-    
+
     @Restricted(NoExternalUse.class)
     public static final int ORDINAL = 200;
 
@@ -66,7 +66,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     public static @NonNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
     }
-    
+
     /**
      * Gets local configuration. For explanation when it could die, see {@link #get()}
      */

@@ -42,7 +42,7 @@ import org.jvnet.hudson.test.recipes.PresetData;
  * @author dty
  */
 public class DefaultCrumbIssuerTest {
-    
+
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Before public void setIssuer() {
@@ -74,7 +74,7 @@ public class DefaultCrumbIssuerTest {
         HtmlPage p = wc.goTo("configure");
 
         wc.removeRequestHeader(HEADER_NAME);
-        
+
         wc.setThrowExceptionOnFailingStatusCode(false);
         // The crumb should no longer match if we remove the proxy info
         Page page = r.submit(p.getFormByName("config"));
@@ -156,7 +156,7 @@ public class DefaultCrumbIssuerTest {
                 .withThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo("quietDown");
-        assertEquals("expect HTTP 405 method not allowed", 
+        assertEquals("expect HTTP 405 method not allowed",
                 HttpURLConnection.HTTP_BAD_METHOD,
                 page.getWebResponse().getStatusCode());
 

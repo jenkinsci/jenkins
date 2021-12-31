@@ -258,7 +258,7 @@ public class UserSeedPropertyTest {
         HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
         htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel");
     }
-    
+
     @Test
     public void userSeedSection_isCorrectlyHidden_withSpecificSetting() throws Exception {
         boolean currentStatus = UserSeedProperty.HIDE_USER_SEED_SECTION;
@@ -286,7 +286,7 @@ public class UserSeedPropertyTest {
             UserSeedProperty.HIDE_USER_SEED_SECTION = currentStatus;
         }
     }
-    
+
     private void assertUserConnected(JenkinsRule.WebClient wc, String expectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", is(expectedUsername)));

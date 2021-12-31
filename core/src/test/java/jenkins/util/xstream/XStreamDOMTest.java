@@ -144,17 +144,17 @@ public class XStreamDOMTest {
         assertThat(v2, instanceOf(DomInMap.class));
         assertXStreamDOMEquals(v.values.get("foo"), ((DomInMap)v2).values.get("foo"));
     }
-    
+
     private void assertXStreamDOMEquals(XStreamDOM expected, XStreamDOM actual) {
         assertEquals(expected.getTagName(), actual.getTagName());
         assertEquals(expected.getValue(), actual.getValue());
-        
+
         assertEquals(expected.getAttributeCount(), actual.getAttributeCount());
         for (int i=0; i<expected.getAttributeCount(); i++) {
             assertEquals(expected.getAttributeName(i), actual.getAttributeName(i));
             assertEquals(expected.getAttribute(i), actual.getAttribute(i));
         }
-        
+
         if (expected.getChildren() == null) {
             assertNull(actual.getChildren());
         } else {
