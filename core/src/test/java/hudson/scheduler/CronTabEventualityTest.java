@@ -25,7 +25,7 @@ public class CronTabEventualityTest {
         parameters.add(new Object[]{"seed2", Hash.from("seed2")});
         return parameters;
     }
-    
+
     private Calendar createLimit(Calendar start, int field, int amount){
         Calendar limit = (Calendar)start.clone();
         limit.add(field, amount);

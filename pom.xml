@@ -60,8 +60,8 @@ THE SOFTWARE.
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
-    <url>https://github.com/jenkinsci/jenkins</url>
     <tag>${scmTag}</tag>
+    <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
 
   <issueManagement>
@@ -105,24 +105,6 @@ THE SOFTWARE.
     <spotless.version>2.18.0</spotless.version>
   </properties>
 
-  <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
-       from the Jenkins org pom. This is on purpose to keep jenkins core buildable even if one has
-       *not* defined the specific details in the settings.xml file. -->
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-      <!-- allow snapshots -->
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
-
   <dependencyManagement>
     <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
@@ -156,16 +138,36 @@ THE SOFTWARE.
     </dependency>
   </dependencies>
 
+  <!--
+    Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
+    from the Jenkins org pom. This is on purpose to keep Jenkins core buildable even if one has
+    *not* defined the specific details in the settings.xml file.
+  -->
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+      <!-- allow snapshots -->
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
     <defaultGoal>install</defaultGoal>
     <resources>
       <resource>
-        <directory>${basedir}/src/main/resources</directory>
         <filtering>false</filtering>
+        <directory>${basedir}/src/main/resources</directory>
       </resource>
       <resource>
-        <directory>${basedir}/src/filter/resources</directory>
         <filtering>true</filtering>
+        <directory>${basedir}/src/filter/resources</directory>
       </resource>
     </resources>
     <pluginManagement>
@@ -236,7 +238,8 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
+            <!-- SUREFIRE-1226 workaround -->
+            <trimStackTrace>false</trimStackTrace>
             <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
@@ -392,13 +395,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>com.puppycrawl.tools</groupId>
-              <artifactId>checkstyle</artifactId>
-              <version>9.2.1</version>
-            </dependency>
-          </dependencies>
           <!-- Version specified in parent POM -->
           <configuration>
             <consoleOutput>true</consoleOutput>
@@ -493,13 +489,20 @@ THE SOFTWARE.
               </module>
             </checkstyleRules>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>9.2.1</version>
+            </dependency>
+          </dependencies>
           <executions>
             <execution>
               <id>validate</id>
-              <phase>validate</phase>
               <goals>
                 <goal>check</goal>
               </goals>
+              <phase>validate</phase>
             </execution>
           </executions>
         </plugin>
@@ -512,7 +515,16 @@ THE SOFTWARE.
               <endWithNewline />
               <importOrder />
               <removeUnusedImports />
+              <trimTrailingWhitespace />
             </java>
+            <pom>
+              <sortPom>
+                <encoding>${project.build.sourceEncoding}</encoding>
+                <lineSeparator>\n</lineSeparator>
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+              </sortPom>
+            </pom>
           </configuration>
           <executions>
             <execution>
@@ -561,13 +573,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
@@ -575,6 +580,13 @@ THE SOFTWARE.
             <version>1.0</version>
           </signature>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -685,10 +697,10 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <id>sign-artifacts</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>
@@ -703,14 +715,14 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>m2e</id>
-      <properties>
-        <m2BuildDirectory>target</m2BuildDirectory>
-      </properties>
       <activation>
         <property>
           <name>m2e.version</name>
         </property>
       </activation>
+      <properties>
+        <m2BuildDirectory>target</m2BuildDirectory>
+      </properties>
       <build>
         <directory>${m2BuildDirectory}</directory>
         <plugins>
@@ -745,6 +757,9 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>jdk11</id>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
       <properties>
         <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
@@ -756,9 +771,6 @@ THE SOFTWARE.
         once we drop support for JDK 8 that only recognize source and target. -->
         <maven.compiler.release>${java.level}</maven.compiler.release>
       </properties>
-      <activation>
-        <jdk>11</jdk>
-      </activation>
     </profile>
   </profiles>
 </project>

@@ -49,7 +49,7 @@ public class TextAreaTest {
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-            
+
             String text1, text2;
 
             @Override
