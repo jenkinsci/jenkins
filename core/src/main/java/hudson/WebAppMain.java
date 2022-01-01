@@ -141,7 +141,7 @@ public class WebAppMain implements ServletContextListener {
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
             try {
                 Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
-                for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+                for (Handler h : Logger.getLogger("").getHandlers()) {
                     if (h instanceof ConsoleHandler) {
                         ((ConsoleHandler) h).setFormatter(formatter);
                     }
@@ -304,7 +304,6 @@ public class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
