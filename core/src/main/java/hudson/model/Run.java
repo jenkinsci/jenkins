@@ -1355,7 +1355,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Relative path name from artifacts root.
          */
-    	@Exported(visibility=3)
+        @Exported(visibility=3)
         public final String relativePath;
 
         /**
@@ -1410,12 +1410,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Returns just the file name portion, without the path.
          */
-    	@Exported(visibility=3)
+        @Exported(visibility=3)
         public String getFileName() {
             return name;
         }
 
-    	@Exported(visibility=3)
+        @Exported(visibility=3)
         public String getDisplayPath() {
             return displayPath;
         }
@@ -1492,10 +1492,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public @NonNull InputStream getLogInputStream() throws IOException {
-    	File logFile = getLogFile();
+        File logFile = getLogFile();
 
-    	if (logFile.exists() ) {
-    	    // Checking if a ".gz" file was return
+        if (logFile.exists() ) {
+            // Checking if a ".gz" file was return
             try {
                 InputStream fis = Files.newInputStream(logFile.toPath());
                 if (logFile.getName().endsWith(".gz")) {
@@ -1506,10 +1506,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
-    	}
+        }
 
         String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes(Charset.defaultCharset()));
+        return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes(Charset.defaultCharset()));
     }
 
     public @NonNull Reader getLogReader() throws IOException {

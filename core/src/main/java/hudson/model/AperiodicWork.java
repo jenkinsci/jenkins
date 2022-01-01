@@ -52,7 +52,7 @@ import jenkins.util.Timer;
 @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPoint {
 
-	protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**
      * Gets the number of milliseconds between successive executions.
@@ -88,7 +88,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
 
     @Override
     public final void doRun() throws Exception{
-    	doAperiodicRun();
+        doAperiodicRun();
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 

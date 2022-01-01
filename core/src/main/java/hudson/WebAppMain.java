@@ -301,7 +301,7 @@ public class WebAppMain implements ServletContextListener {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
     }
 
-	/**
+    /**
      * Installs log handler to monitor all Hudson logs.
      */
     private void installLogger() {
