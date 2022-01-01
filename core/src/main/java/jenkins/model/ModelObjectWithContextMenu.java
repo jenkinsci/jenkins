@@ -47,7 +47,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Kohsuke Kawaguchi
  * @see ModelObjectWithChildren
  */
-public interface ModelObjectWithContextMenu extends ModelObject {
+public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWithPageMenu {
     /**
      * Generates the context menu.
      * 
@@ -139,7 +139,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
             final MenuItem item = new MenuItem().withDisplayName(title);
-            item.header = true;
+            item.type = MenuItemType.HEADER;
+            return add(item);
+        }
+
+        /**
+         * Add a separator row (no icon, no URL, no text).
+         *
+         * @since TODO
+         */
+        public ContextMenu addSeparator() {
+            final MenuItem item = new MenuItem();
+            item.type = MenuItemType.SEPARATOR;
             return add(item);
         }
 
@@ -284,12 +295,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
 
         /**
-         * True to display this item as a section header.
-         * @since 2.231
+         * TODO
+         * @since TODO
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
-        public boolean header;
+        public MenuItemType type = MenuItemType.ITEM;
 
         /**
          * If this is a submenu, definition of subitems.
@@ -351,6 +362,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public MenuItem withDisplayName(ModelObject o) {
             return withDisplayName(o.getDisplayName());
         }
+    }
+
+    enum MenuItemType {
+        ITEM,
+        HEADER,
+        SEPARATOR
     }
 
     /**

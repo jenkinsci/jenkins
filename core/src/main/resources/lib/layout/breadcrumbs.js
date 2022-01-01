@@ -128,17 +128,18 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {
-          var items = []
 
           // fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), "contextMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), "pageMenu"), {
                 onComplete:function (x) {
-                    items = x.responseText.evalJSON().items;
+                  var items = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
-                        if (e.header) {
+                        if (e.type === "HEADER") {
                             e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                        } else if (e.type === "SEPARATOR") {
+                            e.text = "-------------------------";
                         } else {
-                            e.text = makeMenuHtml(e.icon, e.displayName);
+                          e.text = makeMenuHtml(e.icon, e.displayName);
                         }
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
@@ -151,37 +152,10 @@ var breadcrumbs = (function() {
                         }
                     }
                     items.each(fillMenuItem);
+                    e.items = function() { return items };
+                    showMenu(items);
                 }
             });
-
-          // items.append("")
-
-          // fetch menu on demand
-          xhr2 = new Ajax.Request(combinePath(e.getAttribute("href"), "childrenContextMenu"), {
-            onComplete:function (x) {
-              tempItems = x.responseText.evalJSON().items;
-              function fillMenuItem(e) {
-                if (e.header) {
-                  e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
-                } else {
-                  e.text = makeMenuHtml(e.icon, e.displayName);
-                }
-                if (e.subMenu!=null)
-                  e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
-                if (e.requiresConfirmation) {
-                  e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
-                  delete e.url;
-                } else if (e.post) {
-                  e.onclick = {fn: postRequest, obj: e.url};
-                  delete e.url;
-                }
-              }
-              tempItems.each(fillMenuItem);
-            }
-          });
-
-            e.items = function() { return [...items, ...tempItems] };
-            showMenu([...items, ...tempItems]);
         }
 
         return false;

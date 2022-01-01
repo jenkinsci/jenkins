@@ -16,7 +16,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see ModelObjectWithContextMenu
  * @since 1.513
  */
-public interface ModelObjectWithChildren extends ModelObject {
+public interface ModelObjectWithChildren extends ModelObject, ModelObjectWithPageMenu {
     /**
      * Generates the context menu to list up all the children.
      */
