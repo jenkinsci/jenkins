@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -55,6 +56,7 @@ public final class WorkspaceList {
     /**
      * Book keeping for workspace allocation.
      */
+
     public static final class Entry {
         /**
          * Who acquired this workspace?
@@ -83,13 +85,13 @@ public final class WorkspaceList {
          * Multiple threads can acquire the same lock if they share the same context object.
          */
         public final Object context;
-        
-        public int lockCount=1;
+
+        public int lockCount = 1;
 
         private Entry(@NonNull FilePath path, boolean quick) {
-            this(path,quick,new Object()); // unique context
+            this(path, quick, new Object()); // unique context
         }
-        
+
         private Entry(@NonNull FilePath path, boolean quick, Object context) {
             this.path = path;
             this.quick = quick;
@@ -98,9 +100,9 @@ public final class WorkspaceList {
 
         @Override
         public String toString() {
-            String s = path+" owned by "+holder.getName()+" from "+new Date(time);
-            if(quick) s+=" (quick)";
-            s+="\n"+Functions.printThrowable(source);
+            String s = path + " owned by " + holder.getName() + " from " + new Date(time);
+            if (quick) s += " (quick)";
+            s += "\n" + Functions.printThrowable(source);
             return s;
         }
     }
@@ -170,23 +172,23 @@ public final class WorkspaceList {
      * is in use, the unique variation is added.
      */
     public synchronized Lease allocate(@NonNull FilePath base) throws InterruptedException {
-        return allocate(base,new Object());
+        return allocate(base, new Object());
     }
 
     /**
      * See {@link #allocate(FilePath)}
-     * 
+     *
      * @param context
      *      Threads that share the same context can re-acquire the same lock (which will just increment the lock count.)
      *      This allows related executors to share the same workspace.
      */
     public synchronized Lease allocate(@NonNull FilePath base, Object context) throws InterruptedException {
-        for (int i=1; ; i++) {
-            FilePath candidate = i==1 ? base : base.withSuffix(COMBINATOR+i);
+        for (int i = 1; ; i++) {
+            FilePath candidate = i == 1 ? base : base.withSuffix(COMBINATOR + i);
             Entry e = inUse.get(candidate.getRemote());
-            if(e!=null && !e.quick && e.context!=context)
+            if (e != null && !e.quick && e.context != context)
                 continue;
-            return acquire(candidate,false,context);
+            return acquire(candidate, false, context);
         }
     }
 
@@ -198,8 +200,8 @@ public final class WorkspaceList {
             LOGGER.log(Level.FINE, "recorded " + p, new Throwable("from " + this));
         }
         Entry old = inUse.put(p.getRemote(), new Entry(p, false));
-        if (old!=null)
-            throw new AssertionError("Tried to record a workspace already owned: "+old);
+        if (old != null)
+            throw new AssertionError("Tried to record a workspace already owned: " + old);
         return lease(p);
     }
 
@@ -208,13 +210,13 @@ public final class WorkspaceList {
      */
     private synchronized void _release(@NonNull FilePath p) {
         Entry old = inUse.get(p.getRemote());
-        if (old==null)
-            throw new AssertionError("Releasing unallocated workspace "+p);
+        if (old == null)
+            throw new AssertionError("Releasing unallocated workspace " + p);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "releasing " + p + " with lock count " + old.lockCount, new Throwable("from " + this));
         }
         old.lockCount--;
-        if (old.lockCount==0)
+        if (old.lockCount == 0)
             inUse.remove(p.getRemote());
         notifyAll();
     }
@@ -226,7 +228,7 @@ public final class WorkspaceList {
      *      The same {@link FilePath} as given to this method.
      */
     public synchronized Lease acquire(@NonNull FilePath p) throws InterruptedException {
-        return acquire(p,false);
+        return acquire(p, false);
     }
 
     /**
@@ -237,9 +239,9 @@ public final class WorkspaceList {
      *      This makes other calls to {@link #allocate(FilePath)} to wait for the release of this workspace.
      */
     public synchronized Lease acquire(@NonNull FilePath p, boolean quick) throws InterruptedException {
-        return acquire(p,quick,new Object());
+        return acquire(p, quick, new Object());
     }
-    
+
     /**
      * See {@link #acquire(FilePath,boolean)}
      *
@@ -252,11 +254,11 @@ public final class WorkspaceList {
 
         Thread t = Thread.currentThread();
         String oldName = t.getName();
-        t.setName("Waiting to acquire "+p+" : "+t.getName());
+        t.setName("Waiting to acquire " + p + " : " + t.getName());
         try {
             while (true) {
                 e = inUse.get(p.getRemote());
-                if (e==null || e.context==context)
+                if (e == null || e.context == context)
                     break;
                 wait();
             }
@@ -266,9 +268,9 @@ public final class WorkspaceList {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "acquired " + p + (e == null ? "" : " with lock count " + e.lockCount), new Throwable("from " + this));
         }
-        
-        if (e!=null)    e.lockCount++;
-        else            inUse.put(p.getRemote(), new Entry(p,quick,context));
+
+        if (e != null)    e.lockCount++;
+        else            inUse.put(p.getRemote(), new Entry(p, quick, context));
         return lease(p);
     }
 
@@ -282,6 +284,7 @@ public final class WorkspaceList {
             public void release() {
                 _release(path);
             }
+
             @Override public void close() {
                 if (released.compareAndSet(false, true)) {
                     release();
@@ -316,5 +319,5 @@ public final class WorkspaceList {
      * The token that combines the project name and unique number to create unique workspace directory.
      * @since 2.244
      */
-    public static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(),"@");
+    public static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(), "@");
 }

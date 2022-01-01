@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -106,7 +107,7 @@ public class RobustReflectionConverterTest {
     public void implicitCollection() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
-        xs.addImplicitCollection(Hold.class,"items", "item", String.class);
+        xs.addImplicitCollection(Hold.class, "items", "item", String.class);
         Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
         assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
         assertEquals("<hold>\n" +
@@ -119,33 +120,45 @@ public class RobustReflectionConverterTest {
         List<String> items;
     }
 
-    @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}
+    @Retention(RetentionPolicy.RUNTIME) @interface Owner {
+        String value();
+    }
+
     public static class Projekt {
         Bild[] bildz;
     }
+
     public static class Bild {
         Steppe[] steppes;
     }
+
     public abstract static class Steppe {
         int number;
     }
+
     @Owner("p1")
     public static class Enchufla extends Steppe {
         String direction;
     }
+
     @Owner("p2")
     public static class Moonwalk extends Steppe {
         Boot boot;
         Jacket jacket;
         Lover lover;
     }
+
     @Owner("p2")
     public static class Boot {}
+
     public static class Jacket {}
+
     @Owner("p2")
     public abstract static class Lover {}
+
     @Owner("p3")
     public static class Billy extends Lover {}
+
     @Owner("p4")
     public static class Jean extends Lover {}
 

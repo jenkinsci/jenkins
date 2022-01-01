@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.handlers;
 
 import static org.junit.Assert.assertEquals;
@@ -303,6 +304,7 @@ public class ViewOptionHandlerTest {
             public String getParameter(int idx) {
                 return params[idx];
             }
+
             @Override
             public int size() {
                 return params.length;

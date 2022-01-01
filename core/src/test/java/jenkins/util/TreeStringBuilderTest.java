@@ -33,7 +33,7 @@ public class TreeStringBuilderTest {
      */
     @Test
     public void testRandom() {
-        String[] dict = new String[]{"aa","b","aba","ba"};
+        String[] dict = new String[]{"aa", "b", "aba", "ba"};
         TreeStringBuilder x = new TreeStringBuilder();
         Random r = new Random(0);
 

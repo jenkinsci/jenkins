@@ -102,7 +102,7 @@ public abstract class CauseOfBlockage {
             String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_NodeOffline(name);
         }
-        
+
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(
@@ -182,7 +182,7 @@ public abstract class CauseOfBlockage {
             String name = node.toComputer() != null ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
-        
+
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo(node)));

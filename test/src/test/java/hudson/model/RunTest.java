@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -75,9 +76,11 @@ public class RunTest  {
                     @Override public String getDisplayName() {
                         return "Test";
                     }
+
                     @Override public String getIconFileName() {
                         return null;
                     }
+
                     @Override public String getUrlName() {
                         return null;
                     }
@@ -110,6 +113,7 @@ public class RunTest  {
         b.delete();
         assertTrue(Mgr.deleted.get());
     }
+
     @Issue("SECURITY-1902")
     @Test public void preventXssInBadgeTooltip() throws Exception {
         j.jenkins.setQuietPeriod(0);
@@ -220,19 +224,26 @@ public class RunTest  {
 
     public static final class Mgr extends ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
+
         @Override public boolean delete() {
             return !deleted.getAndSet(true);
         }
+
         @Override public void onLoad(Run<?, ?> build) {}
+
         @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) {}
+
         @Override public VirtualFile root() {
             return VirtualFile.forFile(Jenkins.get().getRootDir()); // irrelevant
         }
+
         public static final class Factory extends ArtifactManagerFactory {
             @DataBoundConstructor public Factory() {}
+
             @Override public ArtifactManager managerFor(Run<?, ?> build) {
                 return new Mgr();
             }
+
             @TestExtension("deleteArtifactsCustom") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
         }
     }

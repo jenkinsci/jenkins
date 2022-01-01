@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.views;
 
 import hudson.Extension;
@@ -36,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=300) @Symbol("defaultView")
+@Extension(ordinal = 300) @Symbol("defaultView")
 public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
@@ -53,7 +54,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
             // Fallback if the view is not specified
             j.setPrimaryView(j.getViews().iterator().next());
         }
-        
+
         return true;
     }
 }

@@ -41,7 +41,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @since 1.548
  */
 public abstract class SecurityListener implements ExtensionPoint {
-    
+
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**

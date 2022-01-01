@@ -95,7 +95,7 @@ public class ParametersActionTest {
         StringParameterValue A = new StringParameterValue("A", "foo");
         StringParameterValue B = new StringParameterValue("B", "bar");
         ParametersAction parametersAction = new ParametersAction(A, null, B);
-        ParametersAction parametersAction2 = new ParametersAction(A,null);
+        ParametersAction parametersAction2 = new ParametersAction(A, null);
 
         // Non existent parameter
         assertNull(parametersAction.getParameter("C"));

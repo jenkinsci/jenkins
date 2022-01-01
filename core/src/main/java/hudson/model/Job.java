@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -303,7 +304,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public boolean isBuilding() {
         RunT b = getLastBuild();
-        return b!=null && b.isBuilding();
+        return b != null && b.isBuilding();
     }
 
     /**
@@ -311,7 +312,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public boolean isLogUpdated() {
         RunT b = getLastBuild();
-        return b!=null && b.isLogUpdated();
+        return b != null && b.isLogUpdated();
     }
 
     @Override
@@ -359,9 +360,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
-        env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
-        env.put("JOB_NAME",getFullName());
+        env.put("JENKINS_SERVER_COOKIE", SERVER_COOKIE.get());
+        env.put("HUDSON_SERVER_COOKIE", SERVER_COOKIE.get()); // Legacy compatibility
+        env.put("JOB_NAME", getFullName());
         env.put("JOB_BASE_NAME", getName());
         return env;
     }
@@ -394,11 +395,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
-        env.put("CLASSPATH","");
+        env.put("CLASSPATH", "");
 
         // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
-            ec.buildEnvironmentFor(this,env,listener);
+            ec.buildEnvironmentFor(this, env, listener);
 
 
         return env;
@@ -416,7 +417,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
         RunT lb = getLastBuild();
-        if (lb!=null ?  next>lb.getNumber() : next>0) {
+        if (lb != null ?  next > lb.getNumber() : next > 0) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
@@ -505,7 +506,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public Collection<? extends Job> getAllJobs() {
-        return Collections.<Job> singleton(this);
+        return Collections.<Job>singleton(this);
     }
 
     /**
@@ -514,7 +515,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 1.188
      */
     public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {
-        ((JobProperty)jobProp).setOwner(this);
+        ((JobProperty) jobProp).setOwner(this);
         properties.add(jobProp);
         save();
     }
@@ -562,7 +563,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * List of all {@link JobProperty} exposed primarily for the remoting API.
      * @since 1.282
      */
-    @Exported(name="property",inline=true)
+    @Exported(name = "property", inline = true)
     public List<JobProperty<? super JobT>> getAllProperties() {
         return properties.getView();
     }
@@ -691,7 +692,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
-                File newBuildDir = ((Job)item).getBuildDir();
+                File newBuildDir = ((Job) item).getBuildDir();
                 try {
                     if (!Util.isDescendant(item.getRootDir(), newBuildDir)) {
                         //OK builds are stored somewhere outside of the item's root, so none of the other move operations has probably moved it.
@@ -729,7 +730,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @return never null. The first entry is the latest build.
      */
-    @Exported(name="allBuilds",visibility=-2)
+    @Exported(name = "allBuilds", visibility = -2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
         return RunList.fromRuns(_getRuns().values());
@@ -740,7 +741,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @since 1.485
      */
-    @Exported(name="builds")
+    @Exported(name = "builds")
     public RunList<RunT> getNewBuilds() {
         return getBuilds().limit(100);
     }
@@ -752,7 +753,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         List<RunT> builds = new ArrayList<>();
 
         for (Range r : rs.getRanges()) {
-            for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
+            for (RunT b = getNearestBuild(r.start); b != null && b.getNumber() < r.end; b = b.getNextBuild()) {
                 builds.add(b);
             }
         }
@@ -800,19 +801,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WithBridgeMethods(List.class)
     @Deprecated
     public RunList<RunT> getBuildsByTimestamp(long start, long end) {
-        return getBuilds().byTimestamp(start,end);
+        return getBuilds().byTimestamp(start, end);
     }
 
     @CLIResolver
-    public RunT getBuildForCLI(@Argument(required=true,metaVar="BUILD#",usage="Build number") String id) throws CmdLineException {
+    public RunT getBuildForCLI(@Argument(required = true, metaVar = "BUILD#", usage = "Build number") String id) throws CmdLineException {
         try {
             int n = Integer.parseInt(id);
             RunT r = getBuildByNumber(n);
-            if (r==null)
-                throw new CmdLineException(null, "No such build '#"+n+"' exists");
+            if (r == null)
+                throw new CmdLineException(null, "No such build '#" + n + "' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(null, id+ "is not a number", e);
+            throw new CmdLineException(null, id + "is not a number", e);
         }
     }
 
@@ -860,7 +861,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             // is this a permalink?
             for (Permalink p : getPermalinks()) {
-                if(p.getId().equals(token))
+                if (p.getId().equals(token))
                     return p.resolve(this);
             }
 
@@ -943,7 +944,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastSuccessfulBuild() {
-        return (RunT)Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -953,7 +954,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
-        return (RunT)Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -963,7 +964,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnstableBuild() {
-        return (RunT)Permalink.LAST_UNSTABLE_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
 
     /**
@@ -973,7 +974,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastStableBuild() {
-        return (RunT)Permalink.LAST_STABLE_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_STABLE_BUILD.resolve(this);
     }
 
     /**
@@ -982,7 +983,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastFailedBuild() {
-        return (RunT)Permalink.LAST_FAILED_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_FAILED_BUILD.resolve(this);
     }
 
     /**
@@ -991,7 +992,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
 
     /**
@@ -1051,15 +1052,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public long getEstimatedDuration() {
         List<RunT> builds = getEstimatedDurationCandidates();
 
-        if(builds.isEmpty())     return -1;
+        if (builds.isEmpty())     return -1;
 
         long totalDuration = 0;
         for (RunT b : builds) {
             totalDuration += b.getDuration();
         }
-        if(totalDuration==0) return -1;
+        if (totalDuration == 0) return -1;
 
-        return Math.round((double)totalDuration / builds.size());
+        return Math.round((double) totalDuration / builds.size());
     }
 
     /**
@@ -1110,7 +1111,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
             int idx = 0;
             if (r instanceof RunWithSCM) {
-                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
                     for (ChangeLogSet.Entry e : c) {
                         entries.add(new FeedItem(e, idx++));
                     }
@@ -1334,7 +1335,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<>(NOOP, getAllProperties());
                 JSONObject jsonProperties = json.optJSONObject("properties");
                 if (jsonProperties != null) {
-                  t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+                  t.rebuild(req, jsonProperties, JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
                 } else {
                   t.clear();
                 }
@@ -1350,7 +1351,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ItemListener.fireOnUpdated(this);
 
             final ProjectNamingStrategy namingStrategy = Jenkins.get().getProjectNamingStrategy();
-                if(namingStrategy.isForceExistingJobs()){
+                if (namingStrategy.isForceExistingJobs()) {
                     namingStrategy.checkName(name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
@@ -1411,7 +1412,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public Graph getBuildTimeGraph() {
-        return new Graph(getLastBuildTime(),500,400) {
+        return new Graph(getLastBuildTime(), 500, 400) {
             @Override
             protected JFreeChart createGraph() {
                 class ChartLabel implements Comparable<ChartLabel> {
@@ -1430,7 +1431,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     public boolean equals(Object o) {
                         // JENKINS-2682 workaround for Eclipse compilation bug
                         // on (c instanceof ChartLabel)
-                        if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
+                        if (o == null || !ChartLabel.class.isAssignableFrom(o.getClass()))  {
                             return false;
                         }
                         ChartLabel that = (ChartLabel) o;
@@ -1546,7 +1547,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private Calendar getLastBuildTime() {
         final RunT lastBuild = getLastBuild();
-        if (lastBuild ==null) {
+        if (lastBuild == null) {
             final GregorianCalendar neverBuiltCalendar = new GregorianCalendar();
             neverBuiltCalendar.setTimeInMillis(0);
             return neverBuiltCalendar;
@@ -1598,5 +1599,5 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new BuildTimelineWidget(getBuilds());
     }
 
-    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class, "serverCookie", 16);
 }

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 /* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;
@@ -81,27 +82,27 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 // end of [PATCH]
 public class UrlValidator implements Serializable {
-    
+
     private static final long serialVersionUID = 7557161713937335013L;
-    
+
     private static final int MAX_UNSIGNED_16_BIT_INT = 0xFFFF; // port max
-    
+
     /**
      * Allows all validly formatted schemes to pass validation instead of
      * supplying a set of valid schemes.
      */
     public static final long ALLOW_ALL_SCHEMES = 1 << 0;
-    
+
     /**
      * Allow two slashes in the path component of the URL.
      */
     public static final long ALLOW_2_SLASHES = 1 << 1;
-    
+
     /**
      * Enabling this options disallows any URL fragments.
      */
     public static final long NO_FRAGMENTS = 1 << 2;
-    
+
     /**
      * Allow local URLs, such as http://localhost/ or http://machine/ .
      * This enables a broad-brush check, for complex local machine name
@@ -109,20 +110,20 @@ public class UrlValidator implements Serializable {
      *  a {@link RegexValidator} instead ({@link #UrlValidator(RegexValidator, long)})
      */
     public static final long ALLOW_LOCAL_URLS = 1 << 3; // CHECKSTYLE IGNORE MagicNumber
-    
+
     /**
      * Protocol scheme (e.g. http, ftp, https).
      */
     private static final String SCHEME_REGEX = "^\\p{Alpha}[\\p{Alnum}\\+\\-\\.]*";
     private static final Pattern SCHEME_PATTERN = Pattern.compile(SCHEME_REGEX);
-    
+
     // Drop numeric, and  "+-." for now
-    // TODO does not allow for optional userinfo. 
+    // TODO does not allow for optional userinfo.
     // Validation of character set is done by isValidAuthority
     private static final String AUTHORITY_CHARS_REGEX = "\\p{Alnum}\\-\\."; // allows for IPV4 but not IPV6
     // Allow for IPv4 mapped addresses: ::FFF:123.123.123.123
     private static final String IPV6_REGEX = "::FFFF:(?:\\d{1,3}\\.){3}\\d{1,3}|[0-9a-fA-F:]+"; // do this as separate match because : could cause ambiguity with port prefix
-    
+
     // userinfo    = *( unreserved / pct-encoded / sub-delims / ":" )
     // unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
     // sub-delims    = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
@@ -133,53 +134,53 @@ public class UrlValidator implements Serializable {
             USERINFO_CHARS_REGEX + "+" + // At least one character for the name
                     "(?::" + USERINFO_CHARS_REGEX + "*)?@"; // colon and password may be absent
     private static final String AUTHORITY_REGEX =
-            "(?:\\[("+IPV6_REGEX+")\\]|(?:(?:"+USERINFO_FIELD_REGEX+")?([" + AUTHORITY_CHARS_REGEX + "]*)))(?::(\\d*))?(.*)?";
+            "(?:\\[(" + IPV6_REGEX + ")\\]|(?:(?:" + USERINFO_FIELD_REGEX + ")?([" + AUTHORITY_CHARS_REGEX + "]*)))(?::(\\d*))?(.*)?";
     //             1                          e.g. user:pass@          2                                         3       4
     private static final Pattern AUTHORITY_PATTERN = Pattern.compile(AUTHORITY_REGEX);
-    
+
     private static final int PARSE_AUTHORITY_IPV6 = 1;
-    
+
     private static final int PARSE_AUTHORITY_HOST_IP = 2; // excludes userinfo, if present
-    
+
     private static final int PARSE_AUTHORITY_PORT = 3; // excludes leading colon
-    
+
     /**
      * Should always be empty. The code currently allows spaces.
      */
     private static final int PARSE_AUTHORITY_EXTRA = 4;
-    
+
     private static final String PATH_REGEX = "^(/[-\\w:@&?=+,.!/~*'%$_;\\(\\)]*)?$";
     private static final Pattern PATH_PATTERN = Pattern.compile(PATH_REGEX);
-    
+
     private static final String QUERY_REGEX = "^(\\S*)$";
     private static final Pattern QUERY_PATTERN = Pattern.compile(QUERY_REGEX);
-    
+
     /**
      * Holds the set of current validation options.
      */
     private final long options;
-    
+
     /**
      * The set of schemes that are allowed to be in a URL.
      */
     private final Set<String> allowedSchemes; // Must be lower-case
-    
+
     /**
      * Regular expressions used to manually validate authorities if IANA
      * domain name validation isn't desired.
      */
     private final RegexValidator authorityValidator;
-    
+
     /**
      * If no schemes are provided, default to this set.
      */
     private static final String[] DEFAULT_SCHEMES = {"http", "https", "ftp"}; // Must be lower-case
-    
+
     /**
      * Singleton instance of this class with default schemes and options.
      */
     private static final UrlValidator DEFAULT_URL_VALIDATOR = new UrlValidator();
-    
+
     /**
      * Returns the singleton instance of this class with default schemes and options.
      * @return singleton instance with default schemes and options
@@ -187,7 +188,7 @@ public class UrlValidator implements Serializable {
     public static UrlValidator getInstance() {
         return DEFAULT_URL_VALIDATOR;
     }
-    
+
     private final DomainValidator domainValidator;
 
     /**
@@ -196,7 +197,7 @@ public class UrlValidator implements Serializable {
     public UrlValidator() {
         this(null);
     }
-    
+
     /**
      * Behavior of validation is modified by passing in several strings options:
      * @param schemes Pass in one or more url schemes to consider valid, passing in
@@ -208,7 +209,7 @@ public class UrlValidator implements Serializable {
     public UrlValidator(String[] schemes) {
         this(schemes, 0L);
     }
-    
+
     /**
      * Initialize a UrlValidator with the given validation options.
      * @param options The options should be set using the public constants declared in
@@ -218,7 +219,7 @@ public class UrlValidator implements Serializable {
     public UrlValidator(long options) {
         this(null, null, options);
     }
-    
+
     /**
      * Behavior of validation is modified by passing in options:
      * @param schemes The set of valid schemes. Ignored if the ALLOW_ALL_SCHEMES option is set.
@@ -229,7 +230,7 @@ public class UrlValidator implements Serializable {
     public UrlValidator(String[] schemes, long options) {
         this(schemes, null, options);
     }
-    
+
     /**
      * Initialize a UrlValidator with the given validation options.
      * @param authorityValidator Regular expression validator used to validate the authority part
@@ -242,7 +243,7 @@ public class UrlValidator implements Serializable {
     public UrlValidator(RegexValidator authorityValidator, long options) {
         this(null, authorityValidator, options);
     }
-    
+
     /**
      * Customizable constructor. Validation behavior is modified by passing in options.
      * @param schemes the set of valid schemes. Ignored if the ALLOW_ALL_SCHEMES option is set.
@@ -272,11 +273,11 @@ public class UrlValidator implements Serializable {
         if (domainValidator == null) {
             throw new IllegalArgumentException("DomainValidator must not be null");
         }
-        if (domainValidator.isAllowLocal() != ((options & ALLOW_LOCAL_URLS) > 0)){
+        if (domainValidator.isAllowLocal() != ((options & ALLOW_LOCAL_URLS) > 0)) {
             throw new IllegalArgumentException("DomainValidator disagrees with ALLOW_LOCAL_URLS setting");
         }
         this.domainValidator = domainValidator;
-        
+
         if (isOn(ALLOW_ALL_SCHEMES)) {
             allowedSchemes = Collections.emptySet();
         } else {
@@ -288,10 +289,10 @@ public class UrlValidator implements Serializable {
                 allowedSchemes.add(scheme.toLowerCase(Locale.ENGLISH));
             }
         }
-        
+
         this.authorityValidator = authorityValidator;
     }
-    
+
     /**
      * <p>Checks if a field has a valid url address.</p>
      *
@@ -306,7 +307,7 @@ public class UrlValidator implements Serializable {
         if (value == null) {
             return false;
         }
-        
+
         URI uri; // ensure value is a valid URI
         try {
             uri = new URI(value);
@@ -314,14 +315,14 @@ public class UrlValidator implements Serializable {
             return false;
         }
         // OK, perfom additional validation
-        
+
         String scheme = uri.getScheme();
         if (!isValidScheme(scheme)) {
             return false;
         }
-        
+
         String authority = uri.getRawAuthority();
-        if ("file".equals(scheme) && (authority == null || "".equals(authority))) {// Special case - file: allows an empty authority
+        if ("file".equals(scheme) && (authority == null || "".equals(authority))) { // Special case - file: allows an empty authority
             return true; // this is a local file - nothing more to do here
         } else if ("file".equals(scheme) && authority != null && authority.contains(":")) {
             return false;
@@ -331,22 +332,22 @@ public class UrlValidator implements Serializable {
                 return false;
             }
         }
-        
+
         if (!isValidPath(uri.getRawPath())) {
             return false;
         }
-        
+
         if (!isValidQuery(uri.getRawQuery())) {
             return false;
         }
-        
+
         if (!isValidFragment(uri.getRawFragment())) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Validate scheme. If schemes[] was initialized to a non null,
      * then only those schemes are allowed.
@@ -360,18 +361,18 @@ public class UrlValidator implements Serializable {
         if (scheme == null) {
             return false;
         }
-        
+
         if (!SCHEME_PATTERN.matcher(scheme).matches()) {
             return false;
         }
-        
+
         if (isOff(ALLOW_ALL_SCHEMES) && !allowedSchemes.contains(scheme.toLowerCase(Locale.ENGLISH))) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Returns true if the authority is properly formatted.  An authority is the combination
      * of hostname and port.  A {@code null} authority value is considered invalid.
@@ -386,19 +387,19 @@ public class UrlValidator implements Serializable {
         if (authority == null) {
             return false;
         }
-        
+
         // check manual authority validation if specified
         if (authorityValidator != null && authorityValidator.isValid(authority)) {
             return true;
         }
         // convert to ASCII if possible
         final String authorityASCII = DomainValidator.unicodeToASCII(authority);
-        
+
         Matcher authorityMatcher = AUTHORITY_PATTERN.matcher(authorityASCII);
         if (!authorityMatcher.matches()) {
             return false;
         }
-        
+
         // We have to process IPV6 separately because that is parsed in a different group
         String ipv6 = authorityMatcher.group(PARSE_AUTHORITY_IPV6);
         if (ipv6 != null) {
@@ -430,15 +431,15 @@ public class UrlValidator implements Serializable {
                 }
             }
         }
-        
+
         String extra = authorityMatcher.group(PARSE_AUTHORITY_EXTRA);
-        if (extra != null && extra.trim().length() > 0){
+        if (extra != null && extra.trim().length() > 0) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Returns true if the path is valid.  A {@code null} value is considered invalid.
      * @param path Path value to validate.
@@ -448,31 +449,31 @@ public class UrlValidator implements Serializable {
         if (path == null) {
             return false;
         }
-        
+
         if (!PATH_PATTERN.matcher(path).matches()) {
             return false;
         }
-        
+
         try {
             // Don't omit host otherwise leading path may be taken as host if it starts with //
-            URI uri = new URI(null,"localhost",path,null);
+            URI uri = new URI(null, "localhost", path, null);
             String norm = uri.normalize().getPath();
-            if (norm.startsWith("/../") // Trying to go via the parent dir 
+            if (norm.startsWith("/../") // Trying to go via the parent dir
                     || norm.equals("/..")) {   // Trying to go to the parent dir
                 return false;
             }
         } catch (URISyntaxException e) {
             return false;
         }
-        
+
         int slash2Count = countToken("//", path);
         if (isOff(ALLOW_2_SLASHES) && slash2Count > 0) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Returns true if the query is null or it's a properly formatted query string.
      * @param query Query value to validate.
@@ -482,10 +483,10 @@ public class UrlValidator implements Serializable {
         if (query == null) {
             return true;
         }
-        
+
         return QUERY_PATTERN.matcher(query).matches();
     }
-    
+
     /**
      * Returns true if the given fragment is null or fragments are allowed.
      * @param fragment Fragment value to validate.
@@ -495,10 +496,10 @@ public class UrlValidator implements Serializable {
         if (fragment == null) {
             return true;
         }
-        
+
         return isOff(NO_FRAGMENTS);
     }
-    
+
     /**
      * Returns the number of times the token appears in the target.
      * @param token Token value to be counted.
@@ -517,7 +518,7 @@ public class UrlValidator implements Serializable {
         }
         return count;
     }
-    
+
     /**
      * Tests whether the given flag is on.  If the flag is not a power of 2
      * (ie. 3) this tests whether the combination of flags is on.
@@ -529,7 +530,7 @@ public class UrlValidator implements Serializable {
     private boolean isOn(long flag) {
         return (options & flag) > 0;
     }
-    
+
     /**
      * Tests whether the given flag is on.  If the flag is not a power of 2
      * (e.g. 3) this tests whether the combination of flags is on.

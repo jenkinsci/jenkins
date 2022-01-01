@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.LastErrorException;
@@ -46,24 +47,39 @@ import jnr.posix.POSIX;
  */
 public interface GNUCLibrary extends Library {
     int fork();
+
     int kill(int pid, int signum);
+
     int setsid();
+
     int umask(int mask);
+
     int getpid();
+
     int geteuid();
+
     int getegid();
+
     int getppid();
+
     int chdir(String dir);
+
     int getdtablesize();
 
     int execv(String path, StringArray args);
+
     int execvp(String file, StringArray args);
-    int setenv(String name, String value,int replace);
+
+    int setenv(String name, String value, int replace);
+
     int unsetenv(String name);
+
     void perror(String msg);
+
     String strerror(int errno);
 
     int fcntl(int fd, int command);
+
     int fcntl(int fd, int command, int flags);
 
     // obtained from Linux. Needs to be checked if these values are portable.
@@ -72,12 +88,17 @@ public interface GNUCLibrary extends Library {
     int FD_CLOEXEC = 1;
 
     int chown(String fileName, int uid, int gid);
+
     int chmod(String fileName, int i);
 
     int open(String pathname, int flags) throws LastErrorException;
+
     int dup(int old);
+
     int dup2(int old, int _new);
+
     long pread(int fd, Memory buffer, NativeLong size, NativeLong offset) throws LastErrorException;
+
     int close(int fd);
 
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
@@ -94,14 +115,17 @@ public interface GNUCLibrary extends Library {
     // perhaps it is only supported on BSD?
     @Deprecated
     int sysctlbyname(String name, Pointer oldp, IntByReference oldlenp, Pointer newp, IntByReference newlen);
+
     int sysctlbyname(String name, Pointer oldp, NativeLongByReference oldlenp, Pointer newp, NativeLong newlen);
 
     @Deprecated
     int sysctl(int[] mib, int nameLen, Pointer oldp, IntByReference oldlenp, Pointer newp, IntByReference newlen);
+
     int sysctl(int[] name, int namelen, Pointer oldp, NativeLongByReference oldlenp, Pointer newp, NativeLong newlen);
 
     @Deprecated
     int sysctlnametomib(String name, Pointer mibp, IntByReference size);
+
     int sysctlnametomib(String name, Pointer mibp, NativeLongByReference sizep);
 
     /**
@@ -121,5 +145,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    GNUCLibrary LIBC = Native.load("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = Native.load("c", GNUCLibrary.class);
 }

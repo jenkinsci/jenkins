@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.jcraft.jzlib.GZIPInputStream;
@@ -72,7 +73,7 @@ public class CompressedFile {
 
     public CompressedFile(File file) {
         this.file = file;
-        this.gz = new File(file.getParentFile(),file.getName()+".gz");
+        this.gz = new File(file.getParentFile(), file.getName() + ".gz");
     }
 
     /**
@@ -107,22 +108,22 @@ public class CompressedFile {
     @Deprecated
     public String loadAsString() throws IOException {
         long sizeGuess;
-        if(file.exists())
+        if (file.exists())
             sizeGuess = file.length();
         else
-        if(gz.exists())
-            sizeGuess = gz.length()*2;
+        if (gz.exists())
+            sizeGuess = gz.length() * 2;
         else
             return "";
 
-        StringBuilder str = new StringBuilder((int)sizeGuess);
+        StringBuilder str = new StringBuilder((int) sizeGuess);
 
         try (InputStream is = read();
              Reader r = new InputStreamReader(is, Charset.defaultCharset())) {
             char[] buf = new char[8192];
             int len;
-            while((len=r.read(buf,0,buf.length))>0)
-                str.append(buf,0,len);
+            while ((len = r.read(buf, 0, buf.length)) > 0)
+                str.append(buf, 0, len);
         }
 
         return str.toString();
@@ -149,7 +150,7 @@ public class CompressedFile {
                     // if the compressed file is created successfully, remove the original
                     file.delete();
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to compress "+file,e);
+                    LOGGER.log(Level.WARNING, "Failed to compress " + file, e);
                     gz.delete(); // in case a processing is left in the middle
                 }
             }

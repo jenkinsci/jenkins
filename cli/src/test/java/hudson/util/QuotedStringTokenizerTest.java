@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -38,19 +39,19 @@ public class QuotedStringTokenizerTest {
     @Test
     public void test1() {
         check("foo bar",
-              "foo","bar");
+              "foo", "bar");
     }
 
     @Test
     public void test2() {
         check("foo \"bar zot\"",
-              "foo","bar zot");
+              "foo", "bar zot");
     }
 
     @Test
     public void test3() {
         check("foo bar=\"quote zot\"",
-              "foo","bar=quote zot");
+              "foo", "bar=quote zot");
     }
 
     @Test
@@ -68,7 +69,7 @@ public class QuotedStringTokenizerTest {
     @Test
     public void test6() {
         check("foo\\\\ bar",
-              "foo\\","bar");
+              "foo\\", "bar");
     }
 
     // see http://www.nabble.com/Error-parsing-%22-in-msbuild-task-to20535754.html

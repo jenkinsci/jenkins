@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import com.thoughtworks.xstream.XStream;
@@ -113,7 +114,7 @@ public final class TreeString implements Serializable {
             return false;
         }
         return rhs.getClass() == TreeString.class
-                && ((TreeString)rhs).getLabel().equals(getLabel());
+                && ((TreeString) rhs).getLabel().equals(getLabel());
     }
 
     @Override
@@ -200,7 +201,7 @@ public final class TreeString implements Serializable {
 
         @Override
         public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            TreeStringBuilder builder = (TreeStringBuilder)context.get(TreeStringBuilder.class);
+            TreeStringBuilder builder = (TreeStringBuilder) context.get(TreeStringBuilder.class);
             if (builder == null) {
                 context.put(TreeStringBuilder.class, builder = new TreeStringBuilder());
 

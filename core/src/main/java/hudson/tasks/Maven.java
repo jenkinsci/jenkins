@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -128,13 +129,13 @@ public class Maven extends Builder {
      * @since 1.322
      */
     public boolean usePrivateRepository;
-    
+
     /**
      * Provides access to the settings.xml to be used for a build.
      * @since 1.491
      */
     private SettingsProvider settings;
-    
+
     /**
      * Provides access to the global settings.xml to be used for a build.
      * @since 1.491
@@ -152,28 +153,28 @@ public class Maven extends Builder {
 
     private static final String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private static final String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
-    
+
     private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
     private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
 
-    public Maven(String targets,String name) {
-        this(targets,name,null,null,null,false, null, null);
+    public Maven(String targets, String name) {
+        this(targets, name, null, null, null, false, null, null);
     }
 
     public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
         this(targets, name, pom, properties, jvmOptions, false, null, null);
     }
-    
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
+
+    public Maven(String targets, String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
-    
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
+
+    public Maven(String targets, String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, false);
     }
 
     @DataBoundConstructor
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings, boolean injectBuildVariables) {
+    public Maven(String targets, String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings, boolean injectBuildVariables) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
@@ -195,18 +196,18 @@ public class Maven extends Builder {
     public SettingsProvider getSettings() {
         return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
     }
-    
+
     protected void setSettings(SettingsProvider settings) {
         this.settings = settings;
     }
-    
+
     /**
      * @since 1.491
      */
     public GlobalSettingsProvider getGlobalSettings() {
         return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
-    
+
     protected void setGlobalSettings(GlobalSettingsProvider globalSettings) {
         this.globalSettings = globalSettings;
     }
@@ -229,15 +230,15 @@ public class Maven extends Builder {
      * or null to invoke the default one.
      */
     public MavenInstallation getMaven() {
-        for( MavenInstallation i : getDescriptor().getInstallations() ) {
-            if(mavenName !=null && mavenName.equals(i.getName()))
+        for (MavenInstallation i : getDescriptor().getInstallations()) {
+            if (mavenName != null && mavenName.equals(i.getName()))
                 return i;
         }
         return null;
     }
 
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "injectBuildVariables in readResolve is needed for data migration.")
-    private Object readResolve(){
+    private Object readResolve() {
         if (injectBuildVariables == null) {
             injectBuildVariables = true;
         }
@@ -259,15 +260,15 @@ public class Maven extends Builder {
 
         @Override
         public String invoke(File ws, VirtualChannel channel) throws IOException {
-            String seed=null;
+            String seed = null;
 
             // check for the -f option
             StringTokenizer tokens = new StringTokenizer(arguments);
-            while(tokens.hasMoreTokens()) {
+            while (tokens.hasMoreTokens()) {
                 String t = tokens.nextToken();
-                if(t.equals("-f") && tokens.hasMoreTokens()) {
-                    File file = new File(ws,tokens.nextToken());
-                    if(!file.exists())
+                if (t.equals("-f") && tokens.hasMoreTokens()) {
+                    File file = new File(ws, tokens.nextToken());
+                    if (!file.exists())
                         continue;   // looks like an error, but let the execution fail later
                     seed = file.isDirectory() ?
                         /* in M1, you specify a directory in -f */ "maven"
@@ -276,10 +277,10 @@ public class Maven extends Builder {
                 }
             }
 
-            if(seed==null) {
+            if (seed == null) {
                 // as of 1.212 (2008 April), I think Maven2 mostly replaced Maven1, so
                 // switching to err on M2 side.
-                seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
+                seed = new File(ws, "project.xml").exists() ? "maven" : "mvn";
             }
 
             return seed;
@@ -287,12 +288,12 @@ public class Maven extends Builder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
         EnvVars env = build.getEnvironment(listener);
 
-        String targets = Util.replaceMacro(this.targets,vr);
+        String targets = Util.replaceMacro(this.targets, vr);
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
 
@@ -307,36 +308,36 @@ public class Maven extends Builder {
 
             String normalizedTarget = targets
                     .substring(startIndex, endIndex)
-                    .replaceAll("[\t\r\n]+"," ");
+                    .replaceAll("[\t\r\n]+", " ");
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation mi = getMaven();
-            if(mi==null) {
+            if (mi == null) {
                 String execName = build.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
                 mi = mi.forNode(Computer.currentComputer().getNode(), listener);
-            	mi = mi.forEnvironment(env);
+                mi = mi.forEnvironment(env);
                 String exec = mi.getExecutable(launcher);
-                if(exec==null) {
+                if (exec == null) {
                     listener.fatalError(Messages.Maven_NoExecutable(mi.getHome()));
                     return false;
                 }
                 args.add(exec);
             }
-            if(pom!=null)
-                args.add("-f",pom);
-            
-            
-            if(!S_PATTERN.matcher(targets).find()){ // check the given target/goals do not contain settings parameter already
+            if (pom != null)
+                args.add("-f", pom);
+
+
+            if (!S_PATTERN.matcher(targets).find()) { // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
-                if(StringUtils.isNotBlank(settingsPath)){
+                if (StringUtils.isNotBlank(settingsPath)) {
                     args.add("-s", settingsPath);
                 }
             }
-            if(!GS_PATTERN.matcher(targets).find()){
+            if (!GS_PATTERN.matcher(targets).find()) {
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
-                if(StringUtils.isNotBlank(settingsPath)){
+                if (StringUtils.isNotBlank(settingsPath)) {
                     args.add("-gs", settingsPath);
                 }
             }
@@ -355,22 +356,22 @@ public class Maven extends Builder {
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
-            wrapUpArguments(args,normalizedTarget,build,launcher,listener);
+            wrapUpArguments(args, normalizedTarget, build, launcher, listener);
 
             buildEnvVars(env, mi);
-            
+
             if (!launcher.isUnix()) {
                 args = args.toWindowsCommand();
             }
 
             try {
-                MavenConsoleAnnotator mca = new MavenConsoleAnnotator(listener.getLogger(),build.getCharset());
+                MavenConsoleAnnotator mca = new MavenConsoleAnnotator(listener.getLogger(), build.getCharset());
                 int r = launcher.launch().cmds(args).envs(env).stdout(mca).pwd(build.getModuleRoot()).join();
                 if (0 != r) {
                     return false;
                 }
             } catch (IOException e) {
-                Util.displayIOException(e,listener);
+                Util.displayIOException(e, listener);
                 Functions.printStackTrace(e, listener.fatalError(Messages.Maven_ExecFailed()));
                 return false;
             }
@@ -384,14 +385,14 @@ public class Maven extends Builder {
      *
      * @since 1.344
      */
-    protected void wrapUpArguments(ArgumentListBuilder args, String normalizedTarget, AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    protected void wrapUpArguments(ArgumentListBuilder args, String normalizedTarget, AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
     }
 
     /**
      * Build up the environment variables toward the Maven launch.
      */
     protected void buildEnvVars(EnvVars env, MavenInstallation mi) throws IOException, InterruptedException {
-        if(mi!=null) {
+        if (mi != null) {
             // if somebody has use M2_HOME they will get a classloading error
             // when M2_HOME points to a different version of Maven2 from
             // MAVEN_HOME (as Maven 2 gives M2_HOME priority.)
@@ -403,16 +404,16 @@ public class Maven extends Builder {
         }
         // just as a precaution
         // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
-        env.put("MAVEN_TERMINATE_CMD","on");
+        env.put("MAVEN_TERMINATE_CMD", "on");
 
         String jvmOptions = env.expand(this.jvmOptions);
-        if(jvmOptions!=null)
-            env.put("MAVEN_OPTS",jvmOptions.replaceAll("[\t\r\n]+"," "));
+        if (jvmOptions != null)
+            env.put("MAVEN_OPTS", jvmOptions.replaceAll("[\t\r\n]+", " "));
     }
 
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     /**
@@ -449,11 +450,11 @@ public class Maven extends Builder {
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
-        
+
         public GlobalSettingsProvider getDefaultGlobalSettingsProvider() {
             return GlobalMavenConfig.get().getGlobalSettingsProvider();
         }
-        
+
         public SettingsProvider getDefaultSettingsProvider() {
             return GlobalMavenConfig.get().getSettingsProvider();
         }
@@ -462,17 +463,17 @@ public class Maven extends Builder {
             return installations;
         }
 
-		public void setInstallations(MavenInstallation... installations) {
-			List<MavenInstallation> tmpList = new ArrayList<>();
-			// remote empty Maven installation : 
-			if(installations != null) {
-				Collections.addAll(tmpList, installations);
-				for(MavenInstallation installation : installations) {
-					if(Util.fixEmptyAndTrim(installation.getName()) == null) {
-						tmpList.remove(installation);
-					}
-				}
-			}
+        public void setInstallations(MavenInstallation... installations) {
+            List<MavenInstallation> tmpList = new ArrayList<>();
+            // remote empty Maven installation :
+            if (installations != null) {
+                Collections.addAll(tmpList, installations);
+                for (MavenInstallation installation : installations) {
+                    if (Util.fixEmptyAndTrim(installation.getName()) == null) {
+                        tmpList.remove(installation);
+                    }
+                }
+            }
             this.installations = tmpList.toArray(new MavenInstallation[0]);
             save();
         }
@@ -484,7 +485,7 @@ public class Maven extends Builder {
                 throw new FormException("Maven Build Step new instance method is called for null Stapler request. "
                         + "Such call is prohibited.", "req");
             }
-            return req.bindJSON(Maven.class,formData);
+            return req.bindJSON(Maven.class, formData);
         }
     }
 
@@ -498,8 +499,8 @@ public class Maven extends Builder {
         public static final int MAVEN_20 = 0;
         public static final int MAVEN_21 = 1;
         public static final int MAVEN_30 = 2;
-        
-    
+
+
         /**
          * @deprecated since 2009-02-25.
          */
@@ -554,32 +555,35 @@ public class Maven extends Builder {
          *      Represents the minimum required Maven version - constants defined above.
          */
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
-            // FIXME using similar stuff as in the maven plugin could be better 
-            // olamy : but will add a dependency on maven in core -> so not so good 
+            // FIXME using similar stuff as in the maven plugin could be better
+            // olamy : but will add a dependency on maven in core -> so not so good
             String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
 
             if (!mavenVersion.equals("")) {
                 if (mavenReqVersion == MAVEN_20) {
-                    if(mavenVersion.startsWith("2."))
+                    if (mavenVersion.startsWith("2."))
                         return true;
                 }
                 else if (mavenReqVersion == MAVEN_21) {
-                    if(mavenVersion.startsWith("2.") && !mavenVersion.startsWith("2.0"))
+                    if (mavenVersion.startsWith("2.") && !mavenVersion.startsWith("2.0"))
                         return true;
                 }
                 else if (mavenReqVersion == MAVEN_30) {
-                    if(mavenVersion.startsWith("3."))
+                    if (mavenVersion.startsWith("3."))
                         return true;
-                }                
+                }
             }
             return false;
-            
+
         }
+
         private static class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
             private final String home;
+
             GetMavenVersion(String home) {
                 this.home = home;
             }
+
             @Override
             public String call() throws IOException {
                 File[] jars = new File(home, "lib").listFiles();
@@ -599,7 +603,7 @@ public class Maven extends Builder {
                 return "";
             }
         }
-        
+
         /**
          * Is this Maven 2.1.x or 2.2.x - but not Maven 3.x?
          *
@@ -616,11 +620,14 @@ public class Maven extends Builder {
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
             return launcher.getChannel().call(new GetExecutable(getHome()));
         }
+
         private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
             private final String rawHome;
+
             GetExecutable(String rawHome) {
                 this.rawHome = rawHome;
             }
+
             @Override
             public String call() throws IOException {
                 File exe = getExeFile("mvn", rawHome);
@@ -638,7 +645,7 @@ public class Maven extends Builder {
         private static File getExeFile(String execName, String home) {
             String m2Home = Util.replaceMacro(home, EnvVars.masterEnvVars);
 
-            if(Functions.isWindows()) {
+            if (Functions.isWindows()) {
                 File exeFile = new File(m2Home, "bin/" + execName + ".bat");
 
                 // since Maven 3.3 .bat files are replaced with .cmd
@@ -657,7 +664,7 @@ public class Maven extends Builder {
          */
         public boolean getExists() {
             try {
-                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
+                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream()))) != null;
             } catch (IOException | InterruptedException e) {
                 return false;
             }
@@ -705,10 +712,10 @@ public class Maven extends Builder {
              * Checks if the MAVEN_HOME is valid.
              */
             @Override protected FormValidation checkHomeDirectory(File value) {
-                File maven1File = new File(value,MAVEN_1_INSTALLATION_COMMON_FILE);
-                File maven2File = new File(value,MAVEN_2_INSTALLATION_COMMON_FILE);
+                File maven1File = new File(value, MAVEN_1_INSTALLATION_COMMON_FILE);
+                File maven2File = new File(value, MAVEN_2_INSTALLATION_COMMON_FILE);
 
-                if(!maven1File.exists() && !maven2File.exists())
+                if (!maven1File.exists() && !maven2File.exists())
                     return FormValidation.error(Messages.Maven_NotMavenDirectory(value));
 
                 return FormValidation.ok();
@@ -718,8 +725,9 @@ public class Maven extends Builder {
 
         public static class ConverterImpl extends ToolConverter {
             public ConverterImpl(XStream2 xstream) { super(xstream); }
+
             @Override protected String oldHomeField(ToolInstallation obj) {
-                return ((MavenInstallation)obj).mavenHome;
+                return ((MavenInstallation) obj).mavenHome;
             }
         }
 
@@ -763,7 +771,7 @@ public class Maven extends Builder {
 
             @Override
             public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
-                return toolType==MavenInstallation.class;
+                return toolType == MavenInstallation.class;
             }
         }
     }

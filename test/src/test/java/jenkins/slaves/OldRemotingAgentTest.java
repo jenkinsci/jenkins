@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -131,11 +132,14 @@ public class OldRemotingAgentTest {
         }
         assertThat(sw.toString(), containsString("@@@ANNOTATED@@@"));
     }
+
     private static final class RemoteConsoleNotePrinter extends MasterToSlaveCallable<Void, IOException> {
         private final TaskListener listener;
+
         RemoteConsoleNotePrinter(TaskListener listener) {
             this.listener = listener;
         }
+
         @Override
         public Void call() throws IOException {
             listener.annotate(new RemoteConsoleNote());
@@ -143,6 +147,7 @@ public class OldRemotingAgentTest {
             return null;
         }
     }
+
     public static final class RemoteConsoleNote extends ConsoleNote<Object> {
         @Override
         public ConsoleAnnotator<Object> annotate(Object context, MarkupText text, int charPos) {

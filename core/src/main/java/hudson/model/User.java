@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -221,7 +222,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private void loadFromUserConfigFile(String userId) {
         XmlFile config = getConfigFile();
         try {
-            if ( config != null && config.exists()) {
+            if (config != null && config.exists()) {
                 config.unmarshal(this);
                 this.id = userId;
             }
@@ -745,19 +746,20 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static File getConfigFileFor(String id) {
         return new File(getUserFolderFor(id), "config.xml");
     }
-    
-    private static File getUserFolderFor(String id){
+
+    private static File getUserFolderFor(String id) {
         return new File(getRootDir(), idStrategy().filenameOf(id));
     }
     /**
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
      * Exposes implementation details that may be subject to change.
-     * 
+     *
      * @return The folder containing the user configuration files or {@code null} if the user was not yet saved.
      *
      * @since 2.129
      */
+
     public @CheckForNull File getUserFolder() {
         return getExistingUserFolder();
     }

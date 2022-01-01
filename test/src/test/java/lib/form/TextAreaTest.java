@@ -43,6 +43,7 @@ public class TextAreaTest {
         public String getText1() {
             return "This is text1";
         }
+
         public String getText2() {
             return "This is text2";
         }

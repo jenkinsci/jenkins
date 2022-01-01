@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,7 +53,7 @@ public class NodeListTest {
         when(ephemeralNode.getNodeName()).thenReturn("node2");
         NodeList nl = new NodeList(dummyNode, ephemeralNode);
 
-        File tmp = File.createTempFile("test","test");
+        File tmp = File.createTempFile("test", "test");
         try {
             XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
             x.write(nl);
@@ -61,10 +62,10 @@ public class NodeListTest {
             // check that at least some content
             assertTrue(xml.split("\n").length > 6);
 
-            NodeList back = (NodeList)x.read();
+            NodeList back = (NodeList) x.read();
 
             // there should only be the 'normal' node
-            assertEquals(1,back.size());
+            assertEquals(1, back.size());
             assertEquals(dummyNode.getClass(), back.get(0).getClass());
         } finally {
             if (!tmp.delete()) {

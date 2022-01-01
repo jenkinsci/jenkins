@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.listeners;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -51,7 +52,7 @@ import jenkins.model.Jenkins;
  * This is an abstract class so that methods added in the future won't break existing listeners.
  *
  * <p>
- * Once instantiated, use the {@link #register()} method to start receiving events. 
+ * Once instantiated, use the {@link #register()} method to start receiving events.
  *
  * @author Kohsuke Kawaguchi
  * @see jenkins.model.Jenkins#getSCMListeners()
@@ -65,7 +66,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * @throws Exception if the checkout should be considered failed
      * @since 1.568
      */
-    public void onCheckout(Run<?,?> build, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) throws Exception {}
+    public void onCheckout(Run<?, ?> build, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) throws Exception {}
 
     /**
      * Called once the changelog is determined.
@@ -79,7 +80,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * <p>
      * If a build failed before we successfully determine changelog, this method
      * will not be invoked (for example, if "cvs update" failed.) OTOH, this method
-     * is invoked before the actual build (like ant invocation) happens. 
+     * is invoked before the actual build (like ant invocation) happens.
      *
      * <p>
      * This is an opportunity for SCM-related plugins to act on changelog.
@@ -105,17 +106,17 @@ public abstract class SCMListener implements ExtensionPoint {
      *
      * @throws Exception
      *      If any exception is thrown from this method, it will be recorded
-     *      and causes the build to fail. 
+     *      and causes the build to fail.
      * @since 1.568
      */
-    public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
+    public void onChangeLogParsed(Run<?, ?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
             onChangeLogParsed((AbstractBuild) build, (BuildListener) listener, changelog);
         }
     }
 
     @Deprecated
-    public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+    public void onChangeLogParsed(AbstractBuild<?, ?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", Run.class, SCM.class, TaskListener.class, ChangeLogSet.class)) {
             onChangeLogParsed(build, build.getProject().getScm(), listener, changelog);
         }

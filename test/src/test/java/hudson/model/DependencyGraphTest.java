@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -67,14 +68,14 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // First build won't trigger down1 (Unstable doesn't meet threshold)
         // but will trigger down2 (build #1 is odd).
-        Build b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        Build b = (Build) p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         String log = JenkinsRule.getLog(b);
         Queue.Item q = j.jenkins.getQueue().getItem(down1);
         assertNull("down1 should not be triggered: " + log, q);
         assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
         q = j.jenkins.getQueue().getItem(down2);
         assertNotNull("down2 should be in queue (quiet period): " + log, q);
-        Run r = (Run)q.getFuture().get(60, TimeUnit.SECONDS);
+        Run r = (Run) q.getFuture().get(60, TimeUnit.SECONDS);
         assertNotNull("down2 should be triggered: " + log, r);
         assertNotNull("down2 should have MailMessageIdAction",
                       r.getAction(MailMessageIdAction.class));
@@ -83,7 +84,7 @@ public class DependencyGraphTest {
         j.jenkins.rebuildDependencyGraph();
         // ..and next build will trigger down1 (Success meets threshold),
         // but not down2 (build #2 is even)
-        b = (Build)p.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        b = (Build) p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         log = JenkinsRule.getLog(b);
         q = j.jenkins.getQueue().getItem(down2);
         assertNull("down2 should not be triggered: " + log, q);
@@ -91,16 +92,18 @@ public class DependencyGraphTest {
                      down2.getLastBuild().getNumber());
         q = j.jenkins.getQueue().getItem(down1);
         assertNotNull("down1 should be in queue (quiet period): " + log, q);
-        r = (Run)q.getFuture().get(60, TimeUnit.SECONDS);
+        r = (Run) q.getFuture().get(60, TimeUnit.SECONDS);
         assertNotNull("down1 should be triggered", r);
     }
 
     private static class TestDeclarer extends MockBuilder implements DependencyDeclarer {
         private AbstractProject down;
+
         private TestDeclarer(Result buildResult, AbstractProject down) {
             super(buildResult);
             this.down = down;
         }
+
         @Override
         public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
             graph.addDependency(new DependencyGraph.Dependency(owner, down) {
@@ -153,10 +156,10 @@ public class DependencyGraphTest {
         FreeStyleProject b = j.createFreeStyleProject("b");
         FreeStyleProject a = j.createFreeStyleProject("a");
 
-        depends(a,b);
-        depends(b,c);
-        depends(c,d,e);
-        depends(d,b);
+        depends(a, b);
+        depends(b, c);
+        depends(c, d, e);
+        depends(d, b);
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -169,12 +172,12 @@ public class DependencyGraphTest {
         String r = buf.toString();
         assertTrue(r.startsWith("a"));
         assertTrue(r.endsWith("e"));
-        assertEquals(5,r.length());
+        assertEquals(5, r.length());
 
-        assertTrue(g.compare(a,b)<0);
-        assertTrue(g.compare(a,e)<0);
-        assertTrue(g.compare(b,e)<0);
-        assertTrue(g.compare(c,e)<0);
+        assertTrue(g.compare(a, b) < 0);
+        assertTrue(g.compare(a, e) < 0);
+        assertTrue(g.compare(b, e) < 0);
+        assertTrue(g.compare(c, e) < 0);
 
     }
 
