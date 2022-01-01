@@ -563,11 +563,8 @@ public class SCMTrigger extends Trigger<Item> {
             this(null);
         }
 
-        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
         public Runner(Action[] actions) {
-            if (job == null) {
-                throw new NullPointerException("Runner can't be instantiated when job is null");
-            }
+            Objects.requireNonNull(job, "Runner can't be instantiated when job is null");
 
             if (actions == null) {
                 additionalActions = new Action[0];
