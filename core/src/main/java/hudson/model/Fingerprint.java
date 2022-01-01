@@ -1277,7 +1277,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Save the Fingerprint in the given file locally
      * @throws IOException Save error
-     * @deprecated as of TODO. Use {@link #save()} instead.
+     * @deprecated as of 2.242. Use {@link #save()} instead.
      */
     @Deprecated
     void save(File file) throws IOException {
@@ -1368,7 +1368,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     /**
      * Determines the file name from md5sum.
-     * @deprecated as of TODO. Use {@link #load(String)} instead.
+     * @deprecated as of 2.242. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
@@ -1379,7 +1379,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Loads a {@link Fingerprint} from a file in the image.
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
-     * @deprecated as of TODO. Use {@link #load(String)} instead.
+     * @deprecated as of 2.242. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
