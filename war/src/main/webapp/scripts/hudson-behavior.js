@@ -857,8 +857,23 @@ function helpButtonOnClick() {
         new Ajax.Request(this.getAttribute("helpURL"), {
             method : 'get',
             onSuccess : function(x) {
+                // Which plugin is this from?
                 var from = x.getResponseHeader("X-Plugin-From");
                 div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+
+                // Ensure links open in new window unless explicitly specified otherwise
+                var links = div.getElementsByTagName('a');
+                for (var i = 0; i < links.length; i++) {
+                  var link = links[i];
+                  if (link.hasAttribute('href')) { // ignore document anchors
+                    if (!link.hasAttribute('target')) {
+                      link.setAttribute('target', '_blank');
+                    }
+                    if (!link.hasAttribute('rel')) {
+                      link.setAttribute('rel', 'noopener noreferrer');
+                    }
+                  }
+                }
                 layoutUpdateCallback.call();
             },
             onFailure : function(x) {

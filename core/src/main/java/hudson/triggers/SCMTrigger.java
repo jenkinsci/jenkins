@@ -416,6 +416,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class BuildAction implements RunAction2 {
         private transient /*final*/ Run<?,?> run;
         @Deprecated
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "for backward compatibility")
         public transient /*final*/ AbstractBuild build;
 
         /**
@@ -479,6 +480,7 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support
             getPollingLogText().writeHtmlTo(offset, out.asWriter());
@@ -537,6 +539,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Writes the annotated log to the given output.
          * @since 1.350
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writeLogTo(XMLOutput out) throws IOException {
             new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), true, this).writeHtmlTo(0,out.asWriter());
         }
