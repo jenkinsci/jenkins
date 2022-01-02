@@ -170,6 +170,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected volatile OfflineCause offlineCause;
 
+    protected volatile OfflineCause temporarilyOfflineCause;
+
     private long connectTime = 0;
 
     /**
@@ -361,6 +363,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * If the computer is temporarily offline
+     * this method will return the cause.
+     *
+     * @return
+     *      null if the system was put offline without given a cause.
+     */
+    @Exported
+    public OfflineCause getTemporarilyOfflineCause() {
+        return temporarilyOfflineCause;
+    }
+
+    /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      *
@@ -369,7 +383,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getOfflineCauseReason() {
-        if (offlineCause == null) {
+        if (temporarilyOfflineCause == null) {
             return "";
         }
         // fetch the localized string for "Disconnected By"
@@ -379,7 +393,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // regex to remove non-commented reason base string
         String gsub2 = "^" + gsub_base + "[\\w\\W]*";
 
-        String newString = offlineCause.toString().replaceAll(gsub1, "");
+        String newString = temporarilyOfflineCause.toString().replaceAll(gsub1, "");
         return newString.replaceAll(gsub2, "");
     }
 
@@ -700,11 +714,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
+        temporarilyOfflineCause = temporarilyOffline ? cause : null;
+        offlineCause = temporarilyOfflineCause;
         this.temporarilyOffline = temporarilyOffline;
         Node node = getNode();
         if (node != null) {
-            node.setTemporaryOfflineCause(offlineCause);
+            node.setTemporaryOfflineCause(temporarilyOfflineCause);
         }
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
@@ -811,7 +826,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             // Computer is created, avoid pushing an empty status
             // as that could overwrite any status that the Node
             // brought along from its persisted config data.
-            node.setTemporaryOfflineCause(this.offlineCause);
+            node.setTemporaryOfflineCause(this.temporarilyOfflineCause);
         }
     }
 

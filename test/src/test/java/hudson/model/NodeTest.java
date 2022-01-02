@@ -97,10 +97,10 @@ public class NodeTest {
         for(ComputerListener l : ComputerListener.all()){
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
-        assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
+        assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getTemporarilyOfflineCause());
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
-        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getTemporarilyOfflineCause());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class NodeTest {
         ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
@@ -121,12 +121,13 @@ public class NodeTest {
         ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
         assertNull(computer.getOfflineCause());
+        assertNull(computer.getTemporarilyOfflineCause());
     }
 
     @Test
@@ -138,7 +139,7 @@ public class NodeTest {
             computer.doToggleOffline("original message");
         }
 
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
         assertEquals(User.getUnknown(), cause.getUser());
 
@@ -147,12 +148,13 @@ public class NodeTest {
         try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
         assertNull(computer.getOfflineCause());
+        assertNull(computer.getTemporarilyOfflineCause());
     }
 
     @Test

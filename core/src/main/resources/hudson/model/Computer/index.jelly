@@ -59,7 +59,11 @@ THE SOFTWARE.
         </j:if>
       </h1>
 
-      <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
+      <j:if test="${it.temporarilyOfflineCause!=null}">
+        <st:include it="${it.temporarilyOfflineCause}" page="cause.jelly" />
+      </j:if>
+
+      <j:if test="${it.offlineCause!=null and it.offlineCause != it.temporarilyOfflineCause and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
       </j:if>
 

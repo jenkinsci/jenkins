@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Node;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
@@ -95,10 +96,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave);
     }
 
     @Test
@@ -113,10 +111,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave);
     }
 
     @Test
@@ -131,10 +126,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave);
     }
 
     @Test
@@ -154,10 +146,7 @@ public class OfflineNodeCommandTest {
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
         assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave);
     }
 
     @Test
@@ -169,10 +158,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave);
     }
 
     @Test
@@ -187,10 +173,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave);
     }
 
     @Test
@@ -205,10 +188,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave);
     }
 
     @Test
@@ -228,10 +208,7 @@ public class OfflineNodeCommandTest {
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
         assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave);
     }
 
     @Test
@@ -249,10 +226,7 @@ public class OfflineNodeCommandTest {
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
         slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
         assertThat(project.isBuilding(), equalTo(true));
 
@@ -278,10 +252,7 @@ public class OfflineNodeCommandTest {
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
         slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
         assertThat(project.isBuilding(), equalTo(true));
 
@@ -311,15 +282,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave1, slave2, slave3);
     }
 
     @Test
@@ -330,26 +293,21 @@ public class OfflineNodeCommandTest {
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
+        assertThat(slave1.toComputer().getTemporarilyOfflineCause(), equalTo(null));
         slave2.toComputer().waitUntilOnline();
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
         assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        assertThat(slave3.toComputer().getTemporarilyOfflineCause(), equalTo(null));
         slave3.toComputer().waitUntilOnline();
         assertThat(slave3.toComputer().isOnline(), equalTo(true));
         assertThat(slave3.toComputer().getOfflineCause(), equalTo(null));
+        assertThat(slave3.toComputer().getTemporarilyOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave1, slave2, slave3);
     }
 
     @Test
@@ -370,12 +328,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave1, slave2);
     }
 
     @Test
@@ -396,12 +349,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave1, slave2);
     }
 
     @Test
@@ -419,12 +367,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, slave1, slave2);
     }
 
     @Test
@@ -442,12 +385,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", slave1, slave2);
     }
 
     @Test
@@ -458,10 +396,7 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("");
         assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.isTemporarilyOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
+        assertOfflineComputerState(null, masterComputer.getNode());
     }
 
     @Test
@@ -472,9 +407,18 @@ public class OfflineNodeCommandTest {
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.isTemporarilyOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo("aCause"));
+        assertOfflineComputerState("aCause", masterComputer.getNode());
+    }
+    
+    public void assertOfflineComputerState(String message, Node ... agents) {
+      for (Node agent: agents) {
+        Computer computer = agent.toComputer();
+        assertThat(computer.isOffline(), equalTo(true));
+        assertThat(computer.isTemporarilyOffline(), equalTo(true));
+        assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(computer.getTemporarilyOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) computer.getOfflineCause()).message, equalTo(message));
+        assertThat(((OfflineCause.ByCLI) computer.getTemporarilyOfflineCause()).message, equalTo(message));
+      }
     }
 }
