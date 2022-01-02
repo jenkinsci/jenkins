@@ -240,7 +240,6 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
-                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -253,7 +252,7 @@ public class WebAppMain implements ServletContextListener {
 
                         context.setAttribute(APP, instance);
 
-                        BootFailure.getBootFailureFile(_home).delete();
+                        Files.deleteIfExists(BootFailure.getBootFailureFile(_home).toPath());
 
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
