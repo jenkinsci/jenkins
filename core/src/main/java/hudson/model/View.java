@@ -106,7 +106,6 @@ import jenkins.util.xml.XMLUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
@@ -1113,13 +1112,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rsp.addHeader("Expires", "0");
         Categories categories = new Categories();
         int order = 0;
-        JellyContext ctx;
+        String resUrl;
 
         if (StringUtils.isNotBlank(iconStyle)) {
-            ctx = new JellyContext();
-            ctx.setVariable("resURL", req.getContextPath() + Jenkins.RESOURCE_PATH);
+            resUrl = req.getContextPath() + Jenkins.RESOURCE_PATH;
         } else {
-            ctx = null;
+            resUrl = null;
         }
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
@@ -1134,11 +1132,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             String iconClassName = descriptor.getIconClassName();
             if (StringUtils.isNotBlank(iconClassName)) {
                 metadata.put("iconClassName", iconClassName);
-                if (ctx != null) {
+                if (resUrl != null) {
                     Icon icon = IconSet.icons
                             .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
                     if (icon != null) {
-                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
+                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
                     }
                 }
             }

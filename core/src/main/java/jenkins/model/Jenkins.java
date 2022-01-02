@@ -1660,11 +1660,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     protected void updateNewComputer(Node n) {
-        updateNewComputer(n, AUTOMATIC_SLAVE_LAUNCH);
+        updateNewComputer(n, AUTOMATIC_AGENT_LAUNCH);
     }
 
     protected void updateComputerList() {
-        updateComputerList(AUTOMATIC_SLAVE_LAUNCH);
+        updateComputerList(AUTOMATIC_AGENT_LAUNCH);
     }
 
     /** @deprecated Use {@link SCMListener#all} instead. */
@@ -5513,8 +5513,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
-    public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static boolean AUTOMATIC_AGENT_LAUNCH = SystemProperties.getBoolean(Jenkins.class.getName() + ".automaticAgentLaunch", true);
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();

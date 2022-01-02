@@ -102,7 +102,6 @@ public abstract class ProgressiveRendering {
     /**
      * For internal use.
      */
-    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @JavaScriptMethod public final void start() {
         Ancestor ancestor = Stapler.getCurrentRequest().findAncestor(BoundObjectTable.class);
         if (ancestor == null) {

@@ -133,7 +133,6 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "TODO needs triage")
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
@@ -1411,65 +1410,91 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getIconClassName();
     }
 
+    private static class ChartLabel implements Comparable<ChartLabel> {
+        final Run run;
+
+        ChartLabel(Run r) {
+            this.run = r;
+        }
+
+        @Override
+        public int compareTo(ChartLabel that) {
+            return this.run.number - that.run.number;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            // JENKINS-2682 workaround for Eclipse compilation bug
+            // on (c instanceof ChartLabel)
+            if (o == null || !ChartLabel.class.isAssignableFrom(o.getClass()))  {
+                return false;
+            }
+            ChartLabel that = (ChartLabel) o;
+            return run == that.run;
+        }
+
+        public Color getColor() {
+            // TODO: consider gradation. See
+            // http://www.javadrive.jp/java2d/shape/index9.html
+            Result r = run.getResult();
+            if (r == Result.FAILURE)
+                return ColorPalette.RED;
+            else if (r == Result.UNSTABLE)
+                return ColorPalette.YELLOW;
+            else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                return ColorPalette.GREY;
+            else
+                return ColorPalette.BLUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return run.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            String l = run.getDisplayName();
+            if (run instanceof Build) {
+                String s = ((Build) run).getBuiltOnStr();
+                if (s != null)
+                    l += ' ' + s;
+            }
+            return l;
+        }
+    }
+
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "category dataset is only relevant for coloring, not equality")
+    private static class ChartLabelStackedAreaRenderer2 extends StackedAreaRenderer2 {
+        private final CategoryDataset categoryDataset;
+
+        ChartLabelStackedAreaRenderer2(CategoryDataset categoryDataset) {
+            this.categoryDataset = categoryDataset;
+        }
+
+        @Override
+        public Paint getItemPaint(int row, int column) {
+            ChartLabel key = (ChartLabel) categoryDataset.getColumnKey(column);
+            return key.getColor();
+        }
+
+        @Override
+        public String generateURL(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return String.valueOf(label.run.number);
+        }
+
+        @Override
+        public String generateToolTip(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return label.run.getDisplayName() + " : " + label.run.getDurationString();
+        }
+    }
+
     public Graph getBuildTimeGraph() {
         return new Graph(getLastBuildTime(), 500, 400) {
             @Override
             protected JFreeChart createGraph() {
-                class ChartLabel implements Comparable<ChartLabel> {
-                    final Run run;
-
-                    ChartLabel(Run r) {
-                        this.run = r;
-                    }
-
-                    @Override
-                    public int compareTo(ChartLabel that) {
-                        return this.run.number - that.run.number;
-                    }
-
-                    @Override
-                    public boolean equals(Object o) {
-                        // JENKINS-2682 workaround for Eclipse compilation bug
-                        // on (c instanceof ChartLabel)
-                        if (o == null || !ChartLabel.class.isAssignableFrom(o.getClass()))  {
-                            return false;
-                        }
-                        ChartLabel that = (ChartLabel) o;
-                        return run == that.run;
-                    }
-
-                    public Color getColor() {
-                        // TODO: consider gradation. See
-                        // http://www.javadrive.jp/java2d/shape/index9.html
-                        Result r = run.getResult();
-                        if (r == Result.FAILURE)
-                            return ColorPalette.RED;
-                        else if (r == Result.UNSTABLE)
-                            return ColorPalette.YELLOW;
-                        else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                            return ColorPalette.GREY;
-                        else
-                            return ColorPalette.BLUE;
-                    }
-
-                    @Override
-                    public int hashCode() {
-                        return run.hashCode();
-                    }
-
-                    @Override
-                    public String toString() {
-                        String l = run.getDisplayName();
-                        if (run instanceof Build) {
-                            String s = ((Build) run).getBuiltOnStr();
-                            if (s != null)
-                                l += ' ' + s;
-                        }
-                        return l;
-                    }
-
-                }
-
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<>();
                 for (Run r : getNewBuilds()) {
                     if (r.isBuilding())
@@ -1513,28 +1538,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 ChartUtil.adjustChebyshev(dataset, rangeAxis);
                 rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-                StackedAreaRenderer ar = new StackedAreaRenderer2() {
-                    @Override
-                    public Paint getItemPaint(int row, int column) {
-                        ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
-                        return key.getColor();
-                    }
-
-                    @Override
-                    public String generateURL(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return String.valueOf(label.run.number);
-                    }
-
-                    @Override
-                    public String generateToolTip(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return label.run.getDisplayName() + " : "
-                                + label.run.getDurationString();
-                    }
-                };
+                StackedAreaRenderer ar = new ChartLabelStackedAreaRenderer2(dataset);
                 plot.setRenderer(ar);
 
                 // crop extra space around the graph

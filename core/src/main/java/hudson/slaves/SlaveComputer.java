@@ -227,11 +227,11 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    public String getIcon() {
+    public String getIconClassName() {
         Future<?> l = lastConnectActivity;
         if (l != null && !l.isDone())
-            return "computer-flash.gif";
-        return super.getIcon();
+            return "icon-computer-flash";
+        return super.getIconClassName();
     }
 
     /**
