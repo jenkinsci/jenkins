@@ -127,7 +127,7 @@ public class DisconnectNodeCommandTest {
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
         assertComputerState("aCause", slave);
-        
+
         slave.toComputer().connect(true);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
@@ -238,10 +238,10 @@ public class DisconnectNodeCommandTest {
 
     private void assertComputerState(String message, DumbSlave agent)
     {
-      Computer computer = agent.toComputer();
-      assertThat(computer.isOffline(), equalTo(true));
-      assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-      assertThat(computer.getTemporarilyOfflineCause(), equalTo(null));
-      assertThat(((OfflineCause.ByCLI) computer.getOfflineCause()).message, equalTo(message));
+        Computer computer = agent.toComputer();
+        assertThat(computer.isOffline(), equalTo(true));
+        assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(computer.getTemporarilyOfflineCause(), equalTo(null));
+        assertThat(((OfflineCause.ByCLI) computer.getOfflineCause()).message, equalTo(message));
     }
 }

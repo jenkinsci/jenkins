@@ -409,16 +409,16 @@ public class OfflineNodeCommandTest {
         assertThat(result, succeededSilently());
         assertOfflineComputerState("aCause", masterComputer.getNode());
     }
-    
+
     public void assertOfflineComputerState(String message, Node ... agents) {
-      for (Node agent: agents) {
-        Computer computer = agent.toComputer();
-        assertThat(computer.isOffline(), equalTo(true));
-        assertThat(computer.isTemporarilyOffline(), equalTo(true));
-        assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(computer.getTemporarilyOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) computer.getOfflineCause()).message, equalTo(message));
-        assertThat(((OfflineCause.ByCLI) computer.getTemporarilyOfflineCause()).message, equalTo(message));
-      }
+        for (Node agent: agents) {
+            Computer computer = agent.toComputer();
+            assertThat(computer.isOffline(), equalTo(true));
+            assertThat(computer.isTemporarilyOffline(), equalTo(true));
+            assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+            assertThat(computer.getTemporarilyOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+            assertThat(((OfflineCause.ByCLI) computer.getOfflineCause()).message, equalTo(message));
+            assertThat(((OfflineCause.ByCLI) computer.getTemporarilyOfflineCause()).message, equalTo(message));
+        }
     }
 }
