@@ -29,7 +29,6 @@ import static java.util.logging.Level.WARNING;
 
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
