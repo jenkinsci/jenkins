@@ -179,14 +179,14 @@ public class SCMTrigger extends Trigger<Item> {
 
         LOGGER.fine("Scheduling a polling for "+job);
         if (d.synchronousPolling) {
-        	LOGGER.fine("Running the trigger directly without threading, " +
-        			"as it's already taken care of by Trigger.Cron");
+            LOGGER.fine("Running the trigger directly without threading, " +
+                    "as it's already taken care of by Trigger.Cron");
             new Runner(additionalActions).run();
         } else {
             // schedule the polling.
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
-        	LOGGER.fine("scheduling the trigger to (asynchronously) run");
+            LOGGER.fine("scheduling the trigger to (asynchronously) run");
             d.queue.execute(new Runner(additionalActions));
             d.clogCheck();
         }
@@ -563,11 +563,8 @@ public class SCMTrigger extends Trigger<Item> {
             this(null);
         }
 
-        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
         public Runner(Action[] actions) {
-            if (job == null) {
-                throw new NullPointerException("Runner can't be instantiated when job is null");
-            }
+            Objects.requireNonNull(job, "Runner can't be instantiated when job is null");
 
             if (actions == null) {
                 additionalActions = new Action[0];

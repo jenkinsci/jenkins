@@ -1188,7 +1188,7 @@ public class Util {
 
     /**
      * Concatenate multiple strings by inserting a separator.
-     * @deprecated since TODO; use {@link String#join(CharSequence, Iterable)}
+     * @deprecated since 2.292; use {@link String#join(CharSequence, Iterable)}
      */
     @Deprecated
     @NonNull

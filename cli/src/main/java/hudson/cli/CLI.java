@@ -189,9 +189,9 @@ public class CLI {
                 continue;
             }
             if (head.equals("-noKeyAuth")) {
-            	noKeyAuth = true;
-            	args = args.subList(1,args.size());
-            	continue;
+                noKeyAuth = true;
+                args = args.subList(1,args.size());
+                continue;
             }
             if(head.equals("-i") && args.size()>=2) {
                 File f = getFileFromArguments(args);
