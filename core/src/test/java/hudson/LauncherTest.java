@@ -90,12 +90,12 @@ public class LauncherTest {
     @Issue("JENKINS-15733")
     @Test public void decorateByEnv() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        TaskListener l = new StreamBuildListener(baos);
+        TaskListener l = new StreamBuildListener(baos, Charset.defaultCharset());
         Launcher base = new Launcher.LocalLauncher(l);
         EnvVars env = new EnvVars("key1", "val1");
         Launcher decorated = base.decorateByEnv(env);
         int res = decorated.launch().envs("key2=val2").cmds(Functions.isWindows() ? new String[] {"cmd", "/q", "/c", "echo %key1% %key2%"} : new String[] {"sh", "-c", "echo $key1 $key2"}).stdout(l).join();
-        String log = baos.toString();
+        String log = baos.toString(Charset.defaultCharset().name());
         assertEquals(log, 0, res);
         assertTrue(log, log.contains("val1 val2"));
     }
@@ -103,7 +103,7 @@ public class LauncherTest {
     @Issue("JENKINS-18368")
     @Test public void decoratedByEnvMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        TaskListener listener = new StreamBuildListener(output);
+        TaskListener listener = new StreamBuildListener(output, Charset.defaultCharset());
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertFalse(decorated.isUnix());
@@ -115,7 +115,7 @@ public class LauncherTest {
     @Issue("JENKINS-18368")
     @Test public void decoratedByPrefixMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        TaskListener listener = new StreamBuildListener(output);
+        TaskListener listener = new StreamBuildListener(output, Charset.defaultCharset());
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByPrefix("test");
         assertFalse(decorated.isUnix());

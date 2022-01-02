@@ -43,6 +43,7 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -230,7 +231,7 @@ public class UtilTest {
         assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener l = new StreamTaskListener(baos);
+        StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
         File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "a")).touch(0);
@@ -244,7 +245,7 @@ public class UtilTest {
                 buf.append((char)('0'+(i%10)));
             Util.createSymlink(d,buf.toString(),"x", l);
 
-            String log = baos.toString();
+            String log = baos.toString(Charset.defaultCharset().name());
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
@@ -278,7 +279,7 @@ public class UtilTest {
         assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener l = new StreamTaskListener(baos);
+        StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
         File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "original")).touch(0);

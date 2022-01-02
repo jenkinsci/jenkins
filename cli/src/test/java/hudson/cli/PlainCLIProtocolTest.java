@@ -31,6 +31,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.charset.Charset;
 import org.junit.jupiter.api.Test;
 
 public class PlainCLIProtocolTest {
@@ -61,7 +62,7 @@ public class PlainCLIProtocolTest {
             void send() throws IOException {
                 sendArg("command");
                 sendStart();
-                streamStdin().write("hello".getBytes());
+                streamStdin().write("hello".getBytes(Charset.defaultCharset()));
             }
             void newop() throws IOException {
                 DataOutputStream dos = new DataOutputStream(upload);
@@ -106,7 +107,7 @@ public class PlainCLIProtocolTest {
             @Override
             protected void handleClose() {}
             void send() throws IOException {
-                streamStdout().write("goodbye".getBytes());
+                streamStdout().write("goodbye".getBytes(Charset.defaultCharset()));
                 sendExit(2);
             }
             void newop() throws IOException {
@@ -137,9 +138,9 @@ public class PlainCLIProtocolTest {
         while (server.stdin.size() == 0) {
             Thread.sleep(100);
         }
-        assertEquals("hello", server.stdin.toString());
+        assertEquals("hello", server.stdin.toString(Charset.defaultCharset().name()));
         assertEquals("command", server.arg);
-        assertEquals("goodbye", client.stdout.toString());
+        assertEquals("goodbye", client.stdout.toString(Charset.defaultCharset().name()));
         assertEquals(2, client.code);
     }
 

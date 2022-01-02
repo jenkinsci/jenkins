@@ -47,6 +47,7 @@ import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 import jenkins.model.Jenkins;
@@ -271,7 +272,7 @@ public class RobustReflectionConverterTest {
 
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )
@@ -303,7 +304,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )

@@ -34,6 +34,7 @@ import hudson.model.Items;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectStreamException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.transform.Source;
@@ -84,7 +85,9 @@ public class TriggerStartTest {
     }
 
     @Test public void createProjectFromXmlCallsStartTrue() throws Exception {
-        FreeStyleProject p = (FreeStyleProject) j.jenkins.createProjectFromXML("whatever", new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes()));
+        FreeStyleProject p = (FreeStyleProject) j.jenkins.createProjectFromXML(
+                "whatever",
+                new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes(StandardCharsets.UTF_8)));
         MockTrigger t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
         assertEquals("[true]", t.calls.toString());

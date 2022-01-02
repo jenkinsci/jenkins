@@ -453,10 +453,10 @@ public class AbstractProjectTest {
     private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) throws Exception {
         HttpURLConnection con = (HttpURLConnection) new URL(j.getURL(), "job/" + p.getName() + "/config.xml").openConnection();
         con.setRequestMethod("POST");
-        con.setRequestProperty("Content-Type", "application/xml");
+        con.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
         con.setDoOutput(true);
         try (OutputStream s = con.getOutputStream()) {
-            s.write(xml.getBytes());
+            s.write(xml.getBytes(StandardCharsets.UTF_8));
         }
         return con;
     }
