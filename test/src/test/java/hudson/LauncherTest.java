@@ -91,14 +91,14 @@ public class LauncherTest {
 
         rule.assertLogContains("aaa aaaccc ccc", build);
     }
-    
+
     @Issue("JENKINS-19926")
     @Test
     public void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
         Slave slave = rule.createSlave(new EnvVars(env));
-        
+
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
         final CommandInterpreter script = Functions.isWindows()

@@ -146,7 +146,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
         assertTrue(project.getBuildByNumber(8).getHasArtifacts());
     }
-    
+
     @Test
     @Issue("JENKINS-27836")
     public void artifactsRetainedWhileBuilding() throws Exception {
@@ -179,7 +179,7 @@ public class LogRotatorTest {
         assertThat("run1 is last stable build", p.getLastStableBuild(), is(run1));
         assertThat("run1 is last successful build", p.getLastSuccessfulBuild(), is(run1));
         assertThat("we have artifacts in run1", run1.getHasArtifacts(), is(true));
-        assertThat("CRITICAL ASSERTION: we have artifacts in run2", run2.getHasArtifacts(), is(true)); 
+        assertThat("CRITICAL ASSERTION: we have artifacts in run2", run2.getHasArtifacts(), is(true));
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
         sync.release(run2.getNumber());
         futureRun2.get();
@@ -221,17 +221,17 @@ public class LogRotatorTest {
             return new Descriptor<Publisher>(TestsFail.class) {};
         }
     }
-    
+
     public static class StallBuilder extends TestBuilder {
-        
+
         private int syncBuildNumber;
-        
+
         private final Object syncLock = new Object();
-        
+
         private int waitBuildNumber;
-        
+
         private final Object waitLock = new Object();
-        
+
         private final ArtifactArchiver archiver = new ArtifactArchiver("f");
 
         @Override
@@ -259,7 +259,7 @@ public class LogRotatorTest {
             Logger.getAnonymousLogger().log(Level.INFO, "Done #{0}", build.getNumber());
             return true;
         }
-        
+
         public void release(int upToBuildNumber) {
             synchronized (syncLock) {
                 if (syncBuildNumber < upToBuildNumber) {
@@ -269,7 +269,7 @@ public class LogRotatorTest {
                 }
             }
         }
-        
+
         public void waitFor(int buildNumber, long timeout, TimeUnit units) throws TimeoutException,
                 InterruptedException {
             long giveUp = System.nanoTime() + units.toNanos(timeout);

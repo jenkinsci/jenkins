@@ -20,8 +20,6 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  * @since 1.473
  */
-@SuppressWarnings({"PMD", "all"})
-//CHECKSTYLE:OFF
 public class TreeStringBuilder {
     Child root = new Child(new TreeString());
 

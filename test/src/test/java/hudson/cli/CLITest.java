@@ -74,7 +74,7 @@ public class CLITest {
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
-    
+
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
@@ -170,7 +170,7 @@ public class CLITest {
         JenkinsRule.WebClient wc = r.createWebClient()
                 .withRedirectEnabled(false)
                 .withThrowExceptionOnFailingStatusCode(false);
-        
+
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));

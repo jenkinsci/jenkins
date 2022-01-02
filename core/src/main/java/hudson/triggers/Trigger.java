@@ -258,12 +258,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
-                    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "TODO needs triage")
                     @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
-                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                if (t.job != null) {
+                                    LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                } else {
+                                    LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
+                                }
                                 t.run();
                             }
                         }

@@ -28,7 +28,7 @@ public class ProcessTreeTest {
         int id;
         private static final long serialVersionUID = 1L;
     }
-    
+
     @Test public void remoting() throws Exception {
         Assume.assumeFalse("on some platforms where we fail to list any processes", ProcessTree.get()==ProcessTree.DEFAULT);
 

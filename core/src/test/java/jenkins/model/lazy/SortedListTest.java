@@ -47,7 +47,7 @@ public class SortedListTest {
         assertEquals(2,l.ceil("F"));
         assertEquals(3,l.ceil("G"));
     }
-    
+
     @Test
     public void testFloor() {
         assertEquals(-1,l.floor("A"));

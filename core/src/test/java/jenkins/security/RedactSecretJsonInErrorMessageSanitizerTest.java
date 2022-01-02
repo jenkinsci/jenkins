@@ -39,7 +39,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': 1, 'b': '2', 'c': {'c1': 1, 'c2': '2', 'c3': ['3a', '3b']}, 'd': ['4a', {'d1': 1, 'd2': '2'}]}"
         );
     }
-    
+
     @Test
     public void simpleWithSecret() {
         assertRedaction(
@@ -47,7 +47,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': '[value redacted]', 'b': 'other', '$redact': 'a'}"
         );
     }
-    
+
     @Test
     public void singleWithRedactedInArray() {
         assertRedaction(
@@ -55,7 +55,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': '[value redacted]', 'b': 'other', '$redact': ['a']}"
         );
     }
-    
+
     @Test
     public void objectRedactedAcceptedButNotProcessed() {
         assertRedaction(
@@ -63,7 +63,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': 'secret', 'b': 'other', '$redact': {'a': 'a'}}"
         );
     }
-    
+
     @Test
     public void weirdValuesInRedactedAcceptedButNotProcessed() {
         assertRedaction(
@@ -71,7 +71,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': '[value redacted]', 'b': 'other', '$redact': [null, true, false, 1, 2, 'a']}"
         );
     }
-    
+
     @Test
     public void ensureTrueAndOneAsStringAreSupportedAsRedactedKey() {
         //only null is not supported, as passing 'null' is considered as null
@@ -80,7 +80,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'true': '[value redacted]', '1': '[value redacted]', 'b': 'other', '$redact': ['true', '1']}"
         );
     }
-    
+
     @Test
     public void redactFullBranch() {
         assertRedaction(
@@ -88,7 +88,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': '[value redacted]', 'b': '[value redacted]', 'c': 'other', '$redact': ['a', 'b']}"
         );
     }
-    
+
     @Test
     public void multipleSecretAtSameLevel() {
         assertRedaction(
@@ -96,7 +96,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a1': '[value redacted]', 'a2': '[value redacted]', 'b': 'other', '$redact': ['a1', 'a2']}"
         );
     }
-    
+
     @Test
     public void redactedKeyWithoutCorrespondences() {
         assertRedaction(
@@ -104,7 +104,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a1': '[value redacted]', 'a2': '[value redacted]', 'b': 'other', '$redact': ['a0', 'a1', 'a2', 'a3']}"
         );
     }
-    
+
     @Test
     public void secretsAtMultipleLevels() {
         assertRedaction(
@@ -112,7 +112,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a1': '[value redacted]', 'a2': '[value redacted]', 'b': 'other', '$redact': ['a1', 'a2'], 'sub': {'c1': '[value redacted]', 'c2': '[value redacted]', 'c3': 'other', '$redact': ['c1', 'c2']}}"
         );
     }
-    
+
     @Test
     public void noInteractionBetweenLevels() {
         assertRedaction(
@@ -120,7 +120,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'a': '[value redacted]', 'b': 'other', 'c': 'other', '$redact': 'a', 'sub': {'a': 'other', 'b': '[value redacted]', 'c': 'other', '$redact': 'b'}}"
         );
     }
-    
+
     @Test
     public void deeplyNestedObject() {
         assertRedaction(
@@ -128,7 +128,7 @@ public class RedactSecretJsonInErrorMessageSanitizerTest {
                 "{'sub': {'arr': ['d1', 2, {'a1': 'other', 'b1':'other', 'c1': '[value redacted]', '$redact': 'c1'}, 4, {'a2': 'other', 'b2': 'other', 'c2': '[value redacted]', '$redact': 'c2'}]}, '$redact': 'b'}"
         );
     }
-    
+
     private void assertRedaction(String from, String to) {
         JSONObject input = JSONObject.fromObject(from.replace('\'', '"'));
         JSONObject output = RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(input);
