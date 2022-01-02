@@ -111,7 +111,7 @@ public class UpdateSiteTest {
     public void shutdownWebserver() throws Exception {
         server.stop();
     }
-    
+
     @Test public void relativeURLs() throws Exception {
         URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
@@ -139,7 +139,7 @@ public class UpdateSiteTest {
         UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
         overrideUpdateSite(site, alternativeSite);
-        // sites use different Wiki URL for dummy -> use URL from manifest 
+        // sites use different Wiki URL for dummy -> use URL from manifest
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://wiki.jenkins.io/display/JENKINS/dummy", wrapper.getUrl());
         // sites use the same Wiki URL for HTML Publisher -> use it

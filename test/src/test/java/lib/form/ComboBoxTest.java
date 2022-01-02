@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2013 Software in the Public Interest
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,13 +61,13 @@ public class ComboBoxTest {
     public static class CompoundFieldComboBoxBuilder extends Publisher {
         private CompoundField compoundField;
         private String foo;
-        
+
         @DataBoundConstructor
         public CompoundFieldComboBoxBuilder(CompoundField compoundField, String foo) {
             this.compoundField = compoundField;
             this.foo = foo;
         }
-        
+
         @Extension
         public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
             @Override
@@ -76,7 +76,7 @@ public class ComboBoxTest {
             }
 
             public ComboBoxModel doFillFooItems(
-                    @QueryParameter @RelativePath("compoundField") String abc, 
+                    @QueryParameter @RelativePath("compoundField") String abc,
                     @QueryParameter @RelativePath("compoundField") String xyz) {
                 if (abc == null || xyz == null) {
                     throw new Error("doFillFooItems is broken");
@@ -116,7 +116,7 @@ public class ComboBoxTest {
         public String getXyz() {
             return xyz;
         }
-        
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<CompoundField> {}
     }
@@ -135,7 +135,7 @@ public class ComboBoxTest {
         p.getPublishersList().add(new CompoundFieldComboBoxBuilder(new CompoundField("AABBCC", "XXYYZZ"), null));
         try {
             j.createWebClient().getPage(p,"configure");
-            
+
         } catch(AssertionError e) {
             if(e.getMessage().contains("doFillFooItems is broken")) {
                 fail("Nested field values required for prefill were null");

@@ -2,7 +2,7 @@ package hudson.lifecycle;
 
 /**
  * Indicates that the {@link Lifecycle} doesn't support restart.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class RestartNotSupportedException extends Exception {

@@ -32,7 +32,7 @@ import jenkins.util.groovy.GroovyHookScript;
 /**
  * Run the initialization script, if it exists.
  * It runs strictly after the initialization of other tasks during the last initialization milestone.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class GroovyInitScript {

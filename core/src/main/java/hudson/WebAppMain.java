@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,6 @@ import static java.util.logging.Level.WARNING;
 
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -97,7 +96,7 @@ public class WebAppMain implements ServletContextListener {
      * <p>
      * The SecurityRealm should be corrected but this is a hardening in Jenkins core.
      * <p>
-     * As this property is read during startup, you will not be able to change it at runtime 
+     * As this property is read during startup, you will not be able to change it at runtime
      * depending on your application server (not possible with Jetty nor Tomcat)
      * <p>
      * When running hpi:run, the default tracking is COOKIE+URL.
@@ -108,7 +107,7 @@ public class WebAppMain implements ServletContextListener {
     public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
     private final RingBufferLogHandler handler = new RingBufferLogHandler(WebAppMain.getDefaultRingBufferSize()) {
-      
+
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
@@ -141,7 +140,7 @@ public class WebAppMain implements ServletContextListener {
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
             try {
                 Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
-                for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+                for (Handler h : Logger.getLogger("").getHandlers()) {
                     if (h instanceof ConsoleHandler) {
                         ((ConsoleHandler) h).setFormatter(formatter);
                     }
@@ -240,7 +239,6 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
-                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -253,7 +251,7 @@ public class WebAppMain implements ServletContextListener {
 
                         context.setAttribute(APP, instance);
 
-                        BootFailure.getBootFailureFile(_home).delete();
+                        Files.deleteIfExists(BootFailure.getBootFailureFile(_home).toPath());
 
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
@@ -301,10 +299,9 @@ public class WebAppMain implements ServletContextListener {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
     }
 
-	/**
+    /**
      * Installs log handler to monitor all Hudson logs.
      */
-    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
@@ -329,7 +326,7 @@ public class WebAppMain implements ServletContextListener {
      * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
-     * 
+     *
      * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */

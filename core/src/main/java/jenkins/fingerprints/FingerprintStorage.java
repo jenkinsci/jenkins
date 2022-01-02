@@ -55,7 +55,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
 
     /**
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
-     * @deprecated since TODO, use {@code ExtensionList.lookupSingleton(FileFingerprintStorage.class)} instead.
+     * @deprecated since 2.324, use {@code ExtensionList.lookupSingleton(FileFingerprintStorage.class)} instead.
      */
     @Deprecated
     public static FingerprintStorage getFileFingerprintStorage() {

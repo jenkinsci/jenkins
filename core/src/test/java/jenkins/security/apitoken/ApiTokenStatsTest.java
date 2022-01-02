@@ -61,14 +61,14 @@ import org.mockito.Mockito;
 public class ApiTokenStatsTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Before
     public void prepareConfig() {
         // to separate completely the class under test from its environment
         ApiTokenPropertyConfiguration mockConfig = Mockito.mock(ApiTokenPropertyConfiguration.class);
 
     }
-    
+
     @Test
     public void regularUsage() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
@@ -164,7 +164,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     public void testResilientIfFileDoesNotExist() {
         ApiTokenPropertyConfiguration mockConfig = mock(ApiTokenPropertyConfiguration.class);
@@ -175,7 +175,7 @@ public class ApiTokenStatsTest {
             assertNotNull(tokenStats);
         }
     }
-    
+
     @Test
     public void resistantToDuplicatedUuid() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
@@ -224,7 +224,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     public void resistantToDuplicatedUuid_withNull() throws Exception {
         final String ID = "ID";
@@ -257,7 +257,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     @SuppressWarnings("unchecked")
     public void testInternalComparator() throws Exception {
@@ -288,14 +288,14 @@ public class ApiTokenStatsTest {
             assertThat(idList, contains("A", "B", "C", "D"));
         }
     }
-    
+
     private ApiTokenStats.SingleTokenStats createSingleTokenStatsByReflection(String uuid, String dateString, Integer counter) throws Exception {
         Class<ApiTokenStats.SingleTokenStats> clazz = ApiTokenStats.SingleTokenStats.class;
         Constructor<ApiTokenStats.SingleTokenStats> constructor = clazz.getDeclaredConstructor(String.class);
         constructor.setAccessible(true);
-        
+
         ApiTokenStats.SingleTokenStats result = constructor.newInstance(uuid);
-    
+
         {
             Field field = clazz.getDeclaredField("useCounter");
             field.setAccessible(true);
@@ -306,10 +306,10 @@ public class ApiTokenStatsTest {
             field.setAccessible(true);
             field.set(result, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString));
         }
-        
+
         return result;
     }
-    
+
     @Test
     public void testDayDifference() throws Exception {
         final String ID = UUID.randomUUID().toString();
@@ -335,14 +335,14 @@ public class ApiTokenStatsTest {
             assertThat(stats.getNumDaysUse(), greaterThanOrEqualTo(2L));
         }
     }
-    
+
     private ApiTokenStats createFromFile(File file){
         ApiTokenStats result = ApiTokenStats.internalLoad(file);
         if (result == null) {
             result = new ApiTokenStats();
             result.parent = file;
         }
-        
+
         return result;
     }
 }

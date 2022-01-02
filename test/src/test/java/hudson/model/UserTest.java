@@ -510,7 +510,7 @@ public class UserTest {
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());

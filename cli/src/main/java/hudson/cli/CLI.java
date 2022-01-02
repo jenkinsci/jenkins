@@ -115,7 +115,7 @@ public class CLI {
 
         if (url==null)
             url = System.getenv("HUDSON_URL");
-        
+
         boolean noKeyAuth = false;
 
         // TODO perhaps allow mode to be defined by environment variable too (assuming $JENKINS_USER_ID can be used for -user)
@@ -189,9 +189,9 @@ public class CLI {
                 continue;
             }
             if (head.equals("-noKeyAuth")) {
-            	noKeyAuth = true;
-            	args = args.subList(1,args.size());
-            	continue;
+                noKeyAuth = true;
+                args = args.subList(1,args.size());
+                continue;
             }
             if(head.equals("-i") && args.size()>=2) {
                 File f = getFileFromArguments(args);

@@ -1105,7 +1105,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
 
         for (AbstractProject tup : getTransitiveDownstreamProjects()) {
-			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1122,7 +1122,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
 
         for (AbstractProject tup : getTransitiveUpstreamProjects()) {
-			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1932,10 +1932,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
-        	if(Util.fixEmptyAndTrim(customWorkspace)==null)
-        		return FormValidation.error(Messages.AbstractProject_CustomWorkspaceEmpty());
-        	else
-        		return FormValidation.ok();
+            if(Util.fixEmptyAndTrim(customWorkspace)==null)
+                return FormValidation.error(Messages.AbstractProject_CustomWorkspaceEmpty());
+            else
+                return FormValidation.ok();
         }
 
         public AutoCompletionCandidates doAutoCompleteUpstreamProjects(@QueryParameter String value) {
