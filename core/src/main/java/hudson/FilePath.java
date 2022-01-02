@@ -3307,8 +3307,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static final long serialVersionUID = 1L;
 
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
-    public static int SIDE_BUFFER_SIZE = 1024;
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
+    public static final int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());
 
