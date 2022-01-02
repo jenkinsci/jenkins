@@ -111,7 +111,7 @@ public class RepeatableTest {
         waitForJavaScript(p);
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
-    
+
     /**
      * Test count of buttons in form
      */
@@ -190,7 +190,7 @@ public class RepeatableTest {
             + "{\"bool\":true,\"txt\":\"existing two\"},{\"bool\":false,\"txt\":\"new one\"}]",
             rootAction.formData.get("foos"));
     }
-    
+
     @Test
     public void testNoData() throws Exception {
         rootAction.list = null;
@@ -201,33 +201,33 @@ public class RepeatableTest {
         gotoAndSubmitConfig("defaultForItems");
         assertNull(rootAction.formData.get("list"));
     }
-    
+
     @Test
     public void testItemsWithDefaults() throws Exception {
         assertWithDefaults("defaultForItems");
-    }    
+    }
 
     @Test
     public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForItems");
-    }    
+    }
 
     @Test
     public void testFieldWithDefaults() throws Exception {
         assertWithDefaults("defaultForField");
-    }    
+    }
 
     @Test
     public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForField");
-    }    
+    }
 
     private void addDefaults() {
         rootAction.defaults = new ArrayList<>();
         rootAction.defaults.add(new Foo("default one", true));
         rootAction.defaults.add(new Foo("default two", false));
     }
-    
+
     private void assertWithDefaults(final String viewName) throws Exception {
         rootAction.list = null;
         addDefaults();
@@ -235,7 +235,7 @@ public class RepeatableTest {
         assertNotNull(rootAction.formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
                 rootAction.formData.get("list"));
-    }    
+    }
 
     private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
         addData();
@@ -245,7 +245,7 @@ public class RepeatableTest {
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
                 rootAction.formData.get("list"));
     }
-    
+
     private void gotoAndSubmitConfig(final String viewName) throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/" + viewName);
         HtmlForm f = p.getFormByName("config");

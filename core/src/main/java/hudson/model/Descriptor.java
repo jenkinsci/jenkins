@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -136,7 +136,7 @@ import org.springframework.util.StringUtils;
  * {@link Descriptor} defines addition to the standard Java reflection
  * and provides reflective information about its corresponding {@link Describable}.
  * These are primarily used by tag libraries to
- * keep the Jelly scripts concise. 
+ * keep the Jelly scripts concise.
  *
  * @author Kohsuke Kawaguchi
  * @see Describable
@@ -241,7 +241,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Help file redirect, keyed by the field name to the path.
      *
-     * @see #getHelpFile(String) 
+     * @see #getHelpFile(String)
      */
     private final transient Map<String,HelpRedirect> helpRedirect = new HashMap<>(2);
 
@@ -279,7 +279,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Infers the type of the corresponding {@link Describable} from the outer class.
      * This version works when you follow the common convention, where a descriptor
      * is written as the static nested class of the describable class.
-     * 
+     *
      * @since 1.278
      */
     protected Descriptor() {
@@ -335,7 +335,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @return
      *      Stick to valid Java identifier character, plus '.', which had to be allowed for historical reasons.
-     * 
+     *
      * @since 1.391
      */
     public String getId() {
@@ -537,7 +537,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * @deprecated
      *      Implement {@link #newInstance(StaplerRequest, JSONObject)} method instead.
-     *      Deprecated as of 1.145. 
+     *      Deprecated as of 1.145.
      */
     @Deprecated
     public T newInstance(StaplerRequest req) throws FormException {
@@ -769,7 +769,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         }
         return null;
     }
-    
+
     /**
      * Tells Jenkins that the help file for the field 'fieldName' is defined in the help file for
      * the 'fieldNameToRedirectTo' in the 'owner' class.

@@ -150,7 +150,7 @@ public abstract class DirScanner implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-    
+
     private static class DescendantFileSelector implements FileSelector{
         private final Set<String> alreadyDeselected;
         private final FilePath baseDirFP;
@@ -161,7 +161,7 @@ public abstract class DirScanner implements Serializable {
             this.baseDirPathLength = basedir.getPath().length();
             this.alreadyDeselected = new HashSet<>();
         }
-        
+
         @Override
         public boolean isSelected(File basedir, String filename, File file) throws BuildException {
             String parentName = file.getParent();

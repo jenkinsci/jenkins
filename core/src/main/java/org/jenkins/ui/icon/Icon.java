@@ -179,7 +179,23 @@ public class Icon {
      */
     public String getQualifiedUrl(JellyContext context) {
         if (url != null) {
-            return iconType.toQualifiedUrl(url, context);
+            return iconType.toQualifiedUrl(url, context.getVariable("resURL").toString());
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Get the qualified icon url.
+     * <br>
+     * Qualifying the URL involves prefixing it depending on whether the icon is a core or plugin icon.
+     *
+     * @param resUrl The url of resources.
+     * @return The qualified icon url.
+     */
+    public String getQualifiedUrl(String resUrl) {
+        if (url != null) {
+            return iconType.toQualifiedUrl(url, resUrl);
         } else {
             return "";
         }

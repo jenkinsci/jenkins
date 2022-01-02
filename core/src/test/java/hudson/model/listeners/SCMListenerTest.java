@@ -69,7 +69,7 @@ public class SCMListenerTest {
         l.onChangeLogParsed(r, scm, tl, cls);
         assertEquals("cannot handle this", 0, l.cnt);
     }
-    
+
     private static class L extends SCMListener {
         int cnt;
     }

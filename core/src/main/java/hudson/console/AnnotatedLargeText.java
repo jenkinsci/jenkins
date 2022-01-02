@@ -103,7 +103,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     /**
      * For reusing code between text/html and text/plain, we run them both through the same code path
-     * and use this request attribute to differentiate. 
+     * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
         StaplerRequest req = Stapler.getCurrentRequest();
