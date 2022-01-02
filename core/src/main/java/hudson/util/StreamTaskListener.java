@@ -82,7 +82,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
-                this.out = out instanceof PrintStream ? (PrintStream)out : new PrintStream(out, false);
+                this.out = out instanceof PrintStream ? (PrintStream)out : new PrintStream(out, false, Charset.defaultCharset().name());
             else
                 this.out = new PrintStream(out, false, charset.name());
             this.charset = charset;
@@ -184,8 +184,9 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     private static /* not final */ boolean AUTO_FLUSH = SystemProperties.getBoolean(KEY_AUTO_FLUSH);
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = new PrintStream((OutputStream)in.readObject(), AUTO_FLUSH);
+        OutputStream os = (OutputStream)in.readObject();
         String name = (String)in.readObject();
+        out = new PrintStream(os, AUTO_FLUSH, name != null ? name : Charset.defaultCharset().name());
         charset = name==null ? null : Charset.forName(name);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
