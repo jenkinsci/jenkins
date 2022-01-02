@@ -7,15 +7,17 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * {@link ModelObject} that has tTODO TODO TODO TODO TODO TODO TODO TODO
+ * {@link ModelObject} that has a page menu in the breadcrumb bar or menu in its page link
  *
  * <p>
- * The children context menu is to show all the immediate children that this model object owns,
- * thereby providing quicker navigation to ancestors' siblings in the breadcrumb.
+ * The page context menu is accessible to the user via the breadcrumb bar or via a link
+ * to the object's page. The page menu combines the page's contextMenu and childrenContextMenu,
+ * making it easier for users to navigate to all the ancestor objects this model object owns,
+ * and its children.
  *
- * @author Jan Faracik
+ * @author Jan Faracik, Lewis Birks
  * @see ModelObjectWithContextMenu
- * @since ????
+ * @since TODO - Provide version
  */
 public interface ModelObjectWithPageMenu extends ModelObject {
     default ContextMenu doPageMenu(StaplerRequest request, StaplerResponse response) throws Exception {
