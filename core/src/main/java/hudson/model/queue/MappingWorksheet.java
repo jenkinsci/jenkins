@@ -314,7 +314,7 @@ public class MappingWorksheet {
 
     public MappingWorksheet(BuildableItem item, List<? extends ExecutorSlot> offers, Collection<? extends LoadPredictor> loadPredictors) {
         this.item = item;
-        
+
         // group executors by their computers
         Map<Computer,List<ExecutorSlot>> j = new HashMap<>();
         for (ExecutorSlot o : offers) {

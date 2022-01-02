@@ -53,23 +53,23 @@ public abstract class StaplerAbstractTest {
     @ClassRule
     public static JenkinsRule rule = new JenkinsRule();
     protected JenkinsRule j;
-    
+
     protected JenkinsRule.WebClient wc;
-    
+
     protected WebApp webApp;
-    
+
     protected static boolean filteredGetMethodTriggered = false;
     protected static boolean filteredDoActionTriggered = false;
     protected static boolean filteredFieldTriggered = false;
-    
+
     @Before
     public void setUp() throws Exception {
         j = rule;
         j.jenkins.setCrumbIssuer(null);
         wc = j.createWebClient();
-        
+
         this.webApp = (WebApp) j.jenkins.servletContext.getAttribute(WebApp.class.getName());
-        
+
         webApp.setFilteredGetterTriggerListener((f, req, rst, node, expression) -> {
             filteredGetMethodTriggered = true;
             return false;
@@ -82,52 +82,52 @@ public abstract class StaplerAbstractTest {
             filteredFieldTriggered = true;
             return false;
         });
-    
+
         filteredGetMethodTriggered = false;
         filteredDoActionTriggered = false;
         filteredFieldTriggered = false;
     }
-    
+
     //================================= utility class =================================
-    
+
     protected static class AbstractUnprotectedRootAction implements UnprotectedRootAction {
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getUrlName() {
             return StringUtils.uncapitalize(this.getClass().getSimpleName());
         }
     }
-    
+
     public static final String RENDERABLE_CLASS_SIGNATURE = "class jenkins.security.stapler.StaplerAbstractTest.Renderable";
     protected static class Renderable {
-        
+
         public void doIndex() {replyOk();}
-        
+
         @WebMethod(name = "valid")
         public void valid() {replyOk();}
     }
-    
+
     protected static class ParentRenderable {
         public Renderable getRenderable(){
             return new Renderable();
         }
     }
-    
+
     protected static class RenderablePoint extends Point {
         public void doIndex() {replyOk();}
     }
-    
+
     //================================= utility methods =================================
-    
+
     protected static void replyOk() {
         StaplerResponse resp = Stapler.getCurrentResponse();
         try {
@@ -137,9 +137,9 @@ public abstract class StaplerAbstractTest {
             throw new UncheckedIOException(e);
         }
     }
-    
+
     //================================= testing methods =================================
-    
+
     protected void assertGetMethodRequestWasBlockedAndResetFlag() {
         assertTrue("No get method request was blocked", filteredGetMethodTriggered);
         filteredGetMethodTriggered = false;
@@ -161,13 +161,13 @@ public abstract class StaplerAbstractTest {
     protected void assertFieldRequestWasNotBlocked() {
         assertFalse("There was at least one field request that was blocked", filteredFieldTriggered);
     }
-    
+
     protected void assertReachable(String url, HttpMethod method) throws IOException {
         try {
             Page page = wc.getPage(new WebRequest(new URL(j.getURL(), url), method));
             assertEquals(200, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), startsWith("ok"));
-            
+
             assertDoActionRequestWasNotBlocked();
             assertGetMethodActionRequestWasNotBlocked();
             assertFieldRequestWasNotBlocked();
@@ -175,18 +175,18 @@ public abstract class StaplerAbstractTest {
             throw new AssertionError("Url " + url + " should be reachable, received " + e.getMessage() + " (" + e.getStatusCode() + ") instead.", e);
         }
     }
-    
+
     protected void assertReachable(String url) throws IOException {
         assertReachable(url, HttpMethod.GET);
     }
-    
+
     protected void assertReachableWithSettings(WebRequest request) throws IOException {
         Page page = wc.getPage(request);
         assertEquals(200, page.getWebResponse().getStatusCode());
         assertEquals("ok", page.getWebResponse().getContentAsString());
         assertDoActionRequestWasNotBlocked();
     }
-    
+
     protected void assertReachableWithoutOk(String url) throws IOException {
         try {
             Page page = wc.getPage(new URL(j.getURL(), url));
@@ -195,7 +195,7 @@ public abstract class StaplerAbstractTest {
             throw new AssertionError("Url " + url + " should be reachable, received " + e.getMessage() + " (" + e.getStatusCode() + ") instead.", e);
         }
     }
-    
+
     protected void assertNotReachable(String url) throws IOException {
         FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)));
         assertEquals("Url " + url + " returns an error different from 404", 404, e.getResponse().getStatusCode());

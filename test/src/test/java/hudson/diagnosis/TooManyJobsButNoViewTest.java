@@ -79,7 +79,7 @@ public class TooManyJobsButNoViewTest {
 
         verifyNoForm();
     }
-    
+
     @Test
     public void systemReadNoViewAccessVerifyNoForm() throws Exception {
         final String READONLY = "readonly";
@@ -104,7 +104,7 @@ public class TooManyJobsButNoViewTest {
         DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
         assertThat(adminMonitorDiv, is(nullValue()));
     }
-    
+
     @Test
     public void systemReadVerifyForm() throws Exception {
         final String READONLY = "readonly";
@@ -132,5 +132,5 @@ public class TooManyJobsButNoViewTest {
         assertThat(adminMonitorDiv, is(notNullValue()));
         assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
-    
+
 }

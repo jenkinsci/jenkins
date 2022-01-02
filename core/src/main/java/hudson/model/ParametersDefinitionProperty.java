@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -142,7 +142,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
 
         List<ParameterValue> values = new ArrayList<>();
-        
+
         JSONObject formData = req.getSubmittedForm();
         JSONArray a = JSONArray.fromObject(formData.get("parameter"));
 
@@ -161,7 +161,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
         }
 
-    	WaitingItem item = Jenkins.get().getQueue().schedule(
+        WaitingItem item = Jenkins.get().getQueue().schedule(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
@@ -182,10 +182,10 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<>();
         for (ParameterDefinition d: parameterDefinitions) {
-        	ParameterValue value = d.createValue(req);
-        	if (value != null) {
-        		values.add(value);
-        	}
+            ParameterValue value = d.createValue(req);
+            if (value != null) {
+                values.add(value);
+            }
         }
         if (delay==null)
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
@@ -193,7 +193,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         ScheduleResult scheduleResult = Jenkins.get().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
         Queue.Item item = scheduleResult.getItem();
-        
+
         if (item != null && !scheduleResult.isCreated()) {
             rsp.sendRedirect(SC_SEE_OTHER, req.getContextPath() + '/' + item.getUrl());
             return;

@@ -26,16 +26,16 @@ public class AbstractItemTest {
         public Collection<? extends Job> getAllJobs() {
             return null;
         }
-        
+
         /**
          * Override save so that nothing happens when setDisplayName() is called
          */
         @Override
         public void save() {
-            
+
         }
     }
-    
+
     @Test
     public void testSetDisplayName() throws Exception {
         final String displayName = "testDisplayName";
@@ -43,7 +43,7 @@ public class AbstractItemTest {
         i.setDisplayName(displayName);
         assertEquals(displayName, i.getDisplayName());
     }
-    
+
     @Test
     public void testGetDefaultDisplayName() {
         final String name = "the item name";
@@ -51,18 +51,18 @@ public class AbstractItemTest {
         i.doSetName(name);
         // assert that if the displayname is not set, the name is actually returned
         assertEquals(name,  i.getDisplayName());
-        
+
     }
-    
+
     @Test
     public void testSearchNameIsName() {
         final String name = "the item name jlrtlekjtekrjkjr";
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(name);
-        
+
         assertEquals(i.getName(),  i.getSearchName());
     }
-    
+
     @Test
     public void testGetDisplayNameOrNull() throws Exception {
         final String projectName = "projectName";
@@ -71,7 +71,7 @@ public class AbstractItemTest {
         i.doSetName(projectName);
         assertEquals(projectName, i.getName());
         assertNull(i.getDisplayNameOrNull());
-        
+
         i.setDisplayName(displayName);
         assertEquals(displayName, i.getDisplayNameOrNull());
     }

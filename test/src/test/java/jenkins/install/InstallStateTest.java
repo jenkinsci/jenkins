@@ -45,23 +45,23 @@ import org.jvnet.hudson.test.SmokeTest;
  */
 @Category(SmokeTest.class)
 public class InstallStateTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void shouldPerformCorrectConversionForAllNames() {
         ExtensionList<InstallState> states = InstallState.all();
         for (InstallState state : states) {
             InstallState afterRoundtrip = forName(state.name());
             // It also prevents occasional name duplications
-            assertThat("State after the roundtrip must be equal to the original state", 
+            assertThat("State after the roundtrip must be equal to the original state",
                     afterRoundtrip, equalTo(state));
-            assertSame("State " + state + " should return the extension point instance after deserialization", 
+            assertSame("State " + state + " should return the extension point instance after deserialization",
                     afterRoundtrip, state);
         }
     }
-    
+
     @Test
     @Issue("JENKINS-35206")
     public void shouldNotFailOnNullXMLField() {
@@ -71,21 +71,21 @@ public class InstallStateTest {
         final InstallState state = forXml(xml);
         assertThat(state, equalTo(InstallState.UNKNOWN));
     }
-    
+
     @Test
     @Issue("JENKINS-35206")
     public void shouldNotFailOnEmptyName() {
         final InstallState state = forName("");
         assertThat(state, equalTo(InstallState.UNKNOWN));
     }
-    
+
     @Test
     @Issue("JENKINS-35206")
     public void shouldReturnUnknownStateForUnknownName() {
         final InstallState state = forName("NonExistentStateName");
         assertThat(state, equalTo(InstallState.UNKNOWN));
     }
-    
+
     private static InstallState forName(String name) {
         String xml = "<jenkins.install.InstallState>\n" +
             "  <isSetupComplete>true</isSetupComplete>\n" +
@@ -93,7 +93,7 @@ public class InstallStateTest {
             "</jenkins.install.InstallState>";
         return forXml(xml);
     }
-    
+
     private static InstallState forXml(String xml) {
         Object read = Jenkins.XSTREAM2.fromXML(xml);
         assertThat(read, instanceOf(InstallState.class));

@@ -81,7 +81,7 @@ import org.jvnet.hudson.test.Issue;
 public class VirtualFileTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
         assumeFalse(Functions.isWindows());
