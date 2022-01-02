@@ -29,7 +29,6 @@ import static java.util.logging.Level.WARNING;
 
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -141,7 +140,7 @@ public class WebAppMain implements ServletContextListener {
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
             try {
                 Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
-                for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+                for (Handler h : Logger.getLogger("").getHandlers()) {
                     if (h instanceof ConsoleHandler) {
                         ((ConsoleHandler) h).setFormatter(formatter);
                     }
@@ -240,7 +239,6 @@ public class WebAppMain implements ServletContextListener {
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
-                @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "TODO needs triage")
                 @Override
                 public void run() {
                     boolean success = false;
@@ -253,7 +251,7 @@ public class WebAppMain implements ServletContextListener {
 
                         context.setAttribute(APP, instance);
 
-                        BootFailure.getBootFailureFile(_home).delete();
+                        Files.deleteIfExists(BootFailure.getBootFailureFile(_home).toPath());
 
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
@@ -301,10 +299,9 @@ public class WebAppMain implements ServletContextListener {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
     }
 
-	/**
+    /**
      * Installs log handler to monitor all Hudson logs.
      */
-    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);

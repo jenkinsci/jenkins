@@ -485,17 +485,17 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *  @param optionalDependencies a list of optional dependencies
      */
     public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL,
-			ClassLoader classLoader, File disableFile,
-			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+            ClassLoader classLoader, File disableFile,
+            List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
-		this.manifest = manifest;
-		this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
-		this.baseResourceURL = baseResourceURL;
-		this.classLoader = classLoader;
-		this.disableFile = disableFile;
-		this.active = !disableFile.exists();
-		this.dependencies = dependencies;
-		this.optionalDependencies = optionalDependencies;
+        this.manifest = manifest;
+        this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
+        this.baseResourceURL = baseResourceURL;
+        this.classLoader = classLoader;
+        this.disableFile = disableFile;
+        this.active = !disableFile.exists();
+        this.dependencies = dependencies;
+        this.optionalDependencies = optionalDependencies;
         for (Dependency d : optionalDependencies) {
             assert d.optional : d + " included among optionalDependencies of " + shortName + " but was not marked optional";
         }
@@ -608,7 +608,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
         String firstSiteUrl = null;
         if (!siteMetadataList.isEmpty()) {
-        	firstSiteUrl = siteMetadataList.get(0).wiki;
+            firstSiteUrl = siteMetadataList.get(0).wiki;
             if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
                 return firstSiteUrl;
             }
@@ -618,7 +618,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         // use manifest (since maven-hpi-plugin 1.30)
         String url = manifest.getMainAttributes().getValue("Url");
         if (url != null) {
-        	return url;
+            return url;
         }
         return firstSiteUrl;
     }
@@ -627,7 +627,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return uiList.stream().allMatch(k -> k.wiki != null && k.wiki.equals(url));
     }
 
-	@Override
+    @Override
     public String toString() {
         return "Plugin:" + getShortName();
     }
