@@ -2363,9 +2363,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * be on the some host
      */
     public void renameTo(final FilePath target) throws IOException, InterruptedException {
-    	if(this.channel != target.channel) {
-    		throw new IOException("renameTo target must be on the same host");
-    	}
+        if(this.channel != target.channel) {
+            throw new IOException("renameTo target must be on the same host");
+        }
         act(new RenameTo(target));
     }
     private static class RenameTo extends MasterToSlaveFileCallable<Void> {
@@ -2694,14 +2694,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     }
                 }
                 private boolean tryCopyWithAttributes(File f, Path targetPath) {
-                	try {
+                    try {
                         Files.copy(fileToPath(f), targetPath,
                             StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
                         LOGGER.log(Level.FINE, "Unable to copy: {0}", e.getMessage());
                         return false;
                     }
-                	return true;
+                    return true;
                 }
                 @Override
                 public boolean understandsSymlink() {

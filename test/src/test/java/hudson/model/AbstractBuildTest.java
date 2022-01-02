@@ -118,10 +118,10 @@ public class AbstractBuildTest {
 
         j.buildAndAssertSuccess(project);
 
-		EnvVars envVars = builder.getEnvVars();
-		assertEquals("value", envVars.get("KEY1"));
-		assertEquals("value", envVars.get("KEY2"));
-	}
+        EnvVars envVars = builder.getEnvVars();
+        assertEquals("value", envVars.get("KEY1"));
+        assertEquals("value", envVars.get("KEY2"));
+    }
 
     /**
      * Makes sure that raw console output doesn't get affected by XML escapes.
