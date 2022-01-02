@@ -106,8 +106,6 @@ var breadcrumbs = (function() {
      *
      * @param {HTMLElement} e
      *      anchor tag
-     * @param {String} contextMenuUrl
-     *      The URL that renders JSON for context menu. Optional.
      */
     function invokeContextMenu(e) {
         function showMenu(items) {
@@ -166,14 +164,14 @@ var breadcrumbs = (function() {
         dropdownChevron.className = "jenkins-menu-dropdown-chevron"
         dropdownChevron.addEventListener("click", function(e) {
             e.preventDefault();
-            invokeContextMenu(link, null);
+            invokeContextMenu(link);
         })
         link.appendChild(dropdownChevron)
     });
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
         a.observe("click", function() {
-            invokeContextMenu(this,null);
+            invokeContextMenu(this);
         })
     });
 
@@ -209,7 +207,10 @@ var breadcrumbs = (function() {
          *      populating the content.
          */
         "attachMenu" : function (li,menu) {
-            $(li).firstChild.items =  (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).items = (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).addEventListener("click", function() {
+              invokeContextMenu($(li));
+            })
         },
 
         "ContextMenu" : ContextMenu
