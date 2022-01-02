@@ -102,7 +102,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     /**
      * @deprecated as of TODO
      *      The caller should use {@link #StreamTaskListener(File, Charset)} to pass in
-     *      the charset and output stream separately, so that this class can handle encoding correctly.
+     *      the charset and file separately, so that this class can handle encoding correctly.
      */
     @Deprecated
     public StreamTaskListener(@NonNull File out) throws IOException {
