@@ -25,6 +25,7 @@ package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
@@ -293,6 +294,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return rest.startsWith(".") || rest.length()==0;
         }
 
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
             if (name.length() == 0) {

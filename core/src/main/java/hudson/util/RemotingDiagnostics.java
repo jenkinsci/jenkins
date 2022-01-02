@@ -24,6 +24,7 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
@@ -127,6 +128,7 @@ public final class RemotingDiagnostics {
         }
 
         @Override
+        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl==null)       cl = Thread.currentThread().getContextClassLoader();

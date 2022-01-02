@@ -4857,6 +4857,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Extension list that {@link #doResources(StaplerRequest, StaplerResponse)} can serve.
      * This set is mutable to allow plugins to add additional extensions.
      */
+    @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "mutable to allow plugins to add additional extensions")
     public static final Set<String> ALLOWED_RESOURCE_EXTENSIONS = new HashSet<>(Arrays.asList(
             "js|css|jpeg|jpg|png|gif|html|htm".split("\\|")
     ));
@@ -5251,6 +5252,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Live view of recent {@link LogRecord}s produced by Jenkins.
      */
+    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
     public static List<LogRecord> logRecords = Collections.emptyList(); // initialized to dummy value to avoid NPE
 
     /**
@@ -5332,6 +5334,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Version number of this Jenkins.
      */
+    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
     public static String VERSION = UNCOMPUTED_VERSION;
 
     @Restricted(NoExternalUse.class)
@@ -5406,6 +5409,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * We used to use {@link #VERSION_HASH}, but making this session local allows us to
      * reuse the same {@link #RESOURCE_PATH} for static resources in plugins.
      */
+    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
     public static String SESSION_HASH;
 
     /**
@@ -5415,6 +5419,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Value computed in {@link WebAppMain}.
      */
+    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
     public static String RESOURCE_PATH = "";
 
     /**
@@ -5424,6 +5429,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Value computed in {@link WebAppMain}.
      */
+    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")

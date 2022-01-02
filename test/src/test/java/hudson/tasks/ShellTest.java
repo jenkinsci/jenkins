@@ -73,7 +73,7 @@ public class ShellTest {
         p.getBuildersList().add(new Shell("echo abc"));
         p.setAssignedNode(s);
 
-        FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b = rule.buildAndAssertSuccess(p);
 
         assertEquals(1,s.numLaunch);
         assertTrue(IOUtils.toString(b.getLogInputStream(), StandardCharsets.UTF_8).contains("Hudson was here"));
@@ -106,7 +106,7 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
@@ -126,12 +126,12 @@ public class ShellTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ShellTest {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewShell("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 

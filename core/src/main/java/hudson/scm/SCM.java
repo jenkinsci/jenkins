@@ -52,8 +52,10 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -739,7 +741,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.568
      */
     protected final void createEmptyChangeLog(@NonNull File changelogFile, @NonNull TaskListener listener, @NonNull String rootTag) throws IOException {
-        try (FileWriter w = new FileWriter(changelogFile)) {
+        try (Writer w = Files.newBufferedWriter(Util.fileToPath(changelogFile), Charset.defaultCharset())) {
             w.write("<"+rootTag +"/>");
         }
     }

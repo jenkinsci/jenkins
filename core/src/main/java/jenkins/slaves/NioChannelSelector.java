@@ -1,5 +1,6 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.init.Terminator;
 import hudson.model.Computer;
@@ -18,6 +19,7 @@ import org.jenkinsci.remoting.nio.NioChannelHub;
 public class NioChannelSelector {
     private NioChannelHub hub;
 
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for script console")
     public NioChannelSelector() {
         try {
             if (!DISABLED) {
@@ -46,7 +48,7 @@ public class NioChannelSelector {
     /**
      * Escape hatch to disable use of NIO.
      */
-    public static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
+    static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
 
     private static final Logger LOGGER = Logger.getLogger(NioChannelSelector.class.getName());
 }

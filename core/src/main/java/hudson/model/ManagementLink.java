@@ -203,7 +203,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
          */
         UNCATEGORIZED(Messages._ManagementLink_Category_UNCATEGORIZED());
 
-        private Localizable label;
+        private final Localizable label;
 
         Category(Localizable label) {
             this.label = label;

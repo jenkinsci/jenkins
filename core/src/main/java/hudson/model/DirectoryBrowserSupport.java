@@ -750,6 +750,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * list of {@link Path} represents one child item to be shown
      * (this mechanism is used to skip empty intermediate directory.)
      */
+    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
             List<List<Path>> r = new ArrayList<>();
 

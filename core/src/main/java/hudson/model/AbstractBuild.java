@@ -65,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.ref.WeakReference;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -668,7 +669,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     }
                 } catch (AbortException e) {
                     listener.error(e.getMessage());
-                } catch (InterruptedIOException e) {
+                } catch (ClosedByInterruptException | InterruptedIOException e) {
                     throw (InterruptedException)new InterruptedException().initCause(e);
                 } catch (IOException e) {
                     // checkout error not yet reported
@@ -692,7 +693,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      itself run successfully)
          *      Return a non-null value to abort the build right there with the specified result code.
          */
-        protected abstract Result doRun(BuildListener listener) throws Exception, RunnerAbortedException;
+        protected abstract Result doRun(BuildListener listener) throws Exception;
 
         /**
          * @see #post(BuildListener)

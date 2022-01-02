@@ -46,7 +46,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
     public Socket createSocket(String host, 
                                int port,
                                InetAddress localAddress,
-                               int localPort) throws IOException, UnknownHostException {
+                               int localPort) throws IOException {
         // ignore the local address/port for binding
         return createSocket(host, port);
     }
@@ -100,8 +100,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
      * @see ProtocolSocketFactory#createSocket(java.lang.String,int)
      */
     @Override
-    public Socket createSocket(String host, int port) throws IOException,
-            UnknownHostException,IOException {
+    public Socket createSocket(String host, int port) throws IOException {
         return new Socket(host, port);
     }
     
@@ -110,7 +109,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
      */
     @Override
     public boolean equals(Object obj) {
-        return obj != null && obj.getClass().equals(NoClientBindProtocolSocketFactory.class);
+        return obj != null && obj.getClass().equals(getClass());
     }
 
     /**

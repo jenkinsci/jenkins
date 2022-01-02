@@ -25,6 +25,7 @@ package hudson.security;
 
 import static java.util.logging.Level.FINE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -84,6 +85,7 @@ public class SparseACL extends SidACL {
         return false;
     }
 
+    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
     @Override
     protected Boolean hasPermission(Sid p, Permission permission) {
         for( ; permission!=null; permission=permission.impliedBy ) {

@@ -25,6 +25,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import java.util.Objects;
@@ -147,7 +148,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
-        if (isTrim() && value!=null) {
+        if (isTrim()) {
             value.doTrim();
         }
         value.setDescription(getDescription());
@@ -172,6 +173,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (StringParameterDefinition.class != getClass())
             return super.equals(obj);

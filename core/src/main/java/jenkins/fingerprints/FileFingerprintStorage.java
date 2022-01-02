@@ -26,6 +26,7 @@ package jenkins.fingerprints;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -147,7 +148,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     public static void save(Fingerprint fp, File file) throws IOException {
         if (fp.getPersistedFacets().isEmpty()) {
-            Files.createDirectories(Util.fileToPath(file.getParentFile()));
+            Util.createDirectories(Util.fileToPath(file.getParentFile()));
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try (PrintWriter w = new PrintWriter(new BufferedWriter(afw))) {
@@ -325,6 +326,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Deletes a directory if it's empty.
      */
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private void deleteIfEmpty(File dir) {
         try {
             if (Files.isDirectory(dir.toPath())) {

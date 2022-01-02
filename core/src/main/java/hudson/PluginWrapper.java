@@ -972,7 +972,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()), true);
+                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency_2(failedDependency.getLongName(), failedDependency.getShortName(), failedDependency.getVersion()), true);
                     break;
                 } else {
                     dependencyErrors.put(Messages.PluginWrapper_missing(d.shortName, d.version), false);
@@ -980,13 +980,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                        versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     }
                 } else {
                     if (isDependencyObsolete(d, dependency)) {
-                        versionDependencyError(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                        versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     } else {
-                        dependencyErrors.put(Messages.PluginWrapper_disabled(dependency.getLongName()), false);
+                        dependencyErrors.put(Messages.PluginWrapper_disabled_2(dependency.getLongName(), dependency.getShortName()), false);
                     }
                 }
 
@@ -997,7 +997,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                    versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                 } else {
                     dependencies.add(d);
                 }
@@ -1006,7 +1006,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (!dependencyErrors.isEmpty()) {
             NOTICE.addPlugin(this);
             StringBuilder messageBuilder = new StringBuilder();
-            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
+            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin_2(getLongName(), getShortName(), getVersion())).append(System.lineSeparator());
             for (Iterator<String> iterator = dependencyErrors.keySet().iterator(); iterator.hasNext(); ) {
                 String dependencyError = iterator.next();
                 messageBuilder.append(" - ").append(dependencyError);
@@ -1029,7 +1029,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     private void versionDependencyError(String message, String actual, String minimum) {
         if (isSnapshot(actual) || isSnapshot(minimum)) {
-            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getLongName(), getVersion(), message});
+            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getShortName(), getVersion(), message});
         } else {
             dependencyErrors.put(message, false);
         }

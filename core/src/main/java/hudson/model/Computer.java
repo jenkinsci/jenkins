@@ -1678,7 +1678,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 try {
-                    Files.createDirectories(newLocation.getParentFile().toPath());
+                    Util.createDirectories(newLocation.getParentFile().toPath());
                     Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } catch (IOException | InvalidPathException e) {

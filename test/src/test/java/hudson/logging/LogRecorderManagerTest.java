@@ -113,7 +113,7 @@ public class LogRecorderManagerTest {
         recs = r2.getSlaveLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 1, recs.size());
-        String text = j.createWebClient().goTo("log/r1/").asText();
+        String text = j.createWebClient().goTo("log/r1/").asNormalizedText();
         assertTrue(text, text.contains(c.getDisplayName()));
         assertTrue(text, text.contains("msg #1"));
         assertTrue(text, text.contains("msg #2"));
