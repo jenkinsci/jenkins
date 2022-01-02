@@ -101,13 +101,13 @@ public class RunParameterDefinitionTest {
 
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
-        
+
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
-        ParametersDefinitionProperty pdp = 
-                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
                                                                              project.getName(),
                                                                              "run description",
                                                                              null));
@@ -118,7 +118,7 @@ public class RunParameterDefinitionTest {
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
 
-    
+
     @Test
     public void testALLFilter() throws Exception {
 
@@ -133,13 +133,13 @@ public class RunParameterDefinitionTest {
 
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
-        
+
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
-        ParametersDefinitionProperty pdp = 
-                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.ALL));
@@ -164,13 +164,13 @@ public class RunParameterDefinitionTest {
 
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
-        
+
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
-        ParametersDefinitionProperty pdp = 
-                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.COMPLETED));
@@ -180,7 +180,7 @@ public class RunParameterDefinitionTest {
         assertEquals(Integer.toString(abortedBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
-    
+
     @Test
     public void testSUCCESSFULFilter() throws Exception {
 
@@ -195,13 +195,13 @@ public class RunParameterDefinitionTest {
 
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
-        
+
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
-        ParametersDefinitionProperty pdp = 
-                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.SUCCESSFUL));
@@ -211,8 +211,8 @@ public class RunParameterDefinitionTest {
         assertEquals(Integer.toString(unstableBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
-    
-    
+
+
     @Test
     public void testSTABLEFilter() throws Exception {
 
@@ -227,13 +227,13 @@ public class RunParameterDefinitionTest {
 
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
-        
+
         project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
-        ParametersDefinitionProperty pdp = 
-                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.STABLE));
@@ -243,8 +243,8 @@ public class RunParameterDefinitionTest {
         assertEquals(Integer.toString(successfulBuild.getNumber()),
                      build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
-    
-    
+
+
     @Test
     public void testLoadEnvironmentVariablesWhenRunParameterJobHasBeenDeleted() throws Exception {
 

@@ -118,12 +118,12 @@ public class TarArchiverTest {
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         new FilePath(dir).tar(new NullStream(), "**");
     }
-    
-    
+
+
     /**
      * Test backing up an open file
      */
-    
+
     @Issue("JENKINS-20187")
     @Test public void growingFileTar() throws Exception {
         File file=new File(tmp.getRoot(),"growing.file");
@@ -132,7 +132,7 @@ public class TarArchiverTest {
         t1.start();
 
         new FilePath(tmp.getRoot()).tar(new NullStream(), "**");
-        
+
         runnable1.doFinish();
         t1.join();
     }

@@ -93,9 +93,7 @@ public class ParametersTest {
         assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
@@ -127,9 +125,7 @@ public class ParametersTest {
         opt.setSelected(true);
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
@@ -205,9 +201,7 @@ public class ParametersTest {
         HtmlForm form = page.getFormByName("parameters");
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
@@ -231,6 +225,7 @@ public class ParametersTest {
         wc.setThrowExceptionOnFailingStatusCode(true);
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
+        j.waitUntilNoActivity();
     }
 
     @Issue("SECURITY-353")

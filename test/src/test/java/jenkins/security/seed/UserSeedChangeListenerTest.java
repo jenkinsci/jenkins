@@ -49,10 +49,10 @@ public class UserSeedChangeListenerTest {
         String userId = "alice";
         User alice = User.getById(userId, true);
         assertNull(testListener.lastUserIdReceived);
-        
+
         UserSeedProperty userSeed = alice.getProperty(UserSeedProperty.class);
         assertNull(testListener.lastUserIdReceived);
-        
+
         userSeed.renewSeed();
         assertThat(testListener.lastUserIdReceived, is(userId));
         assertThat(testListener.userWasNull, is(false));
@@ -84,11 +84,11 @@ public class UserSeedChangeListenerTest {
     public static class TestUserSeedChangeListener extends UserSeedChangeListener {
         String lastUserIdReceived;
         boolean userWasNull;
-        
-        @Override 
+
+        @Override
         public void onUserSeedRenewed(@NonNull User user) {
             if (user == null) {
-                userWasNull = true; 
+                userWasNull = true;
             }
             lastUserIdReceived = user.getId();
         }

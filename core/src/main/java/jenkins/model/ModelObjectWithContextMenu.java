@@ -22,6 +22,8 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -173,7 +175,7 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
             Computer c = n.toComputer();
             return add(new MenuItem()
                 .withDisplayName(n.getDisplayName())
-                .withStockIcon(c == null ? "computer.png" : c.getIcon())
+                .withIconClass(c == null ? "icon-computer" : c.getIconClassName())
                 .withContextRelativeUrl(n.getSearchUrl()));
         }
 
@@ -185,7 +187,7 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
         public ContextMenu add(Computer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
-                .withStockIcon(c.getIcon())
+                .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
         }
 
@@ -350,7 +352,13 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
          *      String like "gear.png" that resolves to 24x24 stock icon in the core
          */
         public MenuItem withStockIcon(String icon) {
-            this.icon = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH + "/images/24x24/"+icon;
+            this.icon = getResourceUrl() + "/images/24x24/" + icon;
+            return this;
+        }
+
+        public MenuItem withIconClass(String iconClass) {
+            Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
+            this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
             return this;
         }
 
@@ -362,6 +370,11 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
         public MenuItem withDisplayName(ModelObject o) {
             return withDisplayName(o.getDisplayName());
         }
+
+        private String getResourceUrl() {
+            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
+        }
+
     }
 
     enum MenuItemType {
