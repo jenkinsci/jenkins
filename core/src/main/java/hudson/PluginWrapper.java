@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Yahoo! Inc., Erik Ramfelt, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -168,7 +168,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The snapshot of {@code disableFile.exists()} as of the start up.
      */
     private final boolean active;
-    
+
     private boolean hasCycleDependency = false;
 
     private final List<Dependency> dependencies;
@@ -384,11 +384,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Inject the specified jar file(s) to the plugins classpath.
      * <p><strong>Warning:</strong> This is advanced usage that you should not be needed in 99.9% of all cases, any jar insertion
-     * should happen early into the plugins lifecycle to prevent classloading issues in dependent plugins. 
+     * should happen early into the plugins lifecycle to prevent classloading issues in dependent plugins.
      * </p><p>
      * Rather than use this functionality it is to have co-operative behaviour between any consumer of the libraries and load the classes in a separate {@link ClassLoader}.
      * you can expose third-party libraries from a dynamic location in various ways, such as:
-     * 
+     *
      * <ul>
      * <li>You could split your plugin into two modules:
      * <ul>
@@ -409,7 +409,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * For a concrete example see the <a href=
      * "https://github.com/jenkinsci/database-plugin/blob/117.va2009e38b882/src/main/java/org/jenkinsci/plugins/database/GenericDatabase.java#L129-L142">database
      * plugin</a>. *
-     * 
+     *
      * @throws Exception if the File could not be inserted into the classpath for some reason.
      * @since 2.313
      */
@@ -467,7 +467,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         @Override
         public String toString() {
             return shortName + " (" + version + ")" + (optional ? " optional" : "");
-        }        
+        }
     }
 
     /**
@@ -484,18 +484,18 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *  @param dependencies a list of mandatory dependencies
      *  @param optionalDependencies a list of optional dependencies
      */
-    public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
-			ClassLoader classLoader, File disableFile, 
-			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+    public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL,
+            ClassLoader classLoader, File disableFile,
+            List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
-		this.manifest = manifest;
-		this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
-		this.baseResourceURL = baseResourceURL;
-		this.classLoader = classLoader;
-		this.disableFile = disableFile;
-		this.active = !disableFile.exists();
-		this.dependencies = dependencies;
-		this.optionalDependencies = optionalDependencies;
+        this.manifest = manifest;
+        this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
+        this.baseResourceURL = baseResourceURL;
+        this.classLoader = classLoader;
+        this.disableFile = disableFile;
+        this.active = !disableFile.exists();
+        this.dependencies = dependencies;
+        this.optionalDependencies = optionalDependencies;
         for (Dependency d : optionalDependencies) {
             assert d.optional : d + " included among optionalDependencies of " + shortName + " but was not marked optional";
         }
@@ -608,7 +608,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
         String firstSiteUrl = null;
         if (!siteMetadataList.isEmpty()) {
-        	firstSiteUrl = siteMetadataList.get(0).wiki;
+            firstSiteUrl = siteMetadataList.get(0).wiki;
             if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
                 return firstSiteUrl;
             }
@@ -618,7 +618,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         // use manifest (since maven-hpi-plugin 1.30)
         String url = manifest.getMainAttributes().getValue("Url");
         if (url != null) {
-        	return url;
+            return url;
         }
         return firstSiteUrl;
     }
@@ -627,7 +627,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return uiList.stream().allMatch(k -> k.wiki != null && k.wiki.equals(url));
     }
 
-	@Override
+    @Override
     public String toString() {
         return "Plugin:" + getShortName();
     }
@@ -718,7 +718,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             return getVersionNumber().compareTo(v) < 0;
         } catch (IllegalArgumentException e) {
             // if we can't figure out our current version, it probably means it's very old,
-            // since the version information is missing only from the very old plugins 
+            // since the version information is missing only from the very old plugins
             return true;
         }
     }
@@ -767,6 +767,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
      * {@link #disable(PluginDisableStrategy)}
+     * @deprecated use {@link #disable(PluginDisableStrategy)}
      */
     @Deprecated //see https://issues.jenkins.io/browse/JENKINS-27177
     public void disable() throws IOException {
@@ -888,7 +889,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public boolean isActive() {
         return active && !hasCycleDependency();
     }
-    
+
     public boolean hasCycleDependency(){
         return hasCycleDependency;
     }
@@ -971,7 +972,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()), true);
+                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency_2(failedDependency.getLongName(), failedDependency.getShortName(), failedDependency.getVersion()), true);
                     break;
                 } else {
                     dependencyErrors.put(Messages.PluginWrapper_missing(d.shortName, d.version), false);
@@ -979,13 +980,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                        versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     }
                 } else {
                     if (isDependencyObsolete(d, dependency)) {
-                        versionDependencyError(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                        versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     } else {
-                        dependencyErrors.put(Messages.PluginWrapper_disabled(dependency.getLongName()), false);
+                        dependencyErrors.put(Messages.PluginWrapper_disabled_2(dependency.getLongName(), dependency.getShortName()), false);
                     }
                 }
 
@@ -996,7 +997,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
+                    versionDependencyError(Messages.PluginWrapper_obsolete_2(dependency.getLongName(), dependency.getShortName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                 } else {
                     dependencies.add(d);
                 }
@@ -1005,7 +1006,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (!dependencyErrors.isEmpty()) {
             NOTICE.addPlugin(this);
             StringBuilder messageBuilder = new StringBuilder();
-            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
+            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin_2(getLongName(), getShortName(), getVersion())).append(System.lineSeparator());
             for (Iterator<String> iterator = dependencyErrors.keySet().iterator(); iterator.hasNext(); ) {
                 String dependencyError = iterator.next();
                 messageBuilder.append(" - ").append(dependencyError);
@@ -1028,7 +1029,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     private void versionDependencyError(String message, String actual, String minimum) {
         if (isSnapshot(actual) || isSnapshot(minimum)) {
-            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getLongName(), getVersion(), message});
+            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getShortName(), getVersion(), message});
         } else {
             dependencyErrors.put(message, false);
         }
@@ -1055,7 +1056,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
-    
+
     /**
      * returns the {@link hudson.model.UpdateSite.Plugin} object, or null.
      */
@@ -1082,7 +1083,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
-    
+
     @Exported
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinned() {
@@ -1190,6 +1191,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
+     * @deprecated removed without replacement
      */
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
@@ -1374,9 +1376,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
         Jenkins jenkins = Jenkins.get();
-        
+
         jenkins.checkPermission(Jenkins.ADMINISTER);
-        archive.delete();
+        Files.deleteIfExists(Util.fileToPath(archive));
 
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();
@@ -1407,6 +1409,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             }
         }
         return deprecations;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public String getIssueTrackerReportUrl() {
+        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
+        if (updateCenter.isSiteDataReady()) {
+            for (UpdateSite site : updateCenter.getSites()) {
+                final UpdateSite.Plugin sitePlugin = site.getPlugin(this.shortName);
+                if (sitePlugin != null && sitePlugin.issueTrackers != null) {
+                    for (UpdateSite.IssueTracker issueTracker : sitePlugin.issueTrackers) {
+                        if (issueTracker.reportUrl != null) {
+                            return issueTracker.reportUrl;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());

@@ -52,7 +52,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.AbstractCloudSlave;
-import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
@@ -78,6 +77,9 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -103,6 +105,7 @@ import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
 import org.apache.commons.lang.StringUtils;
@@ -251,7 +254,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new ArrayList<>(terminatedBy);
     }
 
-    public Computer(Node node) {
+    protected Computer(Node node) {
         setNode(node);
     }
 
@@ -279,7 +282,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @SuppressWarnings({"ConstantConditions","deprecation"})
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void addAction(@NonNull Action a) {
         if (a == null) {
@@ -462,10 +464,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      *
      * @param force
      *      If true cancel any currently pending connect operation and retry from scratch
+     *
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      */
     @Deprecated
     public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
@@ -524,10 +527,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
      */
     @Deprecated
     public void cliDisconnect(String cause) throws ExecutionException, InterruptedException {
@@ -536,10 +539,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
-     *
      * @param cause
      *      Record the note about why you are disconnecting this node
+     *
+     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
      */
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
@@ -706,9 +709,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
-        for (ComputerListener cl : ComputerListener.all()) {
-            if (temporarilyOffline)     cl.onTemporarilyOffline(this,cause);
-            else                        cl.onTemporarilyOnline(this);
+        if (temporarilyOffline) {
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
+        } else {
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
         }
     }
 
@@ -1604,7 +1608,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
@@ -1673,12 +1677,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Matcher m = logfile.matcher(f.getName());
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
-                newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessful=f.renameTo(newLocation);
-                if (relocationSuccessful) { // The operation will fail if mkdir fails
+                try {
+                    Util.createDirectories(newLocation.getParentFile().toPath());
+                    Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
-                } else {
-                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } catch (IOException | InvalidPathException e) {
+                    LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
             } else {
                 assert false;
@@ -1786,25 +1790,63 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.COMPUTER);
+    public static final Permission CONFIGURE =
+            new Permission(
+                    PERMISSIONS,
+                    "Configure",
+                    Messages._Computer_ConfigurePermission_Description(),
+                    Permission.CONFIGURE,
+                    PermissionScope.COMPUTER);
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
-    public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
-    public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
-    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+    public static final Permission EXTENDED_READ =
+            new Permission(
+                    PERMISSIONS,
+                    "ExtendedRead",
+                    Messages._Computer_ExtendedReadPermission_Description(),
+                    CONFIGURE,
+                    SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"),
+                    new PermissionScope[] {PermissionScope.COMPUTER});
+    public static final Permission DELETE =
+            new Permission(
+                    PERMISSIONS,
+                    "Delete",
+                    Messages._Computer_DeletePermission_Description(),
+                    Permission.DELETE,
+                    PermissionScope.COMPUTER);
+    public static final Permission CREATE =
+            new Permission(
+                    PERMISSIONS,
+                    "Create",
+                    Messages._Computer_CreatePermission_Description(),
+                    Permission.CREATE,
+                    PermissionScope.JENKINS);
+    public static final Permission DISCONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Disconnect",
+                    Messages._Computer_DisconnectPermission_Description(),
+                    Jenkins.ADMINISTER,
+                    PermissionScope.COMPUTER);
+    public static final Permission CONNECT =
+            new Permission(
+                    PERMISSIONS,
+                    "Connect",
+                    Messages._Computer_ConnectPermission_Description(),
+                    DISCONNECT,
+                    PermissionScope.COMPUTER);
+    public static final Permission BUILD =
+            new Permission(
+                    PERMISSIONS,
+                    "Build",
+                    Messages._Computer_BuildPermission_Description(),
+                    Permission.WRITE,
+                    PermissionScope.COMPUTER);
 
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =
             new Permission[] { EXTENDED_READ, CONNECT };
-
-    // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
-    // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,
-    // it might appear the permission does not exist. Referencing the permission from here to make sure it gets loaded.
-    private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

@@ -239,7 +239,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return 1;
     }
 
-    private boolean isOnlineScheduled() {
+    private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);

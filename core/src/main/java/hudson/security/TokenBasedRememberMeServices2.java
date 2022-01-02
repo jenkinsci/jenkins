@@ -66,7 +66,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * Escape hatch for the check on the maximum date for the expiration duration of the remember me cookie
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = 
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 
@@ -169,6 +169,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         }
     }
 
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
     @Override
     protected Authentication createSuccessfulAuthentication(HttpServletRequest request, UserDetails userDetails) {
         Authentication auth = super.createSuccessfulAuthentication(request, userDetails);

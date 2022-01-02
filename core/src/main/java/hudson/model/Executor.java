@@ -248,7 +248,7 @@ public class Executor extends Thread implements ModelObject {
         // this method is almost always called as a result of the current thread being interrupted
         // as a result we need to clean the interrupt flag so that the lock's lock method doesn't
         // get confused and think it was interrupted while awaiting the lock
-        Thread.interrupted(); 
+        Thread.interrupted();
         // we need to use a write lock as we may be repeatedly interrupted while processing and
         // we need the same lock as used in void interrupt(Result,boolean,CauseOfInterruption...)
         // JENKINS-28690
@@ -409,7 +409,15 @@ public class Executor extends Thread implements ModelObject {
 
                 if (executable instanceof Actionable) {
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
+                        LOGGER.log(
+                                FINER,
+                                "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}",
+                                new Object[] {
+                                    executable,
+                                    workUnit.context.item,
+                                    workUnit.context.actions,
+                                    workUnit.context.item.getAllActions(),
+                                });
                     }
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
@@ -531,12 +539,12 @@ public class Executor extends Thread implements ModelObject {
         Executable candidate = getCurrentExecutable();
         return candidate instanceof AccessControlled && ((AccessControlled) candidate).hasPermission(Item.READ) ? candidate : null;
     }
-    
+
     /**
      * Returns causes of interruption.
      *
      * @return Unmodifiable collection of causes of interruption.
-     * @since  1.617    
+     * @since  1.617
      */
     public @NonNull Collection<CauseOfInterruption> getCausesOfInterruption() {
         return Collections.unmodifiableCollection(causes);
@@ -905,7 +913,7 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
-        } catch(Exception ex) {
+        } catch(RuntimeException ex) {
             if (!(ex instanceof AccessDeniedException)) {
                 // Prevents UI from exploding in the case of unexpected runtime exceptions
                 LOGGER.log(WARNING, "Unhandled exception", ex);

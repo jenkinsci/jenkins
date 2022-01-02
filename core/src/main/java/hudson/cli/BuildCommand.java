@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
@@ -262,12 +263,22 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof CLICause;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+            CLICause cliCause = (CLICause) o;
+            return Objects.equals(startedBy, cliCause.startedBy);
         }
 
         @Override
         public int hashCode() {
-            return 7;
+            return Objects.hash(super.hashCode(), startedBy);
         }
     }
 }

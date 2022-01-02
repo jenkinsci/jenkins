@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
 
     @Extension @Symbol("legacy")
     public static class DescriptorImpl extends  Descriptor<SecurityRealm> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }

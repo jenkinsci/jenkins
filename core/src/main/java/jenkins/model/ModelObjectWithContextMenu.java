@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.Action;
@@ -21,6 +22,8 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -173,7 +176,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu add(Computer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
-                .withStockIcon(c.getIcon())
+                .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
         }
 
@@ -255,37 +258,46 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Human readable caption of the menu item. Do not use HTML.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String displayName;
 
         /**
          * Optional URL to the icon image. Rendered as 24x24.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String icon;
 
         /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
-        @Exported public boolean post;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean post;
 
         /**
          * True to require confirmation after a click.
          * @since 1.512
          */
-        @Exported public boolean requiresConfirmation;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean requiresConfirmation;
 
 
         /**
          * True to display this item as a section header.
          * @since 2.231
          */
-        @Exported public boolean header;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean header;
 
         /**
          * If this is a submenu, definition of subitems.
          */
         @Exported(inline=true)
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
 
         public MenuItem(String url, String icon, String displayName) {
@@ -329,7 +341,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *      String like "gear.png" that resolves to 24x24 stock icon in the core
          */
         public MenuItem withStockIcon(String icon) {
-            this.icon = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH + "/images/24x24/"+icon;
+            this.icon = getResourceUrl() + "/images/24x24/" + icon;
+            return this;
+        }
+
+        public MenuItem withIconClass(String iconClass) {
+            Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
+            this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
             return this;
         }
 
@@ -341,6 +359,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public MenuItem withDisplayName(ModelObject o) {
             return withDisplayName(o.getDisplayName());
         }
+
+        private String getResourceUrl() {
+            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
+        }
+
     }
 
     /**

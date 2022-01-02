@@ -17,7 +17,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 public class Security177Test {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
-    
+
     @Test
     public void nosniff() throws Exception {
         WebClient wc = jenkins.createWebClient()

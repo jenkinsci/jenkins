@@ -42,7 +42,7 @@ THE SOFTWARE.
             (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
           </j:when>
           <j:when test="${c.connecting}">
-            (<img src="${imagesURL}/16x16/hourglass.gif"/>${%launching})
+            (<l:icon class="icon-hourglass icon-sm"/>${%launching})
           </j:when>
           <j:otherwise>
             (${%offline})

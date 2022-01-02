@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * Copyright (c) 2016, CloudBees Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -122,7 +122,7 @@ public final class Secret implements Serializable {
     /**
      * Encrypts {@link #value} and returns it in an encoded printable form.
      *
-     * @see #toString() 
+     * @see #toString()
      */
     public String getEncryptedValue() {
         try {
@@ -148,7 +148,7 @@ public final class Secret implements Serializable {
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
-            return "{"+new String(Base64.getEncoder().encode(payload))+"}";
+            return "{" + Base64.getEncoder().encodeToString(payload) + "}";
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -308,7 +308,7 @@ public final class Secret implements Serializable {
     public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
 
     static {

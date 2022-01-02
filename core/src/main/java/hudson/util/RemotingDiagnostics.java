@@ -24,10 +24,12 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Util;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
@@ -39,6 +41,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -125,6 +128,7 @@ public final class RemotingDiagnostics {
         }
 
         @Override
+        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
@@ -148,6 +152,7 @@ public final class RemotingDiagnostics {
             }
             return out.toString();
         }
+        private static final long serialVersionUID = 1L;
     }
 
     /**
@@ -160,7 +165,7 @@ public final class RemotingDiagnostics {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
-                hprof.delete();
+                Files.delete(Util.fileToPath(hprof));
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
                     server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",

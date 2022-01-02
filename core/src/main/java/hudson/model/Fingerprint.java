@@ -33,8 +33,10 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
@@ -745,7 +747,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 } catch (NumberFormatException e) {
                     if (!skipError)
                         throw new IllegalArgumentException(
-                                String.format("Unable to parse '%s', expected number", list));
+                                String.format("Unable to parse '%s', expected number", list), e);
                     // ignore malformed text
                 }
             }
@@ -960,7 +962,8 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Gets the sorted list of job names where this jar is used.
      */
-    public @NonNull List<String> getJobs() {
+    @NonNull
+    public synchronized List<String> getJobs() {
         List<String> r = new ArrayList<>(usages.keySet());
         Collections.sort(r);
         return r;
@@ -1023,6 +1026,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     // JENKINS-49588
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "nothing should be competing with XStream during deserialization")
     protected Object readResolve() {
         if (usages == null) {
             usages = new Hashtable<>();
@@ -1252,7 +1256,7 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         // Implementations are expected to invoke SaveableListener on their own if relevant
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins.io/browse/JENKINS-62543
@@ -1273,7 +1277,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Save the Fingerprint in the given file locally
      * @throws IOException Save error
-     * @deprecated as of TODO. Use {@link #save()} instead.
+     * @deprecated as of 2.242. Use {@link #save()} instead.
      */
     @Deprecated
     void save(File file) throws IOException {
@@ -1339,7 +1343,7 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         Fingerprint loaded = configuredFingerprintStorage.load(id);
 
@@ -1364,7 +1368,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     /**
      * Determines the file name from md5sum.
-     * @deprecated as of TODO. Use {@link #load(String)} instead.
+     * @deprecated as of 2.242. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
@@ -1375,7 +1379,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Loads a {@link Fingerprint} from a file in the image.
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
-     * @deprecated as of TODO. Use {@link #load(String)} instead.
+     * @deprecated as of 2.242. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
@@ -1392,7 +1396,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         configuredFingerprintStorage.delete(id);
 
@@ -1415,7 +1419,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + (usages == null ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
+        return "Fingerprint[original="
+                + original
+                + ",hash="
+                + getHashString()
+                + ",fileName="
+                + fileName
+                + ",timestamp="
+                + DATE_CONVERTER.toString(timestamp)
+                + ",usages="
+                + (usages == null ? "null" : new TreeMap<>(getUsages()))
+                + ",facets="
+                + facets
+                + "]";
     }
     
     /**

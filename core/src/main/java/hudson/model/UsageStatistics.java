@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -73,7 +73,7 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private static final Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
-    
+
     private final String keyImage;
 
     /**
@@ -103,7 +103,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     public boolean isDue() {
         // user opted out. no data collection.
         if(!Jenkins.get().isUsageStatisticsCollected() || DISABLED)     return false;
-        
+
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
             lastAttempt = now;
@@ -125,7 +125,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     /**
-     * Gets the encrypted usage stat data to be sent to the Hudson server. 
+     * Gets the encrypted usage stat data to be sent to the Hudson server.
      * Used exclusively by jelly: resources/hudson/model/UsageStatistics/footer.jelly
      */
     public String getStatData() throws IOException {
@@ -193,7 +193,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 o.write(w);
             }
 
-            return new String(Base64.getEncoder().encode(baos.toByteArray()));
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
         } catch (Throwable e) { // the exception could be GeneralSecurityException, InvalidParameterException or any other depending on the security provider you have installed
             LOG.log(Level.INFO, "Usage statistics could not be sent ({0})", e.getMessage());
             LOG.log(Level.FINE, "Error sending usage statistics", e);
@@ -290,10 +290,15 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     /**
      * Public key to encrypt the usage statistics
      */
-    private static final String DEFAULT_KEY_BYTES = "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b0203010001";
+    private static final String DEFAULT_KEY_BYTES =
+            "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e"
+                + "4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a"
+                + "169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f"
+                + "4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b020301"
+                + "0001";
 
     private static final long DAY = DAYS.toMillis(1);
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

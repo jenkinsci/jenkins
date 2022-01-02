@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Matthew R. Harrah, Red Hat, Inc., Stephen Connolly, Tom Huybrechts, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -71,6 +72,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -121,7 +123,7 @@ import org.kohsuke.stapler.verb.POST;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
- * 
+ *
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
  *
@@ -302,14 +304,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT b = getLastBuild();
         return b!=null && b.isBuilding();
     }
-    
+
     /**
      * Returns true if the log file is still being updated.
      */
     public boolean isLogUpdated() {
         RunT b = getLastBuild();
         return b!=null && b.isLogUpdated();
-    }    
+    }
 
     @Override
     public String getPronoun() {
@@ -380,7 +382,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (node != null) {
             final Computer computer = node.toComputer();
             if (computer != null) {
-                // we need to get computer environment to inherit platform details 
+                // we need to get computer environment to inherit platform details
                 env = computer.getEnvironment();
                 env.putAll(computer.buildEnvironment(listener));
             }
@@ -403,12 +405,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Programmatically updates the next build number.
-     * 
+     *
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
-     * 
+     *
      * @since 1.199 (before that, this method was package private.)
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
@@ -507,7 +509,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Adds {@link JobProperty}.
-     * 
+     *
      * @since 1.188
      */
     public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {
@@ -660,13 +662,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            if (!newBuildDir.getParentFile().isDirectory()) {
-                newBuildDir.getParentFile().mkdirs();
-            }
-            if (!oldBuildDir.renameTo(newBuildDir)) {
-                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
-            }
+        if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
+            Util.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir));
         }
     }
 
@@ -727,7 +725,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the read-only view of all the builds.
-     * 
+     *
      * @return never null. The first entry is the latest build.
      */
     @Exported(name="allBuilds",visibility=-2)
@@ -813,13 +811,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 throw new CmdLineException(null, "No such build '#"+n+"' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(null, id+ "is not a number");
+            throw new CmdLineException(null, id+ "is not a number", e);
         }
     }
 
     /**
      * Gets the youngest build #m that satisfies {@code n&lt;=m}.
-     * 
+     *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestBuild
@@ -834,7 +832,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the latest build #m that satisfies {@code m&lt;=n}.
-     * 
+     *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestOldBuild
@@ -875,7 +873,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Some {@link Job}s may not have backing data store for {@link Run}s, but
      * those {@link Job}s that use file system for storing data should use this
      * directory for consistency.
-     * 
+     *
      * @see RunMap
      */
     public File getBuildDir() {
@@ -891,7 +889,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets all the runs.
-     * 
+     *
      * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      * @see LazyBuildMixIn#_getRuns
@@ -900,7 +898,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Called from {@link Run} to remove it from this job.
-     * 
+     *
      * The files are deleted already. So all the callee needs to do is to remove
      * a reference from this {@link Job}.
      * @see LazyBuildMixIn#removeRun
@@ -938,7 +936,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the last successful build, if any. Otherwise null. A successful build
      * would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
-     * 
+     *
      * @see #getLastStableBuild()
      */
     @Exported
@@ -994,10 +992,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public RunT getLastCompletedBuild() {
         return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
-    
+
     /**
      * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
-     * 
+     *
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.
      */
@@ -1005,13 +1003,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT r = getLastBuild();
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
-    
+
     /**
      * Returns candidate build for calculating the estimated duration of the current run.
-     * 
+     *
      * Returns the 3 last successful (stable or unstable) builds, if there are any.
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
-     * 
+     *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
      */
     protected List<RunT> getEstimatedDurationCandidates() {
@@ -1038,20 +1036,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             i++;
             r = r.getPreviousBuild();
         }
-        
+
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
             RunT run = fallbackCandidates.remove(0);
             candidates.add(run);
         }
-        
+
         return candidates;
     }
-    
+
     public long getEstimatedDuration() {
         List<RunT> builds = getEstimatedDurationCandidates();
-        
+
         if(builds.isEmpty())     return -1;
 
         long totalDuration = 0;
@@ -1189,7 +1187,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Get the current health report for a job.
-     * 
+     *
      * @return the health report. Never returns null
      */
     public HealthReport getBuildHealth() {
@@ -1411,65 +1409,91 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getIconClassName();
     }
 
+    private static class ChartLabel implements Comparable<ChartLabel> {
+        final Run run;
+
+        ChartLabel(Run r) {
+            this.run = r;
+        }
+
+        @Override
+        public int compareTo(ChartLabel that) {
+            return this.run.number - that.run.number;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            // JENKINS-2682 workaround for Eclipse compilation bug
+            // on (c instanceof ChartLabel)
+            if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
+                return false;
+            }
+            ChartLabel that = (ChartLabel) o;
+            return run == that.run;
+        }
+
+        public Color getColor() {
+            // TODO: consider gradation. See
+            // http://www.javadrive.jp/java2d/shape/index9.html
+            Result r = run.getResult();
+            if (r == Result.FAILURE)
+                return ColorPalette.RED;
+            else if (r == Result.UNSTABLE)
+                return ColorPalette.YELLOW;
+            else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                return ColorPalette.GREY;
+            else
+                return ColorPalette.BLUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return run.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            String l = run.getDisplayName();
+            if (run instanceof Build) {
+                String s = ((Build) run).getBuiltOnStr();
+                if (s != null)
+                    l += ' ' + s;
+            }
+            return l;
+        }
+    }
+
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "category dataset is only relevant for coloring, not equality")
+    private static class ChartLabelStackedAreaRenderer2 extends StackedAreaRenderer2 {
+        private final CategoryDataset categoryDataset;
+
+        ChartLabelStackedAreaRenderer2(CategoryDataset categoryDataset) {
+            this.categoryDataset = categoryDataset;
+        }
+
+        @Override
+        public Paint getItemPaint(int row, int column) {
+            ChartLabel key = (ChartLabel) categoryDataset.getColumnKey(column);
+            return key.getColor();
+        }
+
+        @Override
+        public String generateURL(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return String.valueOf(label.run.number);
+        }
+
+        @Override
+        public String generateToolTip(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return label.run.getDisplayName() + " : " + label.run.getDurationString();
+        }
+    }
+
     public Graph getBuildTimeGraph() {
-        return new Graph(getLastBuildTime(),500,400) {
+        return new Graph(getLastBuildTime(), 500, 400) {
             @Override
             protected JFreeChart createGraph() {
-                class ChartLabel implements Comparable<ChartLabel> {
-                    final Run run;
-
-                    ChartLabel(Run r) {
-                        this.run = r;
-                    }
-
-                    @Override
-                    public int compareTo(ChartLabel that) {
-                        return this.run.number - that.run.number;
-                    }
-
-                    @Override
-                    public boolean equals(Object o) {
-                        // JENKINS-2682 workaround for Eclipse compilation bug
-                        // on (c instanceof ChartLabel)
-                        if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
-                            return false;
-                        }
-                        ChartLabel that = (ChartLabel) o;
-                        return run == that.run;
-                    }
-
-                    public Color getColor() {
-                        // TODO: consider gradation. See
-                        // http://www.javadrive.jp/java2d/shape/index9.html
-                        Result r = run.getResult();
-                        if (r == Result.FAILURE)
-                            return ColorPalette.RED;
-                        else if (r == Result.UNSTABLE)
-                            return ColorPalette.YELLOW;
-                        else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                            return ColorPalette.GREY;
-                        else
-                            return ColorPalette.BLUE;
-                    }
-
-                    @Override
-                    public int hashCode() {
-                        return run.hashCode();
-                    }
-
-                    @Override
-                    public String toString() {
-                        String l = run.getDisplayName();
-                        if (run instanceof Build) {
-                            String s = ((Build) run).getBuiltOnStr();
-                            if (s != null)
-                                l += ' ' + s;
-                        }
-                        return l;
-                    }
-
-                }
-
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<>();
                 for (Run r : getNewBuilds()) {
                     if (r.isBuilding())
@@ -1513,28 +1537,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 ChartUtil.adjustChebyshev(dataset, rangeAxis);
                 rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-                StackedAreaRenderer ar = new StackedAreaRenderer2() {
-                    @Override
-                    public Paint getItemPaint(int row, int column) {
-                        ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
-                        return key.getColor();
-                    }
-
-                    @Override
-                    public String generateURL(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return String.valueOf(label.run.number);
-                    }
-
-                    @Override
-                    public String generateToolTip(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return label.run.getDisplayName() + " : "
-                                + label.run.getDurationString();
-                    }
-                };
+                StackedAreaRenderer ar = new ChartLabelStackedAreaRenderer2(dataset);
                 plot.setRenderer(ar);
 
                 // crop extra space around the graph

@@ -25,17 +25,13 @@ package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.util.CopyOnWriteList;
-import hudson.util.HttpResponses;
-import java.util.Objects;
-import jenkins.util.MemoryReductionUtil;
-import jenkins.model.Jenkins;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
@@ -45,6 +41,8 @@ import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
+import hudson.util.CopyOnWriteList;
+import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import java.io.File;
@@ -61,6 +59,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -70,9 +69,10 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -99,14 +99,14 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     /**
      * No longer used.
      *
      * @deprecated use {@link #getLoggers()}
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
@@ -169,7 +169,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
             String longerPrefix = null;
             for (int i = loggerNameParts.length; i > 0; i--) {
-                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i), ".");
+                String loggerNamePrefix = String.join(".", Arrays.copyOf(loggerNameParts, i));
                 seenPrefixes.put(loggerNamePrefix, seenPrefixes.getOrDefault(loggerNamePrefix, 0) + 1);
                 if (longerPrefix == null) {
                     relevantPrefixes.add(loggerNamePrefix); // actual logger name
@@ -294,6 +294,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return rest.startsWith(".") || rest.length()==0;
         }
 
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
             if (name.length() == 0) {

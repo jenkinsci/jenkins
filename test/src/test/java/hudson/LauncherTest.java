@@ -87,18 +87,18 @@ public class LauncherTest {
         ;
         project.getBuildersList().add(script);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("aaa aaaccc ccc", build);
     }
-    
+
     @Issue("JENKINS-19926")
     @Test
     public void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
         Slave slave = rule.createSlave(new EnvVars(env));
-        
+
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
         final CommandInterpreter script = Functions.isWindows()
@@ -108,7 +108,7 @@ public class LauncherTest {
         project.getBuildersList().add(script);
         project.setAssignedNode(slave.getComputer().getNode());
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("original value and new value", build);
     }

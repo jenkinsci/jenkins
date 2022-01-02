@@ -23,7 +23,9 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import java.util.Objects;
@@ -47,24 +49,24 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      * @since 2.281
      */
     @DataBoundConstructor
-    public StringParameterDefinition(String name) {
+    public StringParameterDefinition(@NonNull String name) {
         super(name);
     }
 
-    public StringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description, boolean trim) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);
         setTrim(trim);
     }
 
-    public StringParameterDefinition(String name, String defaultValue, String description) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         this(name);
         setDefaultValue(defaultValue);
         setDescription(description);
     }
     
-    public StringParameterDefinition(String name, String defaultValue) {
+    public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue) {
         this(name);
         setDefaultValue(defaultValue);
     }
@@ -79,6 +81,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
+    @NonNull
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -96,7 +99,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     @DataBoundSetter
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(@CheckForNull String defaultValue) {
         this.defaultValue = Util.fixEmpty(defaultValue);
     }
 
@@ -145,7 +148,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
-        if (isTrim() && value!=null) {
+        if (isTrim()) {
             value.doTrim();
         }
         value.setDescription(getDescription());
@@ -170,6 +173,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (StringParameterDefinition.class != getClass())
             return super.equals(obj);

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import jenkins.model.PeepholePermalink;
@@ -136,6 +137,7 @@ public interface PermalinkProjectAction extends Action {
                 return "lastSuccessfulBuild";
             }
 
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
             @Override
             public boolean apply(Run<?, ?> run) {
                 return !run.isBuilding() && run.getResult().isBetterOrEqualTo(Result.UNSTABLE);

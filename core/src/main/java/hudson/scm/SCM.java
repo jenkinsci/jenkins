@@ -52,8 +52,10 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -388,8 +390,23 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
-    public PollingResult compareRemoteRevisionWith(@NonNull Job<?,?> project, @Nullable Launcher launcher, @Nullable FilePath workspace, @NonNull TaskListener listener, @NonNull SCMRevisionState baseline) throws IOException, InterruptedException {
-        if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
+    public PollingResult compareRemoteRevisionWith(
+            @NonNull Job<?, ?> project,
+            @Nullable Launcher launcher,
+            @Nullable FilePath workspace,
+            @NonNull TaskListener listener,
+            @NonNull SCMRevisionState baseline)
+            throws IOException, InterruptedException {
+        if (project instanceof AbstractProject
+                && Util.isOverridden(
+                        SCM.class,
+                        getClass(),
+                        "compareRemoteRevisionWith",
+                        AbstractProject.class,
+                        Launcher.class,
+                        FilePath.class,
+                        TaskListener.class,
+                        SCMRevisionState.class)) {
             return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
         } else {
             throw new AbstractMethodError("you must override the new overload of compareRemoteRevisionWith");
@@ -478,8 +495,25 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws AbortException in case of a routine failure
      * @since 1.568
      */
-    public void checkout(@NonNull Run<?,?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
-        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
+    public void checkout(
+            @NonNull Run<?, ?> build,
+            @NonNull Launcher launcher,
+            @NonNull FilePath workspace,
+            @NonNull TaskListener listener,
+            @CheckForNull File changelogFile,
+            @CheckForNull SCMRevisionState baseline)
+            throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild
+                && listener instanceof BuildListener
+                && Util.isOverridden(
+                        SCM.class,
+                        getClass(),
+                        "checkout",
+                        AbstractBuild.class,
+                        Launcher.class,
+                        FilePath.class,
+                        BuildListener.class,
+                        File.class)) {
             if (changelogFile == null) {
                 changelogFile = File.createTempFile("changelog", ".xml");
                 try {
@@ -707,7 +741,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.568
      */
     protected final void createEmptyChangeLog(@NonNull File changelogFile, @NonNull TaskListener listener, @NonNull String rootTag) throws IOException {
-        try (FileWriter w = new FileWriter(changelogFile)) {
+        try (Writer w = Files.newBufferedWriter(Util.fileToPath(changelogFile), Charset.defaultCharset())) {
             w.write("<"+rootTag +"/>");
         }
     }

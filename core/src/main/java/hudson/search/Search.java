@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -133,7 +133,7 @@ public class Search implements StaplerProxy {
      *
      * @return
      *      can be empty but never null. The size of the list is always smaller than
-     *      a certain threshold to avoid showing too many options. 
+     *      a certain threshold to avoid showing too many options.
      */
     public SearchResult getSuggestions(StaplerRequest req, String query) {
         Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
@@ -195,6 +195,7 @@ public class Search implements StaplerProxy {
     @ExportedBean(defaultVisibility=999)
     public static class Item {
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
         public Item(String name) {
@@ -224,7 +225,7 @@ public class Search implements StaplerProxy {
      * When there are multiple suggested items, this method can narrow down the resultset
      * to the SuggestedItem that has a url that contains the query. This is useful is one
      * job has a display name that matches another job's project name.
-     * @param r A list of Suggested items. It is assumed that there is at least one 
+     * @param r A list of Suggested items. It is assumed that there is at least one
      * SuggestedItem in r.
      * @param query A query string
      * @return Returns the SuggestedItem which has a search url that contains the query.
@@ -240,12 +241,12 @@ public class Search implements StaplerProxy {
                 return curItem;
             }
         }
-        
+
         // couldn't find an item with the query in the url so just
         // return the first one
-        return r.get(0);        
+        return r.get(0);
     }
-    
+
     /**
      * @deprecated Use {@link Search#find(SearchIndex, String, SearchableModelObject)} instead.
      */
@@ -253,7 +254,7 @@ public class Search implements StaplerProxy {
     public static SuggestedItem find(SearchIndex index, String query) {
         return find(index, query, null);
     }
-    
+
     /**
      * Performs a search and returns the match, or null if no match was found
      * or more than one match was found.
@@ -261,7 +262,7 @@ public class Search implements StaplerProxy {
      */
     public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
         List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
-        if(r.isEmpty()){ 
+        if(r.isEmpty()){
             return null;
         }
         else if(1==r.size()){
@@ -272,11 +273,11 @@ public class Search implements StaplerProxy {
             // contains the query as this is probably the job's name
             return findClosestSuggestedItem(r, query);
         }
-                    
+
     }
 
     /**
-     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead. 
+     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead.
      */
     @Deprecated
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList) {
@@ -352,8 +353,8 @@ public class Search implements StaplerProxy {
                 }
             };
         }
-        
-        
+
+
         @Override
         public String toString() {
             StringBuilder s = new StringBuilder("TokenList{");
@@ -362,7 +363,7 @@ public class Search implements StaplerProxy {
                 s.append(",");
             }
             s.append('}');
-            
+
             return s.toString();
         }
     }
@@ -378,7 +379,7 @@ public class Search implements StaplerProxy {
         List<SearchItem> items = new ArrayList<>(); // items found in 1 step
 
         LOGGER.log(Level.FINE, "tokens={0}", tokens);
-        
+
         // first token
         int w=1;    // width of token
         for (String token : tokens.subSequence(0)) {
@@ -422,7 +423,7 @@ public class Search implements StaplerProxy {
     /**
      * Escape hatch for StaplerProxy-based access control
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 

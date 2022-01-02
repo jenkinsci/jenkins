@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2011, CloudBees, Inc.
+Copyright (c) 2011 - 2022, CloudBees, Inc., Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- 3rd party license acknowledgements and  -->
+<!-- Third party license acknowledgements page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <d:taglib uri="licenses">
@@ -55,7 +55,7 @@ THE SOFTWARE.
     </d:tag>
     <d:tag name="description"/>
     <d:tag name="license">
-      <a href="${attrs.url}" rel="noopener noreferrer" target="_blank">${attrs.name}</a><br/>
+      <a href="${attrs.url}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">${attrs.name}</a><br/>
     </d:tag>
   </d:taglib>
   <d:invokeBody/>

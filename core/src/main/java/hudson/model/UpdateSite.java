@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe,
  *                          Andrew Bayer
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,6 +35,7 @@ import static jenkins.util.MemoryReductionUtil.internInPlace;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -218,7 +219,7 @@ public class UpdateSite {
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
-    
+
     private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
@@ -289,7 +290,7 @@ public class UpdateSite {
 
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
-     * @param name, the name for the JSON signature Validator object.
+     * @param name the name for the JSON signature Validator object.
      *              if name is null, then the default name will be used,
      *              which is "update site" followed by the update site id
      * @return the signature validator.
@@ -313,7 +314,7 @@ public class UpdateSite {
         long now = System.currentTimeMillis();
 
         retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
-        
+
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
         if(due) {
             lastAttempt = now;
@@ -372,7 +373,11 @@ public class UpdateSite {
                 return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
+                try {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                } catch (IOException e2) {
+                    LOGGER.log(Level.SEVERE, "Failed to delete " + df, e2);
+                }
                 return null;
             }
         } else {
@@ -442,7 +447,7 @@ public class UpdateSite {
         return new TextFile(new File(Jenkins.get().getRootDir(),
                                      "updates/" + getId()+".json"));
     }
-    
+
     /**
      * Returns the list of plugins that are updates to currently installed ones.
      *
@@ -453,16 +458,16 @@ public class UpdateSite {
     public List<Plugin> getUpdates() {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
-        
+
         List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
         }
-        
+
         return r;
     }
-    
+
     /**
      * Does any of the plugin has updates?
      */
@@ -470,17 +475,17 @@ public class UpdateSite {
     public boolean hasUpdates() {
         Data data = getData();
         if(data==null)      return false;
-        
+
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
-                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
+                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins.
                 return true;
         }
         return false;
     }
-    
-    
+
+
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
      * in JavaScript.
@@ -493,7 +498,7 @@ public class UpdateSite {
 
     /**
      * URL which exposes the metadata location in a specific update site.
-     * @param downloadable, the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
+     * @param downloadable the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
      * @return the location
      * @since 2.20
      */
@@ -697,6 +702,10 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+        /**
+         * Size of the file in bytes, or {@code null} if unknown.
+         */
+        private final Long size;
 
         // non-private, non-final for test
         @Restricted(NoExternalUse.class)
@@ -722,6 +731,12 @@ public class UpdateSite {
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
             this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
             this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
+
+            Long fileSize = null;
+            if (o.has("size")) {
+                fileSize = o.getLong("size");
+            }
+            this.size = fileSize;
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -783,6 +798,17 @@ public class UpdateSite {
             return new Api(this);
         }
 
+        /**
+         * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
+         * @return size of the file if known, {@code null} otherwise.
+         *
+         * @since TODO
+         */
+        // @Exported -- TODO unsure
+        @Restricted(NoExternalUse.class)
+        public Long getFileSize() {
+            return size;
+        }
     }
 
     /**
@@ -1052,6 +1078,42 @@ public class UpdateSite {
     static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get((JSONObject) x, "name") != null;
     static final Predicate<Object> IS_NOT_OPTIONAL = x -> "false".equals(get((JSONObject) x, "optional"));
 
+    /**
+     * Metadata for one issue tracker provided by the update site.
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class IssueTracker {
+        /**
+         * A string specifying the type of issue tracker.
+         */
+        public final String type;
+        /**
+         * Issue tracker URL that can be used to view previously reported issues.
+         */
+        public final String viewUrl;
+        /**
+         * Issue tracker URL that can be used to report a new issue.
+         */
+        @CheckForNull
+        public final String reportUrl;
+
+        public IssueTracker(@NonNull String type, @NonNull String viewUrl, @CheckForNull String reportUrl) {
+            this.type = type;
+            this.viewUrl = viewUrl;
+            this.reportUrl = reportUrl;
+        }
+
+        private static IssueTracker createFromJSONObject(Object o) {
+            if (o instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) o;
+                if (jsonObject.has("type") && jsonObject.has("viewUrl") && jsonObject.has("reportUrl")) {
+                    return new IssueTracker(jsonObject.getString("type"), jsonObject.getString("viewUrl"), jsonObject.getString("reportUrl"));
+                }
+            }
+            return null;
+        }
+    }
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -1102,7 +1164,7 @@ public class UpdateSite {
          */
         @Exported
         public final Map<String,String> dependencies;
-        
+
         /**
          * Optional dependencies of this plugin.
          */
@@ -1136,6 +1198,15 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public String latest;
 
+        /**
+         * Issue trackers associated with this plugin.
+         * This list is sorted by preference in descending order, meaning a UI
+         * supporting only one issue tracker should reference the first one
+         * supporting the desired behavior (like having a {@code reportUrl}).
+         */
+        @Restricted(NoExternalUse.class)
+        public IssueTracker[] issueTrackers;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1151,7 +1222,7 @@ public class UpdateSite {
             if (releaseTimestamp != null) {
                 try {
                     date = Date.from(Instant.parse(releaseTimestamp));
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
                 }
             }
@@ -1167,6 +1238,8 @@ public class UpdateSite {
             this.popularity = popularity;
             this.releaseTimestamp = date;
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            this.issueTrackers = o.has("issueTrackers") ? o.getJSONArray("issueTrackers").stream().map(IssueTracker::createFromJSONObject).filter(Objects::nonNull).toArray(IssueTracker[]::new) : null;
+
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count();
             int optionalDepCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();
@@ -1651,6 +1724,7 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

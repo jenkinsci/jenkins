@@ -105,14 +105,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRealm implements ModelObject, AccessControlled {
     private static /* not final */ String ID_REGEX = System.getProperty(HudsonPrivateSecurityRealm.class.getName() + ".ID_REGEX");
-    
+
     /**
      * Default REGEX for the user ID check in case the ID_REGEX is not set
      * It allows A-Za-z0-9 + "_-"
      * in Java {@code \w} is equivalent to {@code [A-Za-z0-9_]} (take care of "_")
      */
     private static final String DEFAULT_ID_REGEX = "^[\\w-]+$";
-    
+
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -268,7 +268,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Lets the current user silently login as the given user and report back accordingly.
      */
-    @SuppressWarnings("ACL.impersonate")
     private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session != null) {
@@ -276,7 +275,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             session.invalidate();
         }
         req.getSession(true);
-        
+
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
         a = this.getSecurityComponents().manager2.authenticate(a);
@@ -401,6 +400,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
      * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
+    @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", justification = "written to by Stapler")
     private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
@@ -586,6 +586,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display a general error message, set it here.
          *
          */
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String errorMessage;
 
         /**

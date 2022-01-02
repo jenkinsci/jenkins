@@ -26,7 +26,6 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +53,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
@@ -752,6 +750,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * list of {@link Path} represents one child item to be shown
      * (this mechanism is used to skip empty intermediate directory.)
      */
+    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
             List<List<Path>> r = new ArrayList<>();
 

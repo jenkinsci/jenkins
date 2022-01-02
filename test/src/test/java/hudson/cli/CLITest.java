@@ -46,7 +46,6 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +74,7 @@ public class CLITest {
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
-    
+
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
@@ -97,7 +96,7 @@ public class CLITest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         FreeStyleProject p = r.createFreeStyleProject("p");
-        p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         doInterrupt(p, "-http", "-auth", "admin:admin");
         doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }
@@ -171,7 +170,7 @@ public class CLITest {
         JenkinsRule.WebClient wc = r.createWebClient()
                 .withRedirectEnabled(false)
                 .withThrowExceptionOnFailingStatusCode(false);
-        
+
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));

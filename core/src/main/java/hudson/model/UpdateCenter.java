@@ -68,8 +68,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -139,13 +142,13 @@ import org.springframework.security.core.Authentication;
  * <p>
  * <b>Extending Update Centers</b>. The update center in {@code Jenkins} can be replaced by defining a
  * System Property ({@code hudson.model.UpdateCenter.className}). See {@link #createUpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
- * This className should be available on early startup, so it cannot come only from a library 
+ * This className should be available on early startup, so it cannot come only from a library
  * (e.g. Jenkins module or Extra library dependency in the WAR file project).
  * Plugins cannot be used for such purpose.
- * In order to be correctly instantiated, the class definition must have two constructors: 
+ * In order to be correctly instantiated, the class definition must have two constructors:
  * {@link #UpdateCenter()} and {@link #UpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
  * If the class does not comply with the requirements, a fallback to the default UpdateCenter will be performed.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
@@ -265,7 +268,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     UpdateCenter(@NonNull UpdateCenterConfiguration configuration) {
         configure(configuration);
     }
-    
+
     /**
      * Creates an update center.
      * @param config Requested configuration. May be {@code null} if defaults should be used
@@ -280,7 +283,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             LOGGER.log(Level.FINE, "Using the default Update Center implementation");
             return createDefaultUpdateCenter(config);
         }
-        
+
         LOGGER.log(Level.FINE, "Using the custom update center: {0}", requiredClassName);
         try {
             final Class<?> clazz = Class.forName(requiredClassName).asSubclass(UpdateCenter.class);
@@ -305,7 +308,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         return createDefaultUpdateCenter(config);
     }
-    
+
     @NonNull
     private static UpdateCenter createDefaultUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         return config != null ? new UpdateCenter(config) : new UpdateCenter();
@@ -443,7 +446,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 jobs = Collections.emptyMap();
             }
             return HttpResponses.okJSON(jobs);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -513,7 +516,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             return HttpResponses.okJSON(JSONObject.fromObject(response));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
@@ -692,9 +695,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private boolean checkMinVersion(@CheckForNull Plugin p, @CheckForNull VersionNumber minVersion) {
         return p != null
                 && (minVersion == null || !minVersion.isNewerThan(new VersionNumber(p.version)));
-	}
+    }
 
-	/**
+    /**
      * Schedules a Jenkins upgrade.
      */
     @RequirePOST
@@ -997,6 +1000,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
      * A plugin with multiple categories will appear multiple times in the list.
+     * @deprecated use {@link #getAvailables()}
      */
     @Deprecated
     public PluginEntry[] getCategorizedAvailables() {
@@ -1237,6 +1241,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if there were problems downloading the resource.
          * @see DownloadJob
          */
+        @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available")
         public File download(DownloadJob job, URL src) throws IOException {
             MessageDigest sha1 = null;
             MessageDigest sha256 = null;
@@ -1257,8 +1262,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // particularly noticeable during 2.0 install when downloading
                 // many plugins
                 con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
-                
-                int total = con.getContentLength();
+
+                long total;
+                final long sizeFromMetadata = job.getContentLength();
+                if (sizeFromMetadata == -1) {
+                    // Update site does not advertise a file size, so fall back to download file size, if any
+                    total = con.getContentLength();
+                } else {
+                    total = sizeFromMetadata;
+                }
                 byte[] buf = new byte[8192];
                 int len;
 
@@ -1278,7 +1290,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                      CountingInputStream cin = new CountingInputStream(in)) {
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf,0,len);
-                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
+                        final int count = cin.getCount();
+                        job.status = job.new Installing(total == -1 ? -1 : ((int) (count * 100 / total)));
+                        if (total != -1 && total < count) {
+                            throw new IOException("Received more data than expected. Expected " + total + " bytes but got " + count + " bytes (so far), aborting download.");
+                        }
                     }
                 } catch (IOException | InvalidPathException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
@@ -1370,11 +1386,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Returns the URL of the server that hosts the update-center.json
          * file.
          *
+         * @return
+         *      Absolute URL that ends with '/'.
          * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now moved to {@link UpdateSite}.
-         * @return
-         *      Absolute URL that ends with '/'.
          */
         @Deprecated
         public String getUpdateCenterUrl() {
@@ -1647,7 +1663,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 addStatus(e);
                 error = e;
             }
-            
+
             if(internetCheck != null) {
                 try {
                     // Wait for internet check to complete
@@ -1670,7 +1686,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
 
     }
-    
+
     /**
      * Enables a required plugin, provides feedback in the update center
      */
@@ -1678,11 +1694,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public EnableJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin, boolean dynamicLoad) {
             super(plugin, site, auth, dynamicLoad);
         }
-        
+
         public Plugin getPlugin() {
             return plugin;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -1696,7 +1712,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             error = e;
                             status = new DownloadJob.Failure(e);
                         }
-                        
+
                         if (dynamicLoad) {
                             try {
                                 // remove the existing, disabled inactive plugin to force a new one to load
@@ -1723,7 +1739,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
     }
-    
+
     /**
      * A no-op, e.g. this plugin is already installed
      */
@@ -1744,7 +1760,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         String getComputedSHA256();
         String getComputedSHA512();
     }
-    
+
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
@@ -1879,14 +1895,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Called when the download is completed to overwrite
          * the old file with the new file.
          */
-        protected void replace(File dst, File src) throws IOException {
+        protected synchronized void replace(File dst, File src) throws IOException {
             File bak = Util.changeExtension(dst,".bak");
-            bak.delete();
-            dst.renameTo(bak);
-            dst.delete(); // any failure up to here is no big deal
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
-            }
+            moveAtomically(dst, bak);
+            moveAtomically(src, dst);
+        }
+
+        /**
+         * Indicate the expected size of the download as provided in update site
+         * metadata.
+         *
+         * @return the expected size, or -1 if unknown.
+         * @since TODO
+         */
+        public long getContentLength() {
+            return -1;
         }
 
         /**
@@ -2003,11 +2026,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         if (caseSensitive) {
-            if (MessageDigest.isEqual(expectedDigest.getBytes(), actualDigest.getBytes())) {
+            if (MessageDigest.isEqual(expectedDigest.getBytes(StandardCharsets.US_ASCII), actualDigest.getBytes(StandardCharsets.US_ASCII))) {
                 return VerificationResult.PASS;
             }
         } else {
-            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(), actualDigest.toLowerCase().getBytes())) {
+            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(StandardCharsets.US_ASCII), actualDigest.toLowerCase().getBytes(StandardCharsets.US_ASCII))) {
                 return VerificationResult.PASS;
             }
         }
@@ -2085,6 +2108,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:
                 throw new IOException("Unable to confirm integrity of downloaded file, refusing installation");
+            default:
+                throw new AssertionError("Unknown verification result: " + result1);
         }
     }
 
@@ -2153,6 +2178,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public String getDisplayName() {
             return plugin.getDisplayName();
+        }
+
+        @Override
+        public long getContentLength() {
+            final Long size = plugin.getFileSize();
+            return size == null ? -1 : size;
         }
 
         @Override
@@ -2254,23 +2285,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 verifyChecksums(this, plugin, src);
             }
 
-            File bak = Util.changeExtension(dst, ".bak");
-            bak.delete();
+            synchronized (this) {
+                File bak = Util.changeExtension(dst, ".bak");
 
-            final File legacy = getLegacyDestination();
-            if (legacy.exists()) {
-                if (!legacy.renameTo(bak)) {
-                    legacy.delete();
+                final File legacy = getLegacyDestination();
+                if (Files.exists(Util.fileToPath(legacy))) {
+                    moveAtomically(legacy, bak);
                 }
-            }
-            if (dst.exists()) {
-                if (!dst.renameTo(bak)) {
-                    dst.delete();
+                if (Files.exists(Util.fileToPath(dst))) {
+                    moveAtomically(dst, bak);
                 }
-            }
 
-            if(!src.renameTo(dst)) {
-                throw new IOException("Failed to rename "+src+" to "+dst);
+                moveAtomically(src, dst);
             }
         }
 
@@ -2286,6 +2312,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final List<PluginWrapper> batch;
         private final long start;
         @Exported(inline = true)
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public volatile CompleteBatchJobStatus status = new CompleteBatchJob.Pending();
 
         public CompleteBatchJob(List<PluginWrapper> batch, long start, UUID correlationId) {
@@ -2415,11 +2442,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * current version with backup file
          */
         @Override
-        protected void replace(File dst, File backup) throws IOException {
-            dst.delete(); // any failure up to here is no big deal
-            if(!backup.renameTo(dst)) {
-                throw new IOException("Failed to rename "+backup+" to "+dst);
-            }
+        protected synchronized void replace(File dst, File backup) throws IOException {
+            moveAtomically(backup, dst);
         }
 
         @Override
@@ -2649,7 +2673,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
 
 
@@ -2670,5 +2694,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     static {
         XSTREAM.alias("site",UpdateSite.class);
         XSTREAM.alias("sites",PersistedList.class);
+    }
+
+    private static void moveAtomically(File src, File target) throws IOException {
+        try {
+            Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            LOGGER.log(Level.WARNING, "Atomic move not supported. Falling back to non-atomic move.", e);
+            try {
+                Files.move(Util.fileToPath(src), Util.fileToPath(target), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                e2.addSuppressed(e);
+                throw e2;
+            }
+        }
     }
 }

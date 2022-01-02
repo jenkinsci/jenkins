@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot, id:cactusman
  *               2015 Kanstantsin Shautsou
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,14 +96,14 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * You can add UI elements under the SCM section by creating a
  * config.jelly or config.groovy in the resources area for
- * your class that inherits from SCMTrigger and has the 
- * {@link Extension} annotation. The UI should 
+ * your class that inherits from SCMTrigger and has the
+ * {@link Extension} annotation. The UI should
  * be wrapped in an f:section element to denote it.
  *
  * @author Kohsuke Kawaguchi
  */
 public class SCMTrigger extends Trigger<Item> {
-    
+
     private boolean ignorePostCommitHooks;
 
     @DataBoundConstructor
@@ -130,7 +131,7 @@ public class SCMTrigger extends Trigger<Item> {
      * This trigger wants to ignore post-commit hooks.
      * <p>
      * SCM plugins must respect this and not run this trigger for post-commit notifications.
-     * 
+     *
      * @since 1.493
      */
     public boolean isIgnorePostCommitHooks() {
@@ -166,7 +167,7 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
      * to trigger a build at a specific revision number.
-     * 
+     *
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
@@ -178,14 +179,14 @@ public class SCMTrigger extends Trigger<Item> {
 
         LOGGER.fine("Scheduling a polling for "+job);
         if (d.synchronousPolling) {
-        	LOGGER.fine("Running the trigger directly without threading, " +
-        			"as it's already taken care of by Trigger.Cron");
+            LOGGER.fine("Running the trigger directly without threading, " +
+                    "as it's already taken care of by Trigger.Cron");
             new Runner(additionalActions).run();
         } else {
             // schedule the polling.
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
-        	LOGGER.fine("scheduling the trigger to (asynchronously) run");
+            LOGGER.fine("scheduling the trigger to (asynchronously) run");
             d.queue.execute(new Runner(additionalActions));
             d.clogCheck();
         }
@@ -209,7 +210,7 @@ public class SCMTrigger extends Trigger<Item> {
      * Returns the file that records the last/current polling activity.
      */
     public File getLogFile() {
-        return new File(job.getRootDir(),"scm-polling.log");
+        return new File(Objects.requireNonNull(job).getRootDir(),"scm-polling.log");
     }
 
     @Extension @Symbol("pollSCM")
@@ -415,6 +416,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class BuildAction implements RunAction2 {
         private transient /*final*/ Run<?,?> run;
         @Deprecated
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "for backward compatibility")
         public transient /*final*/ AbstractBuild build;
 
         /**
@@ -424,7 +426,7 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = run;
             build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
-        
+
         @Deprecated
         public BuildAction(AbstractBuild build) {
             this((Run) build);
@@ -474,10 +476,11 @@ public class SCMTrigger extends Trigger<Item> {
         public AnnotatedLargeText getPollingLogText() {
             return new AnnotatedLargeText<>(getPollingLogFile(), Charset.defaultCharset(), true, this);
         }
-        
+
         /**
          * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support
             getPollingLogText().writeHtmlTo(offset, out.asWriter());
@@ -536,6 +539,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Writes the annotated log to the given output.
          * @since 1.350
          */
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
         public void writeLogTo(XMLOutput out) throws IOException {
             new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), true, this).writeHtmlTo(0,out.asWriter());
         }
@@ -558,12 +562,9 @@ public class SCMTrigger extends Trigger<Item> {
         public Runner() {
             this(null);
         }
-        
-        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
+
         public Runner(Action[] actions) {
-            if (job == null) {
-                throw new NullPointerException("Runner can't be instantiated when job is null");
-            }
+            Objects.requireNonNull(job, "Runner can't be instantiated when job is null");
 
             if (actions == null) {
                 additionalActions = new Action[0];
@@ -571,7 +572,7 @@ public class SCMTrigger extends Trigger<Item> {
                 additionalActions = Arrays.copyOf(actions, actions.length);
             }
         }
-        
+
         /**
          * Where the log file is written.
          */
@@ -691,7 +692,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Override
         public int hashCode() {
-            return job.hashCode();
+            return Objects.requireNonNull(job).hashCode();
         }
     }
 
@@ -768,6 +769,6 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit.HOURS.toMillis(1));
 }

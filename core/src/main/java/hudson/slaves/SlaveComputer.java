@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -85,6 +86,7 @@ import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpAgentReceiver;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 import org.kohsuke.accmod.Restricted;
@@ -215,19 +217,20 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@link TaskListener} for this SlaveComputer. Never null
+     * Offers a way to write to the log file for this agent.
      * @since 2.9
      */
+    @NonNull
     public TaskListener getListener() {
         return taskListener;
     }
 
     @Override
-    public String getIcon() {
+    public String getIconClassName() {
         Future<?> l = lastConnectActivity;
         if(l!=null && !l.isDone())
-            return "computer-flash.gif";
-        return super.getIcon();
+            return "icon-computer-flash";
+        return super.getIconClassName();
     }
 
     /**
@@ -304,7 +307,7 @@ public class SlaveComputer extends Computer {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
@@ -895,8 +898,7 @@ public class SlaveComputer extends Computer {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
-            for (ComputerListener cl : ComputerListener.all())
-                cl.onOffline(this, offlineCause);
+            Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));
         }
     }
 
@@ -1046,6 +1048,7 @@ public class SlaveComputer extends Computer {
         }
 
         @Override
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for the reason explained in the Javadoc for LogHolder")
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 

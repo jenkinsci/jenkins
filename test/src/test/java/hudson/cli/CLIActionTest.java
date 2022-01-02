@@ -78,7 +78,7 @@ public class CLIActionTest {
     @Test
     public void authentication() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);

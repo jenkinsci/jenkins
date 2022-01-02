@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.util.EnumConverter;
 import hudson.util.RunList;
@@ -67,7 +70,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @since 1.517
      */
     @DataBoundConstructor
-    public RunParameterDefinition(String name, String projectName, String description, RunParameterFilter filter) {
+    public RunParameterDefinition(@NonNull String name, String projectName, @CheckForNull String description, @CheckForNull RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = null;
@@ -78,12 +81,12 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @deprecated as of 1.517
      */ 
     @Deprecated
-    public RunParameterDefinition(String name, String projectName, String description) {
+    public RunParameterDefinition(@NonNull String name, String projectName, @CheckForNull String description) {
     	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
     	this(name, projectName, description, RunParameterFilter.ALL);
     }
 
-    private RunParameterDefinition(String name, String projectName, String runId, String description, RunParameterFilter filter) {
+    private RunParameterDefinition(@NonNull String name, String projectName, String runId, @CheckForNull String description, @CheckForNull RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = runId;
@@ -217,6 +220,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (RunParameterDefinition.class != getClass())
             return super.equals(obj);

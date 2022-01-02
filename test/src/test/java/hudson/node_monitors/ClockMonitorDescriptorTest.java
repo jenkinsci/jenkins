@@ -16,10 +16,10 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Richard Mortimer
  */
 public class ClockMonitorDescriptorTest {
-    
+
     @Rule
     public JenkinsRule jenkins = new  JenkinsRule();
-    
+
     /**
      * Makes sure that it returns sensible values.
      */

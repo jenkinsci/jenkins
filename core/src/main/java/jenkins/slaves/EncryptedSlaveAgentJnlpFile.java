@@ -39,6 +39,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
 
     private static final Logger LOG = Logger.getLogger(EncryptedSlaveAgentJnlpFile.class.getName());
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * The object that owns the Jelly view that renders JNLP file.
@@ -84,7 +85,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             view.forward(req, temp);
 
             byte[] iv = new byte[128/8];
-            new SecureRandom().nextBytes(iv);
+            RANDOM.nextBytes(iv);
 
             byte[] jnlpMac;
             if(it instanceof SlaveComputer) {

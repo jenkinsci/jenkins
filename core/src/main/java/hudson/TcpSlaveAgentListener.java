@@ -57,7 +57,6 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -135,7 +134,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         try {
             return new URL(Jenkins.get().getRootUrl()).getHost();
-        } catch (MalformedURLException | NullPointerException e) {
+        } catch (MalformedURLException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
         }
     }
@@ -159,7 +158,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
+        return String.join(", ", Jenkins.get().getAgentProtocols());
     }
 
     /**
@@ -429,7 +428,7 @@ public final class TcpSlaveAgentListener extends Thread {
                                     new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?
                                         new String(response, 0, responseLength, StandardCharsets.UTF_8) :
-                                        "bad response length " + responseLength
+                                        "bad response length " + responseLength,
                             });
                             return false;
                         }

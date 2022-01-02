@@ -32,6 +32,7 @@ import hudson.Functions;
 import hudson.RestrictedSince;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
+import hudson.model.Failure;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
 import java.io.File;
@@ -39,12 +40,14 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -170,8 +173,11 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * Configure the logging level.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     @RequirePOST
+    @SuppressFBWarnings(
+            value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE",
+            justification =
+                    "if the logger is known, then we have a reference to it in LogRecorder#loggers")
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Level lv;
@@ -179,8 +185,14 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             lv = null;
         else
             lv = Level.parse(level.toUpperCase(Locale.ENGLISH));
-        Logger.getLogger(name).setLevel(lv);
-        return new HttpRedirect("levels");
+        Logger target;
+        if (Collections.list(LogManager.getLogManager().getLoggerNames()).contains(name)
+                && (target = Logger.getLogger(name)) != null) {
+            target.setLevel(lv);
+            return new HttpRedirect("levels");
+        } else {
+            throw new Failure(Messages.LogRecorderManager_LoggerNotFound(name));
+        }
     }
 
     /**
@@ -261,6 +273,6 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(LogRecorderManager.class.getName() + ".skipPermissionCheck");
 }

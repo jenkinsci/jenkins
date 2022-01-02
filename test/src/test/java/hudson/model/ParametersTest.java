@@ -46,7 +46,7 @@ public class ParametersTest {
     @Test
     public void parameterTypes() throws Exception {
         FreeStyleProject otherProject = j.createFreeStyleProject();
-        otherProject.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(otherProject);
 
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
@@ -93,9 +93,7 @@ public class ParametersTest {
         assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
@@ -123,13 +121,11 @@ public class ParametersTest {
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
         HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
-        assertEquals("Choice <2>", opt.asText());
+        assertEquals("Choice <2>", opt.asNormalizedText());
         opt.setSelected(true);
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
@@ -145,7 +141,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -162,7 +158,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -182,7 +178,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -205,9 +201,7 @@ public class ParametersTest {
         HtmlForm form = page.getFormByName("parameters");
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
@@ -231,6 +225,7 @@ public class ParametersTest {
         wc.setThrowExceptionOnFailingStatusCode(true);
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
+        j.waitUntilNoActivity();
     }
 
     @Issue("SECURITY-353")

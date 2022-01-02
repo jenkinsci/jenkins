@@ -63,7 +63,7 @@ import org.kohsuke.args4j.Argument;
 @Documented
 public @interface CLIMethod {
     /**
-     * CLI command name. Used as {@link CLICommand#getName()} 
+     * CLI command name. Used as {@link CLICommand#getName()}
      */
     String name();
 

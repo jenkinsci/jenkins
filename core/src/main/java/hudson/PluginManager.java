@@ -69,6 +69,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -77,6 +78,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,6 +90,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -107,6 +110,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import jenkins.ClassLoaderReflectionToolkit;
@@ -203,7 +207,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
             CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
-        } catch(Exception e) {
+        } catch(RuntimeException e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
             CHECK_UPDATE_ATTEMPTS = CHECK_UPDATE_ATTEMPTS > 0 ? CHECK_UPDATE_ATTEMPTS : 1;
@@ -215,7 +219,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @NonNull 
+            @NonNull
             PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
                                    @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
@@ -271,10 +275,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                 }
                 LOGGER.log(WARNING, String.format("Provided custom plugin manager [%s] does not provide any of the suitable constructors. Using default.", pmClassName));
-            } catch(NullPointerException e) {
-                // Class.forName and Class.getConstructor are supposed to never return null though a broken ClassLoader
-                // could break the contract. Just in case we introduce this specific catch to avoid polluting the logs with NPEs.
-                LOGGER.log(WARNING, String.format("Unable to instantiate custom plugin manager [%s]. Using default.", pmClassName));
             } catch(ClassCastException e) {
                 LOGGER.log(WARNING, String.format("Provided class [%s] does not extend PluginManager. Using default.", pmClassName));
             } catch(Exception e) {
@@ -351,12 +351,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     private final PluginStrategy strategy;
 
-    public PluginManager(ServletContext context, File rootDir) {
+    protected PluginManager(ServletContext context, File rootDir) {
         this.context = context;
 
         this.rootDir = rootDir;
-        if(!rootDir.exists())
-            rootDir.mkdirs();
+        try {
+            Util.createDirectories(rootDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         String workDir = SystemProperties.getString(PluginManager.class.getName()+".workDir");
         this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
@@ -541,11 +544,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -566,6 +571,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     failedPlugins.add(new FailedPlugin(p, e));
                                     activePlugins.remove(p);
                                     plugins.remove(p);
+                                    p.releaseClassLoader();
                                     throw e;
                                 }
                             }
@@ -647,7 +653,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
                 names.add(fileName);
-                copyBundledPlugin(url, fileName);
+                copyBundledPlugin(Objects.requireNonNull(url), fileName);
                 copiedPlugins.add(url);
                 try {
                     addDependencies(url, fromPath, dependencies);
@@ -854,6 +860,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Returns the manifest of a bundled but not-extracted plugin.
+     * @deprecated removed without replacement
      */
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public @CheckForNull Manifest getBundledPluginManifest(String shortName) {
@@ -909,9 +916,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             plugins.add(p);
             if (p.isActive())
                 activePlugins.add(p);
-            synchronized (((UberClassLoader) uberClassLoader).loaded) {
-                ((UberClassLoader) uberClassLoader).loaded.clear();
-            }
+            ((UberClassLoader) uberClassLoader).loaded.clear();
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
@@ -927,9 +932,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
             } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(sn, e));
+                failedPlugins.add(new FailedPlugin(p, e));
                 activePlugins.remove(p);
                 plugins.remove(p);
+                p.releaseClassLoader();
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
@@ -1056,7 +1062,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(getModificationDate(src));
+            Files.setLastModifiedTime(Util.fileToPath(file), FileTime.fromMillis(getModificationDate(src)));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -1084,7 +1090,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         return null;
     }
-    
+
     /**
      * Retrieves input stream for the Manifest url.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1097,11 +1103,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
-        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak
         if (uc instanceof JarURLConnection) {
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
-            
+
             try(JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
@@ -1115,16 +1121,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                url);
                 }
             }
-        } 
+        }
 
         // If input stream is undefined, use the default implementation
         if (in == null) {
             in = url.openStream();
         }
-        
+
         return in;
     }
-    
+
     /**
      * Retrieves modification date of the specified file.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1135,7 +1141,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @NonNull
     /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
-        
+
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
@@ -1154,7 +1160,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
         }
-        
+
         // Fallbak to the default implementation
         return uc.getLastModified();
     }
@@ -1177,31 +1183,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Creates a hudson.PluginStrategy, looking at the corresponding system property.
      */
     protected PluginStrategy createPluginStrategy() {
-		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
-		if (strategyName != null) {
-			try {
-				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
-				Object strategy = klazz.getConstructor(PluginManager.class)
-						.newInstance(this);
-				if (strategy instanceof PluginStrategy) {
-					LOGGER.info("Plugin strategy: " + strategyName);
-					return (PluginStrategy) strategy;
-				} else {
-					LOGGER.warning("Plugin strategy (" + strategyName +
-							") is not an instance of hudson.PluginStrategy");
-				}
-			} catch (ClassNotFoundException e) {
-				LOGGER.warning("Plugin strategy class not found: "
-						+ strategyName);
-			} catch (Exception e) {
-				LOGGER.log(WARNING, "Could not instantiate plugin strategy: "
-						+ strategyName + ". Falling back to ClassicPluginStrategy", e);
-			}
-			LOGGER.info("Falling back to ClassicPluginStrategy");
-		}
+        String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
+        if (strategyName != null) {
+            try {
+                Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
+                Object strategy = klazz.getConstructor(PluginManager.class)
+                        .newInstance(this);
+                if (strategy instanceof PluginStrategy) {
+                    LOGGER.info("Plugin strategy: " + strategyName);
+                    return (PluginStrategy) strategy;
+                } else {
+                    LOGGER.warning("Plugin strategy (" + strategyName +
+                            ") is not an instance of hudson.PluginStrategy");
+                }
+            } catch (ClassNotFoundException e) {
+                LOGGER.warning("Plugin strategy class not found: "
+                        + strategyName);
+            } catch (Exception e) {
+                LOGGER.log(WARNING, "Could not instantiate plugin strategy: "
+                        + strategyName + ". Falling back to ClassicPluginStrategy", e);
+            }
+            LOGGER.info("Falling back to ClassicPluginStrategy");
+        }
 
-		// default and fallback
-		return new ClassicPluginStrategy(this);
+        // default and fallback
+        return new ClassicPluginStrategy(this);
     }
 
     public PluginStrategy getPluginStrategy() {
@@ -1322,12 +1328,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Orderly terminates all the plugins.
      */
-    public void stop() {
+    public synchronized void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
+        }
+        List<PluginWrapper> pluginsCopy = new ArrayList<>(plugins);
+        for (PluginWrapper p : pluginsCopy) {
+            activePlugins.remove(p);
+            plugins.remove(p);
             p.releaseClassLoader();
         }
-        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
@@ -1337,7 +1347,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static boolean isNonMetaLabel(String label) {
         return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
     }
-    
+
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
         List<JSONObject> plugins = new ArrayList<>();
@@ -1448,10 +1458,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         JSONArray mappedPlugins = new JSONArray();
         mappedPlugins.addAll(plugins);
-        
+
         return hudson.util.HttpResponses.okJSON(mappedPlugins);
     }
-    
+
     /**
      * Get the list of all plugins - available and installed.
      * @return The list of all plugins - available and installed.
@@ -1488,8 +1498,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             for (UpdateSite.Plugin plugin: site.getAvailables()) {
                 JSONObject pluginInfo = allPlugins.get(plugin.name);
                 if(pluginInfo == null) {
-			pluginInfo = new JSONObject();
-			pluginInfo.put("installed", false);
+                    pluginInfo = new JSONObject();
+                    pluginInfo.put("installed", false);
                 }
                 pluginInfo.put("name", plugin.name);
                 pluginInfo.put("title", plugin.getDisplayName());
@@ -1522,9 +1532,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         return new HttpRedirect("./sites");
     }
-    
+
     /**
-     * Called to progress status beyond installing plugins, e.g. if 
+     * Called to progress status beyond installing plugins, e.g. if
      * there were failures that prevented installation from naturally proceeding
      */
     @RequirePOST
@@ -1588,7 +1598,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             responseData.put("correlationId", correlationId.toString());
 
             return hudson.util.HttpResponses.okJSON(responseData);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return hudson.util.HttpResponses.errorJSON(e.getMessage());
         }
     }
@@ -1641,7 +1651,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     index = n.indexOf('.', index + 1);
                 }
             }
-            
+
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }
@@ -1742,7 +1752,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         void cleanup();
     }
 
-    class FileUploadPluginCopier implements PluginCopier {
+    static class FileUploadPluginCopier implements PluginCopier {
         private FileItem fileItem;
 
         FileUploadPluginCopier(FileItem fileItem) {
@@ -1760,7 +1770,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    class UrlPluginCopier implements PluginCopier {
+    static class UrlPluginCopier implements PluginCopier {
         private String url;
 
         UrlPluginCopier(String url) {
@@ -1816,10 +1826,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
+            // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+            Files.delete(Util.fileToPath(t));
             try {
-                // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                t.delete();
-
                 copier.copy(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
@@ -2100,7 +2109,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<>();
         try {
-            SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            spf.newSAXParser().parse(configXml, new DefaultHandler() {
                 @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     String plugin = attributes.getValue("plugin");
                     if (plugin == null) {
@@ -2247,7 +2259,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return "classLoader " +  getClass().getName();
         }
     }
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
@@ -2470,6 +2482,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

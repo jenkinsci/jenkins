@@ -307,10 +307,16 @@ a.yui-button.icon-button.large-button {
 
 .jenkins-buttons-row {
   display: flex;
+  align-items: center;
   
   .yui-button {
     margin-left: 0!important;
     margin-right: 0.5rem!important;
+  }
+
+  .jenkins-table__button {
+    margin-left: 0!important;
+    margin-right: 1.5rem!important;
   }
   
   &--invert {
@@ -318,6 +324,11 @@ a.yui-button.icon-button.large-button {
     
     .yui-button {
       margin-left: 0.5rem!important;
+      margin-right: 0!important;
+    }
+
+    .jenkins-table__button {
+      margin-left: 1.5rem!important;
       margin-right: 0!important;
     }
   }  

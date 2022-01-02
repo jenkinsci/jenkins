@@ -103,7 +103,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     /**
      * For reusing code between text/html and text/plain, we run them both through the same code path
-     * and use this request attribute to differentiate. 
+     * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
         StaplerRequest req = Stapler.getCurrentRequest();
@@ -186,7 +186,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.close();
         StaplerResponse rsp = Stapler.getCurrentResponse();
         if (rsp!=null)
-            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.getEncoder().encode(baos.toByteArray())));
+            rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
         return r;
     }
 

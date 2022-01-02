@@ -220,8 +220,10 @@ THE SOFTWARE.
         </div>
       </j:if>
       <div id="main-panel">
-         <j:set var="mode" value="main-panel" />
-         <d:invokeBody/>
+        <j:set var="mode" value="app-bar" />
+        <d:invokeBody/>
+        <j:set var="mode" value="main-panel" />
+        <d:invokeBody/>
       </div>
     </div>
 

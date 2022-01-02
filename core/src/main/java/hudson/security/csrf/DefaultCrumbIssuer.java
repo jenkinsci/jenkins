@@ -39,7 +39,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     private boolean excludeClientIPFromCrumb;
 
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final: Groovy Console */ boolean EXCLUDE_SESSION_ID = SystemProperties.getBoolean(DefaultCrumbIssuer.class.getName() + ".EXCLUDE_SESSION_ID");
 
     @DataBoundConstructor
@@ -57,7 +57,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return this;
     }
 
-    private void initializeMessageDigest() {
+    private synchronized void initializeMessageDigest() {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
@@ -83,8 +83,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                     buffer.append(req.getSession().getId());
                 }
 
-                md.update(buffer.toString().getBytes());
-                return Util.toHexString(md.digest(salt.getBytes()));
+                md.update(buffer.toString().getBytes(StandardCharsets.UTF_8));
+                return Util.toHexString(md.digest(salt.getBytes(StandardCharsets.US_ASCII)));
             }
         }
         return null;

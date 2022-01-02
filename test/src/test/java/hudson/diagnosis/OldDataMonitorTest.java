@@ -77,7 +77,7 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BadAction2());
         b.save();
         r.jenkins.getQueue().clearLeftItems();
@@ -91,7 +91,7 @@ public class OldDataMonitorTest {
 
     /**
      * Note that this doesn't actually run slowly, it just ensures that
-     * the {@link OldDataMonitor#changeListener's onChange()} can complete
+     * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
      * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
      * is still running.
      *

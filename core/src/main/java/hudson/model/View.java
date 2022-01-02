@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
  * Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -65,6 +66,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +80,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,9 +105,7 @@ import jenkins.util.xml.XMLUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -137,7 +138,7 @@ import org.xml.sax.SAXException;
  * <li>
  * {@link View} subtypes need the {@code newViewDetail.jelly} page,
  * which is included in the "new view" page. This page should have some
- * description of what the view is about. 
+ * description of what the view is about.
  * </ul>
  *
  * @author Kohsuke Kawaguchi
@@ -162,7 +163,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
-    
+
     /**
      * If true, only show relevant executors
      */
@@ -172,7 +173,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant queue items
      */
     protected boolean filterQueue;
-    
+
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -289,12 +290,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
-    public String getDescription() {
+    public synchronized String getDescription() {
         return description;
     }
 
     @DataBoundSetter
-    public void setDescription(String description) {
+    public synchronized void setDescription(String description) {
         this.description = description;
     }
 
@@ -383,7 +384,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-    
+
     /**
      * Used to enable or disable automatic refreshes of the view.
      *
@@ -395,14 +396,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isAutomaticRefreshEnabled() {
         return false;
     }
-    
+
     /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
         return filterExecutors;
     }
-    
+
     /**
      * If true, only show relevant queue items
      */
@@ -441,7 +442,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return getOwner().getPrimaryView()==this;
     }
-    
+
     public List<Computer> getComputers() {
         Computer[] computers = Jenkins.get().getComputers();
 
@@ -526,8 +527,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      * @return The items in the queue.
+     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
      */
     @Deprecated
     public List<Queue.Item> getApproximateQueueItemsQuickly() {
@@ -956,13 +957,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
-            
+
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
-        }        
+        }
     }
 
     /**
@@ -989,7 +990,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
         makeSearchIndex(sib);
-        
+
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
 
@@ -1058,7 +1059,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <p>
      * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
-     * 
+     *
      * @return
      *      null if fails.
      */
@@ -1108,13 +1109,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rsp.addHeader("Expires", "0");
         Categories categories = new Categories();
         int order = 0;
-        JellyContext ctx;
+        String resUrl;
 
         if (StringUtils.isNotBlank(iconStyle)) {
-            ctx = new JellyContext();
-            ctx.setVariable("resURL", req.getContextPath() + Jenkins.RESOURCE_PATH);
+            resUrl = req.getContextPath() + Jenkins.RESOURCE_PATH;
         } else {
-            ctx = null;
+            resUrl = null;
         }
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
@@ -1129,11 +1129,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             String iconClassName = descriptor.getIconClassName();
             if (StringUtils.isNotBlank(iconClassName)) {
                 metadata.put("iconClassName", iconClassName);
-                if (ctx != null) {
+                if (resUrl != null) {
                     Icon icon = IconSet.icons
-                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
                     if (icon != null) {
-                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
+                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
                     }
                 }
             }
@@ -1158,11 +1158,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }
-    
+
     public RunList getBuilds() {
         return new RunList(this);
     }
-    
+
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
@@ -1317,6 +1317,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
     public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
     @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
     @Restricted(DoNotUse.class)
     public static void registerPermissions() {
@@ -1324,14 +1325,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // allowing plugins to adapt the system configuration, which may depend on these permissions
         // having been registered. Since this method is static and since it follows the above
         // construction of static permission objects (and therefore their calls to
-        // PermissionGroup#register), there is nothing further to do in this method.
+        // PermissionGroup#register), there is nothing further to do in this method. We call
+        // Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(PERMISSIONS, CREATE, DELETE, CONFIGURE, READ);
     }
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
         return Item.CREATE;
     }
-    
+
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
         String mode = req.getParameter("mode");
@@ -1396,7 +1399,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure("No such view: "+from);
         }
         String xml = Jenkins.XSTREAM.toXML(src);
-        v = createViewFromXML(name, new StringInputStream(xml));
+        v = createViewFromXML(name, new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())));
         return v;
     }
 

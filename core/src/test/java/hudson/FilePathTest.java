@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -140,9 +140,9 @@ public class FilePathTest {
         final File tmp = temp.newFile();
 
            int fileSize = 90000;
-        
+
             givenSomeContentInFile(tmp, fileSize);
-        
+
             List<Future<Integer>> results = whenFileIsCopied100TimesConcurrently(tmp);
 
             // THEN copied count was always equal the expected size
@@ -158,7 +158,7 @@ public class FilePathTest {
             os.write(buf);
         }
     }
-    
+
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
         List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
@@ -342,17 +342,17 @@ public class FilePathTest {
         FileUtils.touch(building);
         return new FilePath(building);
     }
-    
+
     /**
      * Performs round-trip archiving for Tar handling methods.
      * @throws Exception test failure
      */
     @Test public void compressTarUntarRoundTrip() throws Exception {
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);   
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100); 
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000); 
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000);
     }
-            
+
     /**
      * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
@@ -366,7 +366,7 @@ public class FilePathTest {
         final String filePrefix = "JENKINS-10629";
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
-     
+
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
         final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
@@ -436,13 +436,13 @@ public class FilePathTest {
         FilePath middle = new FilePath(base, "jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver");
         FilePath full = new FilePath(middle, "acceptance-tests\\distribution.zip");
         assertFalse(full.isUnix());
-        
-        
+
+
         FilePath unixPath = new FilePath(dummy,
                 "/home/test");
         assertTrue(unixPath.isUnix());
     }
-    
+
     /**
      * Tests that permissions are kept when using {@link FilePath#copyToWithPermission(FilePath)}.
      * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
@@ -453,21 +453,21 @@ public class FilePathTest {
             File child = new File(tmp,"child");
             FilePath childP = new FilePath(child);
             childP.touch(4711);
-            
+
             Chmod chmodTask = new Chmod();
             chmodTask.setProject(new Project());
             chmodTask.setFile(child);
             chmodTask.setPerm("0400");
             chmodTask.execute();
-            
+
             FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
             childP.copyToWithPermission(copy);
-            
+
             assertEquals(childP.mode(),copy.mode());
             if (!Functions.isWindows()) {
                 assertEquals(childP.lastModified(),copy.lastModified());
             }
-            
+
             // JENKINS-11073:
             // Windows seems to have random failures when setting the timestamp on newly generated
             // files. So test that:
@@ -478,7 +478,7 @@ public class FilePathTest {
     }
 
     @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse("Test uses POSIX-specific features", Functions.isWindows() || Platform.isDarwin());
+        assumeFalse(Functions.isWindows() || Platform.isDarwin());
         File tmp = temp.getRoot();
         File original = new File(tmp,"original");
         FilePath originalP = new FilePath(channels.french, original.getPath());
@@ -497,14 +497,14 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        assumeFalse("can't test on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
             in.mkdirs();
             in.child("c").touch(0);
             in.child("b").symlinkTo("c", TaskListener.NULL);
-                        
+
             FilePath tar = tmp.child("test.tar");
             in.tar(tar.write(), "**/*");
 
@@ -566,7 +566,7 @@ public class FilePathTest {
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
             assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
-    
+
     @Issue("JENKINS-5253")
     @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
@@ -585,27 +585,27 @@ public class FilePathTest {
             Util.deleteRecursive(tmp);
         }
     }
-   
+
     @Issue("JENKINS-15418")
     @Test public void deleteLongPathOnWindows() throws Exception {
         File tmp = temp.getRoot();
             FilePath d = new FilePath(channels.french, tmp.getPath());
-            
+
             // construct a very long path
             StringBuilder sb = new StringBuilder();
             while(sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
                 sb.append("very/");
             }
             sb.append("pivot/very/very/long/path");
-            
-            FilePath longPath = d.child(sb.toString()); 
+
+            FilePath longPath = d.child(sb.toString());
             longPath.mkdirs();
             FilePath childInLongPath = longPath.child("file.txt");
             childInLongPath.touch(0);
-            
+
             File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
             Util.deleteRecursive(firstDirectory);
-            
+
             assertFalse("Could not delete directory!", firstDirectory.exists());
     }
 
@@ -723,7 +723,7 @@ public class FilePathTest {
 
             final FilePath src = new FilePath(sub);
             final FilePath dst = new FilePath(top);
-            
+
             // test conflict subdir
             src.moveAllChildrenTo(dst);
     }
@@ -805,7 +805,7 @@ public class FilePathTest {
     }
 
     @Test public void deleteRecursiveOnUnix() throws Exception {
-        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
@@ -828,7 +828,7 @@ public class FilePathTest {
         FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
 
         assertThat(textTempFile.exists(), is(true));
-        
+
         filePath.deleteSuffixesRecursive();
         assertThat(textTempFile.exists(), is(false));
     }
@@ -851,7 +851,7 @@ public class FilePathTest {
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
-        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
@@ -932,6 +932,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularSymlinks() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
         //          /a
@@ -950,7 +951,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -966,6 +966,7 @@ public class FilePathTest {
         workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1014,7 +1015,6 @@ public class FilePathTest {
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1028,6 +1028,7 @@ public class FilePathTest {
         createJunction(new File(root, "/workspace/_nonexistentUp"), new File(root, "/nonexistent"));
         createJunction(new File(root, "/workspace/_protected"), new File(root, "/protected"));
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 
@@ -1059,6 +1060,7 @@ public class FilePathTest {
 
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
+        assumeFalse(Functions.isWindows());
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
@@ -1086,6 +1088,7 @@ public class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
+        assumeFalse(Functions.isWindows());
         //  root
         //      /w
         //          /_workspace => symlink to ../workspace
@@ -1103,11 +1106,9 @@ public class FilePathTest {
         //      /protected
         //          secret.txt
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
-        FilePath wFolder = rootFolder.child("w");
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
-        FilePath protectedFolder = rootFolder.child("protected");
 
         FilePath regularFile = workspaceFolder.child("regular.txt");
         regularFile.write("regular-file", StandardCharsets.UTF_8.name());
@@ -1125,10 +1126,12 @@ public class FilePathTest {
         workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
+        FilePath wFolder = rootFolder.child("w");
         wFolder.mkdirs();
         FilePath symbolicWorkspace = wFolder.child("_w");
         symbolicWorkspace.symlinkTo("../workspace", null);
 
+        FilePath protectedFolder = rootFolder.child("protected");
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
 

@@ -8,9 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeThat;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -73,6 +75,7 @@ public class AtomicFileWriterTest {
 
     @Test
     public void symlinkToDirectory() throws Exception {
+        assumeFalse(Functions.isWindows());
         final File folder = tmp.newFolder();
         final File containingSymlink = tmp.newFolder();
         final Path zeSymlink = Files.createSymbolicLink(Paths.get(containingSymlink.getAbsolutePath(), "ze_symlink"),

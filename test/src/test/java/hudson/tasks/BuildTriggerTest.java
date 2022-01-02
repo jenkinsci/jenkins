@@ -103,13 +103,13 @@ public class BuildTriggerTest {
         j.jenkins.rebuildDependencyGraph();
 
         // First build should not trigger downstream job
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertStatus(dontTriggerResult, p);
         assertNoDownstreamBuild(dp, b);
 
         // Next build should trigger downstream job
         p.getBuildersList().replace(new MockBuilder(triggerResult));
-        b = p.scheduleBuild2(0).get();
-        assertDownstreamBuild(dp, b);
+        b = j.buildAndAssertStatus(triggerResult, p);
+        j.assertBuildStatusSuccess(j.waitForCompletion(assertDownstreamBuild(dp, b)));
     }
 
     private void assertNoDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
@@ -122,9 +122,12 @@ public class BuildTriggerTest {
 
     private FreeStyleBuild assertDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
         // Wait for downstream build
-        for (int i = 0; dp.getLastBuild()==null && i < 20; i++) Thread.sleep(100);
-        assertNotNull("downstream build didn't run.. upstream log: " + b.getLog(), dp.getLastBuild());
-        return dp.getLastBuild();
+        FreeStyleBuild result = null;
+        for (int i = 0; (result = dp.getLastBuild()) == null && i < 25; i++) {
+            Thread.sleep(250);
+        }
+        assertNotNull("downstream build didn't run.. upstream log: " + b.getLog(), result);
+        return result;
     }
 
     @Test
@@ -223,7 +226,7 @@ public class BuildTriggerTest {
         j.waitUntilNoActivity();
         assertEquals(2, downstream.getLastBuild().number);
         FreeStyleProject simple = j.createFreeStyleProject("simple");
-        FreeStyleBuild b3 = j.buildAndAssertSuccess(simple);
+        j.buildAndAssertSuccess(simple);
         // Finally, in legacy mode we run as SYSTEM:
         grantedPermissions.clear(); // similar behavior but different message if DescriptorImpl removed
         downstream.removeProperty(amp);
@@ -236,7 +239,7 @@ public class BuildTriggerTest {
         j.assertLogContains(downstreamName, b);
         j.waitUntilNoActivity();
         assertEquals(3, downstream.getLastBuild().number);
-        b3 = j.buildAndAssertSuccess(simple);
+        j.buildAndAssertSuccess(simple);
     }
     private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;

@@ -48,10 +48,10 @@ public class BasicHeaderProcessorTest {
         ApiTokenTestHelper.enableLegacyBehavior();
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.getById("foo", true);
-        User.getById("bar", true);
 
         wc = j.createWebClient();
+        User foo = User.getById("foo", true);
+        User.getById("bar", true);
 
         // call without authentication
         makeRequestAndVerify("anonymous");
@@ -61,7 +61,7 @@ public class BasicHeaderProcessorTest {
         // call with API token
         wc = j.createWebClient();
         wc.withBasicApiToken("foo");
-        makeRequestAndVerify("foo");        
+        makeRequestAndVerify("foo");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with invalid API token
@@ -115,7 +115,7 @@ public class BasicHeaderProcessorTest {
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getOrCreateByIdOrFullName("foo");
         wc = j.createWebClient();

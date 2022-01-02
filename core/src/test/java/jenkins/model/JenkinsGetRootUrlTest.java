@@ -129,7 +129,7 @@ public class JenkinsGetRootUrlTest {
             rootUrlIs("https://ci/jenkins/");
         }
     }
-    
+
     @Issue("JENKINS-10675")
     @Test
     public void useForwardedProtoWhenPresent() {
@@ -203,7 +203,7 @@ public class JenkinsGetRootUrlTest {
     }
 
     private void rootUrlFromRequestIs(final String expectedRootUrl) {
-        
+
         assertThat(jenkins.getRootUrlFromRequest(), equalTo(expectedRootUrl));
     }
 
@@ -216,7 +216,7 @@ public class JenkinsGetRootUrlTest {
 
         when(config.getUrl()).thenReturn(configuredHost);
     }
-    
+
     private void withHeader(String name, final String value) {
         final StaplerRequest req = Stapler.getCurrentRequest();
         when(req.getHeader(name)).thenReturn(value);
