@@ -35,7 +35,7 @@ public abstract class AcegiSecurityException extends NestedRuntimeException {
     protected AcegiSecurityException(String msg) {
         super(msg);
     }
-    
+
     protected AcegiSecurityException(String msg, Throwable cause) {
         super(msg, cause);
     }

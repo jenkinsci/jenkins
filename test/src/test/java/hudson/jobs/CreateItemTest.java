@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.jobs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -105,8 +106,8 @@ public class CreateItemTest {
                 .withThrowExceptionOnFailingStatusCode(false)
                 .getPage(request);
 
-        assertEquals("Creating job from copy should fail.", 
-                HttpURLConnection.HTTP_BAD_REQUEST, 
+        assertEquals("Creating job from copy should fail.",
+                HttpURLConnection.HTTP_BAD_REQUEST,
                 p.getWebResponse().getStatusCode());
         assertThat(rule.jenkins.getItem("newJob"), nullValue());
     }

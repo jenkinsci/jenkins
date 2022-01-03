@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -74,7 +75,7 @@ public final class WorkUnitContext {
     public WorkUnitContext(BuildableItem item) {
         this.item = item;
         this.task = item.task;
-        this.future = (FutureImpl)item.getFuture();
+        this.future = (FutureImpl) item.getFuture();
         // JENKINS-51584 do not use item.getAllActions() here.
         this.actions = new ArrayList<>(item.getActions());
         // +1 for the main task
@@ -88,7 +89,7 @@ public final class WorkUnitContext {
                 // Unclear if this will work with AsynchronousExecution; it *seems* this is only called from synchronize which is only called from synchronizeStart which is only called from an executor thread.
                 Executor e = Executor.currentExecutor();
                 if (e.getCurrentWorkUnit().isMainWork()) {
-                    e.getOwner().taskAccepted(e,task);
+                    e.getOwner().taskAccepted(e, task);
                     for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
                         try {
                             listener.taskAccepted(e, task);
@@ -160,7 +161,7 @@ public final class WorkUnitContext {
      */
     @Restricted(NoExternalUse.class)
     public void synchronizeEnd(Executor e, Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
-        // Let code waiting for the build to finish (future.get()) finishes when there is a faulty SubTask by setting 
+        // Let code waiting for the build to finish (future.get()) finishes when there is a faulty SubTask by setting
         // the future always.
         try {
             endLatch.synchronize();
@@ -197,8 +198,8 @@ public final class WorkUnitContext {
      * When one of the work unit is aborted, call this method to abort all the other work units.
      */
     public synchronized void abort(Throwable cause) {
-        if (cause==null)        throw new IllegalArgumentException();
-        if (aborted!=null)      return; // already aborted    
+        if (cause == null)        throw new IllegalArgumentException();
+        if (aborted != null)      return; // already aborted
         aborted = cause;
         startLatch.abort(cause);
         endLatch.abort(cause);
@@ -206,7 +207,7 @@ public final class WorkUnitContext {
         Thread c = Thread.currentThread();
         for (WorkUnit wu : workUnits) {
             Executor e = wu.getExecutor();
-            if (e!=null && e!=c)
+            if (e != null && e != c)
                 e.interrupt();
         }
     }

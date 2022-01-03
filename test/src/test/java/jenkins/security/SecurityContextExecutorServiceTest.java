@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
@@ -71,7 +72,7 @@ public class SecurityContextExecutorServiceTest {
             SecurityContextHolder.clearContext();
             nullContext = SecurityContextHolder.getContext();
 
-            // Create a wrapped service 
+            // Create a wrapped service
             wrappedService = new SecurityContextExecutorService(service);
         }
     };

@@ -42,27 +42,34 @@ public class PlainCLIProtocolTest {
         class Client extends PlainCLIProtocol.ClientSide {
             int code = -1;
             final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
             Client() throws IOException {
                 super(new PlainCLIProtocol.FramedOutput(upload));
             }
+
             @Override
             protected synchronized void onExit(int code) {
                 this.code = code;
                 notifyAll();
             }
+
             @Override
             protected void onStdout(byte[] chunk) throws IOException {
                 stdout.write(chunk);
             }
+
             @Override
             protected void onStderr(byte[] chunk) throws IOException {}
+
             @Override
             protected void handleClose() {}
+
             void send() throws IOException {
                 sendArg("command");
                 sendStart();
                 streamStdin().write("hello".getBytes());
             }
+
             void newop() throws IOException {
                 DataOutputStream dos = new DataOutputStream(upload);
                 dos.writeInt(0);
@@ -70,26 +77,33 @@ public class PlainCLIProtocolTest {
                 dos.flush();
             }
         }
+
         class Server extends PlainCLIProtocol.ServerSide {
             String arg;
             boolean started;
             final ByteArrayOutputStream stdin = new ByteArrayOutputStream();
+
             Server() throws IOException {
                 super(new PlainCLIProtocol.FramedOutput(download));
             }
+
             @Override
             protected void onArg(String text) {
                 arg = text;
             }
+
             @Override
             protected void onLocale(String text) {}
+
             @Override
             protected void onEncoding(String text) {}
+
             @Override
             protected synchronized void onStart() {
                 started = true;
                 notifyAll();
             }
+
             @Override
             protected void onStdin(byte[] chunk) throws IOException {
                 /* To inject a race condition:
@@ -101,14 +115,18 @@ public class PlainCLIProtocolTest {
                 */
                 stdin.write(chunk);
             }
+
             @Override
             protected void onEndStdin() throws IOException {}
+
             @Override
             protected void handleClose() {}
+
             void send() throws IOException {
                 streamStdout().write("goodbye".getBytes());
                 sendExit(2);
             }
+
             void newop() throws IOException {
                 DataOutputStream dos = new DataOutputStream(download);
                 dos.writeInt(0);
@@ -116,6 +134,7 @@ public class PlainCLIProtocolTest {
                 dos.flush();
             }
         }
+
         Client client = new Client();
         Server server = new Server();
         new PlainCLIProtocol.FramedReader(client, new PipedInputStream(download)).start();

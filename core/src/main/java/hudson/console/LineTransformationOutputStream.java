@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import hudson.util.ByteArrayOutputStream2;
@@ -46,21 +47,21 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      *      Contents of the whole line, including the EOL code like CR/LF.
      * @param len
      *      Specifies the length of the valid contents in 'b'. The rest is garbage.
-     *      This is so that the caller doesn't have to allocate an array of the exact size. 
+     *      This is so that the caller doesn't have to allocate an array of the exact size.
      */
     protected abstract void eol(byte[] b, int len) throws IOException;
 
     @Override
     public void write(int b) throws IOException {
         buf.write(b);
-        if (b==LF) eol();
+        if (b == LF) eol();
     }
 
     private void eol() throws IOException {
-        eol(buf.getBuffer(),buf.size());
+        eol(buf.getBuffer(), buf.size());
 
         // reuse the buffer under normal circumstances, but don't let the line buffer grow unbounded
-        if (buf.size()>4096)
+        if (buf.size() > 4096)
             buf = new ByteArrayOutputStream2();
         else
             buf.reset();
@@ -68,9 +69,9 @@ public abstract class LineTransformationOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        int end = off+len;
+        int end = off + len;
 
-        for( int i=off; i<end; i++ )
+        for (int i = off; i < end; i++)
             write(b[i]);
     }
 
@@ -86,7 +87,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      * actually neither flushing nor closing the stream.
      */
     public void forceEol() throws IOException {
-        if (buf.size()>0) {
+        if (buf.size() > 0) {
             /*
                 because LargeText cuts output at the line end boundary, this is
                 possible only for the very end of the console output, if the output ends without NL.
@@ -97,15 +98,15 @@ public abstract class LineTransformationOutputStream extends OutputStream {
 
     protected String trimEOL(String line) {
         int slen = line.length();
-        while (slen>0) {
-            char ch = line.charAt(slen-1);
-            if (ch=='\r' || ch=='\n') {
+        while (slen > 0) {
+            char ch = line.charAt(slen - 1);
+            if (ch == '\r' || ch == '\n') {
                 slen--;
                 continue;
             }
             break;
         }
-        line = line.substring(0,slen);
+        line = line.substring(0, slen);
         return line;
     }
 

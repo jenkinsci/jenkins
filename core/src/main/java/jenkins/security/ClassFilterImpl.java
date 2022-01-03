@@ -114,6 +114,7 @@ public class ClassFilterImpl extends ClassFilter {
     private final Map<String, Boolean> codeSourceCache = Collections.synchronizedMap(new HashMap<>());
     /** Names of classes outside Jenkins core or plugins which have a special serial form but are considered safe. */
     static final Set<String> WHITELISTED_CLASSES;
+
     static {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
             WHITELISTED_CLASSES = Collections.unmodifiableSet(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
@@ -176,17 +177,18 @@ public class ClassFilterImpl extends ClassFilter {
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
                 notifyRejected(_c, null,
-                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://www.jenkins.io/redirect/class-filter/", name, location != null ? location : "JRE"));
 
                 return false;
             }
             notifyRejected(_c, null,
-                    String.format("%s in %s might be dangerous, so rejecting; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                    String.format("%s in %s might be dangerous, so rejecting; see https://www.jenkins.io/redirect/class-filter/", name, location != null ? location : "JRE"));
             return true;
         });
     }
 
     private static final Pattern CLASSES_JAR = Pattern.compile("(file:/.+/)WEB-INF/lib/classes[.]jar");
+
     private boolean isLocationWhitelisted(String _loc) {
         return codeSourceCache.computeIfAbsent(_loc, loc -> {
             if (loc.equals(JENKINS_LOC)) {

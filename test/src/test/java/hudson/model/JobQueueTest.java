@@ -32,6 +32,7 @@ public class JobQueueTest {
                 } catch (InterruptedException e) {
                 }
             }
+
             @Override public void onFinalized(Run r) {
                 JobQueueTest.fireFinalizeFlag = true;
                 try {
@@ -70,20 +71,20 @@ public class JobQueueTest {
 
         //Kick the first Build
         FreeStyleBuild b1 = project.scheduleBuild2(1).waitForStart();
-        int count =0;
+        int count = 0;
         //Now, Wait for run to be in POST_PRODUCTION stage
-        while(!JobQueueTest.fireCompletedFlag && count<100) {
+        while (!JobQueueTest.fireCompletedFlag && count < 100) {
             Thread.sleep(100);
             count++;
         }
 
         QueueTaskFuture<FreeStyleBuild> b2 = null;
-        if(JobQueueTest.fireCompletedFlag) {
+        if (JobQueueTest.fireCompletedFlag) {
         //Schedule the build for the project and this build should be in Queue since the state is POST_PRODUCTION
             b2 = project.scheduleBuild2(0);
             assertTrue(project.isInQueue()); //That means it's pending or it's waiting or blocked
             j.jenkins.getQueue().maintain();
-            while(j.jenkins.getQueue().getItem(project) instanceof WaitingItem) {
+            while (j.jenkins.getQueue().getItem(project) instanceof WaitingItem) {
                 System.out.println(j.jenkins.getQueue().getItem(project));
                 j.jenkins.getQueue().maintain();
                 Thread.sleep(10);
@@ -93,13 +94,13 @@ public class JobQueueTest {
         else {
             fail("The maximum attempts for checking if the job is in POST_PRODUCTION State have reached");
         }
-        count=0;
-        while(!JobQueueTest.fireFinalizeFlag && count<100) {
+        count = 0;
+        while (!JobQueueTest.fireFinalizeFlag && count < 100) {
             Thread.sleep(100);
             count++;
         }
 
-        if(JobQueueTest.fireFinalizeFlag) {
+        if (JobQueueTest.fireFinalizeFlag) {
         //Verify the build is removed from Queue since now it is in Completed state
         //it should be scheduled for run
             j.jenkins.getQueue().maintain();

@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.Action;
@@ -21,6 +22,8 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -37,19 +40,19 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * {@link ModelObject} that has context menu in the breadcrumb.
- * 
+ *
  * <p>
  * When the user is visiting a particular page, all the ancestor objects that has {@link ModelObject}
  * appears in the breadcrumbs. Among those which that also implements {@link ModelObjectWithContextMenu}
  * shows the drop-down menu for providing quicker access to the actions to those objects.
- *     
+ *
  * @author Kohsuke Kawaguchi
  * @see ModelObjectWithChildren
  */
 public interface ModelObjectWithContextMenu extends ModelObject {
     /**
      * Generates the context menu.
-     * 
+     *
      * The typical implementation is {@code return new ContextMenu().from(this,request,response);},
      * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
      * for more details of what it does. This should suit most implementations.
@@ -66,16 +69,16 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * The actual contents of the menu.
          */
-        @Exported(inline=true)
+        @Exported(inline = true)
         public final List<MenuItem> items = new ArrayList<>();
-        
+
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
-            rsp.serveExposedBean(req,this,Flavor.JSON);
+            rsp.serveExposedBean(req, this, Flavor.JSON);
         }
-        
+
         public ContextMenu add(String url, String text) {
-            items.add(new MenuItem(url,null,text));
+            items.add(new MenuItem(url, null, text));
             return this;
         }
 
@@ -95,24 +98,24 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             StaplerRequest req = Stapler.getCurrentRequest();
             String text = a.getDisplayName();
             String base = Functions.getIconFilePath(a);
-            if (base==null)     return this;
-            String icon = Stapler.getCurrentRequest().getContextPath()+(base.startsWith("images/")?Functions.getResourcePath():"")+'/'+base;
+            if (base == null)     return this;
+            String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
 
-            String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(),a);
+            String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
 
-            return add(url,icon,text);
+            return add(url, icon, text);
         }
 
         public ContextMenu add(String url, String icon, String text) {
             if (text != null && icon != null && url != null)
-                items.add(new MenuItem(url,icon,text));
+                items.add(new MenuItem(url, icon, text));
             return this;
         }
 
         /** @since 1.504 */
         public ContextMenu add(String url, String icon, String text, boolean post) {
             if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url,icon,text);
+                MenuItem item = new MenuItem(url, icon, text);
                 item.post = post;
                 items.add(item);
             }
@@ -122,7 +125,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /** @since 1.512 */
         public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation) {
             if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url,icon,text);
+                MenuItem item = new MenuItem(url, icon, text);
                 item.post = post;
                 item.requiresConfirmation = requiresConfirmation;
                 items.add(item);
@@ -161,7 +164,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             Computer c = n.toComputer();
             return add(new MenuItem()
                 .withDisplayName(n.getDisplayName())
-                .withStockIcon(c == null ? "computer.png" : c.getIcon())
+                .withIconClass(c == null ? "icon-computer" : c.getIconClassName())
                 .withContextRelativeUrl(n.getSearchUrl()));
         }
 
@@ -173,7 +176,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu add(Computer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
-                .withStockIcon(c.getIcon())
+                .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
         }
 
@@ -191,31 +194,31 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * Default implementation of the context menu generation.
-         * 
+         *
          * <p>
          * This method uses {@code sidepanel.groovy} to run the side panel generation, captures
          * the use of {@code <l:task>} tags, and then converts those into {@link MenuItem}s. This is
          * supposed to make this work with most existing {@link ModelObject}s that follow the standard
          * convention.
-         * 
+         *
          * <p>
          * Unconventional {@link ModelObject} implementations that do not use {@code sidepanel.groovy}
          * can override {@link ModelObjectWithContextMenu#doContextMenu(StaplerRequest, StaplerResponse)}
          * directly to provide alternative semantics.
          */
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
-            return from(self,request,response,"sidepanel");
+            return from(self, request, response, "sidepanel");
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
             WebApp webApp = WebApp.getCurrent();
             final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
-            if (s!=null) {
+            if (s != null) {
                 JellyFacet facet = webApp.getFacet(JellyFacet.class);
-                request.setAttribute("taskTags",this); // <l:task> will look for this variable and populate us
-                request.setAttribute("mode","side-panel");
+                request.setAttribute("taskTags", this); // <l:task> will look for this variable and populate us
+                request.setAttribute("mode", "side-panel");
                 // run sidepanel but ignore generated HTML
-                facet.scriptInvoker.invokeScript(request,response,new Script() {
+                facet.scriptInvoker.invokeScript(request, response, new Script() {
                     @Override
                     public Script compile() throws JellyException {
                         return this;
@@ -224,15 +227,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                     @Override
                     public void run(JellyContext context, XMLOutput output) throws JellyTagException {
                         Functions.initPageVariables(context);
-                        s.run(context,output);
+                        s.run(context, output);
                     }
-                },self,new XMLOutput(new DefaultHandler()));
+                }, self, new XMLOutput(new DefaultHandler()));
             } else
             if (self instanceof Actionable) {
                 // fallback
-                this.addAll(((Actionable)self).getAllActions());
+                this.addAll(((Actionable) self).getAllActions());
             }
-    
+
             return this;
         }
     }
@@ -255,37 +258,46 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Human readable caption of the menu item. Do not use HTML.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String displayName;
 
         /**
          * Optional URL to the icon image. Rendered as 24x24.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String icon;
 
         /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
-        @Exported public boolean post;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean post;
 
         /**
          * True to require confirmation after a click.
          * @since 1.512
          */
-        @Exported public boolean requiresConfirmation;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean requiresConfirmation;
 
 
         /**
          * True to display this item as a section header.
          * @since 2.231
          */
-        @Exported public boolean header;
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public boolean header;
 
         /**
          * If this is a submenu, definition of subitems.
          */
-        @Exported(inline=true)
+        @Exported(inline = true)
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
 
         public MenuItem(String url, String icon, String displayName) {
@@ -308,8 +320,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Sets the URL by passing in a URL relative to the context path of Jenkins
          */
         public MenuItem withContextRelativeUrl(String url) {
-            if (!url.startsWith("/"))   url = '/'+url;
-            this.url = Stapler.getCurrentRequest().getContextPath()+url;
+            if (!url.startsWith("/"))   url = '/' + url;
+            this.url = Stapler.getCurrentRequest().getContextPath() + url;
             return this;
         }
 
@@ -329,7 +341,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *      String like "gear.png" that resolves to 24x24 stock icon in the core
          */
         public MenuItem withStockIcon(String icon) {
-            this.icon = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH + "/images/24x24/"+icon;
+            this.icon = getResourceUrl() + "/images/24x24/" + icon;
+            return this;
+        }
+
+        public MenuItem withIconClass(String iconClass) {
+            Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
+            this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
             return this;
         }
 
@@ -341,6 +359,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public MenuItem withDisplayName(ModelObject o) {
             return withDisplayName(o.getDisplayName());
         }
+
+        private String getResourceUrl() {
+            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
+        }
+
     }
 
     /**

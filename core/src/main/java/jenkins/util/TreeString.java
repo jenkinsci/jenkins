@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import com.thoughtworks.xstream.XStream;
@@ -43,8 +44,6 @@ import org.apache.commons.lang.StringUtils;
  * @author Kohsuke Kawaguchi
  * @since 1.473
  */
-// CHECKSTYLE:OFF
-@SuppressWarnings("PMD")
 public final class TreeString implements Serializable {
     private static final long serialVersionUID = 3621959682117480904L;
 
@@ -115,7 +114,7 @@ public final class TreeString implements Serializable {
             return false;
         }
         return rhs.getClass() == TreeString.class
-                && ((TreeString)rhs).getLabel().equals(getLabel());
+                && ((TreeString) rhs).getLabel().equals(getLabel());
     }
 
     @Override
@@ -191,7 +190,6 @@ public final class TreeString implements Serializable {
      * Default {@link Converter} implementation for XStream that does interning
      * scoped to one unmarshalling.
      */
-    @SuppressWarnings("all")
     public static final class ConverterImpl implements Converter {
         public ConverterImpl(final XStream xs) {}
 
@@ -203,7 +201,7 @@ public final class TreeString implements Serializable {
 
         @Override
         public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            TreeStringBuilder builder = (TreeStringBuilder)context.get(TreeStringBuilder.class);
+            TreeStringBuilder builder = (TreeStringBuilder) context.get(TreeStringBuilder.class);
             if (builder == null) {
                 context.put(TreeStringBuilder.class, builder = new TreeStringBuilder());
 

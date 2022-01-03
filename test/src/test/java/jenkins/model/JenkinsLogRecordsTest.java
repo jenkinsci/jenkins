@@ -28,6 +28,7 @@ public class JenkinsLogRecordsTest {
     public void logRecordsArePresentOnController() throws Throwable {
         rr.then(JenkinsLogRecordsTest::_logRecordsArePresentOnController);
     }
+
     private static void _logRecordsArePresentOnController(JenkinsRule r) throws Throwable {
         List<LogRecord> logRecords = Jenkins.logRecords;
         assertThat(logRecords, not(empty()));

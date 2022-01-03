@@ -41,7 +41,7 @@ public class HsErrPidFile {
     }
 
     public String getTimeSpanString() {
-        return Util.getTimeSpanString(System.currentTimeMillis()-getLastModified());
+        return Util.getTimeSpanString(System.currentTimeMillis() - getLastModified());
     }
 
     public HttpResponse doDownload() throws IOException {

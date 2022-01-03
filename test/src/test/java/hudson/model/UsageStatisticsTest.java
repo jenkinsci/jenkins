@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,11 +108,11 @@ public class UsageStatisticsTest {
         String data = new UsageStatistics(publicKey).getStatData();
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        RSAPrivateKey priv = (RSAPrivateKey)keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
+        RSAPrivateKey priv = (RSAPrivateKey) keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
 
         byte[] cipherText = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), StandardCharsets.UTF_8);
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText), priv, "AES")), StandardCharsets.UTF_8);
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         Jenkins jenkins = j.jenkins;
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
@@ -131,7 +132,7 @@ public class UsageStatisticsTest {
         keys.add("name");
         keys.add("version");
         Set<String> reported = new TreeSet<>();
-        for (JSONObject plugin: plugins) {
+        for (JSONObject plugin : plugins) {
             assertThat(plugin.keySet(), is(keys));
             assertThat(plugin.get("name"), instanceOf(String.class));
             assertThat(plugin.get("version"), instanceOf(String.class));

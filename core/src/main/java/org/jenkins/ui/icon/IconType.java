@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.ui.icon;
 
-import org.apache.commons.jelly.JellyContext;
+package org.jenkins.ui.icon;
 
 /**
  * Icon type.
@@ -41,11 +40,10 @@ public enum IconType {
      * Qualifying the URL involves prefixing it depending on whether the icon is a core or plugin icon.
      *
      * @param url The url to be qualified.
-     * @param context The JellyContext.
+     * @param resURL The url of resources.
      * @return The qualified icon url.
      */
-    public String toQualifiedUrl(String url, JellyContext context) {
-        String resURL = context.getVariable("resURL").toString();
+    public String toQualifiedUrl(String url, String resURL) {
 
         switch (this) {
             case CORE: {

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -47,7 +48,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * The seed stored in this property is used to have a revoke feature on the session 
+ * The seed stored in this property is used to have a revoke feature on the session
  * without having to hack the session management that depends on the application server used to run the instance.
  *
  * The seed is added to the session when a user just logged in and then for every request,
@@ -60,7 +61,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 public class UserSeedProperty extends UserProperty {
     /**
-     * Escape hatch for User seed based revocation feature. 
+     * Escape hatch for User seed based revocation feature.
      * If we disable the seed, we can still use it to write / store information but not verifying the data using it.
      */
     @Restricted(NoExternalUse.class)
@@ -94,7 +95,7 @@ public class UserSeedProperty extends UserProperty {
 
         UserSeedChangeListener.fireUserSeedRenewed(this.user);
     }
-    
+
     private void renewSeedInternal() {
         String currentSeed = this.seed;
         String newSeed = currentSeed;
@@ -141,7 +142,7 @@ public class UserSeedProperty extends UserProperty {
                 if (lastGranted != null) {
                     lastGranted.invalidate();
                 }
-                
+
                 bc.commit();
             }
 

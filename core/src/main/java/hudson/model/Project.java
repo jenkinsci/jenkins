@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Jorg Heymans, Stephen Connolly, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Util;
@@ -59,35 +60,35 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMTriggerItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
+public abstract class Project<P extends Project<P, B>, B extends Build<P, B>>
+    extends AbstractProject<P, B> implements SCMTriggerItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
 
     /**
      * List of active {@link Builder}s configured for this project.
      */
-    private volatile DescribableList<Builder,Descriptor<Builder>> builders;
-    private static final AtomicReferenceFieldUpdater<Project,DescribableList> buildersSetter
-            = AtomicReferenceFieldUpdater.newUpdater(Project.class,DescribableList.class,"builders");
+    private volatile DescribableList<Builder, Descriptor<Builder>> builders;
+    private static final AtomicReferenceFieldUpdater<Project, DescribableList> buildersSetter
+            = AtomicReferenceFieldUpdater.newUpdater(Project.class, DescribableList.class, "builders");
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private volatile DescribableList<Publisher,Descriptor<Publisher>> publishers;
-    private static final AtomicReferenceFieldUpdater<Project,DescribableList> publishersSetter
-            = AtomicReferenceFieldUpdater.newUpdater(Project.class,DescribableList.class,"publishers");
+    private volatile DescribableList<Publisher, Descriptor<Publisher>> publishers;
+    private static final AtomicReferenceFieldUpdater<Project, DescribableList> publishersSetter
+            = AtomicReferenceFieldUpdater.newUpdater(Project.class, DescribableList.class, "publishers");
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private volatile DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers;
-    private static final AtomicReferenceFieldUpdater<Project,DescribableList> buildWrappersSetter
-            = AtomicReferenceFieldUpdater.newUpdater(Project.class,DescribableList.class,"buildWrappers");
+    private volatile DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers;
+    private static final AtomicReferenceFieldUpdater<Project, DescribableList> buildWrappersSetter
+            = AtomicReferenceFieldUpdater.newUpdater(Project.class, DescribableList.class, "buildWrappers");
 
     /**
      * Creates a new project.
      */
-    protected Project(ItemGroup parent,String name) {
-        super(parent,name);
+    protected Project(ItemGroup parent, String name) {
+        super(parent, name);
     }
 
     @Override
@@ -125,33 +126,33 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      *      Use {@link #getPublishersList()} instead.
      */
     @Deprecated
-    public Map<Descriptor<Publisher>,Publisher> getPublishers() {
+    public Map<Descriptor<Publisher>, Publisher> getPublishers() {
         return getPublishersList().toMap();
     }
 
-    public DescribableList<Builder,Descriptor<Builder>> getBuildersList() {
+    public DescribableList<Builder, Descriptor<Builder>> getBuildersList() {
         if (builders == null) {
-            buildersSetter.compareAndSet(this,null,new DescribableList<Builder,Descriptor<Builder>>(this));
+            buildersSetter.compareAndSet(this, null, new DescribableList<Builder, Descriptor<Builder>>(this));
         }
         return builders;
     }
-    
+
     @Override
-    public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+    public DescribableList<Publisher, Descriptor<Publisher>> getPublishersList() {
         if (publishers == null) {
-            publishersSetter.compareAndSet(this,null,new DescribableList<Publisher,Descriptor<Publisher>>(this));
+            publishersSetter.compareAndSet(this, null, new DescribableList<Publisher, Descriptor<Publisher>>(this));
         }
         return publishers;
     }
 
-    public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
+    public Map<Descriptor<BuildWrapper>, BuildWrapper> getBuildWrappers() {
         return getBuildWrappersList().toMap();
     }
 
     @Override
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
         if (buildWrappers == null) {
-            buildWrappersSetter.compareAndSet(this,null,new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this));
+            buildWrappersSetter.compareAndSet(this, null, new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this));
         }
         return buildWrappers;
     }
@@ -161,9 +162,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         final Set<ResourceActivity> activities = new HashSet<>();
 
         activities.addAll(super.getResourceActivities());
-        activities.addAll(Util.filter(getBuildersList(),ResourceActivity.class));
-        activities.addAll(Util.filter(getPublishersList(),ResourceActivity.class));
-        activities.addAll(Util.filter(getBuildWrappersList(),ResourceActivity.class));
+        activities.addAll(Util.filter(getBuildersList(), ResourceActivity.class));
+        activities.addAll(Util.filter(getPublishersList(), ResourceActivity.class));
+        activities.addAll(Util.filter(getBuildWrappersList(), ResourceActivity.class));
 
         return activities;
     }
@@ -192,7 +193,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
         for (Publisher p : getPublishersList()) {
-            if(p.getDescriptor()==descriptor)
+            if (p.getDescriptor() == descriptor)
                 return p;
         }
         return null;
@@ -200,20 +201,20 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override protected void buildDependencyGraph(DependencyGraph graph) {
         super.buildDependencyGraph(graph);
-        getPublishersList().buildDependencyGraph(this,graph);
-        getBuildersList().buildDependencyGraph(this,graph);
-        getBuildWrappersList().buildDependencyGraph(this,graph);
+        getPublishersList().buildDependencyGraph(this, graph);
+        getBuildersList().buildDependencyGraph(this, graph);
+        getBuildWrappersList().buildDependencyGraph(this, graph);
     }
 
     @Override
     public boolean isFingerprintConfigured() {
-        return getPublishersList().get(Fingerprinter.class)!=null;
+        return getPublishersList().get(Fingerprinter.class) != null;
     }
 
     @Override
     public MavenInstallation inferMavenInstallation() {
         Maven m = getBuildersList().get(Maven.class);
-        if (m!=null)    return m.getMaven();
+        if (m != null)    return m.getMaven();
         return null;
     }
 
@@ -223,13 +224,13 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 //
 //
     @Override
-    protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        super.submit(req,rsp);
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req, rsp);
 
         JSONObject json = req.getSubmittedForm();
 
-        getBuildWrappersList().rebuild(req,json, BuildWrappers.getFor(this));
-        getBuildersList().rebuildHetero(req,json, Builder.all(), "builder");
+        getBuildWrappersList().rebuild(req, json, BuildWrappers.getFor(this));
+        getBuildersList().rebuildHetero(req, json, Builder.all(), "builder");
         getPublishersList().rebuildHetero(req, json, Publisher.all(), "publisher");
     }
 

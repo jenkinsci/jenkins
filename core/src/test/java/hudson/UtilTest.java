@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -74,37 +75,37 @@ public class UtilTest {
 
     @Test
     public void testReplaceMacro() {
-        Map<String,String> m = new HashMap<>();
-        m.put("A","a");
-        m.put("A.B","a-b");
-        m.put("AA","aa");
-        m.put("B","B");
+        Map<String, String> m = new HashMap<>();
+        m.put("A", "a");
+        m.put("A.B", "a-b");
+        m.put("AA", "aa");
+        m.put("B", "B");
         m.put("DOLLAR", "$");
         m.put("ENCLOSED", "a${A}");
 
         // longest match
-        assertEquals("aa",Util.replaceMacro("$AA",m));
+        assertEquals("aa", Util.replaceMacro("$AA", m));
 
         // invalid keys are ignored
-        assertEquals("$AAB",Util.replaceMacro("$AAB",m));
+        assertEquals("$AAB", Util.replaceMacro("$AAB", m));
 
-        assertEquals("aaB",Util.replaceMacro("${AA}B",m));
-        assertEquals("${AAB}",Util.replaceMacro("${AAB}",m));
+        assertEquals("aaB", Util.replaceMacro("${AA}B", m));
+        assertEquals("${AAB}", Util.replaceMacro("${AAB}", m));
 
         // $ escaping
-        assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
-        assertEquals("$", Util.replaceMacro("$$",m));
-        assertEquals("$$", Util.replaceMacro("$$$$",m));
+        assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd", m));
+        assertEquals("$", Util.replaceMacro("$$", m));
+        assertEquals("$$", Util.replaceMacro("$$$$", m));
 
         // dots
         assertEquals("a.B", Util.replaceMacro("$A.B", m));
         assertEquals("a-b", Util.replaceMacro("${A.B}", m));
 
-    	// test that more complex scenarios work
-        assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
-        assertEquals("a-aa", Util.replaceMacro("$A-$AA",m));
-        assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?",m));
-        assertEquals("$$aa$Ba${A}$it", Util.replaceMacro("$$$DOLLAR${AA}$$B${ENCLOSED}$it",m));
+        // test that more complex scenarios work
+        assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA", m));
+        assertEquals("a-aa", Util.replaceMacro("$A-$AA", m));
+        assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?", m));
+        assertEquals("$$aa$Ba${A}$it", Util.replaceMacro("$$$DOLLAR${AA}$$B${ENCLOSED}$it", m));
     }
 
     @Test
@@ -121,7 +122,7 @@ public class UtilTest {
         // 11.25 years - Check that if the first unit has 2 or more digits, a second unit isn't used.
         assertEquals(Messages.Util_year(11), Util.getTimeSpanString(354780000000L));
         // 9.25 years - Check that if the first unit has only 1 digit, a second unit is used.
-        assertEquals(Messages.Util_year(9)+ " " + Messages.Util_month(3), Util.getTimeSpanString(291708000000L));
+        assertEquals(Messages.Util_year(9) + " " + Messages.Util_month(3), Util.getTimeSpanString(291708000000L));
         // 67 seconds
         assertEquals(Messages.Util_minute(1) + " " + Messages.Util_second(7), Util.getTimeSpanString(67000L));
         // 17 seconds - Check that times less than a minute only use seconds.
@@ -190,7 +191,7 @@ public class UtilTest {
      * Test the fullEncode() method.
      */
     @Test
-    public void testFullEncode(){
+    public void testFullEncode() {
         String[] data = {
                 "abcdefghijklmnopqrstuvwxyz",
                 "abcdefghijklmnopqrstuvwxyz",
@@ -235,28 +236,28 @@ public class UtilTest {
         try {
             new FilePath(new File(d, "a")).touch(0);
             assertNull(Util.resolveSymlink(new File(d, "a")));
-            Util.createSymlink(d,"a","x", l);
-            assertEquals("a",Util.resolveSymlink(new File(d,"x")));
+            Util.createSymlink(d, "a", "x", l);
+            assertEquals("a", Util.resolveSymlink(new File(d, "x")));
 
             // test a long name
             StringBuilder buf = new StringBuilder(768);
-            for( int i=0; i<768; i++)
-                buf.append((char)('0'+(i%10)));
-            Util.createSymlink(d,buf.toString(),"x", l);
+            for (int i = 0; i < 768; i++)
+                buf.append((char) ('0' + (i % 10)));
+            Util.createSymlink(d, buf.toString(), "x", l);
 
             String log = baos.toString();
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
-            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x")));
+            assertEquals(buf.toString(), Util.resolveSymlink(new File(d, "x")));
 
 
             // test linking from another directory
-            File anotherDir = new File(d,"anotherDir");
-            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            File anotherDir = new File(d, "anotherDir");
+            assertTrue("Couldn't create " + anotherDir, anotherDir.mkdir());
 
-            Util.createSymlink(d,"a","anotherDir/link",l);
-            assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link")));
+            Util.createSymlink(d, "a", "anotherDir/link", l);
+            assertEquals("a", Util.resolveSymlink(new File(d, "anotherDir/link")));
 
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
@@ -283,19 +284,19 @@ public class UtilTest {
         try {
             new FilePath(new File(d, "original")).touch(0);
             assertFalse(Util.isSymlink(new File(d, "original")));
-            Util.createSymlink(d,"original","link", l);
+            Util.createSymlink(d, "original", "link", l);
 
             assertTrue(Util.isSymlink(new File(d, "link")));
 
             // test linking to another directory
-            File dir = new File(d,"dir");
-            assertTrue("Couldn't create "+dir,dir.mkdir());
-            assertFalse(Util.isSymlink(new File(d,"dir")));
+            File dir = new File(d, "dir");
+            assertTrue("Couldn't create " + dir, dir.mkdir());
+            assertFalse(Util.isSymlink(new File(d, "dir")));
 
-            File anotherDir = new File(d,"anotherDir");
-            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            File anotherDir = new File(d, "anotherDir");
+            assertTrue("Couldn't create " + anotherDir, anotherDir.mkdir());
 
-            Util.createSymlink(d,"dir","anotherDir/symlinkDir",l);
+            Util.createSymlink(d, "dir", "anotherDir/symlinkDir", l);
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             // assertTrue(Util.isSymlink(new File(d,"anotherDir/symlinkDir")));
         } finally {
@@ -354,50 +355,50 @@ public class UtilTest {
     @Issue("JENKINS-10346")
     @Test
     public void testDigestThreadSafety() throws InterruptedException {
-    	String a = "abcdefgh";
-    	String b = "123456789";
+        String a = "abcdefgh";
+        String b = "123456789";
 
-    	String digestA = Util.getDigestOf(a);
-    	String digestB = Util.getDigestOf(b);
+        String digestA = Util.getDigestOf(a);
+        String digestB = Util.getDigestOf(b);
 
-    	DigesterThread t1 = new DigesterThread(a, digestA);
-    	DigesterThread t2 = new DigesterThread(b, digestB);
+        DigesterThread t1 = new DigesterThread(a, digestA);
+        DigesterThread t2 = new DigesterThread(b, digestB);
 
-    	t1.start();
-    	t2.start();
+        t1.start();
+        t2.start();
 
-    	t1.join();
-    	t2.join();
+        t1.join();
+        t2.join();
 
-    	if (t1.error != null) {
-    		fail(t1.error);
-    	}
-    	if (t2.error != null) {
-    		fail(t2.error);
-    	}
+        if (t1.error != null) {
+            fail(t1.error);
+        }
+        if (t2.error != null) {
+            fail(t2.error);
+        }
     }
 
     private static class DigesterThread extends Thread {
-    	private String string;
-		private String expectedDigest;
+        private String string;
+        private String expectedDigest;
 
-		private String error;
+        private String error;
 
-		DigesterThread(String string, String expectedDigest) {
-    		this.string = string;
-    		this.expectedDigest = expectedDigest;
-    	}
+        DigesterThread(String string, String expectedDigest) {
+            this.string = string;
+            this.expectedDigest = expectedDigest;
+        }
 
-		@Override
-		public void run() {
-			for (int i=0; i < 1000; i++) {
-				String digest = Util.getDigestOf(this.string);
-				if (!this.expectedDigest.equals(digest)) {
-					this.error = "Expected " + this.expectedDigest + ", but got " + digest;
-					break;
-				}
-			}
-		}
+        @Override
+        public void run() {
+            for (int i = 0; i < 1000; i++) {
+                String digest = Util.getDigestOf(this.string);
+                if (!this.expectedDigest.equals(digest)) {
+                    this.error = "Expected " + this.expectedDigest + ", but got " + digest;
+                    break;
+                }
+            }
+        }
     }
 
     @Test
@@ -505,13 +506,13 @@ public class UtilTest {
             other = new File("/usr");
 
         }
-        assertTrue(Util.isDescendant(root, new File(root,"child")));
-        assertTrue(Util.isDescendant(root, new File(new File(root,"child"), "grandchild")));
+        assertTrue(Util.isDescendant(root, new File(root, "child")));
+        assertTrue(Util.isDescendant(root, new File(new File(root, "child"), "grandchild")));
         assertFalse(Util.isDescendant(root, other));
         assertFalse(Util.isDescendant(root, new File(other, "child")));
 
-        assertFalse(Util.isDescendant(new File(root,"child"), root));
-        assertFalse(Util.isDescendant(new File(new File(root,"child"), "grandchild"), root));
+        assertFalse(Util.isDescendant(new File(root, "child"), root));
+        assertFalse(Util.isDescendant(new File(new File(root, "child"), "grandchild"), root));
 
         //.. whithin root
         File convoluted = new File(root, "child");

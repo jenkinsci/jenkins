@@ -58,7 +58,7 @@ public class XmlFileTest {
             assertThat(n.getMode().toString(), is("NORMAL"));
         }
     }
-    
+
     @Test
     public void canReadXmlWithControlCharsTest() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_1_with_special_chars.xml");

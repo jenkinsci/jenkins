@@ -51,14 +51,16 @@ public class BuildExecutionTest {
             assertEquals(ws, lease.path);
         }
     }
-    
+
     private static class BrokenPublisher extends Notifier {
         @Override public boolean needsToRunAfterFinalized() {
             throw new IllegalStateException("oops");
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             return true;
         }
+
         @Override public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }

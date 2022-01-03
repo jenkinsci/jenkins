@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ import javax.servlet.ServletResponse;
 
 /**
  * {@link Filter} that does nothing.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class NoopFilter implements Filter {
@@ -43,7 +44,7 @@ public class NoopFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        chain.doFilter(request,response);
+        chain.doFilter(request, response);
     }
 
     @Override

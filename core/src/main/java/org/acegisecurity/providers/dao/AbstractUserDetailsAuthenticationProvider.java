@@ -50,6 +50,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
                 throw x.toSpring();
             }
         }
+
         @Override
         protected org.springframework.security.core.userdetails.UserDetails retrieveUser(
                 String username,
@@ -80,7 +81,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
     public boolean supports(Class authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
-    
+
     // TODO other methods as needed: createSuccessAuthentication, getUserCache, etc.
 
 }

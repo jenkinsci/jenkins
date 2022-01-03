@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class RingBufferLogHandlerTest {
     public void tooMuchRecordsShouldNotCrashHandler() {
         final RingBufferLogHandler handler = new RingBufferLogHandler();
 
-        for (long i = 0; i < (long)Integer.MAX_VALUE + 300; i++) {
+        for (long i = 0; i < (long) Integer.MAX_VALUE + 300; i++) {
             // throws ArrayIndexOutOfBoundsException after int-overflow
             handler.publish(null);
         }

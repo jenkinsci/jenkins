@@ -23,10 +23,10 @@ public class RewindableRotatingFileOutputStreamTest {
     @Test
     public void rotation() throws IOException, InterruptedException {
         File base = tmp.newFile("test.log");
-        RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base,3);
-        PrintWriter w = new PrintWriter(os,true);
-        for (int i=0; i<=4; i++) {
-            w.println("Content"+i);
+        RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
+        PrintWriter w = new PrintWriter(os, true);
+        for (int i = 0; i <= 4; i++) {
+            w.println("Content" + i);
             os.rewind();
         }
         w.println("Content5");

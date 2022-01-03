@@ -23,11 +23,11 @@
   completely independent from one another.
   <p>
   Each concurrently executed build occurs in its own build workspace, isolated
-  from any other builds.  By default, Jenkins appends "<tt>@&lt;num&gt;</tt>" to
-  the workspace directory name, e.g. "<tt>@2</tt>".<br>
-  The separator "<tt>@</tt>" can be changed by setting the
-  <tt>hudson.slaves.WorkspaceList</tt> Java system property when starting
-  Jenkins.  For example, "<tt>hudson.slaves.WorkspaceList=-</tt>" would change
+  from any other builds.  By default, Jenkins appends "<code>@&lt;num&gt;</code>" to
+  the workspace directory name, e.g. "<code>@2</code>".<br>
+  The separator "<code>@</code>" can be changed by setting the
+  <code>hudson.slaves.WorkspaceList</code> Java system property when starting
+  Jenkins.  For example, "<code>hudson.slaves.WorkspaceList=-</code>" would change
   the separator to a hyphen.<br>
   For more information on setting system properties, see the <a
   href="https://www.jenkins.io/redirect/setting-system-properties"

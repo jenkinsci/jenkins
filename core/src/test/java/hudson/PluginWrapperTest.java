@@ -36,7 +36,7 @@ import org.mockito.stubbing.Answer;
 public class PluginWrapperTest {
 
     private static Locale loc;
-    
+
     @BeforeAll
     public static void before() {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
@@ -50,7 +50,7 @@ public class PluginWrapperTest {
             Locale.setDefault(loc);
         }
     }
-    
+
     @Test
     public void dependencyTest() {
         String version = "plugin:0.0.2";
@@ -131,7 +131,7 @@ public class PluginWrapperTest {
         assertThat("expect one more element from the updated classloader",
                    e2size - e1size, is(1));
     }
-    
+
     private void assertContains(Throwable ex, String... patterns) {
         String msg = ex.getMessage();
         for (String pattern : patterns) {
@@ -146,6 +146,7 @@ public class PluginWrapperTest {
     // per test
     private final HashMap<String, PluginWrapper> plugins = new HashMap<>();
     private final PluginManager pm = mock(PluginManager.class);
+
     {
         when(pm.getPlugin(any(String.class))).thenAnswer((Answer<PluginWrapper>) invocation -> plugins.get(invocation.getArguments()[0]));
     }
@@ -178,7 +179,7 @@ public class PluginWrapperTest {
         }
 
         public PluginWrapperBuilder deps(String... deps) {
-            for (String dep: deps) {
+            for (String dep : deps) {
                 this.deps.add(new PluginWrapper.Dependency(dep));
             }
             return this;
@@ -229,7 +230,7 @@ public class PluginWrapperTest {
 
     private static int countEnumerationElements(Enumeration<?> enumeration) {
         int elements = 0;
-        for (;enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
+        for (; enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
         return elements;
     }
 

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -89,7 +90,7 @@ public abstract class AbstractCloudSlave extends Slave {
             try {
                 Jenkins.get().removeNode(this);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to remove "+name,e);
+                LOGGER.log(Level.WARNING, "Failed to remove " + name, e);
             }
         }
     }
