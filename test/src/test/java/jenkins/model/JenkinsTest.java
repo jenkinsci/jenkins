@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -297,7 +298,7 @@ public class JenkinsTest {
         // and make sure this fails
         wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-        assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
+        assertEquals(3, j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
 
     @Test
@@ -369,6 +370,7 @@ public class JenkinsTest {
                 HttpURLConnection.HTTP_OK,
                 page.getWebResponse().getStatusCode());
     }
+
     private Page eval(WebClient wc) throws Exception {
         WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setEncodingType(null);

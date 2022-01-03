@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security.csrf;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -41,7 +42,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=195) @Symbol("crumb") // immediately after the security setting
+@Extension(ordinal = 195) @Symbol("crumb") // immediately after the security setting
 public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Override
     public @NonNull GlobalConfigurationCategory getCategory() {

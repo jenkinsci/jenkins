@@ -100,7 +100,7 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-24763")
     @Test public void slowDiscard() throws InterruptedException, IOException, ExecutionException {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
-        final CountDownLatch ensureEntry= new CountDownLatch(1);
+        final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
         Saveable slowSavable = new Saveable() {
             @Override
@@ -113,7 +113,7 @@ public class OldDataMonitorTest {
             }
         };
 
-        OldDataMonitor.report(slowSavable,(String)null);
+        OldDataMonitor.report(slowSavable, (String) null);
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
         Future<Void> discardFuture = executors.submit(new Callable<Void>() {
@@ -129,7 +129,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() {@Override public void save() {}},
+                .onChange(new Saveable() { @Override public void save() {} },
                         new XmlFile(xml));
 
         preventExit.countDown();

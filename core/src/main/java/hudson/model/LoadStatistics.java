@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -141,17 +142,17 @@ public abstract class LoadStatistics {
         this.definedExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_DefinedExecutors(),
                 ColorPalette.YELLOW, initialOnlineExecutors, DECAY);
         this.onlineExecutors = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_OnlineExecutors(), ColorPalette.BLUE, initialOnlineExecutors,DECAY);
+                Messages._LoadStatistics_Legends_OnlineExecutors(), ColorPalette.BLUE, initialOnlineExecutors, DECAY);
         this.connectingExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_ConnectingExecutors(),
                 ColorPalette.YELLOW, 0, DECAY);
         this.busyExecutors = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_BusyExecutors(), ColorPalette.RED, initialBusyExecutors,DECAY);
+                Messages._LoadStatistics_Legends_BusyExecutors(), ColorPalette.RED, initialBusyExecutors, DECAY);
         this.idleExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_IdleExecutors(),
                 ColorPalette.YELLOW, initialOnlineExecutors - initialBusyExecutors, DECAY);
         this.availableExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_AvailableExecutors(),
                 ColorPalette.YELLOW, initialOnlineExecutors - initialBusyExecutors, DECAY);
         this.queueLength = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_QueueLength(),ColorPalette.GREY, 0, DECAY);
+                Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0, DECAY);
         this.totalExecutors = onlineExecutors;
         modern = isModern(getClass());
     }
@@ -259,7 +260,7 @@ public abstract class LoadStatistics {
         renderer.setSeriesPaint(0, ColorPalette.BLUE);  // online
         renderer.setSeriesPaint(1, ColorPalette.RED);   // busy
         renderer.setSeriesPaint(2, ColorPalette.GREY);  // queue
-        renderer.setSeriesPaint(3, ColorPalette.YELLOW);// available
+        renderer.setSeriesPaint(3, ColorPalette.YELLOW); // available
     }
 
     /**
@@ -267,7 +268,7 @@ public abstract class LoadStatistics {
      * of the load statistics graph.
      */
     public TrendChart createTrendChart(TimeScale timeScale) {
-        return MultiStageTimeSeries.createTrendChart(timeScale,onlineExecutors,busyExecutors,queueLength,availableExecutors);
+        return MultiStageTimeSeries.createTrendChart(timeScale, onlineExecutors, busyExecutors, queueLength, availableExecutors);
     }
 
     /**
@@ -337,7 +338,7 @@ public abstract class LoadStatistics {
         } else {
             int t = computeTotalExecutors();
             int i = computeIdleExecutors();
-            return new LoadStatisticsSnapshot(t, t, Math.max(i-t,0), Math.max(t-i,0), i, i, computeQueueLength());
+            return new LoadStatisticsSnapshot(t, t, Math.max(i - t, 0), Math.max(t - i, 0), i, i, computeQueueLength());
         }
     }
 
@@ -359,7 +360,7 @@ public abstract class LoadStatistics {
         int q = 0;
         if (queue != null) {
             for (Queue.BuildableItem item : queue) {
-                
+
                 for (SubTask st : item.task.getSubTasks()) {
                     if (matches(item, st))
                         q++;
@@ -371,15 +372,15 @@ public abstract class LoadStatistics {
 
     /**
      * With 0.90 decay ratio for every 10sec, half reduction is about 1 min.
-     * 
+     *
      * Put differently, the half reduction time is {@code CLOCK*log(0.5)/log(DECAY)}
      */
-    public static final float DECAY = Float.parseFloat(SystemProperties.getString(LoadStatistics.class.getName()+".decay","0.9"));
+    public static final float DECAY = Float.parseFloat(SystemProperties.getString(LoadStatistics.class.getName() + ".decay", "0.9"));
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", (int)TimeUnit.SECONDS.toMillis(10));
+    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", (int) TimeUnit.SECONDS.toMillis(10));
 
     /**
      * Periodically update the load statistics average.
@@ -397,7 +398,7 @@ public abstract class LoadStatistics {
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
             // update statistics on agents
-            for( Label l : j.getLabels() ) {
+            for (Label l : j.getLabels()) {
                 l.loadStatistics.updateCounts(l.loadStatistics.computeSnapshot(bis));
             }
 
@@ -408,7 +409,7 @@ public abstract class LoadStatistics {
         }
 
         private int count(List<Queue.BuildableItem> bis, Label l) {
-            int q=0;
+            int q = 0;
             for (Queue.BuildableItem bi : bis) {
                 for (SubTask st : bi.task.getSubTasks()) {
                     if (bi.getAssignedLabelFor(st) == l) {

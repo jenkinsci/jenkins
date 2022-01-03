@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -87,7 +88,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterValue createValue(String value) {
-        return new BooleanParameterValue(getName(),Boolean.parseBoolean(value),getDescription());
+        return new BooleanParameterValue(getName(), Boolean.parseBoolean(value), getDescription());
     }
 
     @Override

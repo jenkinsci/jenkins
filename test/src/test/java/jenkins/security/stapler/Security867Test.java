@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,11 +66,11 @@ public class Security867Test {
 
         // looking for /jenkins\security\stapler\Security867Test\NotRootAction2\secret =>
         // absolute path with backslash (initial forward one is required for absolute)
-        assertThat(getContent(wc,"rootAction1/%2fjenkins%5csecurity%5cstapler%5cSecurity867Test%5cNotRootAction2%5csecret"),
+        assertThat(getContent(wc, "rootAction1/%2fjenkins%5csecurity%5cstapler%5cSecurity867Test%5cNotRootAction2%5csecret"),
                 not(containsString(secretContent)));
 
         // looking for ../NotRootAction2/secret => relative path
-        assertThat(getContent(wc,"rootAction1/%2e%2e%2fNotRootAction2%2fsecret"),
+        assertThat(getContent(wc, "rootAction1/%2e%2e%2fNotRootAction2%2fsecret"),
                 not(containsString(secretContent)));
 
         // looking for ..\NotRootAction2\secret => relative path without forward slash

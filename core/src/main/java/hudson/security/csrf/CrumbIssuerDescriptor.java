@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2008-2009 Yahoo! Inc. 
- * All rights reserved. 
+ * Copyright (c) 2008-2009 Yahoo! Inc.
+ * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import hudson.Util;
@@ -11,7 +12,7 @@ import hudson.model.Descriptor;
 /**
  * Describes global configuration for crumb issuers. Create subclasses to specify
  * additional global configuration for custom crumb issuers.
- * 
+ *
  * @author dty
  */
 public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descriptor<CrumbIssuer> {

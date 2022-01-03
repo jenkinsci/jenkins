@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -60,7 +61,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             Stapler.CONVERT_UTILS.register(new EnumConverter(), RunParameterFilter.class);
         }
     }
-    
+
     private final String projectName;
     private final String runId;
     private final RunParameterFilter filter;
@@ -79,11 +80,11 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     /**
      * @deprecated as of 1.517
-     */ 
+     */
     @Deprecated
     public RunParameterDefinition(@NonNull String name, String projectName, @CheckForNull String description) {
-    	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
-    	this(name, projectName, description, RunParameterFilter.ALL);
+        // delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
+        this(name, projectName, description, RunParameterFilter.ALL);
     }
 
     private RunParameterDefinition(@NonNull String name, String projectName, String runId, @CheckForNull String description, @CheckForNull RunParameterFilter filter) {
@@ -118,7 +119,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      */
     @Exported
     public RunParameterFilter getFilter() {
-    	// if filter is null, default to RunParameterFilter.ALL
+        // if filter is null, default to RunParameterFilter.ALL
         return null == filter ? RunParameterFilter.ALL : filter;
     }
 
@@ -133,14 +134,14 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
                 return getProject().getBuilds().overThresholdOnly(Result.ABORTED).completedOnly();
             case SUCCESSFUL:
                 return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE).completedOnly();
-            case STABLE	:
+            case STABLE:
                 return getProject().getBuilds().overThresholdOnly(Result.SUCCESS).completedOnly();
             default:
                 return getProject().getBuilds();
         }
     }
 
-    @Extension @Symbol({"run","runParam"})
+    @Extension @Symbol({"run", "runParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
@@ -156,7 +157,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
-        
+
         public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
             return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.get());
         }
@@ -169,7 +170,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return createValue(runId);
         }
 
-        Run<?,?> lastBuild;
+        Run<?, ?> lastBuild;
         Job project = getProject();
 
         if (project == null) {
@@ -184,7 +185,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         case SUCCESSFUL:
             lastBuild = project.getLastSuccessfulBuild();
             break;
-        case STABLE	:
+        case STABLE:
             lastBuild = project.getLastStableBuild();
             break;
         default:
@@ -193,9 +194,9 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         if (lastBuild != null) {
-        	return createValue(lastBuild.getExternalizableId());
+            return createValue(lastBuild.getExternalizableId());
         } else {
-        	return null;
+            return null;
         }
     }
 

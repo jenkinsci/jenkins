@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.model.queue.Executables.getParentOf;
@@ -133,7 +134,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     @Override
-    @Exported(visibility=999)
+    @Exported(visibility = 999)
     public String getName() {
         return name;
     }
@@ -162,7 +163,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Override
     @Exported
     public String getDisplayName() {
-        if(null!=displayName) {
+        if (null != displayName) {
             return displayName;
         }
         // if the displayName is not set, then return the name as we use to do
@@ -202,7 +203,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
-    @WithBridgeMethods(value=Jenkins.class,castRequired=true)
+    @WithBridgeMethods(value = Jenkins.class, castRequired = true)
     @Override public @NonNull ItemGroup getParent() {
         if (parent == null) {
             throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
@@ -281,7 +282,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
         if (!hasPermission(Item.CONFIGURE)) {
             if (parent instanceof AccessControlled) {
-                ((AccessControlled)parent).checkPermission(Item.CREATE);
+                ((AccessControlled) parent).checkPermission(Item.CREATE);
             }
             checkPermission(Item.DELETE);
         }
@@ -318,17 +319,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                                 "User {2} has no {3} permission for existing job with the same name",
-                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name} );
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name});
                     }
                     // Don't explicitly mention that there is another item with the same name.
                     throw new Failure(Messages.Jenkins_NotAllowedName(newName));
                 }
             }
-        } catch(AccessDeniedException ex) {
+        } catch (AccessDeniedException ex) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                         "User {2} has {3} permission, but no {4} for existing job with the same name",
-                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name} );
+                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name});
             }
             throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
         }
@@ -386,7 +387,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
                 boolean success = false;
 
-                try {// rename data files
+                try { // rename data files
                     boolean interrupted = false;
                     boolean renamed = false;
 
@@ -477,16 +478,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if(n.length()==0)   return getName();
-        else                return n+'/'+getName();
+        if (n.length() == 0)   return getName();
+        else                return n + '/' + getName();
     }
 
     @Override
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if(n.length()==0)   return getDisplayName();
-        else                return n+" » "+getDisplayName();
+        if (n.length() == 0)   return getDisplayName();
+        else                return n + " » " + getDisplayName();
     }
 
     /**
@@ -543,11 +544,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         String shortUrl = getShortUrl();
         String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
-            String seed = Functions.getNearestAncestorUrl(req,this);
+            String seed = Functions.getNearestAncestorUrl(req, this);
             LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
-            if(seed!=null) {
+            if (seed != null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
-                return seed.substring(req.getContextPath().length()+1)+'/';
+                return seed.substring(req.getContextPath().length() + 1) + '/';
             }
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
@@ -590,7 +591,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     @Override
-    @Exported(visibility=999,name="url")
+    @Exported(visibility = 999, name = "url")
     public final String getAbsoluteUrl() {
         return Item.super.getAbsoluteUrl();
     }
@@ -615,7 +616,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @Override
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -627,11 +628,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
+
     private static class Replacer {
         private final String fullName;
+
         Replacer(AbstractItem i) {
             fullName = i.getFullName();
         }
+
         private Object readResolve() {
             Jenkins j = Jenkins.getInstanceOrNull();
             if (j == null) {
@@ -646,7 +650,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
         setDescription(req.getParameter("description"));
@@ -660,7 +664,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * which should now be unused by core but is left in case plugins are still using it.
      */
     @RequirePOST
-    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         delete();
         if (req == null || rsp == null) { // CLI
             return;
@@ -682,7 +686,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     @Override
-    public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void delete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         try {
             delete();
             rsp.setStatus(204);
@@ -825,7 +829,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            updateByXml((Source)new StreamSource(req.getReader()));
+            updateByXml((Source) new StreamSource(req.getReader()));
             return;
         }
 
@@ -839,6 +843,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * The user must have at least {@link #EXTENDED_READ}.
      * If he lacks {@link #CONFIGURE}, then any {@link Secret}s detected will be masked out.
      */
+
     @Restricted(NoExternalUse.class)
     public void writeConfigDotXml(OutputStream os) throws IOException {
         checkPermission(EXTENDED_READ);
@@ -866,7 +871,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
-        updateByXml((Source)source);
+        updateByXml((Source) source);
     }
 
     /**
@@ -890,13 +895,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
             // try to reflect the changes by reloading
             Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
-            if (o!=this) {
+            if (o != this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
-                throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
+                throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
             }
 
-            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void,IOException>() {
+            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
                 @Override public Void call() throws IOException {
                     onLoad(getParent(), getRootDir().getName());
                     return null;
@@ -977,10 +982,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @CLIResolver
     public static AbstractItem resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Item name") String name) throws CmdLineException {
+            @Argument(required = true, metaVar = "NAME", usage = "Item name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.get().getItemByFullName(name, AbstractItem.class);
-        if (item==null) {
+        if (item == null) {
             AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.get());
             throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
                     : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import static org.junit.Assert.assertEquals;
@@ -36,7 +37,7 @@ import org.junit.Test;
 public class UrlValidatorTest {
 
    private final boolean printStatus = false;
-   private final boolean printIndex = false;//print index that indicates current scheme,host,port,path, query test were using.
+   private final boolean printIndex = false; //print index that indicates current scheme,host,port,path, query test were using.
 
    @Before
    public void setUp() {
@@ -132,14 +133,14 @@ public class UrlValidatorTest {
 
    @Test
    public void testValidator202() {
-       String[] schemes = {"http","https"};
+       String[] schemes = {"http", "https"};
        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.NO_FRAGMENTS);
        assertTrue(urlValidator.isValid("http://l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.org"));
    }
 
    @Test
    public void testValidator204() {
-       String[] schemes = {"http","https"};
+       String[] schemes = {"http", "https"};
        UrlValidator urlValidator = new UrlValidator(schemes);
        assertTrue(urlValidator.isValid("http://tech.yahoo.com/rc/desktops/102;_ylt=Ao8yevQHlZ4On0O3ZJGXLEQFLZA5"));
    }
@@ -258,7 +259,7 @@ public class UrlValidatorTest {
 
         // Turn it on, and check
         // Note - we need to enable local urls when working with file:
-        validator = new UrlValidator(new String[] {"http","file"}, UrlValidator.ALLOW_LOCAL_URLS);
+        validator = new UrlValidator(new String[] {"http", "file"}, UrlValidator.ALLOW_LOCAL_URLS);
 
         assertTrue("http://apache.org/ should be allowed by default",
                  validator.isValid("http://www.apache.org/test/index.html"));
@@ -306,14 +307,14 @@ public class UrlValidatorTest {
         assertTrue(urlValidator.isValid("http://sample.ondemand.com/"));
         assertTrue(urlValidator.isValid("hTtP://sample.ondemand.CoM/"));
         assertTrue(urlValidator.isValid("httpS://SAMPLE.ONEMAND.COM/"));
-        urlValidator = new UrlValidator(new String[] {"HTTP","HTTPS"});
+        urlValidator = new UrlValidator(new String[] {"HTTP", "HTTPS"});
         assertTrue(urlValidator.isValid("http://sample.ondemand.com/"));
         assertTrue(urlValidator.isValid("hTtP://sample.ondemand.CoM/"));
         assertTrue(urlValidator.isValid("httpS://SAMPLE.ONEMAND.COM/"));
     }
 
     @Test
-    public void testValidator339(){
+    public void testValidator339() {
         UrlValidator urlValidator = new UrlValidator();
         assertTrue(urlValidator.isValid("http://www.cnn.com/WORLD/?hpt=sitenav")); // without
         assertTrue(urlValidator.isValid("http://www.cnn.com./WORLD/?hpt=sitenav")); // with
@@ -323,7 +324,7 @@ public class UrlValidatorTest {
     }
 
     @Test
-    public void testValidator339IDN(){
+    public void testValidator339IDN() {
         UrlValidator urlValidator = new UrlValidator();
         assertTrue(urlValidator.isValid("http://президент.рф/WORLD/?hpt=sitenav")); // without
         assertTrue(urlValidator.isValid("http://президент.рф./WORLD/?hpt=sitenav")); // with
@@ -333,14 +334,14 @@ public class UrlValidatorTest {
     }
 
     @Test
-    public void testValidator342(){
+    public void testValidator342() {
         UrlValidator urlValidator = new UrlValidator();
         assertTrue(urlValidator.isValid("http://example.rocks/"));
         assertTrue(urlValidator.isValid("http://example.rocks"));
     }
 
     @Test
-    public void testValidator411(){
+    public void testValidator411() {
         UrlValidator urlValidator = new UrlValidator();
         assertTrue(urlValidator.isValid("http://example.rocks:/"));
         assertTrue(urlValidator.isValid("http://example.rocks:0/"));
@@ -358,7 +359,7 @@ public class UrlValidatorTest {
     }
 
     @Test
-    public void testValidator452(){
+    public void testValidator452() {
       UrlValidator urlValidator = new UrlValidator();
       assertTrue(urlValidator.isValid("http://[::FFFF:129.144.52.38]:80/index.html"));
     }
@@ -488,7 +489,7 @@ public class UrlValidatorTest {
     }
 
    @Test
-   public void testValidator363(){
+   public void testValidator363() {
         UrlValidator urlValidator = new UrlValidator();
         assertTrue(urlValidator.isValid("http://www.example.org/a/b/hello..world"));
         assertTrue(urlValidator.isValid("http://www.example.org/a/hello..world"));
@@ -574,7 +575,7 @@ public class UrlValidatorTest {
 
   @Test
   public void testFragments() {
-   String[] schemes = {"http","https"};
+   String[] schemes = {"http", "https"};
    UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.NO_FRAGMENTS);
    assertFalse(urlValidator.isValid("http://apache.org/a/b/c#frag"));
    urlValidator = new UrlValidator(schemes);
@@ -689,7 +690,7 @@ public class UrlValidatorTest {
      */
     public static void main(String[] args) {
       UrlValidator uv = new UrlValidator();
-      for(String arg: args) {
+      for (String arg : args) {
           try {
               URI uri = new URI(arg);
               uri = uri.normalize();
@@ -712,7 +713,7 @@ public class UrlValidatorTest {
           } catch (URISyntaxException e) {
               System.out.println(e.getMessage());
           }
-          System.out.printf("isValid: %s%n",uv.isValid(arg));
+          System.out.printf("isValid: %s%n", uv.isValid(arg));
       }
    }
 

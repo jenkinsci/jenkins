@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import hudson.AbortException;
@@ -36,7 +37,7 @@ import hudson.AbortException;
  */
 class Latch {
     private final int n;
-    private int i=0;
+    private int i = 0;
     /**
      * If the synchronization on the latch is aborted/interrupted,
      * point to the stack trace where that happened. If null,
@@ -55,7 +56,7 @@ class Latch {
 
     public synchronized void abort(Throwable cause) {
         interrupted = new AbortException();
-        if (cause!=null)
+        if (cause != null)
             interrupted.initCause(cause);
         notifyAll();
     }
@@ -79,15 +80,15 @@ class Latch {
             throw e;
         }
 
-        check(n*2);
+        check(n * 2);
     }
 
     private void check(int threshold) throws InterruptedException {
         i++;
-        if (i==threshold) {
+        if (i == threshold) {
             notifyAll();
         } else {
-            while (i<threshold && interrupted==null) {
+            while (i < threshold && interrupted == null) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -99,8 +100,8 @@ class Latch {
         }
 
         // all of us either leave normally or get interrupted
-        if (interrupted!=null)
-            throw (InterruptedException)new InterruptedException().initCause(interrupted);
+        if (interrupted != null)
+            throw (InterruptedException) new InterruptedException().initCause(interrupted);
     }
 
     /**

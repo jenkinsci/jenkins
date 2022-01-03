@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.junit.Assert.assertNotNull;
@@ -57,7 +58,7 @@ public class ClassicPluginStrategyTest {
         File home = homeLoader.allocate();
 
         for (JenkinsRecipe.Runner r : recipes) {
-            r.decorateHome(this,home);
+            r.decorateHome(this, home);
         }
         LocalPluginManager pluginManager = new LocalPluginManager(home) {
             @Override
@@ -116,7 +117,7 @@ public class ClassicPluginStrategyTest {
         for (int i = 0; en.hasMoreElements(); i++) {
             String res = en.nextElement().toString();
             if (i == 0)
-                assertTrue("expected foo4, found "+res , res.contains("/foo4/"));
+                assertTrue("expected foo4, found " + res, res.contains("/foo4/"));
             else
                 fail("disabled dependency should not be included");
         }

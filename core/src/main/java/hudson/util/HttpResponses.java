@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -83,7 +84,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      *
      * @since 2.0
      */
-    public static HttpResponse okJSON(@NonNull Map<?,?> data) {
+    public static HttpResponse okJSON(@NonNull Map<?, ?> data) {
         return new JSONObjectResponse(data);
     }
 
@@ -97,7 +98,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse errorJSON(@NonNull String message) {
         return new JSONObjectResponse().error(message);
     }
-    
+
     /**
      * Set the response as an error response plus some data.
      * @param message The error "message" set on the response.
@@ -106,7 +107,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      *
      * @since 2.119
      */
-    public static HttpResponse errorJSON(@NonNull String message, @NonNull Map<?,?> data) {
+    public static HttpResponse errorJSON(@NonNull String message, @NonNull Map<?, ?> data) {
         return new JSONObjectResponse(data).error(message);
     }
 
@@ -173,7 +174,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
          * Create a response containing the supplied "data".
          * @param data The data.
          */
-        JSONObjectResponse(@NonNull Map<?,?> data) {
+        JSONObjectResponse(@NonNull Map<?, ?> data) {
             this();
             this.jsonObject.put("data", JSONObject.fromObject(data));
         }

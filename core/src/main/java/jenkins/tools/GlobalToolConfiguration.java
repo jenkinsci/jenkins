@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tools;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -82,7 +83,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
-        LOGGER.log(Level.FINE, "tools saved: "+result);
+        LOGGER.log(Level.FINE, "tools saved: " + result);
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 

@@ -75,19 +75,19 @@ public class SCMListenerTest {
     }
 
     private static class L1 extends L {
-        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) {
+        @Override public void onChangeLogParsed(AbstractBuild<?, ?> build, BuildListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }
 
     private static class L2 extends L {
-        @Override public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
+        @Override public void onChangeLogParsed(Run<?, ?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }
 
     private static class L3 extends L {
-        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(AbstractBuild<?, ?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
             cnt++;
             super.onChangeLogParsed(build, listener, changelog);
         }

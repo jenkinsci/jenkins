@@ -42,7 +42,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
      * Is there an active execution process going on?
      */
     public boolean isFixingActive() {
-        return fixThread !=null && fixThread.isAlive();
+        return fixThread != null && fixThread.isAlive();
     }
 
     /**
@@ -64,11 +64,11 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return new File(base,"log");
+        return new File(base, "log");
     }
 
     protected File getBaseDir() {
-        return new File(Jenkins.get().getRootDir(),getClass().getName());
+        return new File(Jenkins.get().getRootDir(), getClass().getName());
     }
 
     @Override

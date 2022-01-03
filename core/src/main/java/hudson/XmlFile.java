@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
@@ -126,7 +127,7 @@ public final class XmlFile {
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
     public XmlFile(File file) {
-        this(DEFAULT_XSTREAM,file);
+        this(DEFAULT_XSTREAM, file);
     }
 
     public XmlFile(XStream xs, File file) {
@@ -158,12 +159,12 @@ public final class XmlFile {
      */
     public Object read() throws IOException {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Reading "+file);
+            LOGGER.fine("Reading " + file);
         }
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
         } catch (RuntimeException | Error e) {
-            throw new IOException("Unable to read "+file,e);
+            throw new IOException("Unable to read " + file, e);
         }
     }
 
@@ -174,7 +175,7 @@ public final class XmlFile {
      *      The unmarshalled object. Usually the same as {@code o}, but would be different
      *      if the XML representation is completely new.
      */
-    public Object unmarshal( Object o ) throws IOException {
+    public Object unmarshal(Object o) throws IOException {
         return unmarshal(o, false);
     }
 
@@ -195,11 +196,11 @@ public final class XmlFile {
                 return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
             }
         } catch (RuntimeException | Error e) {
-            throw new IOException("Unable to read "+file,e);
+            throw new IOException("Unable to read " + file, e);
         }
     }
 
-    public void write( Object o ) throws IOException {
+    public void write(Object o) throws IOException {
         mkdirs();
         AtomicFileWriter w = force
                 ? new AtomicFileWriter(file)
@@ -215,7 +216,7 @@ public final class XmlFile {
                 writing.set(null);
             }
             w.commit();
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             throw new IOException(e);
         } finally {
             w.abort();
@@ -250,7 +251,7 @@ public final class XmlFile {
     public void delete() throws IOException {
         Files.deleteIfExists(Util.fileToPath(file));
     }
-    
+
     public void mkdirs() throws IOException {
         Util.createDirectories(Util.fileToPath(file.getParentFile()));
     }
@@ -313,6 +314,7 @@ public final class XmlFile {
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
             final String encoding;
+
             Eureka(String encoding) {
                 this.encoding = encoding;
             }
@@ -345,11 +347,11 @@ public final class XmlFile {
                 }
 
                 private void attempt() throws Eureka {
-                    if(loc==null)   return;
+                    if (loc == null)   return;
                     if (loc instanceof Locator2) {
                         Locator2 loc2 = (Locator2) loc;
                         String e = loc2.getEncoding();
-                        if(e!=null)
+                        if (e != null)
                             throw new Eureka(e);
                     }
                 }
@@ -357,7 +359,7 @@ public final class XmlFile {
             // can't reach here
             throw new AssertionError();
         } catch (Eureka e) {
-            if(e.encoding!=null)
+            if (e.encoding != null)
                 return e.encoding;
             // the environment can contain old version of Xerces and others that do not support Locator2
             // in such a case, assume UTF-8 rather than fail, since Jenkins internally always write XML in UTF-8

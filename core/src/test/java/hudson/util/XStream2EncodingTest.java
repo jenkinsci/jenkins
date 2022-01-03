@@ -92,6 +92,7 @@ public class XStream2EncodingTest {
 
     public static class Thing {
         public final String field;
+
         Thing(String field) {
             this.field = field;
         }

@@ -99,7 +99,7 @@ public abstract class ArchiverFactory implements Serializable {
     private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
         private final String prefix;
 
-        ZipWithoutSymLinksArchiverFactory(String prefix){
+        ZipWithoutSymLinksArchiverFactory(String prefix) {
             this.prefix = prefix;
         }
 

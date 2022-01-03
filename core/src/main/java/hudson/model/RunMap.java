@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static java.util.logging.Level.FINEST;
@@ -58,11 +59,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
+public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
      */
-    private final SortedMap<Integer,R> view = Collections.unmodifiableSortedMap(this);
+    private final SortedMap<Integer, R> view = Collections.unmodifiableSortedMap(this);
 
     private Constructor<R> cons;
 
@@ -107,13 +108,13 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
             @Override
             public boolean hasNext() {
-                return next!=null;
+                return next != null;
             }
 
             @Override
             public R next() {
                 last = next;
-                if (last!=null)
+                if (last != null)
                     next = last.getPreviousBuild();
                 else
                     throw new NoSuchElementException();
@@ -122,7 +123,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
             @Override
             public void remove() {
-                if (last==null)
+                if (last == null)
                     throw new UnsupportedOperationException();
                 removeValue(last);
             }
@@ -139,7 +140,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Gets the read-only view of this map.
      */
-    public SortedMap<Integer,R> getView() {
+    public SortedMap<Integer, R> getView() {
         return view;
     }
 
@@ -167,7 +168,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * {@link Run} factory.
      */
-    public interface Constructor<R extends Run<?,R>> {
+    public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
     }
 
@@ -226,7 +227,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     @Override
     protected R retrieve(File d) throws IOException {
-        if(new File(d,"build.xml").exists()) {
+        if (new File(d, "build.xml").exists()) {
             // if the build result file isn't in the directory, ignore it.
             try {
                 R b = cons.create(d);

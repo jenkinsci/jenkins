@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -87,6 +88,6 @@ public class SystemPropertiesTest {
      */
     protected void setWebAppInitParameter(String property, String value) {
         Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(ContextHandler.Context.class));
-        ((ContextHandler.Context)j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
+        ((ContextHandler.Context) j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
     }
 }

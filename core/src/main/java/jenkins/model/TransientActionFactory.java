@@ -84,19 +84,23 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
     private static class CacheKey {
         private final Class<?> type;
         private final Class<? extends Action> actionType;
+
         CacheKey(Class<?> type, Class<? extends Action> actionType) {
             this.type = type;
             this.actionType = actionType;
         }
+
         @Override
         public boolean equals(Object obj) {
             return obj instanceof CacheKey && type == ((CacheKey) obj).type && actionType == ((CacheKey) obj).actionType;
         }
+
         @Override
         public int hashCode() {
             return type.hashCode() ^ actionType.hashCode();
         }
     }
+
     @SuppressWarnings("rawtypes")
     private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>> cache =
         CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>>() {

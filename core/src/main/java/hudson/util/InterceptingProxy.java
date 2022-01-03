@@ -21,7 +21,7 @@ public abstract class InterceptingProxy {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 try {
-                    return call(object,method,args);
+                    return call(object, method, args);
                 } catch (InvocationTargetException e) {
                     throw e.getTargetException();
                 }

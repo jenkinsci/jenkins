@@ -35,27 +35,27 @@ public class InitMilestoneTest {
 
         @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
         public void extensionsAugmented() {
-            attained.add(order++,InitMilestone.EXTENSIONS_AUGMENTED);
+            attained.add(order++, InitMilestone.EXTENSIONS_AUGMENTED);
         }
 
         @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED)
         public void pluginsSystemConfigLoaded() {
-            attained.add(order++,InitMilestone.SYSTEM_CONFIG_LOADED);
+            attained.add(order++, InitMilestone.SYSTEM_CONFIG_LOADED);
         }
 
         @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED)
         public void pluginsSystemConfigAdapted() {
-            attained.add(order++,InitMilestone.SYSTEM_CONFIG_ADAPTED);
+            attained.add(order++, InitMilestone.SYSTEM_CONFIG_ADAPTED);
         }
 
         @Initializer(after = InitMilestone.JOB_LOADED)
         public void jobLoaded() {
-            attained.add(order++,InitMilestone.JOB_LOADED);
+            attained.add(order++, InitMilestone.JOB_LOADED);
         }
 
         @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public void jobConfigAdapted() {
-            attained.add(order++,InitMilestone.JOB_CONFIG_ADAPTED);
+            attained.add(order++, InitMilestone.JOB_CONFIG_ADAPTED);
         }
 
         public List<InitMilestone> getAttained() {

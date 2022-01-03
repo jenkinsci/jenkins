@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -67,7 +68,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * Escape hatch for the check on the maximum date for the expiration duration of the remember me cookie
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = 
+    public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK =
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 
     /**
@@ -113,46 +114,46 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     }
 
     @Override
-	public void onLoginSuccess(HttpServletRequest request, HttpServletResponse response,
-			Authentication successfulAuthentication) {
-		// Exit if the principal hasn't asked to be remembered
-		if (!rememberMeRequested(request, getParameter())) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Did not send remember-me cookie (principal did not set parameter '" +
-						getParameter() + "')");
-			}
+    public void onLoginSuccess(HttpServletRequest request, HttpServletResponse response,
+            Authentication successfulAuthentication) {
+        // Exit if the principal hasn't asked to be remembered
+        if (!rememberMeRequested(request, getParameter())) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Did not send remember-me cookie (principal did not set parameter '" +
+                        getParameter() + "')");
+            }
 
-			return;
-		}
+            return;
+        }
 
-		Jenkins j = Jenkins.getInstanceOrNull();
-		if (j != null && j.isDisableRememberMe()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +
-						"security configuration (principal did set parameter '" + getParameter() + "')");
-			}
-			// TODO log warning when receiving remember-me request despite the feature being disabled?
-			return;
-		}
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j != null && j.isDisableRememberMe()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +
+                        "security configuration (principal did set parameter '" + getParameter() + "')");
+            }
+            // TODO log warning when receiving remember-me request despite the feature being disabled?
+            return;
+        }
 
         // TODO is it really still necessary to reimplement all of the below, or could we simply override rememberMeRequested?
 
         Objects.requireNonNull(successfulAuthentication.getPrincipal());
         UserDetails.class.cast(successfulAuthentication.getPrincipal());
 
-		long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
-		String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
+        long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
+        String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
 
-		String signatureValue = makeTokenSignature(expiryTime, username, ((UserDetails) successfulAuthentication.getPrincipal()).getPassword());
-		int tokenLifetime = calculateLoginLifetime(request, successfulAuthentication);
-		setCookie(new String[] { username, Long.toString(expiryTime), signatureValue },
-				tokenLifetime, request, response);
+        String signatureValue = makeTokenSignature(expiryTime, username, ((UserDetails) successfulAuthentication.getPrincipal()).getPassword());
+        int tokenLifetime = calculateLoginLifetime(request, successfulAuthentication);
+        setCookie(new String[] { username, Long.toString(expiryTime), signatureValue },
+                tokenLifetime, request, response);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Added remember-me cookie for user '" + username + "', expiry: '" + new Date(expiryTime)
-							+ "'");
-		}
-	}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Added remember-me cookie for user '" + username + "', expiry: '" + new Date(expiryTime)
+                            + "'");
+        }
+    }
 
     @Override
     protected UserDetails processAutoLoginCookie(String[] cookieTokens, HttpServletRequest request, HttpServletResponse response) {
@@ -193,7 +194,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     protected boolean isTokenExpired(long tokenExpiryTimeMs) {
         long nowMs = System.currentTimeMillis();
         long maxExpirationMs = TimeUnit.SECONDS.toMillis(getTokenValiditySeconds()) + nowMs;
-        if(!SKIP_TOO_FAR_EXPIRATION_DATE_CHECK && tokenExpiryTimeMs > maxExpirationMs){
+        if (!SKIP_TOO_FAR_EXPIRATION_DATE_CHECK && tokenExpiryTimeMs > maxExpirationMs) {
             // attempt to use a cookie that has more than the maximum allowed expiration duration
             // was either created before a change of configuration or maliciously crafted
             long diffMs = tokenExpiryTimeMs - maxExpirationMs;
@@ -222,6 +223,6 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * Used to compute the token signature securely.
      */
-    private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class,"mac");
+    private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class, "mac");
 
 }

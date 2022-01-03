@@ -51,7 +51,7 @@ public class HudsonHomeDiskUsageMonitorTest {
 
         // and make sure it's gone
         try {
-            fail(getForm(mon)+" shouldn't be there");
+            fail(getForm(mon) + " shouldn't be there");
         } catch (ElementNotFoundException e) {
             // as expected
         }
