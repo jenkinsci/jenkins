@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class FullDuplexHttpStream {
     private final URL base;
-    
+
     private final OutputStream output;
     private final InputStream input;
 
@@ -65,7 +65,7 @@ public class FullDuplexHttpStream {
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
         con.addRequestProperty("Session", uuid.toString());
-        con.addRequestProperty("Side","download");
+        con.addRequestProperty("Side", "download");
         if (authorization != null) {
             con.addRequestProperty("Authorization", authorization);
         }
@@ -83,11 +83,11 @@ public class FullDuplexHttpStream {
         con.setDoOutput(true); // request POST
         con.setRequestMethod("POST");
         con.setChunkedStreamingMode(0);
-        con.setRequestProperty("Content-type","application/octet-stream");
+        con.setRequestProperty("Content-type", "application/octet-stream");
         con.addRequestProperty("Session", uuid.toString());
-        con.addRequestProperty("Side","upload");
+        con.addRequestProperty("Side", "upload");
         if (authorization != null) {
-        	con.addRequestProperty ("Authorization", authorization);
+            con.addRequestProperty("Authorization", authorization);
         }
         output = con.getOutputStream();
         LOGGER.fine("established upload side");
@@ -118,5 +118,5 @@ public class FullDuplexHttpStream {
 
     static final int BLOCK_SIZE = 1024;
     static final Logger LOGGER = Logger.getLogger(FullDuplexHttpStream.class.getName());
-    
+
 }

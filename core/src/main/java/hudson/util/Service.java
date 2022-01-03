@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static java.util.logging.Level.WARNING;
@@ -49,7 +50,7 @@ public class Service {
     public static <T> List<T> loadInstances(ClassLoader classLoader, Class<T> type) throws IOException {
         List<T> result = new ArrayList<>();
 
-        final Enumeration<URL> e = classLoader.getResources("META-INF/services/"+type.getName());
+        final Enumeration<URL> e = classLoader.getResources("META-INF/services/" + type.getName());
         while (e.hasMoreElements()) {
             URL url = e.nextElement();
             try (BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
@@ -80,7 +81,7 @@ public class Service {
     public static <T> void load(Class<T> spi, ClassLoader cl, Collection<Class<? extends T>> result) {
         try {
             Enumeration<URL> e = cl.getResources("META-INF/services/" + spi.getName());
-            while(e.hasMoreElements()) {
+            while (e.hasMoreElements()) {
                 final URL url = e.nextElement();
                 try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                     String line;
@@ -102,7 +103,7 @@ public class Service {
                 }
             }
         } catch (IOException x) {
-            LOGGER.log(Level.WARNING, "Failed to look up service providers for "+spi, x);
+            LOGGER.log(Level.WARNING, "Failed to look up service providers for " + spi, x);
         }
     }
 

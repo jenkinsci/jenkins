@@ -42,7 +42,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
 
     public static @NonNull <T extends GlobalConfigurationCategory> T get(Class<T> type) {
         T category = all().get(type);
-        if(category == null){
+        if (category == null) {
             throw new AssertionError("Category not found. It seems the " + type + " is not annotated with @Extension and so not registered");
         }
         return category;

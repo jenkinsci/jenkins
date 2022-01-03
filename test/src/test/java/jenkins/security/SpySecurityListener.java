@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +47,7 @@ public abstract class SpySecurityListener extends SecurityListener {
     public final EventQueue<String> failedToLogInCalls = new EventQueue<>();
     public final EventQueue<String> loggedOutCalls = new EventQueue<>();
 
-    public void clearPreviousCalls(){
+    public void clearPreviousCalls() {
         this.authenticatedCalls.clear();
         this.failedToAuthenticateCalls.clear();
         this.loggedInCalls.clear();
@@ -83,17 +84,17 @@ public abstract class SpySecurityListener extends SecurityListener {
     public static class EventQueue<T> {
         private final List<T> eventList = new ArrayList<>();
 
-        private EventQueue add(T t){
+        private EventQueue add(T t) {
             eventList.add(t);
             return this;
         }
 
-        public void assertLastEventIsAndThenRemoveIt(T expected){
+        public void assertLastEventIsAndThenRemoveIt(T expected) {
             assertLastEventIsAndThenRemoveIt(expected::equals);
         }
 
-        public void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate){
-            if(eventList.isEmpty()){
+        public void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate) {
+            if (eventList.isEmpty()) {
                 fail("event list is empty");
             }
 
@@ -102,11 +103,11 @@ public abstract class SpySecurityListener extends SecurityListener {
             eventList.clear();
         }
 
-        public void assertNoNewEvents(){
+        public void assertNoNewEvents() {
             assertEquals("list of event should be empty", 0, eventList.size());
         }
 
-        public void clear(){
+        public void clear() {
             eventList.clear();
         }
     }

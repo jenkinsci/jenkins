@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -47,8 +48,8 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<JobT,RunT>>
-    extends Job<JobT,RunT> {
+public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run<JobT, RunT>>
+    extends Job<JobT, RunT> {
 
     private static final Logger LOGGER = Logger.getLogger(ViewJob.class.getName());
 
@@ -84,11 +85,11 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      */
     @Deprecated
     protected ViewJob(Jenkins parent, String name) {
-        super(parent,name);
+        super(parent, name);
     }
 
     protected ViewJob(ItemGroup parent, String name) {
-        super(parent,name);
+        super(parent, name);
     }
 
     @Override
@@ -103,20 +104,20 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     }
 
     @Override
-    protected SortedMap<Integer,RunT> _getRuns() {
-        if(notLoaded || runs==null) {
+    protected SortedMap<Integer, RunT> _getRuns() {
+        if (notLoaded || runs == null) {
             // if none is loaded yet, do so immediately.
-            synchronized(this) {
-                if(runs==null)
+            synchronized (this) {
+                if (runs == null)
                     runs = new RunMap<>();
-                if(notLoaded) {
+                if (notLoaded) {
                     notLoaded = false;
-                    _reload();   
+                    _reload();
                 }
             }
         }
-        if(nextUpdate<System.currentTimeMillis()) {
-            if(!reloadingInProgress) {
+        if (nextUpdate < System.currentTimeMillis()) {
+            if (!reloadingInProgress) {
                 // schedule a new reloading operation.
                 // we don't want to block the current thread,
                 // so reloading is done asynchronously.
@@ -129,7 +130,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
                     }
                     reloadQueue = reloadThread.reloadQueue;
                 }
-                synchronized(reloadQueue) {
+                synchronized (reloadQueue) {
                     reloadQueue.add(this);
                     reloadQueue.notify();
                 }
@@ -150,7 +151,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             reload();
         } finally {
             reloadingInProgress = false;
-            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+TimeUnit.MINUTES.toMillis(1) : Long.MAX_VALUE;
+            nextUpdate = reloadPeriodically ? System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1) : Long.MAX_VALUE;
         }
     }
 
@@ -163,8 +164,8 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     protected abstract void reload();
 
     @Override
-    protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        super.submit(req,rsp);
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req, rsp);
         // make sure to reload to reflect this config change.
         nextUpdate = 0;
     }
@@ -188,12 +189,12 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         }
 
         private ViewJob getNext() throws InterruptedException {
-            synchronized(reloadQueue) {
+            synchronized (reloadQueue) {
                 // reload operations might eat InterruptException,
                 // so check the status every so often
-                while(reloadQueue.isEmpty() && !terminating())
+                while (reloadQueue.isEmpty() && !terminating())
                     reloadQueue.wait(TimeUnit.MINUTES.toMillis(1));
-                if(terminating())
+                if (terminating())
                     throw new InterruptedException();   // terminate now
                 ViewJob job = reloadQueue.iterator().next();
                 reloadQueue.remove(job);
@@ -230,8 +231,8 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      * <p>
      * We then switched to submission via HTTP, so this reloading is no longer necessary, so only do this
      * when explicitly requested.
-     * 
+     *
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean reloadPeriodically = SystemProperties.getBoolean(ViewJob.class.getName()+".reloadPeriodically");
+    public static boolean reloadPeriodically = SystemProperties.getBoolean(ViewJob.class.getName() + ".reloadPeriodically");
 }

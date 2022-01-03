@@ -27,8 +27,8 @@ public class ClockMonitorDescriptorTest {
     public void testClockMonitor() throws Exception {
         DumbSlave s = jenkins.createOnlineSlave();
         SlaveComputer c = s.getComputer();
-        if(c.isOffline())
-            fail("Slave failed to go online: "+c.getLog());
+        if (c.isOffline())
+            fail("Slave failed to go online: " + c.getLog());
 
         ClockDifference cd = ClockMonitor.DESCRIPTOR.monitor(c);
         long diff = cd.diff;

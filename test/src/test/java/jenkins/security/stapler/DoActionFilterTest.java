@@ -62,13 +62,21 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestAccessModifierUrl extends AbstractUnprotectedRootAction {
-        public TestAccessModifier getPublic() {return new TestAccessModifier();}
+        public TestAccessModifier getPublic() {
+            return new TestAccessModifier();
+        }
 
-        protected TestAccessModifier getProtected() {return new TestAccessModifier();}
+        protected TestAccessModifier getProtected() {
+            return new TestAccessModifier();
+        }
 
-        TestAccessModifier getInternal() {return new TestAccessModifier();}
+        TestAccessModifier getInternal() {
+            return new TestAccessModifier();
+        }
 
-        private TestAccessModifier getPrivate() {return new TestAccessModifier();}
+        private TestAccessModifier getPrivate() {
+            return new TestAccessModifier();
+        }
 
         public static class TestAccessModifier {
             @GET

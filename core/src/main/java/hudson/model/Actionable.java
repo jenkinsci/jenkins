@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -90,7 +91,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return an unmodifiable, possible empty list
      * @since 1.548
      */
-    @Exported(name="actions")
+    @Exported(name = "actions")
     @NonNull
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
@@ -147,7 +148,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings("ConstantConditions")
     public void addAction(@NonNull Action a) {
-        if(a==null) {
+        if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
         getActions().add(a);
@@ -306,7 +307,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
     @Deprecated
     public Action getAction(int index) {
-        if(actions==null)   return null;
+        if (actions == null)   return null;
         return actions.get(index);
     }
 
@@ -336,19 +337,19 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getAllActions()) {
-            if(a==null)
+            if (a == null)
                 continue;   // be defensive
             String urlName = a.getUrlName();
-            if(urlName==null)
+            if (urlName == null)
                 continue;
-            if(urlName.equals(token))
+            if (urlName.equals(token))
                 return a;
         }
         return null;
     }
 
     @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        return new ContextMenu().from(this,request,response);
+        return new ContextMenu().from(this, request, response);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Actionable.class.getName());

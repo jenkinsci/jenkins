@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
  * The builds also need a {@code sidepanel.jelly}.
  */
-@ExportedBean(defaultVisibility=2)
+@ExportedBean(defaultVisibility = 2)
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
@@ -87,7 +88,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     @Deprecated
-    public AbstractProject<?,?> getOwner() {
+    public AbstractProject<?, ?> getOwner() {
         return (AbstractProject) owner;
     }
 
@@ -137,8 +138,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)
-            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
+        if (delay == null)
+            delay = new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
         List<ParameterValue> values = new ArrayList<>();
@@ -151,7 +152,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             String name = jo.getString("name");
 
             ParameterDefinition d = getParameterDefinition(name);
-            if(d==null)
+            if (d == null)
                 throw new IllegalArgumentException("No such parameter definition: " + name);
             ParameterValue parameterValue = d.createValue(req, jo);
             if (parameterValue != null) {
@@ -161,13 +162,13 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
         }
 
-    	WaitingItem item = Jenkins.get().getQueue().schedule(
+        WaitingItem item = Jenkins.get().getQueue().schedule(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-        if (item!=null) {
+        if (item != null) {
             String url = formData.optString("redirectTo");
-            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
-                url = req.getContextPath()+'/'+item.getUrl();
-            rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
+            if (url == null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
+                url = req.getContextPath() + '/' + item.getUrl();
+            rsp.sendRedirect(formData.optInt("statusCode", SC_CREATED), url);
         } else
             // send the user back to the job top page.
             rsp.sendRedirect(".");
@@ -176,19 +177,19 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     /** @deprecated use {@link #buildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+        buildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<>();
-        for (ParameterDefinition d: parameterDefinitions) {
-        	ParameterValue value = d.createValue(req);
-        	if (value != null) {
-        		values.add(value);
-        	}
+        for (ParameterDefinition d : parameterDefinitions) {
+            ParameterValue value = d.createValue(req);
+            if (value != null) {
+                values.add(value);
+            }
         }
-        if (delay==null)
-            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
+        if (delay == null)
+            delay = new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
         ScheduleResult scheduleResult = Jenkins.get().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
@@ -221,7 +222,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty) super.newInstance(req, formData);
             if (prop != null && prop.parameterDefinitions.isEmpty()) {
                 return null;
             }

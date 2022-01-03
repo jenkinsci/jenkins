@@ -62,6 +62,7 @@ public class Jenkins19124Test {
         public String getAlpha() {
             return "alpha";
         }
+
         public String getBravo() {
             return "2";
         }

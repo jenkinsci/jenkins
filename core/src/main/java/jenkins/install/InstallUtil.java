@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import static java.util.logging.Level.SEVERE;
@@ -76,10 +77,12 @@ public class InstallUtil {
      * Simple chain pattern using iterator.next()
      */
     private static class ProviderChain<T> implements Provider<T> {
-        private final Iterator<Function<Provider<T>,T>> functions;
-        ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
+        private final Iterator<Function<Provider<T>, T>> functions;
+
+        ProviderChain(Iterator<Function<Provider<T>, T>> functions) {
             this.functions = functions;
         }
+
         @Override
         public T get() {
             return functions.next().apply(this);
@@ -100,7 +103,7 @@ public class InstallUtil {
      * Returns the next state during a transition from the current install state
      */
     /*package*/ static InstallState getNextInstallState(InstallState current) {
-        List<Function<Provider<InstallState>,InstallState>> installStateFilterChain = new ArrayList<>();
+        List<Function<Provider<InstallState>, InstallState>> installStateFilterChain = new ArrayList<>();
         for (InstallStateFilter setupExtension : InstallStateFilter.all()) {
             installStateFilterChain.add(next -> setupExtension.getNextInstallState(current, next));
         }
@@ -163,7 +166,7 @@ public class InstallUtil {
             Jenkins j = Jenkins.get();
 
             // Allow for skipping
-            if(shouldNotRun) {
+            if (shouldNotRun) {
                 InstallState.INITIAL_SETUP_COMPLETED.initializeState();
                 return j.getInstallState();
             }
@@ -280,12 +283,12 @@ public class InstallUtil {
      * Returns a list of any plugins that are persisted in the installing list
      */
     @SuppressWarnings("unchecked")
-	public static synchronized @CheckForNull Map<String,String> getPersistedInstallStatus() {
+    public static synchronized @CheckForNull Map<String, String> getPersistedInstallStatus() {
         File installingPluginsFile = getInstallingPluginsFile();
-        if(installingPluginsFile == null || !installingPluginsFile.exists()) {
-		return null;
+        if (installingPluginsFile == null || !installingPluginsFile.exists()) {
+            return null;
         }
-        return (Map<String,String>)new XStream().fromXML(installingPluginsFile);
+        return (Map<String, String>) new XStream().fromXML(installingPluginsFile);
     }
 
     /**
@@ -293,29 +296,29 @@ public class InstallUtil {
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();
-	if(installingPlugins == null || installingPlugins.isEmpty()) {
-		try {
-			Files.deleteIfExists(installingPluginsFile.toPath());
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-		return;
-	}
-	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
-	Map<String,String> statuses = new HashMap<>();
-	for(UpdateCenterJob j : installingPlugins) {
-		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
-			InstallationJob ij = (InstallationJob)j;
-			InstallationStatus status = ij.status;
-			String statusText = status.getType();
-			if(status instanceof Installing) { // flag currently installing plugins as pending
-				statusText = "Pending";
-			}
-			statuses.put(ij.plugin.name, statusText);
-		}
-	}
+        if (installingPlugins == null || installingPlugins.isEmpty()) {
+            try {
+                Files.deleteIfExists(installingPluginsFile.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return;
+        }
+        LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
+        Map<String, String> statuses = new HashMap<>();
+        for (UpdateCenterJob j : installingPlugins) {
+            if (j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
+                InstallationJob ij = (InstallationJob) j;
+                InstallationStatus status = ij.status;
+                String statusText = status.getType();
+                if (status instanceof Installing) { // flag currently installing plugins as pending
+                    statusText = "Pending";
+                }
+                statuses.put(ij.plugin.name, statusText);
+            }
+        }
         try {
-		String installingPluginXml = new XStream().toXML(statuses);
+            String installingPluginXml = new XStream().toXML(statuses);
             FileUtils.write(installingPluginsFile, installingPluginXml);
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + installingPluginsFile.getAbsolutePath(), e);
@@ -325,7 +328,7 @@ public class InstallUtil {
     /**
      * Call to remove any active install status
      */
-	public static void clearInstallStatus() {
-		persistInstallStatus(null);
-	}
+    public static void clearInstallStatus() {
+        persistInstallStatus(null);
+    }
 }

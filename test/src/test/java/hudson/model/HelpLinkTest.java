@@ -32,15 +32,15 @@ import org.jvnet.hudson.test.JenkinsRule;
 
     "Executing negative(hudson.model.HelpLinkTest)@1" prio=5 tid=0x1 nid=NA waiting
       java.lang.Thread.State: WAITING
-    	  at java.lang.Object.wait(Object.java:-1)
-    	  at com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
-    	  at com.gargoylesoftware.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
-    	  at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
-    	  at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
-    	  at com.gargoylesoftware.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
-    	  at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:70)
-    	  at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:61)
-    	  at hudson.model.HelpLinkTest.negative(HelpLinkTest.java:106)
+          at java.lang.Object.wait(Object.java:-1)
+          at com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
+          at com.gargoylesoftware.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
+          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
+          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
+          at com.gargoylesoftware.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
+          at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:70)
+          at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:61)
+          at hudson.model.HelpLinkTest.negative(HelpLinkTest.java:106)
 
     In debugger, I can see that JavaScriptJobManagerImpl.waitForJobs is looping through yet each time getJobCount()>0
     because there's always some window.setTimeout activities that appear to be scheduled. Common ones are:
@@ -94,10 +94,10 @@ public class HelpLinkTest {
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
         List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='jenkins-help-button']");
-        assertTrue(helpLinks.size()>0);
-        System.out.println("Clicking "+helpLinks.size()+" help links");
+        assertTrue(helpLinks.size() > 0);
+        System.out.println("Clicking " + helpLinks.size() + " help links");
 
-        for (HtmlAnchor helpLink : (List<HtmlAnchor>)helpLinks) {
+        for (HtmlAnchor helpLink : (List<HtmlAnchor>) helpLinks) {
             HtmlElementUtil.click(helpLink);
         }
     }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
@@ -42,6 +43,6 @@ import org.kohsuke.stapler.StaplerResponse;
 public class HudsonIsLoading {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
-        req.getView(this,"index.jelly").forward(req,rsp);
+        req.getView(this, "index.jelly").forward(req, rsp);
     }
 }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -119,7 +120,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      */
     public synchronized Permission find(String name) {
         for (Permission p : permissions) {
-            if(p.name.equals(name))
+            if (p.name.equals(name))
                 return p;
         }
         return null;
@@ -129,8 +130,8 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     public int compareTo(PermissionGroup that) {
         // first, sort by the 'compare order' number. This is so that
         // we can put Hudson.PERMISSIONS first.
-        int r= this.compareOrder()-that.compareOrder();
-        if(r!=0)    return r;
+        int r = this.compareOrder() - that.compareOrder();
+        if (r != 0)    return r;
 
         // among the permissions of the same group, just sort by their names
         // so that the sort order is consistent regardless of classloading order.
@@ -138,7 +139,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     private int compareOrder() {
-        if(owner==Hudson.class)    return 0;
+        if (owner == Hudson.class)    return 0;
         return 1;
     }
 

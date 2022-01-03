@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,16 +81,24 @@ public class IsOverriddenTest {
 
     public abstract static class Base<T> {
         protected abstract void method();
+
         private void aPrivateMethod() {}
+
         public void setX(T t) {}
+
         public T getX() { return null; }
     }
+
     public abstract class Intermediate extends Base<Integer> {
         protected void method() {}
+
         private void aPrivateMethod() {}
+
         public void setX(Integer i) {}
+
         public Integer getX() { return 0; }
     }
+
     public class Derived extends Intermediate {}
 
     @Issue("JENKINS-62723")
@@ -128,23 +137,31 @@ public class IsOverriddenTest {
             return null;
         });
     }
+
     public interface X {
         void m1();
+
         default void m2() {}
     }
+
     public static class X1 implements X {
         public void m1() {}
     }
+
     public static class X2 implements X {
         public final void m1() {}
     }
+
     public static class X3 implements X {
         public void m1() {}
+
         @Override
         public void m2() {}
     }
+
     public static class X4 implements X {
         public void m1() {}
+
         @Override
         public final void m2() {}
     }
@@ -203,21 +220,28 @@ public class IsOverriddenTest {
             return null;
         });
     }
+
     private interface I1 {
         String foo();
+
         String bar();
     }
+
     private interface I2 extends I1 {
         default String bar() { return "default"; }
     }
+
     private abstract static class C1 implements I1 {
     }
+
     private abstract static class C2 extends C1 implements I2 {
         @Override public abstract String foo();
     }
+
     private abstract static class C3 extends C2 {
         @Override public String foo() { return "foo"; }
     }
+
     private static class C4 extends C3 implements I1 {
         @Override public String bar() { return "bar"; }
     }

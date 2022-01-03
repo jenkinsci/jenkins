@@ -94,6 +94,7 @@ public class BootFailureTest {
             return null;    // didn't boot
         }
     }
+
     @Rule
     public CustomRule j = new CustomRule();
 
@@ -164,6 +165,7 @@ public class BootFailureTest {
         j.newHudson();
         assertEquals(Collections.singletonList("1"), runRecord);
     }
+
     @TestExtension("interruptedStartup")
     public static class PauseBoot extends ItemListener {
         @Override

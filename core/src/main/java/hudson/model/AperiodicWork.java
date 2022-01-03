@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
@@ -49,10 +50,10 @@ import jenkins.util.Timer;
  * @author vjuranek
  * @since 1.410
  */
-@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
+@SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPoint {
 
-	protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**
      * Gets the number of milliseconds between successive executions.
@@ -81,18 +82,18 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
     public long getInitialDelay() {
         long l = RANDOM.nextLong();
         // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
-        if (l==Long.MIN_VALUE)
+        if (l == Long.MIN_VALUE)
             l++;
-        return Math.abs(l)%getRecurrencePeriod();
+        return Math.abs(l) % getRecurrencePeriod();
     }
 
     @Override
-    public final void doRun() throws Exception{
-    	doAperiodicRun();
+    public final void doRun() throws Exception {
+        doAperiodicRun();
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 
-    @Initializer(after= JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
         // start all AperidocWorks
         ExtensionList<AperiodicWork> extensionList = all();

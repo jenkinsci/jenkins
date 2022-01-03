@@ -25,10 +25,10 @@
 package jenkins.model.item_category;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.RestrictedSince;
 import hudson.model.TopLevelItemDescriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -47,8 +47,8 @@ public abstract class ItemCategory implements ExtensionPoint {
      * See <a href="https://issues.jenkins.io/browse/JENKINS-36593">JENKINS-36593</a> for more info.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "TODO needs triage")
-    public static int MIN_TOSHOW = 1;
+    @RestrictedSince("2.14")
+    public static final int MIN_TOSHOW = 1;
 
     /**
      * Helpful to set the order.

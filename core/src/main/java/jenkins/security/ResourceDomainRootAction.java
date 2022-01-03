@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static java.time.Instant.now;
@@ -271,7 +272,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private Instant timestamp;
 
         @VisibleForTesting
-        Token (@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
+        Token(@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;

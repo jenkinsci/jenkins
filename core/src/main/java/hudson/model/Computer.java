@@ -23,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -263,7 +264,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      /**
      * Returns list of all boxes {@link ComputerPanelBox}s.
      */
-    public List<ComputerPanelBox> getComputerPanelBoxs(){
+    public List<ComputerPanelBox> getComputerPanelBoxs() {
         return ComputerPanelBox.all(this);
     }
 
@@ -283,7 +284,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Collections.unmodifiableList(result);
     }
 
-    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
     @Override
     public void addAction(@NonNull Action a) {
         if (a == null) {
@@ -301,7 +302,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #relocateOldLogs()
      */
     public @NonNull File getLogFile() {
-        return new File(getLogDir(),"slave.log");
+        return new File(getLogDir(), "slave.log");
     }
 
     /**
@@ -312,7 +313,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @NonNull File getLogDir() {
-        File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
+        File dir = new File(Jenkins.get().getRootDir(), "logs/slaves/" + nodeName);
         synchronized (logDirLock) {
             try {
                 IOUtils.mkdirs(dir);
@@ -387,7 +388,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return "";
         }
         // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("","");
+        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
         // regex to remove commented reason base string
         String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
         // regex to remove non-commented reason base string
@@ -421,7 +422,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * If {@link #getChannel()}==null, attempts to relaunch the agent.
      */
-    public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+    public abstract void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException;
 
     /**
      * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
@@ -516,10 +517,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public Future<?> disconnect(OfflineCause cause) {
         recordTermination();
         offlineCause = cause;
-        if (Util.isOverridden(Computer.class,getClass(),"disconnect"))
+        if (Util.isOverridden(Computer.class, getClass(), "disconnect"))
             return disconnect();    // legacy subtypes that extend disconnect().
 
-        connectTime=0;
+        connectTime = 0;
         return Futures.precomputed(null);
     }
 
@@ -532,11 +533,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public Future<?> disconnect() {
         recordTermination();
-        if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
+        if (Util.isOverridden(Computer.class, getClass(), "disconnect", OfflineCause.class))
             // if the subtype already derives disconnect(OfflineCause), delegate to it
             return disconnect(null);
 
-        connectTime=0;
+        connectTime = 0;
         return Futures.precomputed(null);
     }
 
@@ -632,7 +633,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public boolean isOffline() {
-        return temporarilyOffline || getChannel()==null;
+        return temporarilyOffline || getChannel() == null;
     }
 
     public final boolean isOnline() {
@@ -702,7 +703,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
-        setTemporarilyOffline(temporarilyOffline,null);
+        setTemporarilyOffline(temporarilyOffline, null);
     }
 
     /**
@@ -803,7 +804,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable)Jenkins.get().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class)).node(getNode());
     }
 
     /**
@@ -811,8 +812,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * configuration is updated.
      */
     protected void setNode(Node node) {
-        assert node!=null;
-        if(node instanceof Slave)
+        assert node != null;
+        if (node instanceof Slave)
             this.nodeName = node.getNodeName();
         else
             this.nodeName = null;
@@ -894,9 +895,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @GuardedBy("hudson.model.Queue.lock")
     private void setNumExecutors(int n) {
         this.numExecutors = n;
-        final int diff = executors.size()-n;
+        final int diff = executors.size() - n;
 
-        if (diff>0) {
+        if (diff > 0) {
             // we have too many executors
             // send signal to all idle executors to potentially kill them off
             // need the Queue maintenance lock held to prevent concurrent job assignment on the idle executors
@@ -909,7 +910,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             });
         }
 
-        if (diff<0) {
+        if (diff < 0) {
             // if the number is increased, add new ones
             addNewExecutorIfNecessary();
         }
@@ -945,7 +946,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public int countIdle() {
         int n = 0;
         for (Executor e : executors) {
-            if(e.isIdle())
+            if (e.isIdle())
                 n++;
         }
         return n;
@@ -955,7 +956,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns the number of {@link Executor}s that are doing some work right now.
      */
     public final int countBusy() {
-        return countExecutors()-countIdle();
+        return countExecutors() - countIdle();
     }
 
     /**
@@ -1009,14 +1010,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
         List<DisplayExecutor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
         int index = 0;
-        for (Executor e: executors) {
+        for (Executor e : executors) {
             if (e.isDisplayCell()) {
                 result.add(new DisplayExecutor(Integer.toString(index + 1), String.format("executors/%d", index), e));
             }
             index++;
         }
         index = 0;
-        for (OneOffExecutor e: oneOffExecutors) {
+        for (OneOffExecutor e : oneOffExecutors) {
             if (e.isDisplayCell()) {
                 result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
             }
@@ -1033,7 +1034,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (!oneOffExecutors.isEmpty())
             return false;
         for (Executor e : executors)
-            if(!e.isIdle())
+            if (!e.isIdle())
                 return false;
         return true;
     }
@@ -1043,7 +1044,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final boolean isPartiallyIdle() {
         for (Executor e : executors)
-            if(e.isIdle())
+            if (e.isIdle())
                 return true;
         return false;
     }
@@ -1156,9 +1157,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Expose monitoring data for the remote API.
      */
-    @Exported(inline=true)
-    public Map<String/*monitor name*/,Object> getMonitorData() {
-        Map<String,Object> r = new HashMap<>();
+    @Exported(inline = true)
+    public Map<String/*monitor name*/, Object> getMonitorData() {
+        Map<String, Object> r = new HashMap<>();
         if (hasPermission(CONNECT)) {
             for (NodeMonitor monitor : NodeMonitor.getAll())
                 r.put(monitor.getClass().getName(), monitor.data(this));
@@ -1170,7 +1171,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the system properties of the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
      */
-    public Map<Object,Object> getSystemProperties() throws IOException, InterruptedException {
+    public Map<Object, Object> getSystemProperties() throws IOException, InterruptedException {
         return RemotingDiagnostics.getSystemProperties(getChannel());
     }
 
@@ -1179,7 +1180,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      Use {@link #getEnvironment()} instead.
      */
     @Deprecated
-    public Map<String,String> getEnvVars() throws IOException, InterruptedException {
+    public Map<String, String> getEnvVars() throws IOException, InterruptedException {
         return getEnvironment();
     }
 
@@ -1208,19 +1209,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         EnvVars env = new EnvVars();
 
         Node node = getNode();
-        if (node==null)     return env; // bail out
+        if (node == null)     return env; // bail out
 
-        for (NodeProperty nodeProperty: Jenkins.get().getGlobalNodeProperties()) {
-            nodeProperty.buildEnvVars(env,listener);
+        for (NodeProperty nodeProperty : Jenkins.get().getGlobalNodeProperties()) {
+            nodeProperty.buildEnvVars(env, listener);
         }
 
-        for (NodeProperty nodeProperty: node.getNodeProperties()) {
-            nodeProperty.buildEnvVars(env,listener);
+        for (NodeProperty nodeProperty : node.getNodeProperties()) {
+            nodeProperty.buildEnvVars(env, listener);
         }
 
         // TODO: hmm, they don't really belong
         String rootUrl = Jenkins.get().getRootUrl();
-        if(rootUrl!=null) {
+        if (rootUrl != null) {
             env.put("HUDSON_URL", rootUrl); // Legacy.
             env.put("JENKINS_URL", rootUrl);
         }
@@ -1233,7 +1234,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return
      *      key is the thread name, and the value is the pre-formatted dump.
      */
-    public Map<String,String> getThreadDump() throws IOException, InterruptedException {
+    public Map<String, String> getThreadDump() throws IOException, InterruptedException {
         return RemotingDiagnostics.getThreadDump(getChannel());
     }
 
@@ -1241,7 +1242,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Obtains the heap dump.
      */
     public HeapDump getHeapDump() throws IOException {
-        return new HeapDump(this,getChannel());
+        return new HeapDump(this, getChannel());
     }
 
     /**
@@ -1267,21 +1268,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      because the agent is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
-        if(hostNameCached)
+        if (hostNameCached)
             // in the worst case we end up having multiple threads computing the host name simultaneously, but that's not harmful, just wasteful.
             return cachedHostName;
 
         VirtualChannel channel = getChannel();
-        if(channel==null)   return null; // can't compute right now
+        if (channel == null)   return null; // can't compute right now
 
-        for( String address : channel.call(new ListPossibleNames())) {
+        for (String address : channel.call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
-                if(!(ia instanceof Inet4Address)) {
+                if (!(ia instanceof Inet4Address)) {
                     LOGGER.log(Level.FINE, "{0} is not an IPv4 address", address);
                     continue;
                 }
-                if(!ComputerPinger.checkIsReachable(ia, 3)) {
+                if (!ComputerPinger.checkIsReachable(ia, 3)) {
                     LOGGER.log(Level.FINE, "{0} didn't respond to ping", address);
                     continue;
                 }
@@ -1316,7 +1317,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         oneOffExecutors.remove(e);
     }
 
-    private static class ListPossibleNames extends MasterToSlaveCallable<List<String>,IOException> {
+    private static class ListPossibleNames extends MasterToSlaveCallable<List<String>, IOException> {
         /**
          * In the normal case we would use {@link Computer} as the logger's name, however to
          * do that we would have to send the {@link Computer} class over to the remote classloader
@@ -1339,12 +1340,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
-                    if(ia.isLoopbackAddress()) {
+                    if (ia.isLoopbackAddress()) {
                         LOGGER.log(Level.FINE, "{0} is a loopback address", ia);
                         continue;
                     }
 
-                    if(!(ia instanceof Inet4Address)) {
+                    if (!(ia instanceof Inet4Address)) {
                         LOGGER.log(Level.FINE, "{0} is not an IPv4 address", ia);
                         continue;
                     }
@@ -1355,14 +1356,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
             return names;
         }
+
         private static final long serialVersionUID = 1L;
     }
 
-    private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
+    private static class GetFallbackName extends MasterToSlaveCallable<String, IOException> {
         @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
         }
+
         private static final long serialVersionUID = 1L;
     }
 
@@ -1379,12 +1382,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 //
 //
     @Restricted(DoNotUse.class)
-    public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
     }
 
     @Restricted(DoNotUse.class)
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
     }
 
@@ -1395,7 +1398,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 2.215
      */
     @Restricted(DoNotUse.class)
-    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
             if (p.getLastBuild() != null) {
@@ -1412,14 +1415,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @RequirePOST
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        if(!temporarilyOffline) {
+        if (!temporarilyOffline) {
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
                     new OfflineCause.UserCause(User.current(), offlineMessage));
         } else {
             checkPermission(CONNECT);
-            setTemporarilyOffline(!temporarilyOffline,null);
+            setTemporarilyOffline(!temporarilyOffline, null);
         }
         return HttpResponses.redirectToDot();
     }
@@ -1440,7 +1443,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Dumps the contents of the export table.
      */
-    public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+    public void doDumpExportTable(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         // this is a debug probe and may expose sensitive information
         checkPermission(Jenkins.ADMINISTER);
 
@@ -1460,7 +1463,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
+    private static final class DumpExportTableTask extends MasterToSlaveCallable<String, IOException> {
         @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();
@@ -1495,7 +1498,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Accepts the update to the node configuration.
      */
     @POST
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
@@ -1512,7 +1515,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
-        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors)<=0) {
+        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors) <= 0) {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
@@ -1562,7 +1565,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (previous == null) {
             throw HttpResponses.notFound();
         }
-        Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
+        Node result = (Node) Jenkins.XSTREAM2.fromXML(source);
         if (previous.getClass() != result.getClass()) {
             // ensure node type doesn't change
             throw HttpResponses.errorWithoutStack(SC_BAD_REQUEST, "Node types do not match");
@@ -1606,7 +1609,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Handles incremental log.
      */
-    public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
         getLogText().doProgressText(req, rsp);
     }
 
@@ -1656,10 +1659,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for built-in node") String name) throws CmdLineException {
+            @Argument(required = true, metaVar = "NAME", usage = "Agent name, or empty string for built-in node") String name) throws CmdLineException {
         Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
-        if (item==null) {
+        if (item == null) {
             List<String> names = ComputerSet.getComputerNames();
             String adv = EditDistance.findNearest(name, names);
             throw new IllegalArgumentException(adv == null ?
@@ -1686,7 +1689,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
-        if (logfiles==null)     return;
+        if (logfiles == null)     return;
 
         for (File f : logfiles) {
             Matcher m = logfile.matcher(f.getName());
@@ -1695,7 +1698,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 try {
                     Util.createDirectories(newLocation.getParentFile().toPath());
                     Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                    LOGGER.log(Level.INFO, "Relocated log file {0} to {1}", new Object[] {f.getPath(), newLocation.getPath()});
                 } catch (IOException | InvalidPathException e) {
                     LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
@@ -1788,6 +1791,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public static class TerminationRequest extends RuntimeException {
         private final long when;
+
         public TerminationRequest(String message) {
             super(message);
             this.when = System.currentTimeMillis();
@@ -1804,7 +1808,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class, Messages._Computer_Permissions_Title());
     public static final Permission CONFIGURE =
             new Permission(
                     PERMISSIONS,

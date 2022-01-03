@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static java.util.Objects.requireNonNull;
@@ -55,6 +56,7 @@ public class UpdateCenterTest {
             assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
         }
     }
+
     private void doData(String location) throws Exception {
         URL url = new URL(location);
         String jsonp = DownloadService.loadJSON(url);

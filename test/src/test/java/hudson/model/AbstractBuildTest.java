@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -118,10 +119,10 @@ public class AbstractBuildTest {
 
         j.buildAndAssertSuccess(project);
 
-		EnvVars envVars = builder.getEnvVars();
-		assertEquals("value", envVars.get("KEY1"));
-		assertEquals("value", envVars.get("KEY2"));
-	}
+        EnvVars envVars = builder.getEnvVars();
+        assertEquals("value", envVars.get("KEY1"));
+        assertEquals("value", envVars.get("KEY2"));
+    }
 
     /**
      * Makes sure that raw console output doesn't get affected by XML escapes.
@@ -142,7 +143,7 @@ public class AbstractBuildTest {
         assertThat(rsp.getWebResponse().getContentAsString(), containsString(out));
     }
 
-    private void assertCulprits(AbstractBuild<?,?> b, String... expectedIds) throws IOException, SAXException {
+    private void assertCulprits(AbstractBuild<?, ?> b, String... expectedIds) throws IOException, SAXException {
         Set<String> actual = new TreeSet<>();
         for (User u : b.getCulprits()) {
             actual.add(u.getId());
@@ -158,11 +159,11 @@ public class AbstractBuildTest {
             assertNotNull(culpritsArray);
             assertTrue(culpritsArray instanceof JSONArray);
             Set<String> fromApi = new TreeSet<>();
-            for (Object o : ((JSONArray)culpritsArray).toArray()) {
+            for (Object o : ((JSONArray) culpritsArray).toArray()) {
                 assertTrue(o instanceof JSONObject);
-                Object id = ((JSONObject)o).get("id");
+                Object id = ((JSONObject) o).get("id");
                 if (id instanceof String) {
-                    fromApi.add((String)id);
+                    fromApi.add((String) id);
                 }
             }
             assertEquals(fromApi, new TreeSet<>(Arrays.asList(expectedIds)));
@@ -275,9 +276,10 @@ public class AbstractBuildTest {
     }
 
     private static class ThrowBuilder extends Builder {
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             throw new NullPointerException();
         }
+
         @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
         public static class DescriptorImpl extends Descriptor<Builder> {}
     }
@@ -311,6 +313,7 @@ public class AbstractBuildTest {
 
                 return true;
             }
+
             private Object writeReplace() {
                 return new Object();
             }

@@ -131,7 +131,7 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuildWrapperThrowsError extends BuildWrapper {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
 
@@ -147,9 +147,10 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuilderThrowsError extends Builder {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
+
     @Extension public static final Descriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor {

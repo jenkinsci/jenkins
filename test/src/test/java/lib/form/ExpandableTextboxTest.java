@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
@@ -69,7 +70,7 @@ public class ExpandableTextboxTest {
 
         NodeList textareas = page.getElementsByTagName("textarea");
         assertEquals(1, textareas.getLength());
-        assertEquals(j.jenkins.getSystemMessage(),textareas.item(0).getTextContent());
+        assertEquals(j.jenkins.getSystemMessage(), textareas.item(0).getTextContent());
     }
 
     /**
@@ -79,7 +80,7 @@ public class ExpandableTextboxTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), POST);
         req.setEncodingType(null);
-        req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
+        req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>" + jellyScript + "</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;
     }
@@ -115,7 +116,7 @@ public class ExpandableTextboxTest {
         assertNotEquals("hacked", p.getTitleText());
     }
 
-    private HtmlButtonInput getExpandButton(HtmlPage page){
+    private HtmlButtonInput getExpandButton(HtmlPage page) {
         DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
         // the first one is the text input
         assertEquals(2, buttons.size());
@@ -170,11 +171,11 @@ public class ExpandableTextboxTest {
         assertEquals(numberOfH1Before, numberOfH1After);
     }
 
-    public static final class XssProperty extends OptionalJobProperty<Job<?,?>> {
+    public static final class XssProperty extends OptionalJobProperty<Job<?, ?>> {
 
         private String xss;
 
-        public XssProperty(String xss){
+        public XssProperty(String xss) {
             this.xss = xss;
         }
 

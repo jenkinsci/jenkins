@@ -93,18 +93,22 @@ public class NodesTest {
         assertEquals(1, l.updated);
         assertEquals(1, l.created);
     }
+
     @TestExtension("addNodeShouldReplaceExistingNode")
     public static final class ListenerImpl extends NodeListener {
         int deleted, updated, created;
+
         @Override
         protected void onDeleted(Node node) {
             deleted++;
         }
+
         @Override
         protected void onUpdated(Node oldOne, Node newOne) {
             assertNotSame(oldOne, newOne);
             updated++;
         }
+
         @Override
         protected void onCreated(Node node) {
             created++;

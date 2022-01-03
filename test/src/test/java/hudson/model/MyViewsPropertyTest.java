@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -92,7 +93,7 @@ public class MyViewsPropertyTest {
         property.readResolve();
         property.setUser(user);
         assertTrue("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
-        View view = new ListView("foo",property);
+        View view = new ListView("foo", property);
         property.addView(view);
         assertTrue("Property should contain " + view.name, property.getViews().contains(view));
     }
@@ -105,7 +106,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getView(
                 AllView.DEFAULT_VIEW_NAME));
-        View view = new ListView("foo",property);
+        View view = new ListView("foo", property);
         property.addView(view);
         assertEquals("Property should contain " + view.name, view, property.getView(view.name));
     }
@@ -117,7 +118,7 @@ public class MyViewsPropertyTest {
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
-        assertEquals("Property should have primary view " + AllView.DEFAULT_VIEW_NAME + " instead of " + property.getPrimaryView(). name,property.getView(AllView.DEFAULT_VIEW_NAME), property.getPrimaryView());
+        assertEquals("Property should have primary view " + AllView.DEFAULT_VIEW_NAME + " instead of " + property.getPrimaryView(). name, property.getView(AllView.DEFAULT_VIEW_NAME), property.getPrimaryView());
         View view = new ListView("foo", property);
         property.addView(view);
         property.setPrimaryViewName(view.name);
@@ -134,9 +135,9 @@ public class MyViewsPropertyTest {
         assertFalse("Property should not enable to delete view " + AllView.DEFAULT_VIEW_NAME, property.canDelete(property.getView(AllView.DEFAULT_VIEW_NAME)));
         View view = new ListView("foo", property);
         property.addView(view);
-        assertTrue("Property should enable to delete view " + view.name , property.canDelete(view));
+        assertTrue("Property should enable to delete view " + view.name, property.canDelete(view));
         property.setPrimaryViewName(view.name);
-        assertFalse("Property should not enable to delete view " + view.name , property.canDelete(view));
+        assertFalse("Property should not enable to delete view " + view.name, property.canDelete(view));
         assertTrue("Property should enable to delete view " + AllView.DEFAULT_VIEW_NAME, property.canDelete(property.getView(AllView.DEFAULT_VIEW_NAME)));
     }
 
@@ -148,10 +149,10 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         boolean ex = false;
-        try{
+        try {
             property.deleteView(property.getView(AllView.DEFAULT_VIEW_NAME));
         }
-        catch(IllegalStateException e){
+        catch (IllegalStateException e) {
             ex = true;
         }
         assertTrue("Property should throw IllegalStateException.", ex);
@@ -159,16 +160,16 @@ public class MyViewsPropertyTest {
         View view = new ListView("foo", property);
         property.addView(view);
         ex = false;
-        try{
+        try {
             property.deleteView(view);
         }
-        catch(IllegalStateException e){
+        catch (IllegalStateException e) {
             ex = true;
         }
-        assertFalse("Property should not contain view " + view.name , property.getViews().contains(view));
+        assertFalse("Property should not contain view " + view.name, property.getViews().contains(view));
         property.addView(view);
         property.setPrimaryViewName(view.name);
-        assertTrue("Property should not contain view " + view.name , property.getViews().contains(view));
+        assertTrue("Property should not contain view " + view.name, property.getViews().contains(view));
         property.deleteView(property.getView(AllView.DEFAULT_VIEW_NAME));
         assertFalse("Property should not contains view " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
     }
@@ -235,7 +236,7 @@ public class MyViewsPropertyTest {
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
-        for(Permission p : Permission.getAll()){
+        for (Permission p : Permission.getAll()) {
             assertEquals("Property should have the same ACL as its user", property.hasPermission(p), user.hasPermission(p));
         }
     }
@@ -253,26 +254,26 @@ public class MyViewsPropertyTest {
         user.addProperty(property);
         boolean ex = false;
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
-        try{
+        try {
             property.checkPermission(Permission.CONFIGURE);
         }
-        catch(AccessDeniedException e){
+        catch (AccessDeniedException e) {
             ex = true;
         }
-        assertTrue("Property should throw AccessDeniedException.",ex);
+        assertTrue("Property should throw AccessDeniedException.", ex);
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
-        try{
+        try {
             property.checkPermission(Permission.CONFIGURE);
         }
-        catch(AccessDeniedException e){
+        catch (AccessDeniedException e) {
             fail("Property should not throw AccessDeniedException - user should control of himself.");
         }
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         auth.add(Jenkins.ADMINISTER, "User2");
-        try{
+        try {
             property.checkPermission(Permission.CONFIGURE);
         }
-        catch(AccessDeniedException e){
+        catch (AccessDeniedException e) {
             fail("Property should not throw AccessDeniedException.");
         }
     }
@@ -289,11 +290,11 @@ public class MyViewsPropertyTest {
         rule.jenkins.setAuthorizationStrategy(auth);
         user.addProperty(property);
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
-        assertFalse("User User2 should not configure permission for user User",property.hasPermission(Permission.CONFIGURE));
+        assertFalse("User User2 should not configure permission for user User", property.hasPermission(Permission.CONFIGURE));
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertTrue("User should control of himself.", property.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, "User2");
-        assertTrue("User User2 should configure permission for user User",property.hasPermission(Permission.CONFIGURE));
+        assertTrue("User User2 should configure permission for user User", property.hasPermission(Permission.CONFIGURE));
     }
 
     @Test

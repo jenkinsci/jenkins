@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
@@ -119,7 +120,7 @@ public abstract class Launcher {
      * @since 2.246
      */
     @Restricted(Beta.class)
-    public void prepareFilterRules(@CheckForNull Run<?,?> run, @NonNull EnvVarsFilterableBuilder builder){
+    public void prepareFilterRules(@CheckForNull Run<?, ?> run, @NonNull EnvVarsFilterableBuilder builder) {
         List<EnvVarsFilterLocalRule> specificRuleList = builder.buildEnvVarsFilterRules();
         EnvVarsFilterRuleWrapper ruleWrapper = EnvVarsFilterRuleWrapper.createRuleWrapper(run, builder, this, specificRuleList);
         this.setEnvVarsFilterRuleWrapper(ruleWrapper);
@@ -173,8 +174,8 @@ public abstract class Launcher {
     @Deprecated
     @CheckForNull
     public Computer getComputer() {
-        for( Computer c : Jenkins.get().getComputers() )
-            if(c.getChannel()==channel)
+        for (Computer c : Jenkins.get().getComputers())
+            if (c.getChannel() == channel)
                 return c;
         return null;
     }
@@ -486,7 +487,7 @@ public abstract class Launcher {
          * @since 2.246
          */
         @Restricted(Beta.class)
-        public ProcStarter buildStep(EnvVarsFilterableBuilder envVarsFilterableBuilder){
+        public ProcStarter buildStep(EnvVarsFilterableBuilder envVarsFilterableBuilder) {
             this.envVarsFilterableBuilder = envVarsFilterableBuilder;
             return this;
         }
@@ -571,8 +572,8 @@ public abstract class Launcher {
      *      Use {@link #launch()} and its associated builder pattern
      */
     @Deprecated
-    public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
-        return launch(cmd,Util.mapToEnv(env),out,workDir);
+    public final Proc launch(String cmd, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd, Util.mapToEnv(env), out, workDir);
     }
 
     /**
@@ -642,8 +643,8 @@ public abstract class Launcher {
      *      Use {@link #launch()} and its associated builder pattern
      */
     @Deprecated
-    public final Proc launch(String cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
-        return launch(Util.tokenize(cmd),env,out,workDir);
+    public final Proc launch(String cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(Util.tokenize(cmd), env, out, workDir);
     }
 
     /**
@@ -775,19 +776,19 @@ public abstract class Launcher {
      *      becomes the "current" process), these variables will be also set.
      */
     public abstract Channel launchChannel(@NonNull String[] cmd, @NonNull OutputStream out,
-            @CheckForNull FilePath workDir, @NonNull Map<String,String> envVars) throws IOException, InterruptedException;
+            @CheckForNull FilePath workDir, @NonNull Map<String, String> envVars) throws IOException, InterruptedException;
 
     /**
      * Returns true if this {@link Launcher} is going to launch on Unix.
      */
     public boolean isUnix() {
-        return File.pathSeparatorChar==':';
+        return File.pathSeparatorChar == ':';
     }
 
     /**
      * Calls {@link ProcessTree#killAll(Map)} to kill processes.
      */
-    public abstract void kill(Map<String,String> modelEnvVars) throws IOException, InterruptedException;
+    public abstract void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException;
 
     /**
      * Prints out the command line to the listener so that users know what we are doing.
@@ -796,7 +797,7 @@ public abstract class Launcher {
         StringBuilder buf = new StringBuilder();
         if (workDir != null) {
             buf.append('[');
-            if(showFullPath)
+            if (showFullPath)
                 buf.append(workDir.getRemote());
             else
                 buf.append(workDir.getRemote().replaceFirst("^.+[/\\\\]", ""));
@@ -805,8 +806,8 @@ public abstract class Launcher {
         buf.append('$');
         for (String c : cmd) {
             buf.append(' ');
-            if(c.indexOf(' ')>=0) {
-                if(c.indexOf('"')>=0)
+            if (c.indexOf(' ') >= 0) {
+                if (c.indexOf('"') >= 0)
                     buf.append('\'').append(c).append('\'');
                 else
                     buf.append('"').append(c).append('"');
@@ -827,8 +828,8 @@ public abstract class Launcher {
      * @param workDir The work dir.
      */
     protected final void maskedPrintCommandLine(@NonNull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
-        if(mask==null) {
-            printCommandLine(cmd.toArray(new String[0]),workDir);
+        if (mask == null) {
+            printCommandLine(cmd.toArray(new String[0]), workDir);
             return;
         }
 
@@ -845,7 +846,7 @@ public abstract class Launcher {
     }
 
     protected final void maskedPrintCommandLine(@NonNull String[] cmd, @NonNull boolean[] mask, @CheckForNull FilePath workDir) {
-        maskedPrintCommandLine(Arrays.asList(cmd),mask,workDir);
+        maskedPrintCommandLine(Arrays.asList(cmd), mask, workDir);
     }
 
     /**
@@ -858,7 +859,7 @@ public abstract class Launcher {
     public final Launcher decorateFor(@NonNull Node node) {
         Launcher l = this;
         for (LauncherDecorator d : LauncherDecorator.all())
-            l = d.decorate(l,node);
+            l = d.decorate(l, node);
         return l;
     }
 
@@ -880,7 +881,7 @@ public abstract class Launcher {
 
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
-                starter.commands.addAll(0,Arrays.asList(prefix));
+                starter.commands.addAll(0, Arrays.asList(prefix));
                 boolean[] masks = starter.masks;
                 if (masks != null) {
                     starter.masks = prefix(masks);
@@ -890,7 +891,7 @@ public abstract class Launcher {
 
             @Override
             public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
-                return outer.launchChannel(prefix(cmd),out,workDir,envVars);
+                return outer.launchChannel(prefix(cmd), out, workDir, envVars);
             }
 
             @Override
@@ -899,15 +900,15 @@ public abstract class Launcher {
             }
 
             private String[] prefix(@NonNull String[] args) {
-                String[] newArgs = new String[args.length+prefix.length];
-                System.arraycopy(prefix,0,newArgs,0,prefix.length);
-                System.arraycopy(args,0,newArgs,prefix.length,args.length);
+                String[] newArgs = new String[args.length + prefix.length];
+                System.arraycopy(prefix, 0, newArgs, 0, prefix.length);
+                System.arraycopy(args, 0, newArgs, prefix.length, args.length);
                 return newArgs;
             }
 
             private boolean[] prefix(@NonNull boolean[] args) {
-                boolean[] newArgs = new boolean[args.length+prefix.length];
-                System.arraycopy(args,0,newArgs,prefix.length,args.length);
+                boolean[] newArgs = new boolean[args.length + prefix.length];
+                System.arraycopy(args, 0, newArgs, prefix.length, args.length);
                 return newArgs;
             }
         };
@@ -935,7 +936,7 @@ public abstract class Launcher {
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 EnvVars e = new EnvVars(env);
-                if (starter.envs!=null) {
+                if (starter.envs != null) {
                     for (String env : starter.envs) {
                         e.addLine(env);
                     }
@@ -948,7 +949,7 @@ public abstract class Launcher {
             public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
                 EnvVars e = new EnvVars(env);
                 e.putAll(envVars);
-                return outer.launchChannel(cmd,out,workDir,e);
+                return outer.launchChannel(cmd, out, workDir, e);
             }
 
             @Override
@@ -986,27 +987,27 @@ public abstract class Launcher {
 
             // replace variables in command line
             String[] jobCmd = new String[ps.commands.size()];
-            for ( int idx = 0 ; idx < jobCmd.length; idx++ )
-            	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
+            for (int idx = 0; idx < jobCmd.length; idx++)
+                jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
 
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
-                    ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
-                    ps.reverseStdout?LocalProc.SELFPUMP_OUTPUT:ps.stdout,
-                    ps.reverseStderr?LocalProc.SELFPUMP_OUTPUT:ps.stderr,
+                    ps.reverseStdin ? LocalProc.SELFPUMP_INPUT : ps.stdin,
+                    ps.reverseStdout ? LocalProc.SELFPUMP_OUTPUT : ps.stdout,
+                    ps.reverseStderr ? LocalProc.SELFPUMP_OUTPUT : ps.stderr,
                     toFile(ps.pwd));
         }
 
         private File toFile(FilePath f) {
-            return f==null ? null : new File(f.getRemote());
+            return f == null ? null : new File(f.getRemote());
         }
 
         @Override
-        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException {
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(toFile(workDir));
-            if (envVars!=null) pb.environment().putAll(envVars);
+            if (envVars != null) pb.environment().putAll(envVars);
 
             return launchChannel(out, pb);
         }
@@ -1026,10 +1027,10 @@ public abstract class Launcher {
 
             final Process proc = pb.start();
 
-            final Thread t2 = new StreamCopyThread(pb.command()+": stderr copier", proc.getErrorStream(), out);
+            final Thread t2 = new StreamCopyThread(pb.command() + ": stderr copier", proc.getErrorStream(), out);
             t2.start();
 
-            return new Channel("locally launched channel on "+ pb.command(),
+            return new Channel("locally launched channel on " + pb.command(),
                 Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out) {
 
                 /**
@@ -1040,7 +1041,7 @@ public abstract class Launcher {
                     super.terminate(e);
                     ProcessTree pt = ProcessTree.get();
                     try {
-                        pt.killAll(proc,cookie);
+                        pt.killAll(proc, cookie);
                     } catch (InterruptedException x) {
                         LOGGER.log(Level.INFO, "Interrupted", x);
                     }
@@ -1109,11 +1110,11 @@ public abstract class Launcher {
         @Override
         public Proc launch(ProcStarter ps) throws IOException {
             final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
-            final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
+            final OutputStream err = ps.stderr == null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream in = ps.stdin == null || ps.stdin == NULL_INPUT_STREAM ? null : new RemoteInputStream(ps.stdin, false);
 
             final FilePath psPwd = ps.pwd;
-            final String workDir = psPwd==null ? null : psPwd.getRemote();
+            final String workDir = psPwd == null ? null : psPwd.getRemote();
 
             try {
                 RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener);
@@ -1122,20 +1123,20 @@ public abstract class Launcher {
                 envVarsFilterRuleWrapper = null;
                 return new ProcImpl(getChannel().call(remote));
             } catch (InterruptedException e) {
-                throw (IOException)new InterruptedIOException().initCause(e);
+                throw (IOException) new InterruptedIOException().initCause(e);
             }
         }
 
         @Override
-        public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir, Map<String,String> envOverrides) throws IOException, InterruptedException {
+        public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir, Map<String, String> envOverrides) throws IOException, InterruptedException {
             printCommandLine(cmd, _workDir);
 
             Pipe out = Pipe.createRemoteToLocal();
-            final String workDir = _workDir==null ? null : _workDir.getRemote();
+            final String workDir = _workDir == null ? null : _workDir.getRemote();
 
             OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir, envOverrides));
 
-            return new Channel("remotely launched channel on "+channel,
+            return new Channel("remotely launched channel on " + channel,
                 Computer.threadPoolForRemoting, out.getIn(), new BufferedOutputStream(os));
         }
 
@@ -1145,7 +1146,7 @@ public abstract class Launcher {
         }
 
         @Override
-        public void kill(final Map<String,String> modelEnvVars) throws IOException, InterruptedException {
+        public void kill(final Map<String, String> modelEnvVars) throws IOException, InterruptedException {
             getChannel().call(new KillTask(modelEnvVars));
         }
 
@@ -1154,7 +1155,7 @@ public abstract class Launcher {
             return "RemoteLauncher[" + getChannel() + "]";
         }
 
-        private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
+        private static final class KillTask extends MasterToSlaveCallable<Void, RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
             KillTask(Map<String, String> modelEnvVars) {
@@ -1316,7 +1317,7 @@ public abstract class Launcher {
 
     public static class IOTriplet implements Serializable {
         @CheckForNull
-        InputStream stdout,stderr;
+        InputStream stdout, stderr;
         @CheckForNull
         OutputStream stdin;
         private static final long serialVersionUID = 1L;
@@ -1324,16 +1325,19 @@ public abstract class Launcher {
     /**
      * Remoting interface of a remote process
      */
+
     public interface RemoteProcess {
         int join() throws InterruptedException, IOException;
+
         void kill() throws IOException, InterruptedException;
+
         boolean isAlive() throws IOException, InterruptedException;
 
         @NonNull
         IOTriplet getIOtriplet();
     }
 
-    private static class RemoteLaunchCallable extends MasterToSlaveCallable<RemoteProcess,IOException> {
+    private static class RemoteLaunchCallable extends MasterToSlaveCallable<RemoteProcess, IOException> {
         private final @NonNull List<String> cmd;
         private final @CheckForNull boolean[] masks;
         private final @CheckForNull String[] env;
@@ -1386,14 +1390,14 @@ public abstract class Launcher {
             } else {
                 ps.stdout(out);
             }
-            if(workDir!=null)   ps.pwd(workDir);
+            if (workDir != null)   ps.pwd(workDir);
             if (reverseStdin)   ps.writeStdin();
             if (reverseStdout)  ps.readStdout();
             if (reverseStderr)  ps.readStderr();
 
             final Proc p = ps.start();
 
-            return channel.export(RemoteProcess.class,new RemoteProcess() {
+            return channel.export(RemoteProcess.class, new RemoteProcess() {
                 @Override
                 public int join() throws InterruptedException, IOException {
                     try {
@@ -1436,7 +1440,7 @@ public abstract class Launcher {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class RemoteChannelLaunchCallable extends MasterToSlaveCallable<OutputStream,IOException> {
+    private static class RemoteChannelLaunchCallable extends MasterToSlaveCallable<OutputStream, IOException> {
         @NonNull
         private final String[] cmd;
         @NonNull
@@ -1446,10 +1450,10 @@ public abstract class Launcher {
         @NonNull
         private final OutputStream err;
         @NonNull
-        private final Map<String,String> envOverrides;
+        private final Map<String, String> envOverrides;
 
         RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err,
-                @CheckForNull String workDir, @NonNull Map<String,String> envOverrides) {
+                @CheckForNull String workDir, @NonNull Map<String, String> envOverrides) {
             this.cmd = cmd;
             this.out = out;
             this.err = new RemoteOutputStream(err);
@@ -1464,9 +1468,9 @@ public abstract class Launcher {
                 workDir == null ? null : new File(workDir));
 
             List<String> cmdLines = Arrays.asList(cmd);
-            new StreamCopyThread("stdin copier for remote agent on "+cmdLines,
+            new StreamCopyThread("stdin copier for remote agent on " + cmdLines,
                 p.getInputStream(), out.getOut()).start();
-            new StreamCopyThread("stderr copier for remote agent on "+cmdLines,
+            new StreamCopyThread("stderr copier for remote agent on " + cmdLines,
                 p.getErrorStream(), err).start();
 
             // TODO: don't we need to join?
@@ -1483,10 +1487,10 @@ public abstract class Launcher {
     private static EnvVars inherit(@CheckForNull String[] env) {
         // convert String[] to Map first
         EnvVars m = new EnvVars();
-        if(env!=null) {
+        if (env != null) {
             for (String e : env) {
                 int index = e.indexOf('=');
-                m.put(e.substring(0,index), e.substring(index+1));
+                m.put(e.substring(0, index), e.substring(index + 1));
             }
         }
         // then do the inheritance
@@ -1496,7 +1500,7 @@ public abstract class Launcher {
     /**
      * Expands the list of environment variables by inheriting current env variables.
      */
-    private static EnvVars inherit(@NonNull Map<String,String> overrides) {
+    private static EnvVars inherit(@NonNull Map<String, String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
         m.overrideExpandingAll(overrides);
         return m;

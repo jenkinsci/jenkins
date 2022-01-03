@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static java.util.logging.Level.WARNING;
@@ -102,7 +103,7 @@ import org.xml.sax.SAXException;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCM<P,R> {
+public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends AbstractBuild<P, R>> extends Run<P, R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P, R>, RunWithSCM<P, R> {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -157,7 +158,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
-    private final transient LazyBuildMixIn.RunMixIn<P,R> runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
+    private final transient LazyBuildMixIn.RunMixIn<P, R> runMixIn = new LazyBuildMixIn.RunMixIn<P, R>() {
         @Override protected R asRun() {
             return _this();
         }
@@ -179,7 +180,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
-    @Override public final LazyBuildMixIn.RunMixIn<P,R> getRunMixIn() {
+    @Override public final LazyBuildMixIn.RunMixIn<P, R> getRunMixIn() {
         return runMixIn;
     }
 
@@ -208,7 +209,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      null, for example if the agent that this build run no longer exists.
      */
     public @CheckForNull Node getBuiltOn() {
-        if (builtOn==null || builtOn.equals(""))
+        if (builtOn == null || builtOn.equals(""))
             return Jenkins.get();
         else
             return Jenkins.get().getNode(builtOn);
@@ -218,7 +219,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Returns the name of the agent it was built on; null or "" if built by the built-in node.
      * (null happens when we read old record that didn't have this information.)
      */
-    @Exported(name="builtOn")
+    @Exported(name = "builtOn")
     public String getBuiltOnStr() {
         return builtOn;
     }
@@ -230,7 +231,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @since 1.429
      */
-    protected void setBuiltOnStr( String builtOn ) {
+    protected void setBuiltOnStr(String builtOn) {
         this.builtOn = builtOn;
     }
 
@@ -248,7 +249,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.421
      * @see AbstractProject#getRootProject()
      */
-    public AbstractBuild<?,?> getRootBuild() {
+    public AbstractBuild<?, ?> getRootBuild() {
         return this;
     }
 
@@ -271,7 +272,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * {@link #getDisplayName()}.
      */
     public String getUpUrl() {
-        return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(),getParent())+'/';
+        return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
     }
 
     /**
@@ -288,9 +289,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.319
      */
     public final @CheckForNull FilePath getWorkspace() {
-        if (workspace==null) return null;
+        if (workspace == null) return null;
         Node n = getBuiltOn();
-        if (n==null) return null;
+        if (n == null) return null;
         return n.createPath(workspace);
     }
 
@@ -310,7 +311,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
-        if (ws==null)    return null;
+        if (ws == null)    return null;
         return getParent().getScm().getModuleRoot(ws, this);
     }
 
@@ -323,7 +324,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
-        if (ws==null)    return null;
+        if (ws == null)    return null;
         return getParent().getScm().getModuleRoots(ws, this);
     }
 
@@ -348,7 +349,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Set<User> calculateCulprits() {
         Set<User> c = RunWithSCM.super.calculateCulprits();
 
-        AbstractBuild<P,R> p = getPreviousCompletedBuild();
+        AbstractBuild<P, R> p = getPreviousCompletedBuild();
         if (upstreamCulprits) {
             // If we have dependencies since the last successful build, add their authors to our list
             if (p != null && p.getPreviousNotFailedBuild() != null) {
@@ -463,7 +464,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public Result run(@NonNull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
 
-            assert builtOn==null;
+            assert builtOn == null;
             builtOn = node.getNodeName();
             hudsonVersion = Jenkins.VERSION;
             this.listener = listener;
@@ -515,7 +516,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
                 getProject().getScmCheckoutStrategy().checkout(this);
 
-                if (!preBuild(listener,project.getProperties()))
+                if (!preBuild(listener, project.getProperties()))
                     return Result.FAILURE;
 
                 result = doRun(listener);
@@ -535,8 +536,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             // this is ugly, but for historical reason, if non-null value is returned
             // it should become the final result.
-            if (result==null)    result = getResult();
-            if (result==null)    result = Result.SUCCESS;
+            if (result == null)    result = getResult();
+            if (result == null)    result = Result.SUCCESS;
 
             return result;
         }
@@ -574,7 +575,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     }
                 } catch (IOException | RuntimeException e) {
                     // exceptions are only logged, to give a chance to all environments to tear down
-                    if(e instanceof IOException) {
+                    if (e instanceof IOException) {
                         // similar to Run#handleFatalBuildProblem(BuildListener, Throwable)
                         Util.displayIOException((IOException) e, listener);
                     }
@@ -605,24 +606,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
-                    l = bw.decorateLauncher(AbstractBuild.this,l,listener);
+                    l = bw.decorateLauncher(AbstractBuild.this, l, listener);
             }
 
-            for (RunListener rl: RunListener.all()) {
+            for (RunListener rl : RunListener.all()) {
                 Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
                 }
             }
 
-            for (NodeProperty nodeProperty: Jenkins.get().getGlobalNodeProperties()) {
+            for (NodeProperty nodeProperty : Jenkins.get().getGlobalNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
                 }
             }
 
-            for (NodeProperty nodeProperty: currentNode.getNodeProperties()) {
+            for (NodeProperty nodeProperty : currentNode.getNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
@@ -633,15 +634,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         public void defaultCheckout() throws IOException, InterruptedException {
-            AbstractBuild<?,?> build = AbstractBuild.this;
+            AbstractBuild<?, ?> build = AbstractBuild.this;
             AbstractProject<?, ?> project = build.getProject();
 
-            for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
+            for (int retryCount = project.getScmCheckoutRetryCount(); ; retryCount--) {
                 build.scm = NullChangeLogParser.INSTANCE;
 
                 try {
                     File changeLogFile = new File(build.getRootDir(), "changelog.xml");
-                    if (project.checkout(build, launcher,listener, changeLogFile)) {
+                    if (project.checkout(build, launcher, listener, changeLogFile)) {
                         // check out succeeded
                         SCM scm = project.getScm();
                         for (SCMListener l : SCMListener.all()) {
@@ -657,20 +658,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                         for (SCMListener l : SCMListener.all())
                             try {
-                                l.onChangeLogParsed(build,listener,build.getChangeSet());
+                                l.onChangeLogParsed(build, listener, build.getChangeSet());
                             } catch (Exception e) {
-                                throw new IOException("Failed to parse changelog",e);
+                                throw new IOException("Failed to parse changelog", e);
                             }
 
                         // Get a chance to do something after checkout and changelog is done
-                        scm.postCheckout( build, launcher, build.getWorkspace(), listener );
+                        scm.postCheckout(build, launcher, build.getWorkspace(), listener);
 
                         return;
                     }
                 } catch (AbortException e) {
                     listener.error(e.getMessage());
                 } catch (ClosedByInterruptException | InterruptedIOException e) {
-                    throw (InterruptedException)new InterruptedException().initCause(e);
+                    throw (InterruptedException) new InterruptedException().initCause(e);
                 } catch (IOException e) {
                     // checkout error not yet reported
                     Functions.printStackTrace(e, listener.getLogger());
@@ -716,7 +717,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            if (lease!=null) {
+            if (lease != null) {
                 lease.release();
                 lease = null;
             }
@@ -729,12 +730,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      Use {@link #performAllBuildSteps(BuildListener, Map, boolean)}
          */
        @Deprecated
-        protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
-            performAllBuildSteps(listener,buildSteps.values(),phase);
+        protected final void performAllBuildStep(BuildListener listener, Map<?, ? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            performAllBuildSteps(listener, buildSteps.values(), phase);
         }
 
-        protected final boolean performAllBuildSteps(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
-            return performAllBuildSteps(listener,buildSteps.values(),phase);
+        protected final boolean performAllBuildSteps(BuildListener listener, Map<?, ? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            return performAllBuildSteps(listener, buildSteps.values(), phase);
         }
 
         /**
@@ -743,7 +744,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         @Deprecated
         protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
-            performAllBuildSteps(listener,buildSteps,phase);
+            performAllBuildSteps(listener, buildSteps, phase);
         }
 
         /**
@@ -757,9 +758,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             boolean r = true;
             for (BuildStep bs : buildSteps) {
-                if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
+                if ((bs instanceof Publisher && ((Publisher) bs).needsToRunAfterFinalized()) ^ phase)
                     try {
-                        if (!perform(bs,listener)) {
+                        if (!perform(bs, listener)) {
                             LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                             r = false;
                             if (phase) {
@@ -851,17 +852,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
-        protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
-            return preBuild(listener,steps.values());
+        protected final boolean preBuild(BuildListener listener, Map<?, ? extends BuildStep> steps) {
+            return preBuild(listener, steps.values());
         }
 
-        protected final boolean preBuild(BuildListener listener,Collection<? extends BuildStep> steps) {
-            return preBuild(listener,(Iterable<? extends BuildStep>)steps);
+        protected final boolean preBuild(BuildListener listener, Collection<? extends BuildStep> steps) {
+            return preBuild(listener, (Iterable<? extends BuildStep>) steps);
         }
 
-        protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
+        protected final boolean preBuild(BuildListener listener, Iterable<? extends BuildStep> steps) {
             for (BuildStep bs : steps)
-                if (!bs.prebuild(AbstractBuild.this,listener)) {
+                if (!bs.prebuild(AbstractBuild.this, listener)) {
                     LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                     return false;
                 }
@@ -876,6 +877,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     private static class TearDownCheckEnvironment extends Environment {
         private boolean tornDown = false;
+
         @Override
         public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             this.tornDown = true;
@@ -883,7 +885,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
     }
 
-	/*
+    /*
      * No need to lock the entire AbstractBuild on change set calculation
      */
     private transient Object changeSetLock = new Object();
@@ -896,22 +898,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Exported
     @NonNull public ChangeLogSet<? extends ChangeLogSet.Entry> getChangeSet() {
         synchronized (changeSetLock) {
-            if (scm==null) {
+            if (scm == null) {
                 scm = NullChangeLogParser.INSTANCE;
             }
         }
 
         ChangeLogSet<? extends ChangeLogSet.Entry> cs = null;
-        if (changeSet!=null)
+        if (changeSet != null)
             cs = changeSet.get();
 
-        if (cs==null)
+        if (cs == null)
             cs = calcChangeSet();
 
         // defensive check. if the calculation fails (such as through an exception),
         // set a dummy value so that it'll work the next time. the exception will
         // be still reported, giving the plugin developer an opportunity to fix it.
-        if (cs==null)
+        if (cs == null)
             cs = ChangeLogSet.createEmpty(this);
 
         changeSet = new WeakReference<>(cs);
@@ -938,9 +940,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return ChangeLogSet.createEmpty(this);
 
         try {
-            return scm.parse(this,changelogFile);
+            return scm.parse(this, changelogFile);
         } catch (IOException | SAXException e) {
-            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
+            LOGGER.log(WARNING, "Failed to parse " + changelogFile, e);
         }
         return ChangeLogSet.createEmpty(this);
     }
@@ -957,14 +959,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
-        project.getScm().buildEnvVars(this,env);
+        project.getScm().buildEnvVars(this, env);
 
-        if (buildEnvironments!=null)
+        if (buildEnvironments != null)
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
 
         for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
-            a.buildEnvVars(this,env);
+            a.buildEnvVars(this, env);
 
         EnvVars.resolve(env);
 
@@ -985,12 +987,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public EnvironmentList getEnvironments() {
         Executor e = Executor.currentExecutor();
-        if (e!=null && e.getCurrentExecutable()==this) {
-            if (buildEnvironments==null)    buildEnvironments = new ArrayList<>();
+        if (e != null && e.getCurrentExecutable() == this) {
+            if (buildEnvironments == null)    buildEnvironments = new ArrayList<>();
             return new EnvironmentList(buildEnvironments);
         }
 
-        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(buildEnvironments)));
+        return new EnvironmentList(buildEnvironments == null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(buildEnvironments)));
     }
 
     public Calendar due() {
@@ -1006,7 +1008,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @SuppressWarnings("deprecation")
-    public List<Action> getPersistentActions(){
+    public List<Action> getPersistentActions() {
         return super.getActions();
     }
 
@@ -1055,26 +1057,26 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return
      *      The returned map is mutable so that subtypes can put more values.
      */
-    public Map<String,String> getBuildVariables() {
-        Map<String,String> r = new HashMap<>();
+    public Map<String, String> getBuildVariables() {
+        Map<String, String> r = new HashMap<>();
 
         ParametersAction parameters = getAction(ParametersAction.class);
-        if (parameters!=null) {
+        if (parameters != null) {
             // this is a rather round about way of doing this...
             for (ParameterValue p : parameters) {
                 String v = p.createVariableResolver(this).resolve(p.getName());
-                if (v!=null) r.put(p.getName(),v);
+                if (v != null) r.put(p.getName(), v);
             }
         }
 
         // allow the BuildWrappers to contribute additional build variables
         if (project instanceof BuildableItemWithBuildWrappers) {
             for (BuildWrapper bw : ((BuildableItemWithBuildWrappers) project).getBuildWrappersList())
-                bw.makeBuildVariables(this,r);
+                bw.makeBuildVariables(this, r);
         }
 
         for (BuildVariableContributor bvc : BuildVariableContributor.all())
-            bvc.buildVariablesFor(this,r);
+            bvc.buildVariablesFor(this, r);
 
         return r;
     }
@@ -1127,22 +1129,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         // if any of the downstream project is configured with 'keep dependency component',
         // we need to keep this log
         OUTER:
-        for (AbstractProject<?,?> p : getParent().getDownstreamProjects()) {
+        for (AbstractProject<?, ?> p : getParent().getDownstreamProjects()) {
             if (!p.isKeepDependencies()) continue;
 
-            AbstractBuild<?,?> fb = p.getFirstBuild();
-            if (fb==null)        continue; // no active record
+            AbstractBuild<?, ?> fb = p.getFirstBuild();
+            if (fb == null)        continue; // no active record
 
             // is there any active build that depends on us?
             for (int i : getDownstreamRelationship(p).listNumbersReverse()) {
                 // TODO: this is essentially a "find intersection between two sparse sequences"
                 // and we should be able to do much better.
 
-                if (i<fb.getNumber())
+                if (i < fb.getNumber())
                     continue OUTER; // all the other records are younger than the first record, so pointless to search.
 
-                AbstractBuild<?,?> b = p.getBuildByNumber(i);
-                if (b!=null)
+                AbstractBuild<?, ?> b = p.getBuildByNumber(i);
+                if (b != null)
                     return Messages.AbstractBuild_KeptBecause(p.hasPermission(Item.READ) ? b.toString() : "?");
             }
         }
@@ -1162,7 +1164,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         RangeSet rs = new RangeSet();
 
         FingerprintAction f = getAction(FingerprintAction.class);
-        if (f==null)     return rs;
+        if (f == null)     return rs;
 
         // look for fingerprints that point to this build as the source, and merge them all
         for (Fingerprint e : f.getFingerprints().values()) {
@@ -1173,7 +1175,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 rs.add(e.getRangeSet(that));
             } else {
                 BuildPtr o = e.getOriginal();
-                if (o!=null && o.is(this))
+                if (o != null && o.is(this))
                     rs.add(e.getRangeSet(that));
             }
         }
@@ -1186,14 +1188,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * the actual build objects, in ascending order.
      * @since 1.150
      */
-    public Iterable<AbstractBuild<?,?>> getDownstreamBuilds(final AbstractProject<?,?> that) {
+    public Iterable<AbstractBuild<?, ?>> getDownstreamBuilds(final AbstractProject<?, ?> that) {
         final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
 
         return new Iterable<AbstractBuild<?, ?>>() {
             @Override
             public Iterator<AbstractBuild<?, ?>> iterator() {
                 return Iterators.removeNull(
-                    new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                    new AdaptedIterator<Integer, AbstractBuild<?, ?>>(nums) {
                         @Override
                         protected AbstractBuild<?, ?> adapt(Integer item) {
                             return that.getBuildByNumber(item);
@@ -1213,7 +1215,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public int getUpstreamRelationship(AbstractProject that) {
         FingerprintAction f = getAction(FingerprintAction.class);
-        if (f==null)     return -1;
+        if (f == null)     return -1;
 
         int n = -1;
 
@@ -1228,8 +1230,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             } else {
                 BuildPtr o = e.getOriginal();
-                if (o!=null && o.belongsTo(that))
-                    n = Math.max(n,o.getNumber());
+                if (o != null && o.belongsTo(that))
+                    n = Math.max(n, o.getNumber());
             }
         }
 
@@ -1244,9 +1246,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      null if no such upstream build was found, or it was found but the
      *      build record is already lost.
      */
-    public AbstractBuild<?,?> getUpstreamRelationshipBuild(AbstractProject<?,?> that) {
+    public AbstractBuild<?, ?> getUpstreamRelationshipBuild(AbstractProject<?, ?> that) {
         int n = getUpstreamRelationship(that);
-        if (n==-1)   return null;
+        if (n == -1)   return null;
         return that.getBuildByNumber(n);
     }
 
@@ -1258,11 +1260,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      For each project with fingerprinting enabled, returns the range
      *      of builds (which can be empty if no build uses the artifact from this build or downstream is not {@link AbstractProject#isFingerprintConfigured}.)
      */
-    public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
-        Map<AbstractProject,RangeSet> r = new HashMap<>();
+    public Map<AbstractProject, RangeSet> getDownstreamBuilds() {
+        Map<AbstractProject, RangeSet> r = new HashMap<>();
         for (AbstractProject p : getParent().getDownstreamProjects()) {
             if (p.isFingerprintConfigured())
-                r.put(p,getDownstreamRelationship(p));
+                r.put(p, getDownstreamRelationship(p));
         }
         return r;
     }
@@ -1273,7 +1275,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return empty if there is no {@link FingerprintAction} (even if there is an {@link Cause.UpstreamCause})
      * @see #getTransitiveUpstreamBuilds()
      */
-    public Map<AbstractProject,Integer> getUpstreamBuilds() {
+    public Map<AbstractProject, Integer> getUpstreamBuilds() {
         return _getUpstreamBuilds(getParent().getUpstreamProjects());
     }
 
@@ -1281,16 +1283,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Works like {@link #getUpstreamBuilds()}  but also includes all the transitive
      * dependencies as well.
      */
-    public Map<AbstractProject,Integer> getTransitiveUpstreamBuilds() {
+    public Map<AbstractProject, Integer> getTransitiveUpstreamBuilds() {
         return _getUpstreamBuilds(getParent().getTransitiveUpstreamProjects());
     }
 
     private Map<AbstractProject, Integer> _getUpstreamBuilds(Collection<AbstractProject> projects) {
-        Map<AbstractProject,Integer> r = new HashMap<>();
+        Map<AbstractProject, Integer> r = new HashMap<>();
         for (AbstractProject p : projects) {
             int n = getUpstreamRelationship(p);
-            if (n>=0)
-                r.put(p,n);
+            if (n >= 0)
+                r.put(p, n);
         }
         return r;
     }
@@ -1299,23 +1301,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Gets the changes in the dependency between the given build and this build.
      * @return empty if there is no {@link FingerprintAction}
      */
-    public Map<AbstractProject,DependencyChange> getDependencyChanges(AbstractBuild from) {
-        if (from==null)             return Collections.emptyMap(); // make it easy to call this from views
+    public Map<AbstractProject, DependencyChange> getDependencyChanges(AbstractBuild from) {
+        if (from == null)             return Collections.emptyMap(); // make it easy to call this from views
         FingerprintAction n = this.getAction(FingerprintAction.class);
         FingerprintAction o = from.getAction(FingerprintAction.class);
-        if (n==null || o==null)     return Collections.emptyMap();
+        if (n == null || o == null)     return Collections.emptyMap();
 
-        Map<AbstractProject,Integer> ndep = n.getDependencies(true);
-        Map<AbstractProject,Integer> odep = o.getDependencies(true);
+        Map<AbstractProject, Integer> ndep = n.getDependencies(true);
+        Map<AbstractProject, Integer> odep = o.getDependencies(true);
 
-        Map<AbstractProject,DependencyChange> r = new HashMap<>();
+        Map<AbstractProject, DependencyChange> r = new HashMap<>();
 
-        for (Map.Entry<AbstractProject,Integer> entry : odep.entrySet()) {
+        for (Map.Entry<AbstractProject, Integer> entry : odep.entrySet()) {
             AbstractProject p = entry.getKey();
             Integer oldNumber = entry.getValue();
             Integer newNumber = ndep.get(p);
-            if (newNumber!=null && oldNumber.compareTo(newNumber)<0) {
-                r.put(p,new DependencyChange(p,oldNumber,newNumber));
+            if (newNumber != null && oldNumber.compareTo(newNumber) < 0) {
+                r.put(p, new DependencyChange(p, oldNumber, newNumber));
             }
         }
 
@@ -1345,7 +1347,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         public final AbstractBuild to;
 
-        public DependencyChange(AbstractProject<?,?> project, int fromId, int toId) {
+        public DependencyChange(AbstractProject<?, ?> project, int fromId, int toId) {
             this.project = project;
             this.fromId = fromId;
             this.toId = toId;
@@ -1362,11 +1364,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public List<AbstractBuild> getBuilds() {
             List<AbstractBuild> r = new ArrayList<>();
 
-            AbstractBuild<?,?> b = project.getNearestBuild(fromId);
-            if (b!=null && b.getNumber()==fromId)
+            AbstractBuild<?, ?> b = project.getNearestBuild(fromId);
+            if (b != null && b.getNumber() == fromId)
                 b = b.getNextBuild(); // fromId exclusive
 
-            while (b!=null && b.getNumber()<=toId) {
+            while (b != null && b.getNumber() <= toId) {
                 r.add(b);
                 b = b.getNextBuild();
             }
@@ -1386,7 +1388,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Deprecated
     @RequirePOST // #doStop() should be preferred, but better to be safe
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doStop().generateResponse(req,rsp,this);
+        doStop().generateResponse(req, rsp, this);
     }
 
     /**
@@ -1400,9 +1402,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @RequirePOST
     public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
-        if (e==null)
+        if (e == null)
             e = getOneOffExecutor();
-        if (e!=null)
+        if (e != null)
             return e.doStop();
         else
             // nothing is building

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -106,7 +107,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     /**
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
-    public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
+    public static DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> all() {
         return (DescriptorExtensionList) Jenkins.get().getDescriptorList(RetentionStrategy.class);
     }
 
@@ -116,30 +117,36 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class)RetentionStrategy.class);
+    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class) RetentionStrategy.class);
 
     /**
      * Dummy instance that doesn't do any attempt to retention.
      */
     public static final RetentionStrategy<Computer> NOOP = new NoOp();
+
     private static final class NoOp extends RetentionStrategy<Computer> {
         @GuardedBy("hudson.model.Queue.lock")
         @Override
         public long check(Computer c) {
             return 60;
         }
+
         @Override
         public void start(Computer c) {
             c.connect(false);
         }
+
         @Override
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
+
         private Object readResolve() {
             return NOOP;
         }
+
         private static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
         private static final class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
     }
 
@@ -167,7 +174,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension(ordinal=100) @Symbol("always")
+        @Extension(ordinal = 100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             @Override
             public String getDisplayName() {
@@ -225,7 +232,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 for (Computer o : Jenkins.get().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
                         final int idleExecutors = o.countIdle();
-                        if (idleExecutors>0)
+                        if (idleExecutors > 0)
                             availableComputers.put(o, idleExecutors);
                     }
                 }

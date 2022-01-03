@@ -48,7 +48,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     private final SecretKey masterKey;
 
     public DefaultConfidentialStore() throws IOException, InterruptedException {
-        this(new File(Jenkins.get().getRootDir(),"secrets"));
+        this(new File(Jenkins.get().getRootDir(), "secrets"));
     }
 
     public DefaultConfidentialStore(File rootDir) throws IOException, InterruptedException {
@@ -59,7 +59,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             new FilePath(rootDir).chmod(0700);
         }
 
-        TextFile masterSecret = new TextFile(new File(rootDir,"master.key"));
+        TextFile masterSecret = new TextFile(new File(rootDir, "master.key"));
         if (!masterSecret.exists()) {
             // we are only going to use small number of bits (since export control limits AES key length)
             // but let's generate a long enough key anyway
@@ -82,7 +82,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
                 cos.write(MAGIC);
             }
         } catch (GeneralSecurityException e) {
-            throw new IOException("Failed to persist the key: "+key.getId(),e);
+            throw new IOException("Failed to persist the key: " + key.getId(), e);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
@@ -102,13 +102,13 @@ public class DefaultConfidentialStore extends ConfidentialStore {
 
             Cipher sym = Secret.getCipher("AES");
             sym.init(Cipher.DECRYPT_MODE, masterKey);
-            try (InputStream fis=Files.newInputStream(f.toPath());
+            try (InputStream fis = Files.newInputStream(f.toPath());
                  CipherInputStream cis = new CipherInputStream(fis, sym)) {
                 byte[] bytes = IOUtils.toByteArray(cis);
                 return verifyMagic(bytes);
             }
         } catch (GeneralSecurityException e) {
-            throw new IOException("Failed to load the key: "+key.getId(),e);
+            throw new IOException("Failed to load the key: " + key.getId(), e);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         } catch (IOException x) {
@@ -124,15 +124,15 @@ public class DefaultConfidentialStore extends ConfidentialStore {
      * Verifies that the given byte[] has the MAGIC trailer, to verify the integrity of the decryption process.
      */
     private byte[] verifyMagic(byte[] payload) {
-        int payloadLen = payload.length-MAGIC.length;
-        if (payloadLen<0)   return null;    // obviously broken
+        int payloadLen = payload.length - MAGIC.length;
+        if (payloadLen < 0)   return null;    // obviously broken
 
-        for (int i=0; i<MAGIC.length; i++) {
-            if (payload[payloadLen+i]!=MAGIC[i])
+        for (int i = 0; i < MAGIC.length; i++) {
+            if (payload[payloadLen + i] != MAGIC[i])
                 return null;    // broken
         }
         byte[] truncated = new byte[payloadLen];
-        System.arraycopy(payload,0,truncated,0,truncated.length);
+        System.arraycopy(payload, 0, truncated, 0, truncated.length);
         return truncated;
     }
 

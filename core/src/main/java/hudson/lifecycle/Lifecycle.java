@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
@@ -57,13 +58,13 @@ public abstract class Lifecycle implements ExtensionPoint {
      * @return never null
      */
     public static synchronized Lifecycle get() {
-        if(INSTANCE==null) {
+        if (INSTANCE == null) {
             Lifecycle instance;
             String p = SystemProperties.getString("hudson.lifecycle");
-            if(p!=null) {
+            if (p != null) {
                 try {
                     ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                    instance = (Lifecycle)cl.loadClass(p).getDeclaredConstructor().newInstance();
+                    instance = (Lifecycle) cl.loadClass(p).getDeclaredConstructor().newInstance();
                 } catch (NoSuchMethodException e) {
                     NoSuchMethodError x = new NoSuchMethodError(e.getMessage());
                     x.initCause(e);
@@ -95,7 +96,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                     }
                 }
             } else {
-                if(Functions.isWindows()) {
+                if (Functions.isWindows()) {
                     instance = new Lifecycle() {
                         @Override
                         public void verifyRestartable() throws RestartNotSupportedException {
@@ -103,7 +104,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                                     "Default Windows lifecycle does not support restart.");
                         }
                     };
-                } else if (System.getenv("SMF_FMRI")!=null && System.getenv("SMF_RESTARTER")!=null) {
+                } else if (System.getenv("SMF_FMRI") != null && System.getenv("SMF_RESTARTER") != null) {
                     // when we are run by Solaris SMF, these environment variables are set.
                     instance = new SolarisSMFLifecycle();
                 } else {
@@ -111,7 +112,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                     try {
                         instance = new UnixLifecycle();
                     } catch (final IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", e);
                         instance = new Lifecycle() {
                             @Override
                             public void verifyRestartable() throws RestartNotSupportedException {
@@ -139,7 +140,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public File getHudsonWar() {
         String war = SystemProperties.getString("executable-war");
-        if(war!=null && new File(war).exists())
+        if (war != null && new File(war).exists())
             return new File(war);
         return null;
     }
@@ -156,7 +157,7 @@ public abstract class Lifecycle implements ExtensionPoint {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,
         // but let's be defensive
-        if(dest==null)  throw new IOException("jenkins.war location is not known.");
+        if (dest == null)  throw new IOException("jenkins.war location is not known.");
 
         // backing up the old jenkins.war before it gets lost due to upgrading
         // (newly downloaded jenkins.war and 'backup' (jenkins.war.tmp) are the same files
@@ -164,7 +165,7 @@ public abstract class Lifecycle implements ExtensionPoint {
         File bak = new File(dest.getPath() + ".bak");
         if (!by.equals(bak))
             FileUtils.copyFile(dest, bak);
-       
+
         FileUtils.copyFile(by, dest);
         // we don't want to keep backup if we are downgrading
         if (by.equals(bak)) {
@@ -213,7 +214,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public void verifyRestartable() throws RestartNotSupportedException {
         // the rewriteHudsonWar method isn't overridden.
-        if (!Util.isOverridden(Lifecycle.class,getClass(), "restart"))
+        if (!Util.isOverridden(Lifecycle.class, getClass(), "restart"))
             throw new RestartNotSupportedException("Restart is not supported in this running mode (" +
                     getClass().getName() + ").");
     }
