@@ -22,10 +22,10 @@ public class InitializationErrorInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.getDeclaringClass()==Object.class)
-            return method.invoke(this,args);
+        if (method.getDeclaringClass() == Object.class)
+            return method.invoke(this, args);
 
-        throw new UnsupportedOperationException("Failed to link the library: "+method.getDeclaringClass(), cause);
+        throw new UnsupportedOperationException("Failed to link the library: " + method.getDeclaringClass(), cause);
     }
 
     public static <T> T create(Class<T> type, Throwable cause) {

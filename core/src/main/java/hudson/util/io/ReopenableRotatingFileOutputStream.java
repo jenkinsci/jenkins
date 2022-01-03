@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
 import hudson.Util;
@@ -53,17 +54,17 @@ import java.util.logging.Logger;
     }
 
     protected File getNumberedFileName(int n) {
-        if (n==0)   return out;
-        return new File(out.getPath()+"."+n);
+        if (n == 0)   return out;
+        return new File(out.getPath() + "." + n);
     }
 
     @Override
     public void rewind() throws IOException {
         super.rewind();
-        for (int i=size-1;i>=0;i--) {
+        for (int i = size - 1; i >= 0; i--) {
             File fi = getNumberedFileName(i);
             if (Files.exists(Util.fileToPath(fi))) {
-                File next = getNumberedFileName(i+1);
+                File next = getNumberedFileName(i + 1);
                 Files.move(Util.fileToPath(fi), Util.fileToPath(next), StandardCopyOption.REPLACE_EXISTING);
             }
         }
@@ -73,7 +74,7 @@ import java.util.logging.Logger;
      * Deletes all the log files, including rotated files.
      */
     public void deleteAll() {
-        for (int i=0; i<=size; i++) {
+        for (int i = 0; i <= size; i++) {
             try {
                 Files.deleteIfExists(getNumberedFileName(i).toPath());
             } catch (IOException | InvalidPathException e) {

@@ -57,6 +57,7 @@ public class Security2458Test {
         public Object call() throws Exception {
             return null;
         }
+
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
             // Deliberately empty
@@ -68,6 +69,7 @@ public class Security2458Test {
         public Object call() throws Exception {
             return null;
         }
+
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
             checker.check(this); // Was supported in 2.319 but later dropped
@@ -79,6 +81,7 @@ public class Security2458Test {
         public Object call() throws Exception {
             return null;
         }
+
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
             checker.check(this, Roles.MASTER); // Manual S2M

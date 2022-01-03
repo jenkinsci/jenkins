@@ -115,10 +115,10 @@ public class HelpCommandTest {
         private static final String LONG_DESCRIPTION = "Long description of class-command";
         private static final String NAME = "class-command";
 
-        @Argument(usage="Job arg")
+        @Argument(usage = "Job arg")
         public AbstractProject<?, ?> job;
 
-        @Option(name="-b", metaVar="BUILD", usage="Build opt")
+        @Option(name = "-b", metaVar = "BUILD", usage = "Build opt")
         public String build;
 
         @Override

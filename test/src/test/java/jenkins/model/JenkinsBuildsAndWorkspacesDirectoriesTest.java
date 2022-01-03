@@ -275,10 +275,10 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                 .anyMatch(record -> record.getMessage().contains(searched));
     }
 
-	private boolean logWasFoundAtLevel(String searched, Level level) {
-		return loggerRule.getRecords().stream()
+    private boolean logWasFoundAtLevel(String searched, Level level) {
+        return loggerRule.getRecords().stream()
                 .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
-	}
+    }
 
     @Test
     @Issue("JENKINS-17138")

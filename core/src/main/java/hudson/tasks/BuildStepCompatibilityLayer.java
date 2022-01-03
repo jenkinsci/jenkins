@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -55,9 +56,9 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
 // new definitions >= 1.150
 //
     @Override
-    public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
+    public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         if (build instanceof Build)
-            return prebuild((Build)build,listener);
+            return prebuild((Build) build, listener);
         else
             return true;
     }
@@ -66,7 +67,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
             final SimpleBuildStep step = (SimpleBuildStep) this;
@@ -82,7 +83,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return true;
         } else if (build instanceof Build) {
             // delegate to the legacy signature deprecated in 1.312
-            return perform((Build)build,launcher,listener);
+            return perform((Build) build, launcher, listener);
         } else {
             return true;
         }
@@ -101,7 +102,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);
-        if (a==null)    return Collections.emptyList();
+        if (a == null)    return Collections.emptyList();
         return Collections.singletonList(a);
     }
 
@@ -114,7 +115,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      *      Use {@link #prebuild(AbstractBuild, BuildListener)} instead.
      */
     @Deprecated
-    public boolean prebuild(Build<?,?> build, BuildListener listener) {
+    public boolean prebuild(Build<?, ?> build, BuildListener listener) {
         return true;
     }
 
@@ -124,7 +125,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      */
     @Deprecated
     public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener)
-            throws InterruptedException, IOException {       
+            throws InterruptedException, IOException {
         if (build != null && Util.isOverridden(BuildStepCompatibilityLayer.class, this.getClass(),
                 "perform", AbstractBuild.class, Launcher.class, BuildListener.class)) {
             return perform((AbstractBuild<?, ?>) build, launcher, listener);
@@ -137,7 +138,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      *      Use {@link #getProjectAction(AbstractProject)} instead.
      */
     @Deprecated
-    public Action getProjectAction(Project<?,?> project) {
+    public Action getProjectAction(Project<?, ?> project) {
         return null;
     }
 }

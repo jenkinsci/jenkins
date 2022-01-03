@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.util.Objects;
 import net.sf.json.JSONObject;
@@ -86,7 +88,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterValue createValue(String value) {
-        return new BooleanParameterValue(getName(),Boolean.parseBoolean(value),getDescription());
+        return new BooleanParameterValue(getName(), Boolean.parseBoolean(value), getDescription());
     }
 
     @Override
@@ -103,6 +105,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (BooleanParameterDefinition.class != getClass())
             return super.equals(obj);

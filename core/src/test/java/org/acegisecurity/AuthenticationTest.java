@@ -117,18 +117,22 @@ public class AuthenticationTest {
     public void custom() {
         class CustomAuth extends AbstractAuthenticationToken {
             final int x;
+
             CustomAuth(int x) {
                 this.x = x;
             }
+
             @Override
             public Object getCredentials() {
                 return null;
             }
+
             @Override
             public Object getPrincipal() {
                 return "xxx";
             }
         }
+
         CustomAuth ca = new CustomAuth(23);
         Authentication a = Authentication.fromSpring(ca.toSpring());
         assertThat(a, instanceOf(CustomAuth.class));

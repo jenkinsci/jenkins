@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -107,24 +108,24 @@ public class HudsonTest {
         assertEquals(5, j.jenkins.getQuietPeriod());
 
         List<JDK> jdks = j.jenkins.getJDKs();
-        assertEquals(3,jdks.size()); // Hudson adds one more
-        assertJDK(jdks.get(0),"jdk1","/tmp");
-        assertJDK(jdks.get(1),"jdk2","/tmp");
+        assertEquals(3, jdks.size()); // Hudson adds one more
+        assertJDK(jdks.get(0), "jdk1", "/tmp");
+        assertJDK(jdks.get(1), "jdk2", "/tmp");
 
         AntInstallation[] ants = j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
-        assertEquals(2,ants.length);
-        assertAnt(ants[0],"ant1","/tmp");
-        assertAnt(ants[1],"ant2","/tmp");
+        assertEquals(2, ants.length);
+        assertAnt(ants[0], "ant1", "/tmp");
+        assertAnt(ants[1], "ant2", "/tmp");
     }
 
     private void assertAnt(AntInstallation ant, String name, String home) {
-        assertEquals(ant.getName(),name);
-        assertEquals(ant.getHome(),home);
+        assertEquals(ant.getName(), name);
+        assertEquals(ant.getHome(), home);
     }
 
     private void assertJDK(JDK jdk, String name, String home) {
-        assertEquals(jdk.getName(),name);
-        assertEquals(jdk.getHome(),home);
+        assertEquals(jdk.getName(), name);
+        assertEquals(jdk.getHome(), home);
     }
 
     /**
@@ -140,7 +141,7 @@ public class HudsonTest {
 
         URL url = jobPage.getUrl();
         System.out.println(url);
-        assertTrue(url.getPath().endsWith("/job/"+p.getName()+"/"));
+        assertTrue(url.getPath().endsWith("/job/" + p.getName() + "/"));
     }
 
     /**
@@ -177,7 +178,7 @@ public class HudsonTest {
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(built-in)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "computer/(built-in)/doDelete"), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 

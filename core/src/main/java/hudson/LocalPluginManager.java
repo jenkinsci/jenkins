@@ -46,7 +46,7 @@ public class LocalPluginManager extends PluginManager {
      * @param rootDir Jenkins home directory.
      */
     public LocalPluginManager(@CheckForNull ServletContext context, @NonNull File rootDir) {
-        super(context, new File(rootDir,"plugins"));
+        super(context, new File(rootDir, "plugins"));
     }
 
     /**

@@ -44,8 +44,8 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
      */
     @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-    	req.bindJSON(this, form);
-    	return this;
+        req.bindJSON(this, form);
+        return this;
     }
 
     /**
@@ -54,7 +54,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     public Collection<? extends GrantedAuthority> getAuthorities2() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
-        if(roles == null){
+        if (roles == null) {
             return Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2);
         }
 
@@ -90,7 +90,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             roles.add(ga.getAuthority());
         }
         String[] a = roles.toArray(new String[0]);
-        if (!Arrays.equals(this.roles,a)) {
+        if (!Arrays.equals(this.roles, a)) {
             this.roles = a;
             this.timestamp = System.currentTimeMillis();
             user.save();
@@ -101,7 +101,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
      * Removes the recorded information
      */
     public void invalidate() throws IOException {
-        if (roles!=null) {
+        if (roles != null) {
             roles = null;
             timestamp = System.currentTimeMillis();
             user.save();
@@ -120,13 +120,13 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
                 // but as this is a callback of a successful login we can safely create the user.
                 User u = User.getById(username, true);
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
-                if (o==null)
-                    u.addProperty(o=new LastGrantedAuthoritiesProperty());
+                if (o == null)
+                    u.addProperty(o = new LastGrantedAuthoritiesProperty());
                 Authentication a = Jenkins.getAuthentication2();
-                if (a!=null && a.getName().equals(username))
+                if (a != null && a.getName().equals(username))
                     o.update(a);    // just for defensive sanity checking
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
+                LOGGER.log(Level.WARNING, "Failed to record granted authorities", e);
             }
         }
 
@@ -166,7 +166,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         public boolean isEnabled() {
             return false;
         }
-        
+
         @Override
         public UserProperty newInstance(User user) {
             return null;

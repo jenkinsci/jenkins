@@ -27,43 +27,43 @@
   <h3>Supported operators</h3>
   The following operators are supported, in descending order of precedence:
   <dl>
-    <dt><tt>(expression)</tt></dt>
+    <dt><code>(expression)</code></dt>
     <dd>
       parentheses — used to explicitly define the associativity of an expression
     </dd>
 
-    <dt><tt>!expression</tt></dt>
+    <dt><code>!expression</code></dt>
     <dd>
-      NOT — negation; the result of <tt>expression</tt> must <b>not</b> be true
+      NOT — negation; the result of <code>expression</code> must <b>not</b> be true
     </dd>
 
-    <dt><tt>a &amp;&amp; b</tt></dt>
+    <dt><code>a &amp;&amp; b</code></dt>
     <dd>
-      AND — <b>both</b> of the expressions <tt>a</tt> and <tt>b</tt> must be
+      AND — <b>both</b> of the expressions <code>a</code> and <code>b</code> must be
       true
     </dd>
 
-    <dt><tt>a || b</tt></dt>
+    <dt><code>a || b</code></dt>
     <dd>
-      OR — <b>either</b> of the expressions <tt>a</tt> or <tt>b</tt> may be
+      OR — <b>either</b> of the expressions <code>a</code> or <code>b</code> may be
       true
     </dd>
 
-    <dt><tt>a -> b</tt></dt>
+    <dt><code>a -> b</code></dt>
     <dd>
-      "implies" operator — equivalent to <tt>!a || b</tt>.<br>
-      For example, <tt>windows -> x64</tt> could be thought of as "if a Windows
+      "implies" operator — equivalent to <code>!a || b</code>.<br>
+      For example, <code>windows -> x64</code> could be thought of as "if a Windows
       agent is used, then that agent <i>must</i> be 64-bit", while still
       allowing this project to be executed on any agents that <i>do not</i> have
-      the <tt>windows</tt> label, regardless of whether they have also have an
-      <tt>x64</tt> label
+      the <code>windows</code> label, regardless of whether they have also have an
+      <code>x64</code> label
     </dd>
 
-    <dt><tt>a &lt;-> b</tt></dt>
+    <dt><code>a &lt;-> b</code></dt>
     <dd>
-      "if and only if" operator — equivalent to <tt>a &amp;&amp; b ||
-      !a &amp;&amp; !b</tt><br>
-      For example, <tt>windows &lt;-> dc2</tt> could be thought of as "if a
+      "if and only if" operator — equivalent to <code>a &amp;&amp; b ||
+      !a &amp;&amp; !b</code><br>
+      For example, <code>windows &lt;-> dc2</code> could be thought of as "if a
       Windows agent is used, then that agent <i>must</i> be in datacenter 2, but
       if a non-Windows agent is used, then it <i>must not</i> be in datacenter
       2"
@@ -73,13 +73,13 @@
   <h3>Notes</h3>
   <ul>
     <li>
-      All operators are left-associative, i.e. <tt>a -> b -> c</tt> is
-      equivalent to <tt>(a -> b) -> c</tt>.
+      All operators are left-associative, i.e. <code>a -> b -> c</code> is
+      equivalent to <code>(a -> b) -> c</code>.
     </li>
     <li>
       Labels or agent names can be surrounded with quotation marks if they
       contain characters that would conflict with the operator syntax.<br>
-      For example, <tt>"osx (10.11)" || "Windows Server"</tt>.
+      For example, <code>"osx (10.11)" || "Windows Server"</code>.
     </li>
     <li>
       Expressions can be written without whitespace, but including it is
@@ -98,30 +98,30 @@
 
   <h3>Examples</h3>
   <dl>
-    <dt><tt>built-in</tt></dt>
+    <dt><code>built-in</code></dt>
     <dd>Builds of this project may be executed only on the built-in node<dd>
 
-    <dt><tt>linux-machine-42</tt></dt>
+    <dt><code>linux-machine-42</code></dt>
     <dd>
       Builds of this project may be executed only on the agent with the name
-      <tt>linux-machine-42</tt> (or on any machine that happens to have a label
-      called <tt>linux-machine-42</tt>)
+      <code>linux-machine-42</code> (or on any machine that happens to have a label
+      called <code>linux-machine-42</code>)
     </dd>
 
-    <dt><tt>windows &amp;&amp; jdk9</tt></dt>
+    <dt><code>windows &amp;&amp; jdk9</code></dt>
     <dd>
       Builds of this project may be executed only on any Windows agent that has
       version 9 of the Java Development Kit installed (assuming that agents
-      with JDK 9 installed have been given a <tt>jdk9</tt> label)
+      with JDK 9 installed have been given a <code>jdk9</code> label)
     </dd>
 
-    <dt><tt>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</tt></dt>
+    <dt><code>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</code></dt>
     <dd>
       Builds of this project may be executed only any on Linux or FreeBSD agent,
       so long as they are <i>not</i> a virtual machine, and they have PostgreSQL
       installed (assuming that each agent has the appropriate labels — in
       particular, each agent running in a virtual machine must have the
-      <tt>vm</tt> label in order for this example to work as expected)
+      <code>vm</code> label in order for this example to work as expected)
     </dd>
 
   </dl>

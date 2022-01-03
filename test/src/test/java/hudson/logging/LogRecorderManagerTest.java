@@ -21,20 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.logging;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -68,6 +74,16 @@ public class LogRecorderManagerTest {
         j.submit(form);
 
         assertEquals(Level.FINEST, logger.getLevel());
+    }
+
+    @Test public void loggerConfigNotFound() throws Exception {
+        HtmlPage page = j.createWebClient().goTo("log/levels");
+        HtmlForm form = page.getFormByName("configLogger");
+        form.getInputByName("name").setValueAttribute("foo.bar.zot");
+        form.getSelectByName("level").getOptionByValue("finest").setSelected(true);
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+        assertThat(e.getStatusCode(), equalTo(HttpURLConnection.HTTP_BAD_REQUEST));
+        assertThat(e.getResponse().getContentAsString(), containsString("A logger named \"foo.bar.zot\" does not exist"));
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})
@@ -159,20 +175,23 @@ public class LogRecorderManagerTest {
         assertThat(log.getRecorders().size(), is(1));
     }
 
-    private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class Log extends MasterToSlaveCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
         private final String message;
         private final Object[] params;
+
         Log(Level level, String logger, String message) {
             this(level, logger, message, null);
         }
+
         Log(Level level, String logger, String message, Object[] params) {
             this.level = level;
             this.logger = logger;
             this.message = message;
             this.params = params;
         }
+
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             if (params != null) {
@@ -184,13 +203,15 @@ public class LogRecorderManagerTest {
         }
     }
 
-    private static final class LambdaLog extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class LambdaLog extends MasterToSlaveCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
+
         LambdaLog(Level level, String logger) {
             this.level = level;
             this.logger = logger;
         }
+
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             log.log(level, () -> "LambdaLog @" + level);

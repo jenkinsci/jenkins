@@ -97,15 +97,18 @@ public class AccessDeniedException3Test {
         assertEquals("should send a 403 from AccessDeniedException2", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
         assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException2", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
     }
+
     @TestExtension("captureException")
     public static final class Fails extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "fails";
         }
+
         public HttpResponse doAccessDeniedException3() {
             throw new AccessDeniedException3(Jenkins.getAuthentication2(), Item.READ);
         }
+
         @SuppressWarnings("deprecation")
         public HttpResponse doAccessDeniedException2() {
             throw new AccessDeniedException2(Jenkins.getAuthentication(), Item.READ);

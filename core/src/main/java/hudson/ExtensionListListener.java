@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 /**
@@ -35,7 +36,7 @@ public abstract class ExtensionListListener {
      * {@link ExtensionList} contents has changed.
      * <p>
      * This would be called when an entry gets added to or removed from the list for any reason e.g.
-     * when a dynamically loaded plugin introduces a new {@link ExtensionPoint} implementation 
+     * when a dynamically loaded plugin introduces a new {@link ExtensionPoint} implementation
      * that adds an entry to the {@link ExtensionList} being listened to.
      */
     public abstract void onChange();

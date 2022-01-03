@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -70,51 +71,51 @@ public class ValidateButtonTest {
     public void testValidateIsCalled() throws Exception {
         TestValidateIsCalled.DescriptorImpl d = j.jenkins.getDescriptorByType(TestValidateIsCalled.DescriptorImpl.class);
         assertNotNull(d);
-        
+
         d.test1Outcome = new Exception(); // if doValidateTest1() doesn't get invoked, we want to know.
         HtmlPage p = j.createWebClient().goTo("test");
         HtmlButton button = HtmlFormUtil.getButtonByCaption(p.getFormByName("config"), "test");
         HtmlElementUtil.click(button);
-        
-        if (d.test1Outcome!=null)
+
+        if (d.test1Outcome != null)
             throw d.test1Outcome;
     }
-    
+
     @TestExtension("testValidateIsCalled")
     public static final class TestValidateIsCalled implements Describable<TestValidateIsCalled>, UnprotectedRootAction {
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-    
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-    
+
         @Override
         public String getUrlName() {
             return "test";
         }
-    
+
         @Override
         public DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
-    
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<TestValidateIsCalled> {
             private Exception test1Outcome;
-    
+
             public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b,
                                         @QueryParameter("c") boolean c, @QueryParameter("d") String d,
                                         @QueryParameter("e") String e) {
                 try {
-                    assertEquals("avalue",a);
+                    assertEquals("avalue", a);
                     assertTrue(b);
                     assertFalse(c);
-                    assertEquals("dvalue",d);
-                    assertEquals("e2",e);
+                    assertEquals("dvalue", d);
+                    assertEquals("e2", e);
                     test1Outcome = null;
                 } catch (RuntimeException t) {
                     test1Outcome = t;
@@ -122,94 +123,94 @@ public class ValidateButtonTest {
             }
         }
     }
-    
+
     @Test
     public void noInjectionArePossible() throws Exception {
         NoInjectionArePossible.DescriptorImpl d = j.jenkins.getDescriptorByType(NoInjectionArePossible.DescriptorImpl.class);
         assertNotNull(d);
-    
+
         checkRegularCase(d);
         checkInjectionInMethod(d);
         checkInjectionInWith(d);
     }
-    
+
     private void checkRegularCase(NoInjectionArePossible.DescriptorImpl descriptor) throws Exception {
         descriptor.paramMethod = "validateInjection";
         descriptor.paramWith = "a,b";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         descriptor.wasCalled = false;
         HtmlElementUtil.click(getValidateButton(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(descriptor.wasCalled);
     }
-    
+
     private void checkInjectionInMethod(NoInjectionArePossible.DescriptorImpl descriptor) throws Exception {
         descriptor.paramMethod = "validateInjection',document.title='hacked'+'";
         descriptor.paramWith = "a,b";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         // no check on wasCalled because the button that is expected by the method is not passed (arguments are shifted due to the injection)
         HtmlElementUtil.click(getValidateButton(p));
         assertNotEquals("hacked", p.getTitleText());
     }
-    
-    
+
+
     private void checkInjectionInWith(NoInjectionArePossible.DescriptorImpl descriptor) throws Exception {
         descriptor.paramMethod = "validateInjection";
         descriptor.paramWith = "a,b',document.title='hacked'+'";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         descriptor.wasCalled = false;
         HtmlElementUtil.click(getValidateButton(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(descriptor.wasCalled);
     }
-    
-    private HtmlButton getValidateButton(HtmlPage page){
+
+    private HtmlButton getValidateButton(HtmlPage page) {
         DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
         assertEquals(1, buttons.size());
         return (HtmlButton) buttons.get(0);
     }
-    
+
     @TestExtension("noInjectionArePossible")
     public static final class NoInjectionArePossible implements Describable<NoInjectionArePossible>, UnprotectedRootAction {
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public String getUrlName() {
             return "test";
         }
-        
+
         @Override
         public DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
-        
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<NoInjectionArePossible> {
             private boolean wasCalled = false;
-            
+
             public String paramMethod = "validateInjection";
             public String paramWith = null;
-            
+
             public void doValidateInjection(StaplerRequest request) {
                 wasCalled = true;
             }
@@ -258,7 +259,7 @@ public class ValidateButtonTest {
         assertThat(descriptor.called, is(true));
     }
 
-    public static class ValidateProperty extends JobProperty<Job<?,?>> {
+    public static class ValidateProperty extends JobProperty<Job<?, ?>> {
         @TestExtension({"regularUsageOfUsingDescriptorUrl", "xssUsingDescriptorUrl"})
         public static class DescriptorImpl extends JobPropertyDescriptor {
             public boolean called = false;

@@ -30,10 +30,10 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
             if (isIdleForTooLong(c)) {
                 try {
                     Node n = c.getNode();
-                    if (n!=null)    // rare, but n==null if the node is deleted and being checked roughly at the same time
+                    if (n != null)    // rare, but n==null if the node is deleted and being checked roughly at the same time
                         kill(n);
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to remove "+c.getDisplayName(),e);
+                    LOGGER.log(Level.WARNING, "Failed to remove " + c.getDisplayName(), e);
                 }
             }
         }
@@ -54,14 +54,14 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
      * When do we check again next time?
      */
     protected long checkCycle() {
-        return getIdleMaxTime()/10;
+        return getIdleMaxTime() / 10;
     }
 
     /**
      * Has this computer been idle for too long?
      */
     protected boolean isIdleForTooLong(T c) {
-        return System.currentTimeMillis()-c.getIdleStartMilliseconds() > getIdleMaxTime();
+        return System.currentTimeMillis() - c.getIdleStartMilliseconds() > getIdleMaxTime();
     }
 
     /**
@@ -73,7 +73,7 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
 
     // for debugging, it's convenient to be able to reduce this time
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static long TIMEOUT = SystemProperties.getLong(CloudSlaveRetentionStrategy.class.getName()+".timeout", TimeUnit.MINUTES.toMillis(10));
+    public static long TIMEOUT = SystemProperties.getLong(CloudSlaveRetentionStrategy.class.getName() + ".timeout", TimeUnit.MINUTES.toMillis(10));
 
     private static final Logger LOGGER = Logger.getLogger(CloudSlaveRetentionStrategy.class.getName());
 }

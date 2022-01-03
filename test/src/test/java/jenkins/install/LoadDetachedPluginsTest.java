@@ -128,6 +128,7 @@ public class LoadDetachedPluginsTest {
             assertThat("it had various implicit detached dependencies so those should have been loaded too", activePlugins, hasSize(greaterThan(1)));
         });
     }
+
     private void assertLoader(Class<?> c, String expectedPlugin, JenkinsRule r) {
         PluginWrapper pw = r.jenkins.pluginManager.whichPlugin(c);
         assertNotNull("did not expect to be loading " + c + " from " + c.getClassLoader(), pw);

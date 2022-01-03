@@ -15,20 +15,20 @@ import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
  *
  * @author Kohsuke Kawaguchi
  */
-class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
+class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer, R>> {
     private final AbstractLazyLoadRunMap<R> owner;
 
     /**
      * Lazily loaded all entries.
      */
-    private Set<Map.Entry<Integer,R>> all;
+    private Set<Map.Entry<Integer, R>> all;
 
     LazyLoadRunMapEntrySet(AbstractLazyLoadRunMap<R> owner) {
         this.owner = owner;
     }
 
-    private synchronized Set<Map.Entry<Integer,R>> all() {
-        if (all==null)
+    private synchronized Set<Map.Entry<Integer, R>> all() {
+        if (all == null)
             all = new BuildReferenceMapAdapter<>(owner, owner.all()).entrySet();
         return all;
     }
@@ -44,7 +44,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
 
     @Override
     public boolean isEmpty() {
-        return owner.newestBuild()==null;
+        return owner.newestBuild() == null;
     }
 
     @Override
@@ -53,28 +53,28 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
             Map.Entry e = (Map.Entry) o;
             Object k = e.getKey();
             if (k instanceof Integer) {
-                return owner.getByNumber((Integer)k).equals(e.getValue());
+                return owner.getByNumber((Integer) k).equals(e.getValue());
             }
         }
         return false;
     }
 
     @Override
-    public Iterator<Map.Entry<Integer,R>> iterator() {
-        return new Iterator<Map.Entry<Integer,R>>() {
+    public Iterator<Map.Entry<Integer, R>> iterator() {
+        return new Iterator<Map.Entry<Integer, R>>() {
             R last = null;
             R next = owner.newestBuild();
 
             @Override
             public boolean hasNext() {
-                return next!=null;
+                return next != null;
             }
 
             @Override
-            public Map.Entry<Integer,R> next() {
+            public Map.Entry<Integer, R> next() {
                 last = next;
-                if (last!=null) {
-                    next = owner.search(owner.getNumberOf(last)-1, Direction.DESC);
+                if (last != null) {
+                    next = owner.search(owner.getNumberOf(last) - 1, Direction.DESC);
                 } else
                     throw new NoSuchElementException();
                 return entryOf(last);
@@ -86,7 +86,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
 
             @Override
             public void remove() {
-                if (last==null)
+                if (last == null)
                     throw new UnsupportedOperationException();
                 owner.removeValue(last);
             }
@@ -118,7 +118,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer,R>> {
     public boolean remove(Object o) {
         if (o instanceof Map.Entry) {
             Map.Entry e = (Map.Entry) o;
-            return owner.removeValue((R)e.getValue());
+            return owner.removeValue((R) e.getValue());
         }
         return false;
     }
