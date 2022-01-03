@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -51,7 +52,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Common part between {@link Shell} and {@link BatchFile}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class CommandInterpreter extends Builder implements EnvVarsFilterableBuilder {
@@ -86,8 +87,8 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
     }
 
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        return perform(build,launcher,(TaskListener)listener);
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        return perform(build, launcher, (TaskListener) listener);
     }
 
     /**
@@ -102,7 +103,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
         return false;
     }
 
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws == null) {
             Node node = build.getBuiltOn();
@@ -111,13 +112,13 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
             }
             throw new NullPointerException("no workspace from node " + node + " which is computer " + node.toComputer() + " and has channel " + node.getChannel());
         }
-        FilePath script=null;
+        FilePath script = null;
         int r = -1;
         try {
             try {
                 script = createScriptFile(ws);
             } catch (IOException e) {
-                Util.displayIOException(e,listener);
+                Util.displayIOException(e, listener);
                 Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
                 return false;
             }
@@ -145,7 +146,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
                     return false;
                 }
 
-                if(isErrorlevelForUnstableBuild(r)) {
+                if (isErrorlevelForUnstableBuild(r)) {
                     build.setResult(Result.UNSTABLE);
                     r = 0;
                 }
@@ -153,13 +154,13 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
                 Util.displayIOException(e, listener);
                 Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
             }
-            return r==0;
+            return r == 0;
         } finally {
             try {
-                if(script!=null)
+                if (script != null)
                     script.delete();
             } catch (IOException e) {
-                if (r==-1 && e.getCause() instanceof ChannelClosedException) {
+                if (r == -1 && e.getCause() instanceof ChannelClosedException) {
                     // JENKINS-5073
                     // r==-1 only when the execution of the command resulted in IOException,
                     // and we've already reported that error. A common error there is channel
@@ -169,7 +170,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
                     // that this suppressing of the error would be justified
                     LOGGER.log(Level.FINE, "Script deletion failed", e);
                 } else {
-                    Util.displayIOException(e,listener);
+                    Util.displayIOException(e, listener);
                     Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)));
                 }
             } catch (Exception e) {

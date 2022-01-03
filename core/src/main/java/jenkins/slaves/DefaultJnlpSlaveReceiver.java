@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Match the name against the agent name and route the incoming agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.561  
+ * @since 1.561
  * @since 1.614 handle() returns true on handshake error as it required in {@link JnlpAgentReceiver}.
  */
 @Extension
@@ -125,7 +125,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            String channelCookie = (String)ch.getProperty(JnlpConnectionState.COOKIE_KEY);
+            String channelCookie = (String) ch.getProperty(JnlpConnectionState.COOKIE_KEY);
             if (cookie != null && channelCookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), channelCookie.getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected

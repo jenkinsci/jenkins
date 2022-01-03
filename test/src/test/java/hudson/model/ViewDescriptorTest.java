@@ -116,7 +116,7 @@ public class ViewDescriptorTest {
 
         //THEN the invisible property is not displayed on page
         assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
-                    editViewPage.asText().contains("CustomInvisibleProperty"));
+                    editViewPage.asNormalizedText().contains("CustomInvisibleProperty"));
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
@@ -125,7 +125,7 @@ public class ViewDescriptorTest {
 
         //Check that the description is updated on view
         Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
-                                                                        .asText()
+                                                                        .asNormalizedText()
                                                                         .contains("This list view is awesome !"));
 
 

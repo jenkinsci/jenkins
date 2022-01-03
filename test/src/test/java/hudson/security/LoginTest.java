@@ -76,7 +76,7 @@ public class LoginTest {
         form.getInputByName("j_password").setValueAttribute("oops I forgot");
         wc.setThrowExceptionOnFailingStatusCode(false);
         page = (HtmlPage) HtmlFormUtil.submit(form, null);
-        assertThat(page.asText(), containsString("Invalid username or password"));
+        assertThat(page.asNormalizedText(), containsString("Invalid username or password"));
     }
 
     private HtmlForm prepareLoginFormWithRememberMeChecked(WebClient wc) throws IOException, org.xml.sax.SAXException {
@@ -86,7 +86,7 @@ public class LoginTest {
         HtmlForm form = page.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");
         form.getInputByName("j_password").setValueAttribute("alice");
-        ((HtmlCheckBoxInput)form.getInputByName("remember_me")).setChecked(true);
+        ((HtmlCheckBoxInput) form.getInputByName("remember_me")).setChecked(true);
         return form;
     }
 

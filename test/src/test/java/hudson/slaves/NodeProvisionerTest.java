@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,12 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.BulkChange;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -104,7 +107,7 @@ public class NodeProvisionerTest {
             f.get(30, TimeUnit.SECONDS); // if it's taking too long, abort.
 
             // since there's only one job, we expect there to be just one slave
-            assertEquals(1,cloud.numProvisioned);
+            assertEquals(1, cloud.numProvisioned);
         }
     }
 
@@ -113,6 +116,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void loadSpike() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
 
@@ -120,7 +124,7 @@ public class NodeProvisionerTest {
 
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
-            assertEquals(5,cloud.numProvisioned);
+            assertEquals(5, cloud.numProvisioned);
         }
     }
 
@@ -129,6 +133,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             // add agents statically upfront
@@ -138,7 +143,7 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
 
             // we should have used two static slaves, thus only 3 slaves should have been provisioned
-            assertEquals(3,cloud.numProvisioned);
+            assertEquals(3, cloud.numProvisioned);
         }
     }
 
@@ -147,6 +152,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void labels() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             Label blue = r.jenkins.getLabel("blue");
@@ -168,7 +174,7 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(redJobs));
 
             // cloud should only give us 5 nodes for 5 red jobs
-            assertEquals(5,cloud.numProvisioned);
+            assertEquals(5, cloud.numProvisioned);
 
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
@@ -197,7 +203,7 @@ public class NodeProvisionerTest {
 
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
         List<FreeStyleProject> jobs = new ArrayList<>();
-        for( int i=0; i<l.init; i++)
+        for (int i = 0; i < l.init; i++)
             //set a large delay, to simulate the situation where we need to provision more agents
             // to keep up with the load
             jobs.add(createJob(l.createBuilder()));
@@ -208,7 +214,7 @@ public class NodeProvisionerTest {
      * Builds all the given projects at once.
      */
     private List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
-        System.out.println("Scheduling builds for "+jobs.size()+" jobs");
+        System.out.println("Scheduling builds for " + jobs.size() + " jobs");
         List<Future<FreeStyleBuild>> builds = new ArrayList<>();
         for (FreeStyleProject job : jobs)
             builds.add(job.scheduleBuild2(0));

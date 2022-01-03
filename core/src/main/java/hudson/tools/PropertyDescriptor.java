@@ -16,7 +16,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.305
  */
-public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Descriptor<P> {
+public abstract class PropertyDescriptor<P extends Describable<P>, T> extends Descriptor<P> {
     protected PropertyDescriptor(Class<? extends P> clazz) {
         super(clazz);
     }
@@ -28,7 +28,7 @@ public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Des
      * Infer the type parameterization 'P'
      */
     private Class<P> getP() {
-        return Functions.getTypeParameter(getClass(),Descriptor.class,0);
+        return Functions.getTypeParameter(getClass(), Descriptor.class, 0);
     }
 
     /**
@@ -44,11 +44,11 @@ public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Des
      *      displayed in the configuration screen of the target, for example.
      */
     public boolean isApplicable(Class<? extends T> targetType) {
-        Class<? extends T> applicable = Functions.getTypeParameter(clazz,getP(),0);
+        Class<? extends T> applicable = Functions.getTypeParameter(clazz, getP(), 0);
         return applicable.isAssignableFrom(targetType);
     }
 
-    public static <D extends PropertyDescriptor<?,T>,T> List<D> for_(List<D> all, Class<? extends T> target) {
+    public static <D extends PropertyDescriptor<?, T>, T> List<D> for_(List<D> all, Class<? extends T> target) {
         List<D> result = new ArrayList<>();
         for (D d : all)
             if (d.isApplicable(target))
@@ -56,7 +56,7 @@ public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Des
         return result;
     }
 
-    public static <D extends PropertyDescriptor<?,T>,T> List<D> for_(List<D> all, T target) {
-        return for_(all,(Class)target.getClass());
+    public static <D extends PropertyDescriptor<?, T>, T> List<D> for_(List<D> all, T target) {
+        return for_(all, (Class) target.getClass());
     }
 }

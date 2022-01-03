@@ -3,6 +3,7 @@ package jenkins.slaves.restarter;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Computer;
@@ -31,17 +32,21 @@ import jenkins.security.MasterToSlaveCallable;
  */
 @Extension
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
         Computer.threadPoolForRemoting.submit(new Install(c, listener));
     }
+
     private static class Install implements Callable<Void> {
         private final Computer c;
         private final TaskListener listener;
+
         Install(Computer c, TaskListener listener) {
             this.c = c;
             this.listener = listener;
         }
+
         @Override
         public Void call() throws Exception {
             install(c, listener);
@@ -54,7 +59,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
             VirtualChannel ch = c.getChannel();
-            if (ch==null) return;  // defensive check
+            if (ch == null) return;  // defensive check
 
             List<SlaveRestarter> effective = ch.call(new FindEffectiveRestarters(restarters));
 
@@ -63,11 +68,14 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
     }
+
     private static class FindEffectiveRestarters extends MasterToSlaveCallable<List<SlaveRestarter>, IOException> {
         private final List<SlaveRestarter> restarters;
+
         FindEffectiveRestarters(List<SlaveRestarter> restarters) {
             this.restarters = restarters;
         }
+
         @Override
         public List<SlaveRestarter> call() throws IOException {
             Engine e = Engine.current();
@@ -88,10 +96,10 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
                     try {
                         for (SlaveRestarter r : restarters) {
                             try {
-                                LOGGER.info("Restarting agent via "+r);
+                                LOGGER.info("Restarting agent via " + r);
                                 r.restart();
                             } catch (Exception x) {
-                                LOGGER.log(SEVERE, "Failed to restart agent with "+r, x);
+                                LOGGER.log(SEVERE, "Failed to restart agent with " + r, x);
                             }
                         }
                     } finally {

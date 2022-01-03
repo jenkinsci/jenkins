@@ -99,7 +99,7 @@ public class ReloadConfigurationCommandTest {
     }
 
     private void modifyNode(Node node) throws Exception {
-        replace(node.getNodeName().equals("") ? "config.xml" : String.format("nodes/%s/config.xml",node.getNodeName()), "oldLabel", "newLabel");
+        replace(node.getNodeName().equals("") ? "config.xml" : String.format("nodes/%s/config.xml", node.getNodeName()), "oldLabel", "newLabel");
 
         assertThat(node.getLabelString(), equalTo("oldLabel"));
 
@@ -133,7 +133,7 @@ public class ReloadConfigurationCommandTest {
 
         replace("jobs/a_project/config.xml", "oldDescription", "newDescription");
 
-        assertThat( project.getDescription(), equalTo("oldDescription"));
+        assertThat(project.getDescription(), equalTo("oldDescription"));
 
         reloadJenkinsConfigurationViaCliAndWait();
 

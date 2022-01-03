@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.jenkins.ui.icon;
 
 import java.io.IOException;
@@ -363,7 +364,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-computer-flash icon-md", "24x24/computer-flash.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE, true));
-        icons.addIcon(new Icon("icon-document-properties icon-md", "24x24/document-properties.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green icon-md", "24x24/green.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-md", "24x24/green_anime.gif", Icon.ICON_MEDIUM_STYLE));
@@ -380,7 +380,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-md", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE, true));
-        icons.addIcon(new Icon("icon-document-properties icon-md", "24x24/document-properties.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.png", Icon.ICON_MEDIUM_STYLE));
 
@@ -431,7 +430,7 @@ public class IconSet {
         icons.addIcon(new WeatherIcon("icon-health-80plus icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.SUNNY));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE, true));
-        icons.addIcon(new BuildStatusIcon("icon-red icon-xlg", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_XLARGE_STYLE ));
+        icons.addIcon(new BuildStatusIcon("icon-red icon-xlg", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-xlg", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE, true));
@@ -516,6 +515,7 @@ public class IconSet {
         images.add("user");
         images.add("video");
         images.add("warning");
+        images.add("document-properties");
 
         Map<String, String> materialIcons = new HashMap<>();
         materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");

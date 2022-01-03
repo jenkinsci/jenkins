@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -124,6 +125,7 @@ public class IconTest  {
                 public String getImageOf(String size) {
                     return "/plugin/12345/icons/s2.png";
                 }
+
                 @Override
                 public String getDescription() {
                     return "Unknown icon";
@@ -142,7 +144,7 @@ public class IconTest  {
         assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/svgs/up.svg", "icon-up icon-md");
         // this is loading the png from cloudbees-folder plugin
         // when this is swapped to an SVG and the dep updated this test will need to change
-        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
+        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/svgs/folder.svg", "icon-folder icon-md");
         assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");
         assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");
         assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-xlg");

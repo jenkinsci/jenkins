@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import static java.util.logging.Level.WARNING;
@@ -52,7 +53,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * that type. Otherwise this SCM will not have any repository browser.
      */
     public final transient Class<? extends RepositoryBrowser> repositoryBrowser;
-    
+
     private final transient AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
@@ -101,13 +102,13 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     public void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;
         super.load();
-        if (repositoryBrowser!=rb) { // XStream may overwrite even the final field.
+        if (repositoryBrowser != rb) { // XStream may overwrite even the final field.
             try {
                 Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
                 f.setAccessible(true);
-                f.set(this,rb);
+                f.set(this, rb);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
+                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field", e);
             }
         }
     }
@@ -163,7 +164,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      *      can be empty but never null.
      */
     public List<Descriptor<RepositoryBrowser<?>>> getBrowserDescriptors() {
-        if(repositoryBrowser==null)     return Collections.emptyList();
+        if (repositoryBrowser == null)     return Collections.emptyList();
         return RepositoryBrowsers.filter(repositoryBrowser);
     }
 

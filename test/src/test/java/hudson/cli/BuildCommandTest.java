@@ -107,6 +107,7 @@ public class BuildCommandTest {
         started.block();
         assertTrue(p.getBuildByNumber(1).isBuilding());
         completed.signal();
+        j.waitForCompletion(p.getBuildByNumber(1));
     }
 
     /**
@@ -174,6 +175,7 @@ public class BuildCommandTest {
         assertThat(r.stderr(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
     }
     // <=>
+
     @TestExtension("consoleOutputWhenBuildSchedulingRefused")
     public static class UnschedulingVetoer extends QueueDecisionHandler {
         @Override
@@ -225,7 +227,7 @@ public class BuildCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
 
-        // Create test parameter with Null default value 
+        // Create test parameter with Null default value
         NullDefaultValueParameterDefinition nullDefaultDefinition = new NullDefaultValueParameterDefinition();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "description"),

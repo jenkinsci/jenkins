@@ -2,12 +2,14 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -338,6 +340,7 @@ public class ResourceDomainTest {
     @Test
     @Issue("JENKINS-59849")
     public void testMoreUrlEncoding() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(true);

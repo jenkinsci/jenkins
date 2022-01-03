@@ -1,7 +1,9 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "acceptance-test-harness-1.106"
+  athRevision: "acceptance-test-harness-1.111"
   athImage: "jenkins/ath:1.97-pre"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
+  jdks:
+    - 11

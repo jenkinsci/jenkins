@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.cli;
 
 import hudson.Extension;
@@ -95,7 +96,7 @@ public class StopBuildsCommand extends CLICommand {
                 executor.doStop();
                 isAnyBuildStopped = true;
                 stdout.printf("Build '%s' stopped for job '%s'%n", buildName, jobName);
-            } catch (final Exception e) {
+            } catch (final RuntimeException e) {
                 stdout.printf("Exception occurred while trying to stop build '%s' for job '%s'. ", buildName, jobName);
                 stdout.printf("Exception class: %s, message: %s%n", e.getClass().getSimpleName(), e.getMessage());
             }

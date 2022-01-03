@@ -29,7 +29,7 @@ public class SCMCheckoutStrategyTest {
 
     @Test
     public void configRoundtrip1() throws Exception {
-        assertEquals(1,SCMCheckoutStrategyDescriptor.all().size());
+        assertEquals(1, SCMCheckoutStrategyDescriptor.all().size());
         FreeStyleProject p = j.createFreeStyleProject();
         assertFalse(pageHasUI(p));   // no configuration UI because there's only one option
     }
@@ -39,15 +39,15 @@ public class SCMCheckoutStrategyTest {
      */
     @Test
     public void configRoundtrip2() throws Exception {
-        assertEquals(2,SCMCheckoutStrategyDescriptor.all().size());
+        assertEquals(2, SCMCheckoutStrategyDescriptor.all().size());
         FreeStyleProject p = j.createFreeStyleProject();
         System.out.println(SCMCheckoutStrategyDescriptor.all());
 
         TestSCMCheckoutStrategy before = new TestSCMCheckoutStrategy();
         p.setScmCheckoutStrategy(before);
-        j.configRoundtrip((Item)p);
+        j.configRoundtrip((Item) p);
         SCMCheckoutStrategy after = p.getScmCheckoutStrategy();
-        assertNotSame(before,after);
+        assertNotSame(before, after);
         assertSame(before.getClass(), after.getClass());
 
         assertTrue(pageHasUI(p));

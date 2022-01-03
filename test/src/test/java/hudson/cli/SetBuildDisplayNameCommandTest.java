@@ -65,7 +65,7 @@ public class SetBuildDisplayNameCommandTest {
     @Test public void setDescriptionSuccessfully() throws Exception {
 
         FreeStyleProject job = j.createFreeStyleProject("project");
-        FreeStyleBuild build = job.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(job);
 
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("project", "1", "DisplayName")

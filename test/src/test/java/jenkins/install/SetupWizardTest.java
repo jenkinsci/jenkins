@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,6 +35,7 @@ import hudson.model.DownloadService;
 import hudson.model.UpdateSite;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +54,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -75,22 +76,22 @@ public class SetupWizardTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Rule
     public TemporaryFolder tmpdir = new TemporaryFolder();
-    
-    @Before 
+
+    @Before
     public void initSetupWizard() throws IOException, InterruptedException {
         final SetupWizard wizard = j.jenkins.getSetupWizard();
         wizard.init(true);
-        
+
         // Retrieve admin credentials
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
         final String password = ostream.toString();
     }
-    
+
     @Test
     public void shouldReturnPluginListsByDefault() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -99,7 +100,7 @@ public class SetupWizardTest {
         j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
         // wc.setCredentialsProvider(adminCredentialsProvider);
         // wc.login("admin");
-        
+
         String response = jsonRequest(wc, "setupWizard/platformPluginList");
         assertThat("Missing plugin is suggestions ", response, containsString("active-directory"));
         assertThat("Missing category is suggestions ", response, containsString("Pipelines and Continuous Delivery"));
@@ -455,7 +456,7 @@ public class SetupWizardTest {
         protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
             Set<TrustAnchor> trustAnchors = new HashSet<>();
             try {
-                Certificate certificate = cf.generateCertificate(new StringInputStream(cert));
+                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes()));
                 trustAnchors.add(new TrustAnchor((X509Certificate) certificate, null));
             } catch (CertificateException ex) {
                 throw new IOException(ex);

@@ -26,7 +26,7 @@ public class NewViewLink extends TransientViewActionFactory {
         // do not show the action if the viewgroup is not modifiable
         ViewGroup vg = v.getOwner();
         if (vg instanceof ModifiableViewGroup) {
-            return Collections.singletonList(new NewViewLinkAction((ModifiableViewGroup)vg));
+            return Collections.singletonList(new NewViewLinkAction((ModifiableViewGroup) vg));
         }
         return Collections.emptyList();
     }

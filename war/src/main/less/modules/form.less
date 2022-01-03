@@ -356,3 +356,108 @@
     }
   }
 }
+
+.jenkins-toggle-switch {
+  position: relative;
+  display: inline-block;
+}
+
+.jenkins-toggle-switch input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  &:disabled {
+    & + label {
+      cursor: default;
+
+      &::before {
+        opacity: 0.25 !important;
+        background-color: var(--input-border) !important;
+        box-shadow: none !important;
+      }
+
+      &::after {
+        opacity: 0.5 !important;
+      }
+    }
+  }
+
+  &:checked + label::before {
+    background-color: var(--focus-input-border);
+  }
+
+  &:checked + label::after {
+    left: 25px;
+    color: var(--focus-input-border);
+    transform: rotate(0deg);
+  }
+
+  &:active + label::before, &:focus + label::before {
+    box-shadow: 0 0 0 5px var(--focus-input-glow);
+  }
+}
+
+.jenkins-toggle-switch label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  cursor: pointer;
+  line-height: 30px;
+  font-weight: bold;
+
+  &::before {
+    display: inline-block;
+    content: "";
+    position: relative;
+    min-width: 50px;
+    min-height: 30px;
+    background: var(--input-border);
+    border-radius: 19px;
+    transition: 0.2s ease;
+    margin-right: 15px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 10px transparent;
+  }
+
+  &::after {
+    content: "✓";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--background);
+    border-radius: 19px;
+    color: transparent;
+    transition: 0.2s ease;
+    transform: rotate(-90deg);
+    font-size: 12px;
+    padding-top: 2px;
+    box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover::before {
+    background-color: var(--input-border-hover);
+  }
+
+  &:active, &:focus {
+    &::before {
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 5px var(--focus-input-glow);
+    }
+  }
+}

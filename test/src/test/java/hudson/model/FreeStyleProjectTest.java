@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,6 +34,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -40,6 +42,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -81,15 +84,15 @@ public class FreeStyleProjectTest {
 
         // emulate the user behavior
         WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
+        HtmlPage page = webClient.getPage(project, "configure");
 
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
 
         List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
+        assertEquals(1, builders.size());
+        assertEquals(Shell.class, builders.get(0).getClass());
+        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
         assertNotSame(builders.get(0), shell);
     }
 
@@ -112,14 +115,14 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-3997")
     public void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(j.createTmpDir(),"${JOB_NAME}");
+        File d = new File(j.createTmpDir(), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
         assertFalse(path.contains("${JOB_NAME}"));
-        assertEquals(b.getWorkspace().getName(),f.getName());
+        assertEquals(b.getWorkspace().getName(), f.getName());
     }
 
     @Test
@@ -132,13 +135,13 @@ public class FreeStyleProjectTest {
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
         WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
+        HtmlPage page = webClient.getPage(project, "configure");
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
         List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
+        assertEquals(1, builders.size());
+        assertEquals(Shell.class, builders.get(0).getClass());
+        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
         assertNotSame(builders.get(0), shell);
         System.out.println(project.getConfigFile().asString());
     }
@@ -146,6 +149,7 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     public void buildStabilityReports() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;
@@ -156,12 +160,14 @@ public class FreeStyleProjectTest {
                     if (j <= 16) {
                         expectedFails++;
                     }
+                    this.j.buildAndAssertStatus(Result.FAILURE, p);
+                } else {
+                    this.j.buildAndAssertSuccess(p);
                 }
-                p.scheduleBuild2(0).get();
             }
             HealthReport health = p.getBuildHealth();
 
-            assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100*(5-expectedFails)/5));
+            assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100 * (5 - expectedFails) / 5));
         }
     }
 

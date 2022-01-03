@@ -21,10 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link ReopenableFileOutputStream} that does log rotation upon rewind.
@@ -33,6 +40,8 @@ import java.io.IOException;
  * @since 2.18
  */
 public class RewindableRotatingFileOutputStream extends RewindableFileOutputStream {
+    private static final Logger LOGGER = Logger.getLogger(RewindableRotatingFileOutputStream.class.getName());
+
     /**
      * Number of log files to keep.
      */
@@ -44,19 +53,18 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
     }
 
     protected File getNumberedFileName(int n) {
-        if (n==0)   return out;
-        return new File(out.getPath()+"."+n);
+        if (n == 0)   return out;
+        return new File(out.getPath() + "." + n);
     }
 
     @Override
     public void rewind() throws IOException {
         super.rewind();
-        for (int i=size-1;i>=0;i--) {
+        for (int i = size - 1; i >= 0; i--) {
             File fi = getNumberedFileName(i);
-            if (fi.exists()) {
-                File next = getNumberedFileName(i+1);
-                next.delete();
-                fi.renameTo(next);
+            if (Files.exists(Util.fileToPath(fi))) {
+                File next = getNumberedFileName(i + 1);
+                Files.move(Util.fileToPath(fi), Util.fileToPath(next), StandardCopyOption.REPLACE_EXISTING);
             }
         }
     }
@@ -65,8 +73,12 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
      * Deletes all the log files, including rotated files.
      */
     public void deleteAll() {
-        for (int i=0; i<=size; i++) {
-            getNumberedFileName(i).delete();
+        for (int i = 0; i <= size; i++) {
+            try {
+                Files.deleteIfExists(getNumberedFileName(i).toPath());
+            } catch (IOException | InvalidPathException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
         }
     }
 }

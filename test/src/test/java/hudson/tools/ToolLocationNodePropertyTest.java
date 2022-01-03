@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import static org.junit.Assert.assertEquals;
@@ -101,7 +102,7 @@ public class ToolLocationNodePropertyTest {
     }
 
     private void configureDumpEnvBuilder() {
-        if(Functions.isWindows())
+        if (Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else
             project.getBuildersList().add(new Shell("export"));

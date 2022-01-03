@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
@@ -39,7 +40,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -52,13 +52,13 @@ public class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test public void remoteKill() throws Exception {
-        Assume.assumeFalse("Skipping, currently Unix-specific test", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
         File tmp = temp.newFile();
 
             FilePath f = new FilePath(channels.french, tmp.getPath());
             Launcher l = f.createLauncher(StreamTaskListener.fromStderr());
-            Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > "+tmp+"; sleep 30").stdout(System.out).stderr(System.err).start();
+            Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > " + tmp + "; sleep 30").stdout(System.out).stderr(System.err).start();
             while (!tmp.exists())
                 Thread.sleep(100);
             long start = System.currentTimeMillis();
@@ -69,7 +69,7 @@ public class LauncherTest {
             assertTrue("Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s", terminationTime < 15000);
             channels.french.call(new NoopCallable()); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
-            assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp, Charset.defaultCharset()).trim())));
+            assertNull("process should be gone", ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp, Charset.defaultCharset()).trim())));
 
             // Manual version of test: set up instance w/ one agent. Now in script console
             // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
@@ -80,7 +80,7 @@ public class LauncherTest {
             // hangs and on agent machine pgrep sleep => one process; after manual kill, script returns.
     }
 
-    private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
+    private static class NoopCallable extends MasterToSlaveCallable<Object, RuntimeException> {
         @Override
         public Object call() throws RuntimeException {
             return null;

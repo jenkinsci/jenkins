@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import hudson.Launcher.DecoratedLauncher;
@@ -68,7 +69,7 @@ public class ProcStarterTest {
         // Run the build. If NPE occurs, the test will fail
         rule.buildAndAssertSuccess(project);
     }
-    
+
     @Test
     @Issue("JENKINS-36277")
     public void testNonExistingPwd() throws Exception {
@@ -77,9 +78,8 @@ public class ProcStarterTest {
 
         FreeStyleProject project = rule.createFreeStyleProject();
         project.getBuildersList().add(new EchoBuilder());
-        FreeStyleBuild run = project.scheduleBuild2(0).get();
-        
-        rule.assertBuildStatus(Result.FAILURE, run);
+        FreeStyleBuild run = rule.buildAndAssertStatus(Result.FAILURE, project);
+
         rule.assertLogContains("java.io.IOException: Process working directory", run);
     }
 
@@ -126,7 +126,7 @@ public class ProcStarterTest {
                 @Override
                 public Proc launch(Launcher.ProcStarter starter) throws IOException {
                     String[] envs = starter.envs(); // Finally, call envs()
-                    l.getLogger().println("[DecoratedWrapper]: Number of environment variables is "+envs.length); // Fail on null
+                    l.getLogger().println("[DecoratedWrapper]: Number of environment variables is " + envs.length); // Fail on null
                     return super.launch(starter);
                 }
             };
@@ -142,7 +142,7 @@ public class ProcStarterTest {
         public static class DescriptorImpl extends TestWrapperDescriptor {
         }
     }
-    
+
     public static class EchoBuilder extends Builder {
 
         @Override

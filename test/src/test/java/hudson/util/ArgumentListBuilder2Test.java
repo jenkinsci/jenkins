@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -74,7 +75,7 @@ public class ArgumentListBuilder2Test {
         j.showAgentLogs(s, logging);
 
         StringWriter out = new StringWriter();
-        assertEquals(0,s.createLauncher(new StreamTaskListener(out)).launch().cmds(args).join());
+        assertEquals(0, s.createLauncher(new StreamTaskListener(out)).launch().cmds(args).join());
         assertThat(out.toString(), containsString("$ java ********"));
     }
 

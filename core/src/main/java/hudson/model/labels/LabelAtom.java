@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.verb.POST;
 
 /**
  * Atomic single token label, like "foo" or "bar".
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since  1.372
  */
@@ -78,7 +79,7 @@ public class LabelAtom extends Label implements Saveable {
     private static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL =
             SystemProperties.getBoolean(LabelAtom.class.getName() + ".allowFolderTraversal");
 
-    private DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor> properties =
+    private DescribableList<LabelAtomProperty, LabelAtomPropertyDescriptor> properties =
             new DescribableList<>(this);
 
     @CopyOnWrite
@@ -162,7 +163,7 @@ public class LabelAtom extends Label implements Saveable {
 
     @Override
     public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
-        return visitor.onAtom(this,param);
+        return visitor.onAtom(this, param);
     }
 
     @Override
@@ -176,7 +177,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/" + name + ".xml"));
     }
 
     @Override
@@ -184,22 +185,22 @@ public class LabelAtom extends Label implements Saveable {
         if (isInvalidName()) {
             throw new IOException("Invalid label");
         }
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
             SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+            LOGGER.log(Level.WARNING, "Failed to save " + getConfigFile(), e);
         }
     }
 
     public void load() {
         XmlFile file = getConfigFile();
-        if(file.exists()) {
+        if (file.exists()) {
             try {
                 file.unmarshal(this);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load "+file, e);
+                LOGGER.log(Level.WARNING, "Failed to load " + file, e);
             }
         }
         properties.setOwner(this);
@@ -218,7 +219,7 @@ public class LabelAtom extends Label implements Saveable {
      * Accepts the update to the node configuration.
      */
     @POST
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.get();
 
         app.checkPermission(Jenkins.ADMINISTER);
@@ -246,7 +247,7 @@ public class LabelAtom extends Label implements Saveable {
      */
     @RequirePOST
     @Restricted(DoNotUse.class)
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         setDescription(req.getParameter("description"));
@@ -273,9 +274,9 @@ public class LabelAtom extends Label implements Saveable {
         try {
             Jenkins.checkGoodName(name);
             // additional restricted chars
-            for( int i=0; i<name.length(); i++ ) {
+            for (int i = 0; i < name.length(); i++) {
                 char ch = name.charAt(i);
-                if(" ()\t\n".indexOf(ch)!=-1)
+                if (" ()\t\n".indexOf(ch) != -1)
                     return true;
             }
             return false;
@@ -314,28 +315,28 @@ public class LabelAtom extends Label implements Saveable {
 
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            if (context.get(IN_NESTED)==null) {
-                context.put(IN_NESTED,true);
+            if (context.get(IN_NESTED) == null) {
+                context.put(IN_NESTED, true);
                 try {
-                    super.marshal(source,writer,context);
+                    super.marshal(source, writer, context);
                 } finally {
-                    context.put(IN_NESTED,false);
+                    context.put(IN_NESTED, false);
                 }
             } else
-                leafLabelConverter.marshal(source,writer,context);
+                leafLabelConverter.marshal(source, writer, context);
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            if (context.get(IN_NESTED)==null) {
-                context.put(IN_NESTED,true);
+            if (context.get(IN_NESTED) == null) {
+                context.put(IN_NESTED, true);
                 try {
-                    return super.unmarshal(reader,context);
+                    return super.unmarshal(reader, context);
                 } finally {
-                    context.put(IN_NESTED,false);
+                    context.put(IN_NESTED, false);
                 }
             } else
-                return leafLabelConverter.unmarshal(reader,context);
+                return leafLabelConverter.unmarshal(reader, context);
         }
 
         @Override

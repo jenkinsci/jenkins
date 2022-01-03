@@ -85,35 +85,45 @@ public class DescriptorTest {
         assertEquals("builder-b", ((BuilderImpl) builders.get(0)).id);
         rule.assertLogContains("running builder-b", rule.buildAndAssertSuccess(p));
     }
+
     private static final class BuilderImpl extends Builder {
         private final String id;
+
         BuilderImpl(String id) {
             this.id = id;
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             listener.getLogger().println("running " + getDescriptor().getId());
             return true;
         }
+
         @Override public Descriptor<Builder> getDescriptor() {
             return (Descriptor<Builder>) Jenkins.get().getDescriptorByName(id);
         }
     }
+
     private static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         private final String id;
+
         DescriptorImpl(String id) {
             super(BuilderImpl.class);
             this.id = id;
         }
+
         @Override public String getId() {
             return id;
         }
+
         @Override public Builder newInstance(StaplerRequest req, JSONObject formData) {
             return new BuilderImpl(id);
         }
+
         @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
     }
+
     @TestExtension("overriddenId") public static final BuildStepDescriptor<Builder> builderA = new DescriptorImpl("builder-a");
     @TestExtension("overriddenId") public static final BuildStepDescriptor<Builder> builderB = new DescriptorImpl("builder-b");
 
@@ -124,30 +134,45 @@ public class DescriptorTest {
         rule.configRoundtrip(p);
         rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
     }
+
     public abstract static class D extends AbstractDescribableImpl<D> {
-        @Override public String toString() {return getDescriptor().getDisplayName();}
+        @Override public String toString() {
+            return getDescriptor().getDisplayName();
+        }
     }
+
     public static class D1 extends D {
         @DataBoundConstructor public D1() {}
+
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getId() {return "D1-id";}
+            @Override public String getId() {
+                return "D1-id";
+            }
         }
     }
+
     public static class D2 extends D {
         @DataBoundConstructor public D2() {}
+
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getId() {return "D2-id";}
+            @Override public String getId() {
+                return "D2-id";
+            }
         }
     }
+
     public static class B1 extends Builder {
         public final List<D> ds;
+
         @DataBoundConstructor public B1(List<D> ds) {
             this.ds = ds;
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             listener.getLogger().println(ds);
             return true;
         }
+
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
@@ -159,42 +184,55 @@ public class DescriptorTest {
         rule.configRoundtrip(p);
         rule.assertLogContains("[d3a, d3b]", rule.buildAndAssertSuccess(p));
     }
+
     public static class D3 implements Describable<D3> {
         private final String id;
+
         D3(String id) {
             this.id = id;
         }
+
         @Override public String toString() {
             return id;
         }
+
         @Override public Descriptor<D3> getDescriptor() {
             return Jenkins.get().getDescriptorByName(id);
         }
     }
+
     public static class D3D extends Descriptor<D3> {
         private final String id;
+
         public D3D(String id) {
             super(D3.class);
             this.id = id;
         }
+
         @Override public String getId() {
             return id;
         }
+
         @Override public D3 newInstance(StaplerRequest req, JSONObject formData) {
             return new D3(id);
         }
     }
+
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3a = new D3D("d3a");
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3b = new D3D("d3b");
+
     public static class B2 extends Builder {
         public final List<D3> ds;
+
         @DataBoundConstructor public B2(List<D3> ds) {
             this.ds = ds;
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             listener.getLogger().println(ds);
             return true;
         }
+
         @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 

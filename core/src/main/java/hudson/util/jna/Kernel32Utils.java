@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.Memory;
@@ -47,13 +48,13 @@ public class Kernel32Utils {
             if (Thread.interrupted())
                 throw new InterruptedException();
 
-            Kernel32.INSTANCE.WaitForSingleObject(hProcess,1000);
+            Kernel32.INSTANCE.WaitForSingleObject(hProcess, 1000);
             IntByReference exitCode = new IntByReference();
             exitCode.setValue(-1);
-            Kernel32.INSTANCE.GetExitCodeProcess(hProcess,exitCode);
+            Kernel32.INSTANCE.GetExitCodeProcess(hProcess, exitCode);
 
             int v = exitCode.getValue();
-            if (v !=Kernel32.STILL_ACTIVE) {
+            if (v != Kernel32.STILL_ACTIVE) {
                 return v;
             }
         }
@@ -66,22 +67,22 @@ public class Kernel32Utils {
      */
     @Deprecated
     public static int getWin32FileAttributes(File file) throws IOException {
-   	// allow lookup of paths longer than MAX_PATH
-    	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
-    	String canonicalPath = file.getCanonicalPath();
-    	String path;
-    	if(canonicalPath.length() < 260) {
-    		// path is short, use as-is
-    		path = canonicalPath;
-    	} else if(canonicalPath.startsWith("\\\\")) {
-    		// network share
-    		// \\server\share --> \\?\UNC\server\share
-    		path = "\\\\?\\UNC\\" + canonicalPath.substring(2);
-    	} else {
-    		// prefix, canonical path should be normalized and absolute so this should work.
-    		path = "\\\\?\\" + canonicalPath;
-    	}
-      return Kernel32.INSTANCE.GetFileAttributesW(new WString(path));
+        // allow lookup of paths longer than MAX_PATH
+        // http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
+        String canonicalPath = file.getCanonicalPath();
+        String path;
+        if (canonicalPath.length() < 260) {
+            // path is short, use as-is
+            path = canonicalPath;
+        } else if (canonicalPath.startsWith("\\\\")) {
+            // network share
+            // \\server\share --> \\?\UNC\server\share
+            path = "\\\\?\\UNC\\" + canonicalPath.substring(2);
+        } else {
+            // prefix, canonical path should be normalized and absolute so this should work.
+            path = "\\\\?\\" + canonicalPath;
+        }
+        return Kernel32.INSTANCE.GetFileAttributesW(new WString(path));
     }
 
     /**
@@ -98,8 +99,8 @@ public class Kernel32Utils {
     public static void createSymbolicLink(File symlink, String target, boolean dirLink) throws IOException {
         if (!Kernel32.INSTANCE.CreateSymbolicLinkW(
                 new WString(symlink.getPath()), new WString(target),
-                dirLink?Kernel32.SYMBOLIC_LINK_FLAG_DIRECTORY:0)) {
-            throw new WinIOException("Failed to create a symlink "+symlink+" to "+target);
+                dirLink ? Kernel32.SYMBOLIC_LINK_FLAG_DIRECTORY : 0)) {
+            throw new WinIOException("Failed to create a symlink " + symlink + " to " + target);
         }
     }
 
@@ -113,7 +114,7 @@ public class Kernel32Utils {
 
     public static File getTempDir() {
         Memory buf = new Memory(1024);
-        if (Kernel32.INSTANCE.GetTempPathW(512,buf)!=0) {// the first arg is number of wchar
+        if (Kernel32.INSTANCE.GetTempPathW(512, buf) != 0) { // the first arg is number of wchar
             return new File(buf.getWideString(0));
         } else {
             return null;
@@ -125,7 +126,7 @@ public class Kernel32Utils {
             return (Kernel32) Native.load("kernel32", Kernel32.class);
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to load Kernel32", e);
-            return InitializationErrorInvocationHandler.create(Kernel32.class,e);
+            return InitializationErrorInvocationHandler.create(Kernel32.class, e);
         }
     }
 

@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.util.Secret;
 import java.util.Objects;
@@ -48,14 +52,14 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     private Secret defaultValue;
 
     @Deprecated
-    public PasswordParameterDefinition(String name, String defaultValue, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
     // TODO consider switching @DataBoundConstructor to a PasswordParameterDefinition(String) overload
     @DataBoundConstructor
-    public PasswordParameterDefinition(String name, Secret defaultValueAsSecret, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull Secret defaultValueAsSecret, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = defaultValueAsSecret;
     }
@@ -90,6 +94,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         return new PasswordParameterValue(getName(), getDefaultValue(), getDescription());
     }
 
+    @NonNull
     public String getDefaultValue() {
         return Secret.toString(defaultValue);
     }
@@ -113,6 +118,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (PasswordParameterDefinition.class != getClass())
             return super.equals(obj);

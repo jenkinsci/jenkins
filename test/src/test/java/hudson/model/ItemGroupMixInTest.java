@@ -131,7 +131,7 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuildWrapperThrowsError extends BuildWrapper {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
 
@@ -147,9 +147,10 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuilderThrowsError extends Builder {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
+
     @Extension public static final Descriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor {
@@ -218,7 +219,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void copy_checkGoodName() throws Failure, IOException {
+  public void copy_checkGoodName() throws IOException {
     final String goodName = "calvin-jenkins";
     final String badName = "calvin@jenkins";
 
@@ -230,7 +231,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProject_checkGoodName() throws Failure {
+  public void createProject_checkGoodName() {
     final String badName = "calvin@jenkins";
 
     Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
@@ -239,7 +240,7 @@ public class ItemGroupMixInTest {
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProjectFromXML_checkGoodName() throws Failure {
+  public void createProjectFromXML_checkGoodName() {
     final String badName = "calvin@jenkins";
 
     final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +

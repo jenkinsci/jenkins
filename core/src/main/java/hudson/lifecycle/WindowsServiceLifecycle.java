@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
@@ -43,7 +44,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * {@link Lifecycle} for Hudson installed as Windows service.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @see WindowsInstallerLink
  */
@@ -64,25 +65,25 @@ public class WindowsServiceLifecycle extends Lifecycle {
             URL exe = getClass().getResource("/windows-service/jenkins.exe");
             String ourCopy = Util.getDigestOf(exe.openStream());
 
-            for (String name : new String[]{"hudson.exe","jenkins.exe"}) {
+            for (String name : new String[]{"hudson.exe", "jenkins.exe"}) {
                 try {
-                    File currentCopy = new File(baseDir,name);
-                    if(!currentCopy.exists())   continue;
+                    File currentCopy = new File(baseDir, name);
+                    if (!currentCopy.exists())   continue;
                     String curCopy = new FilePath(currentCopy).digest();
 
-                    if(ourCopy.equals(curCopy))     continue; // identical
+                    if (ourCopy.equals(curCopy))     continue; // identical
 
-                    File stage = new File(baseDir,name+".new");
-                    FileUtils.copyURLToFile(exe,stage);
-                    Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
-                    LOGGER.info("Scheduled a replacement of "+name);
+                    File stage = new File(baseDir, name + ".new");
+                    FileUtils.copyURLToFile(exe, stage);
+                    Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(), currentCopy.getAbsolutePath(), MOVEFILE_DELAY_UNTIL_REBOOT | MOVEFILE_REPLACE_EXISTING);
+                    LOGGER.info("Scheduled a replacement of " + name);
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to replace "+name,e);
+                    LOGGER.log(Level.SEVERE, "Failed to replace " + name, e);
                 } catch (InterruptedException e) {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to replace jenkins.exe",e);
+            LOGGER.log(Level.SEVERE, "Failed to replace jenkins.exe", e);
         }
     }
 
@@ -95,7 +96,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,
         // but let's be defensive
-        if(dest==null)  throw new IOException("jenkins.war location is not known.");
+        if (dest == null)  throw new IOException("jenkins.war location is not known.");
 
         // backing up the old jenkins.war before its lost due to upgrading
         // unless we are trying to rewrite jenkins.war by a backup itself
@@ -104,10 +105,10 @@ public class WindowsServiceLifecycle extends Lifecycle {
             FileUtils.copyFile(dest, bak);
 
         String baseName = dest.getName();
-        baseName = baseName.substring(0,baseName.indexOf('.'));
+        baseName = baseName.substring(0, baseName.indexOf('.'));
 
         File baseDir = getBaseDir();
-        File copyFiles = new File(baseDir,baseName+".copies");
+        File copyFiles = new File(baseDir, baseName + ".copies");
 
         try (FileWriter w = new FileWriter(copyFiles, true)) {
             w.write(by.getAbsolutePath() + '>' + getHudsonWar().getAbsolutePath() + '\n');
@@ -121,7 +122,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 
@@ -133,20 +134,20 @@ public class WindowsServiceLifecycle extends Lifecycle {
         task.getLogger().println("Restarting a service");
         String exe = System.getenv("WINSW_EXECUTABLE");
         File executable;
-        if (exe!=null)   executable = new File(exe);
+        if (exe != null)   executable = new File(exe);
         else            executable = new File(home, "hudson.exe");
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
         // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
         int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
-        if(r!=0)
+        if (r != 0)
             throw new IOException(baos.toString());
     }
-    
+
     private static File getBaseDir() {
         File baseDir;
-        
+
         String baseEnv = System.getenv("BASE");
         if (baseEnv != null) {
             baseDir = new File(baseEnv);

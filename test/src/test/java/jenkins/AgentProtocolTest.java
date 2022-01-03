@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import static org.junit.Assert.fail;
@@ -38,11 +39,11 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Tests for {@link AgentProtocol}.
- * 
+ *
  * @author Oleg Nenashev
  */
 public class AgentProtocolTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -54,21 +55,20 @@ public class AgentProtocolTest {
         assertDisabled("JNLP2-connect", "JNLP4-connect");
         assertProtocols(true, "System protocols should be always enabled", "Ping");
     }
-    
-    private void assertEnabled(String ... protocolNames) throws AssertionError {
-        assertProtocols(true, null, protocolNames);    
+
+    private void assertEnabled(String ... protocolNames) {
+        assertProtocols(true, null, protocolNames);
     }
-    
-    private void assertDisabled(String ... protocolNames) throws AssertionError {
-        assertProtocols(false, null, protocolNames);    
+
+    private void assertDisabled(String ... protocolNames) {
+        assertProtocols(false, null, protocolNames);
     }
-    
+
     private void assertProtocols(boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) {
         assertProtocols(j.jenkins, shouldBeEnabled, why, protocolNames);
     }
-    
-    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) 
-            throws AssertionError {
+
+    public static void assertProtocols(Jenkins jenkins, boolean shouldBeEnabled, @CheckForNull String why, String ... protocolNames) {
         Set<String> agentProtocols = jenkins.getAgentProtocols();
         List<String> failedChecks = new ArrayList<>();
         for (String protocol : protocolNames) {
@@ -79,7 +79,7 @@ public class AgentProtocolTest {
                 failedChecks.add(protocol);
             }
         }
-        
+
         if (!failedChecks.isEmpty()) {
             String message = String.format("Protocol(s) are not %s: %s. %sEnabled protocols: %s",
                     shouldBeEnabled ? "enabled" : "disabled",
@@ -89,5 +89,5 @@ public class AgentProtocolTest {
             fail(message);
         }
     }
-    
+
 }
