@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.views;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,7 +57,7 @@ public class GlobalDefaultViewConfigurationTest {
         params.accumulate("primaryView", viewName);
         try {
             c.configure(create, params);
-        } catch(Descriptor.FormException ex) {
+        } catch (Descriptor.FormException ex) {
             assertThat("Wrong exception message for the form failure",
                     ex.getMessage(), containsString(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName)));
             return;

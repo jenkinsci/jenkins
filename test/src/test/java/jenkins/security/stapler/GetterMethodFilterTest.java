@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.junit.Assert.assertFalse;
@@ -57,10 +58,14 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
     public static class TestWithReturnJavaPlatformObject extends AbstractUnprotectedRootAction {
         public static boolean called = false;
 
-        public String getString() { return "a";}
+        public String getString() {
+            return "a";
+        }
 
         // cannot provide side-effect since the String has no side-effect methods
-        public Object getObjectString() { return "a";}
+        public Object getObjectString() {
+            return "a";
+        }
 
         // but it opens wide range of potentially dangerous classes
         public Object getObjectCustom() {
@@ -72,7 +77,9 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
             };
         }
 
-        public Point getPoint() { return new Point(1, 2);}
+        public Point getPoint() {
+            return new Point(1, 2);
+        }
 
         public Point getPointCustomChild() {
             return new Point() {
@@ -145,13 +152,17 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
             return Collections.singletonList(Arrays.asList(new Renderable(), new Renderable()));
         }
 
-        public Renderable[] getArray() { return new Renderable[]{new Renderable(), new Renderable()};}
+        public Renderable[] getArray() {
+            return new Renderable[]{new Renderable(), new Renderable()};
+        }
 
         // will not be accepted since the componentType is from JVM
         public Point[] getArrayOfPoint() {
             return new Point[]{new Point() {
-                public void doIndex() {replyOk();}
-            }};
+                public void doIndex() {
+                    replyOk();
+                }
+            } };
         }
 
         public Renderable[][] getArrayOfArray() {
@@ -342,41 +353,75 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestWithReturnPrimitives extends AbstractUnprotectedRootAction {
-        public int getInteger() { return 1;}
+        public int getInteger() {
+            return 1;
+        }
 
-        public Integer getIntegerObject() { return 1;}
+        public Integer getIntegerObject() {
+            return 1;
+        }
 
-        public long getLong() { return 1L;}
+        public long getLong() {
+            return 1L;
+        }
 
-        public Long getLongObject() { return 1L;}
+        public Long getLongObject() {
+            return 1L;
+        }
 
-        public short getShort() { return (short) 1;}
+        public short getShort() {
+            return (short) 1;
+        }
 
-        public Short getShortObject() { return 1;}
+        public Short getShortObject() {
+            return 1;
+        }
 
-        public byte getByte() { return (byte) 1;}
+        public byte getByte() {
+            return (byte) 1;
+        }
 
-        public Byte getByteObject() { return (byte) 1;}
+        public Byte getByteObject() {
+            return (byte) 1;
+        }
 
-        public boolean getBoolean() { return true;}
+        public boolean getBoolean() {
+            return true;
+        }
 
-        public Boolean getBooleanObject() { return Boolean.TRUE;}
+        public Boolean getBooleanObject() {
+            return Boolean.TRUE;
+        }
 
-        public char getChar() { return 'a';}
+        public char getChar() {
+            return 'a';
+        }
 
-        public Character getCharObject() { return 'a';}
+        public Character getCharObject() {
+            return 'a';
+        }
 
-        public float getFloat() { return 1.0f;}
+        public float getFloat() {
+            return 1.0f;
+        }
 
-        public Float getFloatObject() { return 1.0f;}
+        public Float getFloatObject() {
+            return 1.0f;
+        }
 
-        public double getDouble() { return 1.0;}
+        public double getDouble() {
+            return 1.0;
+        }
 
-        public Double getDoubleObject() { return 1.0;}
+        public Double getDoubleObject() {
+            return 1.0;
+        }
 
         public void getVoid() { }
 
-        public Void getVoidObject() { return null; }
+        public Void getVoidObject() {
+            return null;
+        }
     }
 
     @Test
@@ -491,7 +536,9 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestWithReturnWithinStaplerScope extends DoActionFilterTest.AbstractUnprotectedRootAction {
-        public Renderable getRenderable() { return new Renderable();}
+        public Renderable getRenderable() {
+            return new Renderable();
+        }
     }
 
     @Test

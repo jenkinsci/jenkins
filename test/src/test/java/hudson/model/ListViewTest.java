@@ -306,7 +306,7 @@ public class ListViewTest {
         names.add("f1/p3");
         names.add("f2/p4");
         lv.setJobNames(names);
-        assertThat(lv.getItems(), containsInAnyOrder(p1,p2));
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
         lv.setRecurse(true);
         assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
     }
@@ -366,9 +366,11 @@ public class ListViewTest {
         @Override public ACL getRootACL() {
             return UNSECURED.getRootACL();
         }
+
         @Override public Collection<String> getGroups() {
             return Collections.emptyList();
         }
+
         @Override public ACL getACL(View item) {
             return new ACL() {
                 @Override public boolean hasPermission2(Authentication a, Permission permission) {
@@ -389,6 +391,7 @@ public class ListViewTest {
         public int read() throws IOException {
             return inner.read();
         }
+
         @Override
         public int read(byte[] b) throws IOException {
             return inner.read(b);
@@ -398,14 +401,17 @@ public class ListViewTest {
         public int read(byte[] b, int off, int len) throws IOException {
             return inner.read(b, off, len);
         }
+
         @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public boolean isReady() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -200,13 +201,13 @@ public class LogRotatorTest {
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
     }
 
-    private static int numberOf(Run<?,?> run) {
+    private static int numberOf(Run<?, ?> run) {
         return run != null ? run.getNumber() : -1;
     }
 
     static class TestsFail extends Publisher {
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.setResult(Result.UNSTABLE);
             return true;
         }
@@ -235,7 +236,7 @@ public class LogRotatorTest {
         private final ArtifactArchiver archiver = new ArtifactArchiver("f");
 
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                 throws IOException, InterruptedException {
             archiver.perform(build, launcher, listener);
             Logger.getAnonymousLogger().log(Level.INFO, "Building #{0}", build.getNumber());
@@ -279,7 +280,7 @@ public class LogRotatorTest {
                     if (remaining < 0) {
                         throw new TimeoutException();
                     }
-                    waitLock.wait(remaining/1000000L, (int)(remaining%1000000L));
+                    waitLock.wait(remaining / 1000000L, (int) (remaining % 1000000L));
                 }
             }
         }

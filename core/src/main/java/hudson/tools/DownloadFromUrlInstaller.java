@@ -51,8 +51,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @return null if no such ID is found.
      */
     public Installable getInstallable() throws IOException {
-        for (Installable i : ((DescriptorImpl<?>)getDescriptor()).getInstallables())
-            if(id.equals(i.id))
+        for (Installable i : ((DescriptorImpl<?>) getDescriptor()).getInstallables())
+            if (id.equals(i.id))
                 return i;
         return null;
     }
@@ -62,8 +62,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         FilePath expected = preferredLocation(tool, node);
 
         Installable inst = getInstallable();
-        if(inst==null) {
-            log.getLogger().println("Invalid tool ID "+id);
+        if (inst == null) {
+            log.getLogger().println("Invalid tool ID " + id);
             return expected;
         }
 
@@ -71,16 +71,16 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             inst = (Installable) ((NodeSpecific) inst).forNode(node, log);
         }
 
-        if(isUpToDate(expected,inst))
+        if (isUpToDate(expected, inst))
             return expected;
 
-        if(expected.installIfNecessaryFrom(new URL(inst.url), log, "Unpacking " + inst.url + " to " + expected + " on " + node.getDisplayName())) {
+        if (expected.installIfNecessaryFrom(new URL(inst.url), log, "Unpacking " + inst.url + " to " + expected + " on " + node.getDisplayName())) {
             expected.child(".timestamp").delete(); // we don't use the timestamp
             FilePath base = findPullUpDirectory(expected);
-            if(base!=null && base!=expected)
+            if (base != null && base != expected)
                 base.moveAllChildrenTo(expected);
             // leave a record for the next up-to-date check
-            expected.child(".installedFrom").write(inst.url,"UTF-8");
+            expected.child(".installedFrom").write(inst.url, "UTF-8");
             expected.act(new ZipExtractionInstaller.ChmodRecAPlusX());
         }
 
@@ -109,20 +109,20 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @return
      *      Return the real top directory inside {@code root} that contains the meat. In the above example,
      *      {@code root.child("jakarta-ant")} should be returned. If there's no directory to pull up,
-     *      return null. 
+     *      return null.
      */
     protected FilePath findPullUpDirectory(FilePath root) throws IOException, InterruptedException {
         // if the directory just contains one directory and that alone, assume that's the pull up subject
         // otherwise leave it as is.
         List<FilePath> children = root.list();
-        if(children.size()!=1)    return null;
-        if(children.get(0).isDirectory())
+        if (children.size() != 1)    return null;
+        if (children.get(0).isDirectory())
             return children.get(0);
         return null;
     }
 
     public abstract static class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
-        
+
         @SuppressWarnings("deprecation") // intentionally adding dynamic item here
         protected DescriptorImpl() {
             Downloadable.all().add(createDownloadable());
@@ -181,7 +181,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {
                 ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
-                for(ToolInstallerEntry entry : toolInstallerList.list) {
+                for (ToolInstallerEntry entry : toolInstallerList.list) {
                     // being able to add the id into the processedIds set means this tool has not been processed before
                     if (processedIds.add(entry.id)) {
                         reducedToolEntries.add(entry);
@@ -203,7 +203,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          */
         @Override
         public String getId() {
-            return clazz.getName().replace('$','.');
+            return clazz.getName().replace('$', '.');
         }
 
         /**
@@ -217,8 +217,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          */
         public List<? extends Installable> getInstallables() throws IOException {
             JSONObject d = Downloadable.get(getId()).getData();
-            if(d==null)     return Collections.emptyList();
-            return Arrays.asList(((InstallableList)JSONObject.toBean(d,InstallableList.class)).list);
+            if (d == null)     return Collections.emptyList();
+            return Arrays.asList(((InstallableList) JSONObject.toBean(d, InstallableList.class)).list);
         }
     }
 

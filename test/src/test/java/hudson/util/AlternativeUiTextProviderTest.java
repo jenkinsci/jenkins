@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,6 +46,7 @@ public class AlternativeUiTextProviderTest {
     @TestExtension
     public static class Impl extends AlternativeUiTextProvider {
         static boolean oldschool;
+
         @SuppressWarnings("deprecation")
         @Override public <T> String getText(Message<T> text, T context) {
             if (oldschool && text == ParameterizedJobMixIn.BUILD_NOW_TEXT) {

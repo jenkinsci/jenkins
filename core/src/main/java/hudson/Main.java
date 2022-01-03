@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
@@ -69,7 +70,7 @@ public class Main {
     /** @see #remotePost */
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
-        if (home==null) {
+        if (home == null) {
             System.err.println("JENKINS_HOME is not set.");
             return -1;
         }
@@ -83,7 +84,7 @@ public class Main {
 
     private static String getHudsonHome() {
         String home = EnvVars.masterEnvVars.get("JENKINS_HOME");
-        if (home!=null) return home;
+        if (home != null) return home;
         return EnvVars.masterEnvVars.get("HUDSON_HOME");
     }
 
@@ -95,30 +96,30 @@ public class Main {
         String projectName = args[0];
 
         String home = getHudsonHome();
-        if(!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
+        if (!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
 
         // check for authentication info
         String auth = new URL(home).getUserInfo();
-        if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+        if (auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 
-        {// check if the home is set correctly
+        { // check if the home is set correctly
             HttpURLConnection con = open(new URL(home));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
-            if(con.getResponseCode()!=200
-            || con.getHeaderField("X-Hudson")==null) {
-                System.err.println(home+" is not Hudson ("+con.getResponseMessage()+")");
+            if (con.getResponseCode() != 200
+            || con.getHeaderField("X-Hudson") == null) {
+                System.err.println(home + " is not Hudson (" + con.getResponseMessage() + ")");
                 return -1;
             }
         }
 
         URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
 
-        {// check if the job name is correct
+        { // check if the job name is correct
             HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
-            if(con.getResponseCode()!=200) {
+            if (con.getResponseCode() != 200) {
                 System.err.println(jobURL + " is not a valid external job (" + con.getResponseCode() + " " + con.getResponseMessage() + ")");
                 return -1;
             }
@@ -130,7 +131,7 @@ public class Main {
             HttpURLConnection con = open(new URL(home +
                     "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
-            String line = IOUtils.readFirstLine(con.getInputStream(),"UTF-8");
+            String line = IOUtils.readFirstLine(con.getInputStream(), "UTF-8");
             String[] components = line.split(":");
             if (components.length == 2) {
                 crumbField = components[0];
@@ -141,31 +142,31 @@ public class Main {
         }
 
         // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("jenkins","log");
+        File tmpFile = File.createTempFile("jenkins", "log");
         try {
             int ret;
             try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
                  Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
                 w.write("<?xml version='1.1' encoding='UTF-8'?>");
-                w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
+                w.write("<run><log encoding='hexBinary' content-encoding='" + Charset.defaultCharset().name() + "'>");
                 w.flush();
 
                 // run the command
                 long start = System.currentTimeMillis();
 
                 List<String> cmd = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
-                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
-                    new DualOutputStream(System.out,new EncodingStream(os)));
+                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]), (String[]) null, System.in,
+                    new DualOutputStream(System.out, new EncodingStream(os)));
 
                 ret = proc.join();
 
-                w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+                w.write("</log><result>" + ret + "</result><duration>" + (System.currentTimeMillis() - start) + "</duration></run>");
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
 
             URL location = new URL(jobURL, "postBuildResult");
-            while(true) {
+            while (true) {
                 try {
                     // start a remote connection
                     HttpURLConnection con = open(location);
@@ -175,7 +176,7 @@ public class Main {
                     }
                     con.setDoOutput(true);
                     // this tells HttpURLConnection not to buffer the whole thing
-                    con.setFixedLengthStreamingMode((int)tmpFile.length());
+                    con.setFixedLengthStreamingMode((int) tmpFile.length());
                     con.connect();
                     // send the data
                     try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
@@ -184,13 +185,13 @@ public class Main {
                         throw new IOException(e);
                     }
 
-                    if(con.getResponseCode()!=200) {
+                    if (con.getResponseCode() != 200) {
                         org.apache.commons.io.IOUtils.copy(con.getErrorStream(), System.err);
                     }
 
                     return ret;
                 } catch (HttpRetryException e) {
-                    if(e.getLocation()!=null) {
+                    if (e.getLocation() != null) {
                         // retry with the new location
                         location = new URL(e.getLocation());
                         continue;
@@ -208,7 +209,7 @@ public class Main {
      * Connects to the given HTTP URL and configure time out, to avoid infinite hang.
      */
     private static HttpURLConnection open(URL url) throws IOException {
-        HttpURLConnection c = (HttpURLConnection)url.openConnection();
+        HttpURLConnection c = (HttpURLConnection) url.openConnection();
         c.setReadTimeout(TIMEOUT);
         c.setConnectTimeout(TIMEOUT);
         return c;
@@ -225,10 +226,10 @@ public class Main {
      * This is also set if running inside {@code mvn hpi:run} since plugins parent POM 2.30.
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
-    public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
+    public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName() + ".development");
 
     /**
      * Time out for socket connection to Hudson.
      */
-    public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName()+".timeout",15000);
+    public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName() + ".timeout", 15000);
 }

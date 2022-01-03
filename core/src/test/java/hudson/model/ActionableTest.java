@@ -217,8 +217,12 @@ public class ActionableTest {
     }
 
     private static class ActionableImpl extends Actionable {
-        @Override public String getDisplayName() {return  null;}
+        @Override public String getDisplayName() {
+            return null;
+        }
 
-        @Override public String getSearchUrl() {return null;}
+        @Override public String getSearchUrl() {
+            return null;
+        }
     }
 }

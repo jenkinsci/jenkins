@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -76,7 +77,7 @@ public class Tasks {
             }
             p = o;
         }
-        return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
+        return p instanceof hudson.model.Item ? (hudson.model.Item) p : null;
     }
 
     /** @deprecated call {@link Queue.Task#getDefaultAuthentication()} directly */

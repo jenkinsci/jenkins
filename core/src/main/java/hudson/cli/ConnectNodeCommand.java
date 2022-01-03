@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -41,10 +42,10 @@ import org.kohsuke.args4j.Option;
 public class ConnectNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(metaVar="NAME", usage="Agent name, or empty string for built-in node; comma-separated list is supported", required=true, multiValued=true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node; comma-separated list is supported", required = true, multiValued = true)
     private List<String> nodes;
 
-    @Option(name="-f", usage="Cancel any currently pending connect operation and retry from scratch")
+    @Option(name = "-f", usage = "Cancel any currently pending connect operation and retry from scratch")
     public boolean force = false;
 
     private static final Logger LOGGER = Logger.getLogger(ConnectNodeCommand.class.getName());

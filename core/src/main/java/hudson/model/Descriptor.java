@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.util.QuotedStringTokenizer.quote;
@@ -147,12 +148,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public final transient Class<? extends T> clazz;
 
-    private final transient Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<>(2);
+    private final transient Map<String, CheckMethod> checkMethods = new ConcurrentHashMap<>(2);
 
     /**
      * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
      */
-    private transient volatile Map<String, PropertyType> propertyTypes,globalPropertyTypes;
+    private transient volatile Map<String, PropertyType> propertyTypes, globalPropertyTypes;
 
     /**
      * Represents a readable property on {@link Describable}.
@@ -170,35 +171,35 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         }
 
         PropertyType(Field f) {
-            this(f.getType(),f.getGenericType(),f.toString());
+            this(f.getType(), f.getGenericType(), f.toString());
         }
 
         PropertyType(Method getter) {
-            this(getter.getReturnType(),getter.getGenericReturnType(),getter.toString());
+            this(getter.getReturnType(), getter.getGenericReturnType(), getter.toString());
         }
 
         public Enum[] getEnumConstants() {
-            return (Enum[])clazz.getEnumConstants();
+            return (Enum[]) clazz.getEnumConstants();
         }
 
         /**
          * If the property is a collection/array type, what is an item type?
          */
         public Class getItemType() {
-            if(itemType==null)
+            if (itemType == null)
                 itemType = computeItemType();
             return itemType;
         }
 
         private Class computeItemType() {
-            if(clazz.isArray()) {
+            if (clazz.isArray()) {
                 return clazz.getComponentType();
             }
-            if(Collection.class.isAssignableFrom(clazz)) {
+            if (Collection.class.isAssignableFrom(clazz)) {
                 Type col = Types.getBaseClass(type, Collection.class);
 
                 if (col instanceof ParameterizedType)
-                    return Types.erasure(Types.getTypeArgument(col,0));
+                    return Types.erasure(Types.getTypeArgument(col, 0));
                 else
                     return Object.class;
             }
@@ -218,8 +219,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://www.jenkins.io/redirect/developer/class-is-missing-descriptor");
             }
             Descriptor d = Jenkins.get().getDescriptor(it);
-            if (d==null)
-                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://www.jenkins.io/redirect/developer/class-is-missing-descriptor");
+            if (d == null)
+                throw new AssertionError(it + " is missing its descriptor in " + displayName + ". See https://www.jenkins.io/redirect/developer/class-is-missing-descriptor");
             return d;
         }
 
@@ -243,7 +244,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @see #getHelpFile(String)
      */
-    private final transient Map<String,HelpRedirect> helpRedirect = new HashMap<>(2);
+    private final transient Map<String, HelpRedirect> helpRedirect = new HashMap<>(2);
 
     private static class HelpRedirect {
         private final Class<? extends Describable> owner;
@@ -267,8 +268,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      (this hack is needed since derived types can't call "getClass()" to refer to itself.
      */
     protected Descriptor(Class<? extends T> clazz) {
-        if (clazz==self())
-            clazz = (Class)getClass();
+        if (clazz == self())
+            clazz = (Class) getClass();
         this.clazz = clazz;
         // doing this turns out to be very error prone,
         // as field initializers in derived types will override values.
@@ -283,9 +284,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @since 1.278
      */
     protected Descriptor() {
-        this.clazz = (Class<T>)getClass().getEnclosingClass();
-        if(clazz==null)
-            throw new AssertionError(getClass()+" doesn't have an outer class. Use the constructor that takes the Class object explicitly.");
+        this.clazz = (Class<T>) getClass().getEnclosingClass();
+        if (clazz == null)
+            throw new AssertionError(getClass() + " doesn't have an outer class. Use the constructor that takes the Class object explicitly.");
 
         // detect an type error
         Type bt = Types.getBaseClass(getClass(), Descriptor.class);
@@ -293,19 +294,19 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             ParameterizedType pt = (ParameterizedType) bt;
             // this 't' is the closest approximation of T of Descriptor<T>.
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
-            if(!t.isAssignableFrom(clazz))
-                throw new AssertionError("Outer class "+clazz+" of "+getClass()+" is not assignable to "+t+". Perhaps wrong outer class?");
+            if (!t.isAssignableFrom(clazz))
+                throw new AssertionError("Outer class " + clazz + " of " + getClass() + " is not assignable to " + t + ". Perhaps wrong outer class?");
         }
 
         // detect a type error. this Descriptor is supposed to be returned from getDescriptor(), so make sure its type match up.
         // this prevents a bug like http://www.nabble.com/Creating-a-new-parameter-Type-%3A-Masked-Parameter-td24786554.html
         try {
             Method getd = clazz.getMethod("getDescriptor");
-            if(!getd.getReturnType().isAssignableFrom(getClass())) {
-                throw new AssertionError(getClass()+" must be assignable to "+getd.getReturnType());
+            if (!getd.getReturnType().isAssignableFrom(getClass())) {
+                throw new AssertionError(getClass() + " must be assignable to " + getd.getReturnType());
             }
         } catch (NoSuchMethodException e) {
-            throw new AssertionError(getClass()+" is missing getDescriptor method.", e);
+            throw new AssertionError(getClass() + " is missing getDescriptor method.", e);
         }
 
     }
@@ -353,7 +354,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     public Class<T> getT() {
         Type subTyping = Types.getBaseClass(getClass(), Descriptor.class);
         if (!(subTyping instanceof ParameterizedType)) {
-            throw new IllegalStateException(getClass()+" doesn't extend Descriptor with a type parameter.");
+            throw new IllegalStateException(getClass() + " doesn't extend Descriptor with a type parameter.");
         }
         return Types.erasure(Types.getTypeArgument(subTyping, 0));
     }
@@ -363,7 +364,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Since {@link Jenkins} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
     public String getDescriptorUrl() {
-        return "descriptorByName/"+getId();
+        return "descriptorByName/" + getId();
     }
 
     /**
@@ -371,7 +372,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @since 1.406
      */
     public final String getDescriptorFullUrl() {
-        return getCurrentDescriptorByNameUrl()+'/'+getDescriptorUrl();
+        return getCurrentDescriptorByNameUrl() + '/' + getDescriptorUrl();
     }
 
     /**
@@ -382,7 +383,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
         // this override allows RenderOnDemandClosure to preserve the proper value
         Object url = req.getAttribute("currentDescriptorByNameUrl");
-        if (url!=null)  return url.toString();
+        if (url != null)  return url.toString();
 
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
         return a.getUrl();
@@ -405,9 +406,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public CheckMethod getCheckMethod(String fieldName) {
         CheckMethod method = checkMethods.get(fieldName);
-        if(method==null) {
-            method = new CheckMethod(this,fieldName);
-            checkMethods.put(fieldName,method);
+        if (method == null) {
+            method = new CheckMethod(this, fieldName);
+            checkMethods.put(fieldName, method);
         }
 
         return method;
@@ -418,11 +419,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * and sets that as the 'fillDependsOn' attribute. Also computes the URL of the doFillXyzItems and
      * sets that as the 'fillUrl' attribute.
      */
-    public void calcFillSettings(String field, Map<String,Object> attributes) {
+    public void calcFillSettings(String field, Map<String, Object> attributes) {
         String capitalizedFieldName = StringUtils.capitalize(field);
         String methodName = "doFill" + capitalizedFieldName + "Items";
         Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
-        if(method==null)
+        if (method == null)
             throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
 
         // build query parameter line by figuring out what should be submitted
@@ -436,23 +437,23 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private List<String> buildFillDependencies(Method method, List<String> depends) {
         for (Parameter p : ReflectionUtils.getParameters(method)) {
             QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp!=null) {
+            if (qp != null) {
                 String name = qp.value();
-                if (name.length()==0) name = p.name();
-                if (name==null || name.length()==0)
+                if (name.length() == 0) name = p.name();
+                if (name == null || name.length() == 0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
                 RelativePath rp = p.annotation(RelativePath.class);
-                if (rp!=null)
-                    name = rp.value()+'/'+name;
+                if (rp != null)
+                    name = rp.value() + '/' + name;
 
                 depends.add(name);
                 continue;
             }
 
             Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
-            if (m!=null)
-                buildFillDependencies(m,depends);
+            if (m != null)
+                buildFillDependencies(m, depends);
         }
         return depends;
     }
@@ -460,11 +461,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Computes the auto-completion setting
      */
-    public void calcAutoCompleteSettings(String field, Map<String,Object> attributes) {
+    public void calcAutoCompleteSettings(String field, Map<String, Object> attributes) {
         String capitalizedFieldName = StringUtils.capitalize(field);
         String methodName = "doAutoComplete" + capitalizedFieldName;
         Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
-        if(method==null)
+        if (method == null)
             return;    // no auto-completion
 
         attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
@@ -475,7 +476,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public @CheckForNull PropertyType getPropertyType(@NonNull Object instance, @NonNull String field) {
         // in global.jelly, instance==descriptor
-        return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
+        return instance == this ? getGlobalPropertyType(field) : getPropertyType(field);
     }
 
     /**
@@ -498,7 +499,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Obtains the property type of the given field of {@link #clazz}
      */
     public PropertyType getPropertyType(String field) {
-        if(propertyTypes==null)
+        if (propertyTypes == null)
             propertyTypes = buildPropertyTypes(clazz);
         return propertyTypes.get(field);
     }
@@ -507,7 +508,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Obtains the property type of the given field of this descriptor.
      */
     public PropertyType getGlobalPropertyType(String field) {
-        if(globalPropertyTypes==null)
+        if (globalPropertyTypes == null)
             globalPropertyTypes = buildPropertyTypes(getClass());
         return globalPropertyTypes.get(field);
     }
@@ -518,11 +519,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private Map<String, PropertyType> buildPropertyTypes(Class<?> clazz) {
         Map<String, PropertyType> r = new HashMap<>();
         for (Field f : clazz.getFields())
-            r.put(f.getName(),new PropertyType(f));
+            r.put(f.getName(), new PropertyType(f));
 
         for (Method m : clazz.getMethods())
-            if(m.getName().startsWith("get"))
-                r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
+            if (m.getName().startsWith("get"))
+                r.put(Introspector.decapitalize(m.getName().substring(3)), new PropertyType(m));
 
         return r;
     }
@@ -531,7 +532,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Gets the class name nicely escaped to be usable as a key in the structured form submission.
      */
     public final String getJsonSafeClassName() {
-        return getId().replace('.','-');
+        return getId().replace('.', '-');
     }
 
     /**
@@ -541,7 +542,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     @Deprecated
     public T newInstance(StaplerRequest req) throws FormException {
-        throw new UnsupportedOperationException(getClass()+" should implement newInstance(StaplerRequest,JSONObject)");
+        throw new UnsupportedOperationException(getClass() + " should implement newInstance(StaplerRequest,JSONObject)");
     }
 
     /**
@@ -582,12 +583,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
-            if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
+            if (!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
                 // this class overrides newInstance(StaplerRequest).
                 // maintain the backward compatible behavior
                 return verifyNewInstance(newInstance(req));
             } else {
-                if (req==null) {
+                if (req == null) {
                     // yes, req is supposed to be always non-null, but see the note above
                     return verifyNewInstance(clazz.getDeclaredConstructor().newInstance());
                 }
@@ -609,7 +610,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 }
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
-            throw new LinkageError("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
+            throw new LinkageError("Failed to instantiate " + clazz + " from " + RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData), e);
         }
     }
 
@@ -624,7 +625,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private static class NewInstanceBindInterceptor extends BindInterceptor {
 
         private final BindInterceptor oldInterceptor;
-        private final IdentityHashMap<JSONObject,Boolean> processed = new IdentityHashMap<>();
+        private final IdentityHashMap<JSONObject, Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
             LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
@@ -696,9 +697,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html
      */
     private T verifyNewInstance(T t) {
-        if (t!=null && t.getDescriptor()!=this) {
+        if (t != null && t.getDescriptor() != this) {
             // TODO: should this be a fatal error?
-            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably misplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+            LOGGER.warning("Father of " + t + " and its getDescriptor() points to two different instances. Probably misplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
         }
         return t;
     }
@@ -741,31 +742,31 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * locale variations.
      */
     public String getHelpFile(final String fieldName) {
-        return getHelpFile(getKlass(),fieldName);
+        return getHelpFile(getKlass(), fieldName);
     }
 
     public String getHelpFile(Klass<?> clazz, String fieldName) {
         HelpRedirect r = helpRedirect.get(fieldName);
-        if (r!=null)    return r.resolve();
+        if (r != null)    return r.resolve();
 
         for (Klass<?> c : clazz.getAncestors()) {
             String page = "/descriptor/" + getId() + "/help";
             String suffix;
-            if(fieldName==null) {
-                suffix="";
+            if (fieldName == null) {
+                suffix = "";
             } else {
-                page += '/'+fieldName;
-                suffix='-'+fieldName;
+                page += '/' + fieldName;
+                suffix = '-' + fieldName;
             }
 
             try {
-                if(Stapler.getCurrentRequest().getView(c,"help"+suffix)!=null)
+                if (Stapler.getCurrentRequest().getView(c, "help" + suffix) != null)
                     return page;
             } catch (IOException e) {
                 throw new Error(e);
             }
 
-            if(getStaticHelpUrl(c, suffix) !=null)    return page;
+            if (getStaticHelpUrl(c, suffix) != null)    return page;
         }
         return null;
     }
@@ -776,13 +777,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @since 1.425
      */
     protected void addHelpFileRedirect(String fieldName, Class<? extends Describable> owner, String fieldNameToRedirectTo) {
-        helpRedirect.put(fieldName, new HelpRedirect(owner,fieldNameToRedirectTo));
+        helpRedirect.put(fieldName, new HelpRedirect(owner, fieldNameToRedirectTo));
     }
 
     /**
      * Checks if the given object is created from this {@link Descriptor}.
      */
-    public final boolean isInstance( T instance ) {
+    public final boolean isInstance(T instance) {
         return clazz.isInstance(instance);
     }
 
@@ -798,7 +799,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
     @Deprecated
-    public boolean configure( StaplerRequest req ) throws FormException {
+    public boolean configure(StaplerRequest req) throws FormException {
         return true;
     }
 
@@ -813,7 +814,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @return false
      *      to keep the client in the same config page.
      */
-    public boolean configure( StaplerRequest req, JSONObject json ) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // compatibility
         return configure(req);
     }
@@ -852,15 +853,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
-        return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
+        return getViewPage(clazz, Collections.singleton(pageName), defaultValue);
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
-        while(clazz!=Object.class && clazz!=null) {
+        while (clazz != Object.class && clazz != null) {
             for (String pageName : pageNames) {
                 String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
-                if(clazz.getClassLoader().getResource(name)!=null)
-                    return '/'+name;
+                if (clazz.getClassLoader().getResource(name) != null)
+                    return '/' + name;
             }
             clazz = clazz.getSuperclass();
         }
@@ -873,7 +874,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         // it doesn't exist.
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
-        return getViewPage(clazz,pageName,pageName);
+        return getViewPage(clazz, pageName, pageName);
     }
 
     protected List<String> getPossibleViewNames(String baseName) {
@@ -882,7 +883,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
                 for (String ext : jcf.getScriptExtensions())
-                    names.add(baseName +ext);
+                    names.add(baseName + ext);
             }
         }
         return names;
@@ -894,12 +895,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     @Override
     public synchronized void save() {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
             SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+            LOGGER.log(Level.WARNING, "Failed to save " + getConfigFile(), e);
         }
     }
 
@@ -913,18 +914,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public synchronized void load() {
         XmlFile file = getConfigFile();
-        if(!file.exists())
+        if (!file.exists())
             return;
 
         try {
             file.unmarshal(this);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load "+file, e);
+            LOGGER.log(Level.WARNING, "Failed to load " + file, e);
         }
     }
 
     protected XmlFile getConfigFile() {
-        return new XmlFile(new File(Jenkins.get().getRootDir(),getId()+".xml"));
+        return new XmlFile(new File(Jenkins.get().getRootDir(), getId() + ".xml"));
     }
 
     /**
@@ -942,32 +943,32 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
-        if(path.contains("..")) throw new ServletException("Illegal path: "+path);
+        if (path.contains("..")) throw new ServletException("Illegal path: " + path);
 
-        path = path.replace('/','-');
+        path = path.replace('/', '-');
 
         PluginWrapper pw = getPlugin();
-        if (pw!=null) {
-            rsp.setHeader("X-Plugin-Short-Name",pw.getShortName());
-            rsp.setHeader("X-Plugin-Long-Name",pw.getLongName());
+        if (pw != null) {
+            rsp.setHeader("X-Plugin-Short-Name", pw.getShortName());
+            rsp.setHeader("X-Plugin-Long-Name", pw.getLongName());
             rsp.setHeader("X-Plugin-From", Messages.Descriptor_From(
-                    pw.getLongName().replace("Hudson","Jenkins").replace("hudson","jenkins"), pw.getUrl()));
+                    pw.getLongName().replace("Hudson", "Jenkins").replace("hudson", "jenkins"), pw.getUrl()));
         }
 
-        for (Klass<?> c= getKlass(); c!=null; c=c.getSuperClass()) {
-            RequestDispatcher rd = Stapler.getCurrentRequest().getView(c, "help"+path);
-            if(rd!=null) {// template based help page
-                rd.forward(req,rsp);
+        for (Klass<?> c = getKlass(); c != null; c = c.getSuperClass()) {
+            RequestDispatcher rd = Stapler.getCurrentRequest().getView(c, "help" + path);
+            if (rd != null) { // template based help page
+                rd.forward(req, rsp);
                 return;
             }
 
             URL url = getStaticHelpUrl(c, path);
-            if(url!=null) {
+            if (url != null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
-                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
+                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL", req.getContextPath())));
                 }
                 return;
             }
@@ -978,15 +979,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private URL getStaticHelpUrl(Klass<?> c, String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
 
-        String base = "help"+suffix;
+        String base = "help" + suffix;
 
         URL url;
         url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
-        if(url!=null)    return url;
+        if (url != null)    return url;
         url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
-        if(url!=null)    return url;
+        if (url != null)    return url;
         url = c.getResource(base + '_' + locale.getLanguage() + ".html");
-        if(url!=null)    return url;
+        if (url != null)    return url;
 
         // default
         return c.getResource(base + ".html");
@@ -999,17 +1000,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
 
     // to work around warning when creating a generic array type
-    public static <T> T[] toArray( T... values ) {
+    public static <T> T[] toArray(T... values) {
         return values;
     }
 
-    public static <T> List<T> toList( T... values ) {
+    public static <T> List<T> toList(T... values) {
         return new ArrayList<>(Arrays.asList(values));
     }
 
     public static <T extends Describable<T>>
-    Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
-        Map<Descriptor<T>,T> m = new LinkedHashMap<>();
+    Map<Descriptor<T>, T> toMap(Iterable<T> describables) {
+        Map<Descriptor<T>, T> m = new LinkedHashMap<>();
         for (T d : describables) {
             Descriptor<T> descriptor;
             try {
@@ -1041,7 +1042,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     List<T> newInstancesFromHeteroList(StaplerRequest req, JSONObject formData, String key,
                 Collection<? extends Descriptor<T>> descriptors) throws FormException {
 
-        return newInstancesFromHeteroList(req,formData.get(key),descriptors);
+        return newInstancesFromHeteroList(req, formData.get(key), descriptors);
     }
 
     public static <T extends Describable<T>>
@@ -1050,9 +1051,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
         List<T> items = new ArrayList<>();
 
-        if (formData!=null) {
+        if (formData != null) {
             for (Object o : JSONArray.fromObject(formData)) {
-                JSONObject jo = (JSONObject)o;
+                JSONObject jo = (JSONObject) o;
                 Descriptor<T> d = null;
                 // 'kind' and '$class' are mutually exclusive (see class-entry.jelly), but to be more lenient on the reader side,
                 // we check them both anyway. 'kind' (which maps to ID) is more unique than '$class', which can have multiple matching
@@ -1096,7 +1097,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
         for (T d : list) {
-            if(d.getId().equals(id))
+            if (d.getId().equals(id))
                 return d;
         }
         return null;
@@ -1108,7 +1109,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     private static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
-            if(d.getClass().getName().equals(className))
+            if (d.getClass().getName().equals(className))
                 return d;
         }
         return null;
@@ -1121,7 +1122,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
-            if(d.clazz.getName().equals(className))
+            if (d.clazz.getName().equals(className))
                 return d;
         }
         return null;
@@ -1145,7 +1146,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     @Deprecated
     public static @CheckForNull Descriptor find(String className) {
-        return find(ExtensionList.lookup(Descriptor.class),className);
+        return find(ExtensionList.lookup(Descriptor.class), className);
     }
 
     public static final class FormException extends Exception implements HttpResponse {
@@ -1176,11 +1177,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.ERROR)")
+                FormApply.applyResponse("notificationBar.show(" + quote(getMessage()) + ",notificationBar.ERROR)")
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.
-                new Failure(getMessage()).generateResponse(req,rsp,node,getCause());
+                new Failure(getMessage()).generateResponse(req, rsp, node, getCause());
             }
         }
     }

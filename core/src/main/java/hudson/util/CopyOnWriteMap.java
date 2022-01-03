@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -48,14 +49,14 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
-    protected volatile Map<K,V> core;
+public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
+    protected volatile Map<K, V> core;
     /**
      * Read-only view of {@link #core}.
      */
-    private volatile Map<K,V> view;
+    private volatile Map<K, V> view;
 
-    protected CopyOnWriteMap(Map<K,V> core) {
+    protected CopyOnWriteMap(Map<K, V> core) {
         update(core);
     }
 
@@ -63,7 +64,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         update(Collections.emptyMap());
     }
 
-    protected void update(Map<K,V> m) {
+    protected void update(Map<K, V> m) {
         core = m;
         view = Collections.unmodifiableMap(core);
     }
@@ -105,8 +106,8 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
     @Override
     public synchronized V put(K key, V value) {
-        Map<K,V> m = copy();
-        V r = m.put(key,value);
+        Map<K, V> m = copy();
+        V r = m.put(key, value);
         update(m);
 
         return r;
@@ -114,7 +115,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
     @Override
     public synchronized V remove(Object key) {
-        Map<K,V> m = copy();
+        Map<K, V> m = copy();
         V r = m.remove(key);
         update(m);
 
@@ -123,12 +124,12 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
     @Override
     public synchronized void putAll(Map<? extends K, ? extends V> t) {
-        Map<K,V> m = copy();
+        Map<K, V> m = copy();
         m.putAll(t);
         update(m);
     }
 
-    protected abstract Map<K,V> copy();
+    protected abstract Map<K, V> copy();
 
     @Override
     public synchronized void clear() {
@@ -155,7 +156,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
      * This method will return a read-only {@link Set}.
      */
     @Override
-    public Set<Entry<K,V>> entrySet() {
+    public Set<Entry<K, V>> entrySet() {
         return view.entrySet();
     }
 
@@ -175,8 +176,8 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     /**
      * {@link CopyOnWriteMap} backed by {@link HashMap}.
      */
-    public static final class Hash<K,V> extends CopyOnWriteMap<K,V> {
-        public Hash(Map<K,V> core) {
+    public static final class Hash<K, V> extends CopyOnWriteMap<K, V> {
+        public Hash(Map<K, V> core) {
             super(new LinkedHashMap<>(core));
         }
 
@@ -184,7 +185,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         @Override
-        protected Map<K,V> copy() {
+        protected Map<K, V> copy() {
             return new LinkedHashMap<>(core);
         }
 
@@ -195,17 +196,17 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
             @Override
             public boolean canConvert(Class type) {
-                return type==Hash.class;
+                return type == Hash.class;
             }
 
             @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-                return new Hash((Map) super.unmarshal(reader,context));
+                return new Hash((Map) super.unmarshal(reader, context));
             }
 
             @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                super.marshal(((Hash)source).core,writer,context);
+                super.marshal(((Hash) source).core, writer, context);
             }
         }
     }
@@ -213,10 +214,10 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     /**
      * {@link CopyOnWriteMap} backed by {@link TreeMap}.
      */
-    public static final class Tree<K,V> extends CopyOnWriteMap<K,V> {
+    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> {
         private final Comparator<K> comparator;
 
-        public Tree(Map<K,V> core, Comparator<K> comparator) {
+        public Tree(Map<K, V> core, Comparator<K> comparator) {
             this(comparator);
             putAll(core);
         }
@@ -231,8 +232,8 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         @Override
-        protected Map<K,V> copy() {
-            TreeMap<K,V> m = new TreeMap<>(comparator);
+        protected Map<K, V> copy() {
+            TreeMap<K, V> m = new TreeMap<>(comparator);
             m.putAll(core);
             return m;
         }
@@ -249,18 +250,18 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
 
             @Override
             public boolean canConvert(Class type) {
-                return type==Tree.class;
+                return type == Tree.class;
             }
 
             @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-                TreeMap tm = (TreeMap) super.unmarshal(reader,context);
-                return new Tree(tm,tm.comparator());
+                TreeMap tm = (TreeMap) super.unmarshal(reader, context);
+                return new Tree(tm, tm.comparator());
             }
 
             @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                super.marshal(((Tree)source).core,writer,context);
+                super.marshal(((Tree) source).core, writer, context);
             }
         }
     }

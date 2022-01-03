@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util.xstream;
 
 import com.thoughtworks.xstream.XStream;
@@ -149,8 +150,8 @@ public class XStreamDOM {
     }
 
     private String[] toAttributeList(Map<String, String> attributes) {
-        String[] r = new String[attributes.size()*2];
-        int i=0;
+        String[] r = new String[attributes.size() * 2];
+        int i = 0;
         for (Map.Entry<String, String> e : attributes.entrySet()) {
             r[i++] = e.getKey();
             r[i++] = e.getValue();
@@ -166,11 +167,11 @@ public class XStreamDOM {
      * Unmarshals this DOM into an object via the given XStream.
      */
     public <T> T unmarshal(XStream xs) {
-        return (T)xs.unmarshal(newReader());
+        return (T) xs.unmarshal(newReader());
     }
 
     public <T> T unmarshal(XStream xs, T root) {
-        return (T)xs.unmarshal(newReader(),root);
+        return (T) xs.unmarshal(newReader(), root);
     }
 
     /**
@@ -181,26 +182,26 @@ public class XStreamDOM {
      */
     public XStreamDOM expandMacro(VariableResolver<String> vars) {
         String[] newAttributes = new String[attributes.length];
-        for (int i=0; i<attributes.length; i+=2) {
+        for (int i = 0; i < attributes.length; i += 2) {
             //noinspection PointlessArithmeticExpression
-            newAttributes[i+0] = attributes[i]; // name
-            newAttributes[i+1] = Util.replaceMacro(attributes[i+1],vars);
+            newAttributes[i + 0] = attributes[i]; // name
+            newAttributes[i + 1] = Util.replaceMacro(attributes[i + 1], vars);
         }
 
         List<XStreamDOM> newChildren = null;
-        if (children!=null) {
+        if (children != null) {
             newChildren = new ArrayList<>(children.size());
             for (XStreamDOM d : children)
                 newChildren.add(d.expandMacro(vars));
         }
 
-        return new XStreamDOM(tagName,newAttributes,newChildren,Util.replaceMacro(value,vars));
+        return new XStreamDOM(tagName, newAttributes, newChildren, Util.replaceMacro(value, vars));
     }
 
     public String getAttribute(String name) {
-        for (int i=0; i<attributes.length; i+=2)
+        for (int i = 0; i < attributes.length; i += 2)
             if (attributes[i].equals(name))
-                return attributes[i+1];
+                return attributes[i + 1];
         return null;
     }
 
@@ -209,11 +210,11 @@ public class XStreamDOM {
     }
 
     String getAttributeName(int index) {
-        return attributes[index*2];
+        return attributes[index * 2];
     }
 
     public String getAttribute(int index) {
-        return attributes[index*2+1];
+        return attributes[index * 2 + 1];
     }
 
     public String getValue() {
@@ -251,7 +252,7 @@ public class XStreamDOM {
     }
 
     public void writeTo(HierarchicalStreamWriter w) {
-        new ConverterImpl().marshal(this,w,null);
+        new ConverterImpl().marshal(this, w, null);
     }
 
     /**
@@ -276,9 +277,9 @@ public class XStreamDOM {
     }
 
     public Map<String, String> getAttributeMap() {
-        Map<String,String> r = new HashMap<>();
-        for (int i=0; i<attributes.length; i+=2)
-            r.put(attributes[i],attributes[i+1]);
+        Map<String, String> r = new HashMap<>();
+        for (int i = 0; i < attributes.length; i += 2)
+            r.put(attributes[i], attributes[i + 1]);
         return r;
     }
 
@@ -298,13 +299,13 @@ public class XStreamDOM {
             }
 
             public boolean hasMoreChildren() {
-                return node.children!=null && pos<node.children.size();
+                return node.children != null && pos < node.children.size();
             }
 
             public String xpath() {
                 XStreamDOM child = node.children.get(pos - 1);
-                int count =0;
-                for (int i=0; i<pos-1; i++)
+                int count = 0;
+                for (int i = 0; i < pos - 1; i++)
                     if (node.children.get(i).tagName.equals(child.tagName))
                         count++;
                 boolean more = false;
@@ -315,8 +316,8 @@ public class XStreamDOM {
                     }
                 }
 
-                if (count==0 && !more)  return child.tagName;   // sole child
-                return child.tagName+'['+count+']';
+                if (count == 0 && !more)  return child.tagName;   // sole child
+                return child.tagName + '[' + count + ']';
             }
         }
 
@@ -368,7 +369,7 @@ public class XStreamDOM {
             StringBuilder buf = new StringBuilder();
             Pointer parent = null;
             for (Pointer cur : pointers) {
-                if (parent!=null) {
+                if (parent != null) {
                     buf.append('/').append(parent.xpath());
                 } else {
                     buf.append(cur.node.tagName);
@@ -430,13 +431,13 @@ public class XStreamDOM {
             }
 
             void addChild(XStreamDOM dom) {
-                if (children==null)
+                if (children == null)
                     children = new ArrayList<>();
                 children.add(dom);
             }
 
             XStreamDOM toDOM() {
-                return new XStreamDOM(tagName,attributes.toArray(new String[attributes.size()]),children,value);
+                return new XStreamDOM(tagName, attributes.toArray(new String[attributes.size()]), children, value);
             }
         }
 
@@ -485,7 +486,7 @@ public class XStreamDOM {
         }
 
         public XStreamDOM getOutput() {
-            if (pendings.size()!=1)     throw new IllegalStateException();
+            if (pendings.size() != 1)     throw new IllegalStateException();
             return pendings.peek().children.get(0);
         }
     }
@@ -493,7 +494,7 @@ public class XStreamDOM {
     public static class ConverterImpl implements Converter {
         @Override
         public boolean canConvert(Class type) {
-            return type==XStreamDOM.class;
+            return type == XStreamDOM.class;
         }
 
         /**
@@ -513,11 +514,11 @@ public class XStreamDOM {
 
         @Override
         public void marshal(Object source, HierarchicalStreamWriter w, MarshallingContext context) {
-            XStreamDOM dom = (XStreamDOM)source;
+            XStreamDOM dom = (XStreamDOM) source;
             w.startNode(unescape(dom.tagName));
-            for (int i=0; i<dom.attributes.length; i+=2)
-                w.addAttribute(unescape(dom.attributes[i]),dom.attributes[i+1]);
-            if (dom.value!=null)
+            for (int i = 0; i < dom.attributes.length; i += 2)
+                w.addAttribute(unescape(dom.attributes[i]), dom.attributes[i + 1]);
+            if (dom.value != null)
                 w.setValue(dom.value);
             else {
                 for (XStreamDOM c : Util.fixNull(dom.children)) {
@@ -533,7 +534,7 @@ public class XStreamDOM {
         @Override
         public XStreamDOM unmarshal(HierarchicalStreamReader r, UnmarshallingContext context) {
             r.moveDown();
-            XStreamDOM dom = unmarshalElement(r,context);
+            XStreamDOM dom = unmarshalElement(r, context);
             r.moveUp();
             return dom;
         }
@@ -542,10 +543,10 @@ public class XStreamDOM {
             String name = escape(r.getNodeName());
 
             int c = r.getAttributeCount();
-            String[] attributes = new String[c*2];
-            for (int i=0; i<c; i++) {
-                attributes[i*2]   = escape(r.getAttributeName(i));
-                attributes[i*2+1] = r.getAttribute(i);
+            String[] attributes = new String[c * 2];
+            for (int i = 0; i < c; i++) {
+                attributes[i * 2]   = escape(r.getAttributeName(i));
+                attributes[i * 2 + 1] = r.getAttribute(i);
             }
 
             List<XStreamDOM> children = null;
@@ -559,7 +560,7 @@ public class XStreamDOM {
                 value = r.getValue();
             }
 
-            return new XStreamDOM(name,attributes,children,value);
+            return new XStreamDOM(name, attributes, children, value);
         }
     }
 

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -83,6 +84,7 @@ public class DownloadService {
      *
      * @deprecated browser-based download has been disabled
      */
+
     @Deprecated
     public String generateFragment() {
         return "";
@@ -94,7 +96,7 @@ public class DownloadService {
      */
     public Downloadable getById(String id) {
         for (Downloadable d : Downloadable.all())
-            if(d.getId().equals(id))
+            if (d.getId().equals(id))
                 return d;
         return null;
     }
@@ -207,8 +209,8 @@ public class DownloadService {
         private final String id;
         private final String url;
         private final long interval;
-        private volatile long due=0;
-        private volatile long lastAttempt=Long.MIN_VALUE;
+        private volatile long due = 0;
+        private volatile long lastAttempt = Long.MIN_VALUE;
 
         /**
          * Creates a new downloadable.
@@ -289,14 +291,14 @@ public class DownloadService {
          */
         @NonNull
         public static String idFor(@NonNull Class<?> clazz) {
-            return clazz.getName().replace('$','.');
+            return clazz.getName().replace('$', '.');
         }
 
         /**
          * URL to download.
          */
         public String getUrl() {
-            return Jenkins.get().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.get().getUpdateCenter().getDefaultBaseUrl() + "updates/" + url;
         }
 
         /**
@@ -331,18 +333,18 @@ public class DownloadService {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Jenkins.get().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.get().getRootDir(), "updates/" + id));
         }
 
         /**
          * When shall we retrieve this file next time?
          */
         public long getDue() {
-            if(due==0)
+            if (due == 0)
                 // if the file doesn't exist, this code should result
                 // in a very small (but >0) due value, which should trigger
                 // the retrieval immediately.
-                due = getDataFile().file.lastModified()+interval;
+                due = getDataFile().file.lastModified() + interval;
             return due;
         }
 
@@ -352,7 +354,7 @@ public class DownloadService {
          */
         public JSONObject getData() throws IOException {
             TextFile df = getDataFile();
-            if(df.exists())
+            if (df.exists())
                 try {
                     return JSONObject.fromObject(df.read());
                 } catch (JSONException e) {
@@ -371,7 +373,7 @@ public class DownloadService {
             TextFile df = getDataFile();
             df.write(json);
             Files.setLastModifiedTime(Util.fileToPath(df.file), FileTime.fromMillis(dataTimestamp));
-            LOGGER.info("Obtained the updated data file for "+id);
+            LOGGER.info("Obtained the updated data file for " + id);
             return FormValidation.ok();
         }
 
@@ -389,14 +391,14 @@ public class DownloadService {
                     jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
-                    LOGGER.log(Level.FINE, "Could not load json from " + site, e );
+                    LOGGER.log(Level.FINE, "Could not load json from " + site, e);
                     continue;
                 }
                 JSONObject o = JSONObject.fromObject(jsonString);
                 if (signatureCheck) {
-                    FormValidation e = updatesite.getJsonSignatureValidator(signatureValidatorPrefix +" '"+id+"'").verifySignature(o);
-                    if (e.kind!= FormValidation.Kind.OK) {
-                        LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
+                    FormValidation e = updatesite.getJsonSignatureValidator(signatureValidatorPrefix + " '" + id + "'").verifySignature(o);
+                    if (e.kind != FormValidation.Kind.OK) {
+                        LOGGER.log(Level.WARNING, "signature check failed for " + site, e);
                         continue;
                     }
                 }
@@ -428,7 +430,7 @@ public class DownloadService {
          * @param <T> the generic class
          * @return true if the list has duplicates, false otherwise
          */
-        public static <T> boolean hasDuplicates (List<T> genericList, String comparator) {
+        public static <T> boolean hasDuplicates(List<T> genericList, String comparator) {
             if (genericList.isEmpty()) {
                 return false;
             }
@@ -439,9 +441,9 @@ public class DownloadService {
                 LOGGER.warning("comparator: " + comparator + "does not exist for " + genericList.get(0).getClass() + ", " + e);
                 return false;
             }
-            for (int i = 0; i < genericList.size(); i ++ ) {
+            for (int i = 0; i < genericList.size(); i++) {
                 T data1 = genericList.get(i);
-                for (int j = i + 1; j < genericList.size(); j ++ ) {
+                for (int j = i + 1; j < genericList.size(); j++) {
                     T data2 = genericList.get(j);
                     try {
                         if (field.get(data1).equals(field.get(data2))) {
@@ -484,7 +486,7 @@ public class DownloadService {
         @CheckForNull
         public static Downloadable get(String id) {
             for (Downloadable d : all()) {
-                if(d.id.equals(id))
+                if (d.id.equals(id))
                     return d;
             }
             return null;
@@ -492,17 +494,17 @@ public class DownloadService {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName() + ".defaultInterval", DAYS.toMillis(1));
     }
 
     // TODO this was previously referenced in the browser-based download, but should probably be checked for the server-based download
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName() + ".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
      * Useful when upstream signatures are broken, such as due to expired certificates.
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
+    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName() + ".noSignatureCheck");
 }

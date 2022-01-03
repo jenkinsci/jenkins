@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.bugs;
 
 import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
@@ -80,8 +81,8 @@ public class Jenkins64991Test {
         assertTrue(loginPage.isHtmlPage());
         assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("%2Fmanage"));
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -104,8 +105,8 @@ public class Jenkins64991Test {
         assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2F"));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
-        ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginHtmlPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginHtmlPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginHtmlPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginHtmlPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -119,8 +120,8 @@ public class Jenkins64991Test {
 
         assertTrue(loginPage.isHtmlPage());
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -134,8 +135,8 @@ public class Jenkins64991Test {
 
         assertTrue(loginPage.isHtmlPage());
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -159,8 +160,8 @@ public class Jenkins64991Test {
         assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2Fjob%2Ffoo%2520bar%2F"));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
-        ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginHtmlPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginHtmlPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginHtmlPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginHtmlPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -195,8 +196,8 @@ public class Jenkins64991Test {
         final HtmlPage loginPage = webClient.goTo(loginUrl);
 
         assertTrue(loginPage.isHtmlPage());
-        ((HtmlTextInput)loginPage.getElementById("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementById("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
 
         assertTrue(redirectedPage.isHtmlPage());

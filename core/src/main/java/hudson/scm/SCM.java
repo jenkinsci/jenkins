@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -139,10 +140,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @see #guessBrowser
      */
     @SuppressWarnings("deprecation")
-    @Exported(name="browser")
+    @Exported(name = "browser")
     public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
-        if(b!=null)
+        if (b != null)
             return b;
         if (useAutoBrowserHolder) {
             if (autoBrowserHolder == null) {
@@ -168,7 +169,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public boolean supportsPolling() {
         return true;
     }
-    
+
     /**
      * Returns true if this SCM requires a checked out workspace for doing polling.
      *
@@ -192,7 +193,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.196
      */
     public boolean requiresWorkspaceForPolling() {
-    	return true;
+        return true;
     }
 
     /**
@@ -231,10 +232,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @return
      *      true if {@link SCM} is OK to let Hudson proceed with deleting the workspace.
      *      False to veto the workspace deletion.
-     * 
+     *
      * @since 1.568
      */
-    public boolean processWorkspaceBeforeDeletion(@NonNull Job<?,?> project, @NonNull FilePath workspace, @NonNull Node node) throws IOException, InterruptedException {
+    public boolean processWorkspaceBeforeDeletion(@NonNull Job<?, ?> project, @NonNull FilePath workspace, @NonNull Node node) throws IOException, InterruptedException {
         if (project instanceof AbstractProject) {
             return processWorkspaceBeforeDeletion((AbstractProject) project, workspace, node);
         } else {
@@ -243,7 +244,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     @Deprecated
-    public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
+    public boolean processWorkspaceBeforeDeletion(AbstractProject<?, ?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
         if (Util.isOverridden(SCM.class, getClass(), "processWorkspaceBeforeDeletion", Job.class, FilePath.class, Node.class)) {
             return processWorkspaceBeforeDeletion((Job) project, workspace, node);
         } else {
@@ -291,7 +292,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
     @Deprecated
-    public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
         // new implementations that doesn't override this method.
@@ -313,7 +314,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
      * {@link SCM} implementation can choose to compute {@link SCMRevisionState} and add it as an action
-     * during check out, in which case this method will not called. 
+     * during check out, in which case this method will not called.
      *
      * @param build
      *      The calculated {@link SCMRevisionState} is for the files checked out in this build.
@@ -328,10 +329,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
-     *      this exception should be simply propagated all the way up. 
+     *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
-    public @CheckForNull SCMRevisionState calcRevisionsFromBuild(@NonNull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException {
+    public @CheckForNull SCMRevisionState calcRevisionsFromBuild(@NonNull Run<?, ?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "calcRevisionsFromBuild", AbstractBuild.class, Launcher.class, TaskListener.class)) {
             return calcRevisionsFromBuild((AbstractBuild) build, launcher, listener);
         } else {
@@ -340,7 +341,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     @Deprecated
-    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher != null ? build.getWorkspace() : null, launcher, listener);
     }
 
@@ -348,7 +349,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
     }
-    
+
     /**
      * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
      *
@@ -357,7 +358,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * if there's any difference. In practice, however, comparing two arbitrary repository states is an expensive
      * operation, so in this abstraction, we chose to mix (1) the act of building up a repository state and
      * (2) the act of comparing it with the earlier state, so that SCM implementations can implement this
-     * more easily. 
+     * more easily.
      *
      * <p>
      * Multiple invocations of this method may happen over time to make sure that the remote repository
@@ -414,19 +415,19 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     @Deprecated
-    protected PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+    protected PollingResult compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         return compareRemoteRevisionWith((Job) project, launcher, workspace, listener, baseline);
     }
 
     /**
      * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
      */
-    public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+    public final PollingResult poll(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         if (is1_346OrLater()) {
             // This is to work around JENKINS-5827 in a general way.
             // don't let the SCM.compareRemoteRevisionWith(...) see SCMRevisionState that it didn't produce.
             SCMRevisionState baseline2;
-            if (baseline!=SCMRevisionState.NONE) {
+            if (baseline != SCMRevisionState.NONE) {
                 baseline2 = baseline;
             } else {
                 baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
@@ -434,7 +435,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
             return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
         } else {
-            return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
+            return pollChanges(project, launcher, workspace, listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
     }
 
@@ -447,7 +448,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
                 try {
                     c.getDeclaredMethod("compareRemoteRevisionWith", Job.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
                     return true;
-                } catch (NoSuchMethodException e2) {}
+                } catch (NoSuchMethodException e2) { }
             }
         }
         return false;
@@ -534,8 +535,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     @Deprecated
-    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, @NonNull File changelogFile) throws IOException, InterruptedException {
-        AbstractBuild<?,?> prev = build.getPreviousBuild();
+    public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener, @NonNull File changelogFile) throws IOException, InterruptedException {
+        AbstractBuild<?, ?> prev = build.getPreviousBuild();
         checkout((Run) build, launcher, workspace, listener, changelogFile, prev != null ? prev.getAction(SCMRevisionState.class) : null);
         return true;
     }
@@ -544,14 +545,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
      * @since 1.568
      */
-    public void postCheckout(@NonNull Run<?,?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener) throws IOException, InterruptedException {
+    public void postCheckout(@NonNull Run<?, ?> build, @NonNull Launcher launcher, @NonNull FilePath workspace, @NonNull TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener) {
             postCheckout((AbstractBuild) build, launcher, workspace, (BuildListener) listener);
         }
     }
 
     @Deprecated
-    public void postCheckout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
+    public void postCheckout(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
         if (Util.isOverridden(SCM.class, getClass(), "postCheckout", Run.class, Launcher.class, FilePath.class, TaskListener.class)) {
             postCheckout((Run) build, launcher, workspace, listener);
         }
@@ -573,9 +574,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @since 2.60
      */
-    public void buildEnvironment(@NonNull Run<?,?> build, @NonNull Map<String,String> env) {
+    public void buildEnvironment(@NonNull Run<?, ?> build, @NonNull Map<String, String> env) {
         if (build instanceof AbstractBuild) {
-            buildEnvVars((AbstractBuild)build, env);
+            buildEnvVars((AbstractBuild) build, env);
         }
     }
 
@@ -583,7 +584,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated in favor of {@link #buildEnvironment(Run, Map)}.
      */
     @Deprecated
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+    public void buildEnvVars(AbstractBuild<?, ?> build, Map<String, String> env) {
         if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
             buildEnvironment(build, env);
         }
@@ -642,16 +643,16 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         // For backwards compatibility, call the one argument version of the method.
         return getModuleRoot(workspace);
     }
-    
+
     /**
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
     @Deprecated
     public FilePath getModuleRoot(FilePath workspace) {
-        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
+        if (Util.isOverridden(SCM.class, getClass(), "getModuleRoot", FilePath.class, AbstractBuild.class))
             // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
-            return getModuleRoot(workspace,null);
+            return getModuleRoot(workspace, null);
 
         return workspace;
     }
@@ -690,23 +691,23 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.382
      */
     public FilePath[] getModuleRoots(FilePath workspace, AbstractBuild build) {
-        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class))
+        if (Util.isOverridden(SCM.class, getClass(), "getModuleRoots", FilePath.class))
             // if the subtype derives legacy getModuleRoots(FilePath), delegate to it
             return getModuleRoots(workspace);
 
         // otherwise the default implementation
-        return new FilePath[]{getModuleRoot(workspace,build)};
+        return new FilePath[]{getModuleRoot(workspace, build)};
     }
-    
+
     /**
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
     @Deprecated
     public FilePath[] getModuleRoots(FilePath workspace) {
-        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
+        if (Util.isOverridden(SCM.class, getClass(), "getModuleRoots", FilePath.class, AbstractBuild.class))
             // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it
-            return getModuleRoots(workspace,null);
+            return getModuleRoots(workspace, null);
 
         // otherwise the default implementation
         return new FilePath[] { getModuleRoot(workspace), };
@@ -742,13 +743,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     protected final void createEmptyChangeLog(@NonNull File changelogFile, @NonNull TaskListener listener, @NonNull String rootTag) throws IOException {
         try (Writer w = Files.newBufferedWriter(Util.fileToPath(changelogFile), Charset.defaultCharset())) {
-            w.write("<"+rootTag +"/>");
+            w.write("<" + rootTag + "/>");
         }
     }
 
     protected final String nullify(String s) {
-        if(s==null)     return null;
-        if(s.trim().length()==0)    return null;
+        if (s == null)     return null;
+        if (s.trim().length() == 0)    return null;
         return s;
     }
 
@@ -757,12 +758,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Permission to create new tags.
      * @since 1.171
      */
-    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE, PermissionScope.ITEM);
+    public static final Permission TAG = new Permission(PERMISSIONS, "Tag", Messages._SCM_TagPermission_Description(), Permission.CREATE, PermissionScope.ITEM);
 
     /**
      * Returns all the registered {@link SCMDescriptor}s.
      */
-    public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
+    public static DescriptorExtensionList<SCM, SCMDescriptor<?>> all() {
         return Jenkins.get().getDescriptorList(SCM.class);
     }
 
@@ -774,16 +775,16 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.568
      */
     public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
-        if(project==null)   return all();
-        
+        if (project == null)   return all();
+
         final Descriptor pd = Jenkins.get().getDescriptor((Class) project.getClass());
         List<SCMDescriptor<?>> r = new ArrayList<>();
         for (SCMDescriptor<?> scmDescriptor : all()) {
-            if(!scmDescriptor.isApplicable(project))    continue;
+            if (!scmDescriptor.isApplicable(project))    continue;
 
             if (pd instanceof TopLevelItemDescriptor) {
                 TopLevelItemDescriptor apd = (TopLevelItemDescriptor) pd;
-                if(!apd.isApplicable(scmDescriptor))    continue;
+                if (!apd.isApplicable(scmDescriptor))    continue;
             }
 
             r.add(scmDescriptor);

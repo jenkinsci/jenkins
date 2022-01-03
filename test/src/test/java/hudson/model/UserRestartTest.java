@@ -84,8 +84,10 @@ public class UserRestartTest {
             assertEquals(User.get("pqhacker"), u);
         });
     }
+
     static class BadProperty extends JobProperty<FreeStyleProject> {
         final User user;
+
         BadProperty(User user) {
             this.user = user;
         }

@@ -65,7 +65,7 @@ public class EnvironmentContributingActionTest {
 
     @Test
     public void testOverrideRunMethodAndCallNewMethod() {
-        Run<?,?> run = mock(Run.class);
+        Run<?, ?> run = mock(Run.class);
 
         OverrideRun overrideRun = new OverrideRun();
         overrideRun.buildEnvironment(run, envVars);
@@ -79,7 +79,7 @@ public class EnvironmentContributingActionTest {
     @Test
     @SuppressWarnings("deprecation")
     public void testOverrideRunMethodAndCallDeprecatedMethod() {
-        AbstractBuild<?,?> abstractBuild = mock(AbstractBuild.class);
+        AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
         when(abstractBuild.getBuiltOn()).thenReturn(mock(Node.class));
 
         OverrideRun overrideRun = new OverrideRun();
@@ -93,7 +93,7 @@ public class EnvironmentContributingActionTest {
      */
     @Test
     public void testOverrideAbstractBuildAndCallNewMethodWithAbstractBuild() {
-        AbstractBuild<?,?> abstractBuild = mock(AbstractBuild.class);
+        AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
         action.buildEnvironment(abstractBuild, envVars);
@@ -106,7 +106,7 @@ public class EnvironmentContributingActionTest {
      */
     @Test
     public void testOverrideAbstractBuildAndCallNewMethodWithRun() {
-        Run<?,?> run = mock(Run.class);
+        Run<?, ?> run = mock(Run.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
         action.buildEnvironment(run, envVars);
@@ -119,7 +119,7 @@ public class EnvironmentContributingActionTest {
      */
     @Test
     public void testOverrideAbstractBuildAndCallDeprecatedMethod() {
-        AbstractBuild<?,?> abstractBuild = mock(AbstractBuild.class);
+        AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideAbstractBuild overrideRun = new OverrideAbstractBuild();
         overrideRun.buildEnvVars(abstractBuild, envVars);
@@ -129,7 +129,7 @@ public class EnvironmentContributingActionTest {
 
     @Test
     public void testOverrideBothAndCallNewMethod() {
-        Run<?,?> run = mock(Run.class);
+        Run<?, ?> run = mock(Run.class);
 
         OverrideBoth overrideRun = new OverrideBoth();
         overrideRun.buildEnvironment(run, envVars);
@@ -139,7 +139,7 @@ public class EnvironmentContributingActionTest {
 
     @Test
     public void testOverrideBothAndCallDeprecatedMethod() {
-        AbstractBuild<?,?> abstractBuild = mock(AbstractBuild.class);
+        AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideBoth overrideRun = new OverrideBoth();
         overrideRun.buildEnvVars(abstractBuild, envVars);

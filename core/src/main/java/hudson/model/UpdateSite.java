@@ -238,7 +238,7 @@ public class UpdateSite {
 
         if (signatureCheck) {
             FormValidation e = verifySignatureInternal(o);
-            if (e.kind!=FormValidation.Kind.OK) {
+            if (e.kind != FormValidation.Kind.OK) {
                 LOGGER.severe(e.toString());
                 return e;
             }
@@ -308,17 +308,17 @@ public class UpdateSite {
      * Returns true if it's time for us to check for new version.
      */
     public synchronized boolean isDue() {
-        if(neverUpdate)     return false;
-        if(dataTimestamp == 0)
+        if (neverUpdate)     return false;
+        if (dataTimestamp == 0)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
 
-        retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
+        retryWindow = Math.max(retryWindow, SECONDS.toMillis(15));
 
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
-        if(due) {
+        if (due) {
             lastAttempt = now;
-            retryWindow = Math.min(retryWindow*2, HOURS.toMillis(1)); // exponential back off but at most 1 hour
+            retryWindow = Math.min(retryWindow * 2, HOURS.toMillis(1)); // exponential back off but at most 1 hour
         }
         return due;
     }
@@ -365,14 +365,14 @@ public class UpdateSite {
      */
     public JSONObject getJSONObject() {
         TextFile df = getDataFile();
-        if(df.exists()) {
+        if (df.exists()) {
             long start = System.nanoTime();
             try {
                 JSONObject o = JSONObject.fromObject(df.read());
                 LOGGER.fine(() -> String.format("Loaded and parsed %s in %.01fs", df, (System.nanoTime() - start) / 1_000_000_000.0));
                 return o;
             } catch (JSONException | IOException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
+                LOGGER.log(Level.SEVERE, "Failed to parse " + df, e);
                 try {
                     df.delete(); // if we keep this file, it will cause repeated failures
                 } catch (IOException e2) {
@@ -393,9 +393,9 @@ public class UpdateSite {
     public List<Plugin> getAvailables() {
         List<Plugin> r = new ArrayList<>();
         Data data = getData();
-        if(data==null)     return Collections.emptyList();
+        if (data == null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
-            if(p.getInstalled()==null)
+            if (p.getInstalled() == null)
                 r.add(p);
         }
         r.sort((plugin, t1) -> {
@@ -420,7 +420,7 @@ public class UpdateSite {
     @CheckForNull
     public Plugin getPlugin(String artifactId) {
         Data dt = getData();
-        if(dt==null)    return null;
+        if (dt == null)    return null;
         return dt.plugins.get(artifactId);
     }
 
@@ -436,7 +436,7 @@ public class UpdateSite {
     @CheckForNull
     public String getConnectionCheckUrl() {
         Data dt = getData();
-        if(dt==null)    return "http://www.google.com/";
+        if (dt == null)    return "http://www.google.com/";
         return dt.connectionCheckUrl;
     }
 
@@ -445,7 +445,7 @@ public class UpdateSite {
      */
     private TextFile getDataFile() {
         return new TextFile(new File(Jenkins.get().getRootDir(),
-                                     "updates/" + getId()+".json"));
+                                     "updates/" + getId() + ".json"));
     }
 
     /**
@@ -457,12 +457,12 @@ public class UpdateSite {
     @Exported
     public List<Plugin> getUpdates() {
         Data data = getData();
-        if(data==null)      return Collections.emptyList(); // fail to determine
+        if (data == null)      return Collections.emptyList(); // fail to determine
 
         List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
-            if(p!=null) r.add(p);
+            if (p != null) r.add(p);
         }
 
         return r;
@@ -474,10 +474,10 @@ public class UpdateSite {
     @Exported
     public boolean hasUpdates() {
         Data data = getData();
-        if(data==null)      return false;
+        if (data == null)      return false;
 
         for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
-            if(!pw.isBundled() && pw.getUpdateInfo()!=null)
+            if (!pw.isBundled() && pw.getUpdateInfo() != null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
                 // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins.
                 return true;
@@ -559,7 +559,7 @@ public class UpdateSite {
         /**
          * Plugins in the repository, keyed by their artifact IDs.
          */
-        public final Map<String,Plugin> plugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        public final Map<String, Plugin> plugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         /**
          * List of warnings (mostly security) published with the update site.
          *
@@ -581,9 +581,9 @@ public class UpdateSite {
         public final String connectionCheckUrl;
 
         Data(JSONObject o) {
-            this.sourceId = Util.intern((String)o.get("id"));
+            this.sourceId = Util.intern((String) o.get("id"));
             JSONObject c = o.optJSONObject("core");
-            if (c!=null) {
+            if (c != null) {
                 core = new Entry(sourceId, c, url);
             } else {
                 core = null;
@@ -618,13 +618,13 @@ public class UpdateSite {
                 }
             }
 
-            for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
+            for (Map.Entry<String, JSONObject> e : (Set<Map.Entry<String, JSONObject>>) o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
                 List<PluginWrapper.Dependency> implicitDeps = DetachedPluginsUtil.getImpliedDependencies(p.name, p.requiredCore);
-                if(!implicitDeps.isEmpty()) {
-                    for(PluginWrapper.Dependency dep : implicitDeps) {
-                        if(!p.dependencies.containsKey(dep.shortName)) {
+                if (!implicitDeps.isEmpty()) {
+                    for (PluginWrapper.Dependency dep : implicitDeps) {
+                        if (!p.dependencies.containsKey(dep.shortName)) {
                             p.dependencies.put(dep.shortName, dep.version);
                         }
                     }
@@ -640,7 +640,7 @@ public class UpdateSite {
                 }
             }
 
-            connectionCheckUrl = (String)o.get("connectionCheckUrl");
+            connectionCheckUrl = (String) o.get("connectionCheckUrl");
         }
 
         /**
@@ -879,6 +879,7 @@ public class UpdateSite {
          * Jenkins will show a link to this URL when displaying the deprecation message.
          */
         public final String url;
+
         public Deprecation(String url) {
             this.url = url;
         }
@@ -1069,7 +1070,7 @@ public class UpdateSite {
     }
 
     private static String get(JSONObject o, String prop) {
-        if(o.has(prop))
+        if (o.has(prop))
             return o.getString(prop);
         else
             return null;
@@ -1163,13 +1164,13 @@ public class UpdateSite {
          * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
-        public final Map<String,String> dependencies;
+        public final Map<String, String> dependencies;
 
         /**
          * Optional dependencies of this plugin.
          */
         @Exported
-        public final Map<String,String> optionalDependencies;
+        public final Map<String, String> optionalDependencies;
 
         /**
          * Set of plugins, this plugin is a incompatible dependency to.
@@ -1210,13 +1211,13 @@ public class UpdateSite {
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
-            this.wiki = get(o,"wiki");
-            this.title = get(o,"title");
-            this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.wiki = get(o, "wiki");
+            this.title = get(o, "title");
+            this.excerpt = get(o, "excerpt");
+            this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.latest = get(o, "latest");
-            this.requiredCore = Util.intern(get(o,"requiredCore"));
+            this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
             Date date = null;
             if (releaseTimestamp != null) {
@@ -1237,20 +1238,20 @@ public class UpdateSite {
             }
             this.popularity = popularity;
             this.releaseTimestamp = date;
-            this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            this.categories = o.has("labels") ? internInPlace((String[]) o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             this.issueTrackers = o.has("issueTrackers") ? o.getJSONArray("issueTrackers").stream().map(IssueTracker::createFromJSONObject).filter(Objects::nonNull).toArray(IssueTracker[]::new) : null;
 
             JSONArray ja = o.getJSONArray("dependencies");
-            int depCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count();
-            int optionalDepCount = (int)ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();
+            int depCount = (int) ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count();
+            int optionalDepCount = (int) ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();
             dependencies = getPresizedMutableMap(depCount);
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
 
-            for(Object jo : o.getJSONArray("dependencies")) {
+            for (Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute and that the optional value isn't true.
-                String depName = Util.intern(get(depObj,"name"));
-                if (depName!=null) {
+                String depName = Util.intern(get(depObj, "name"));
+                if (depName != null) {
                     if (get(depObj, "optional").equals("false")) {
                         dependencies.put(depName, Util.intern(get(depObj, "version")));
                     } else {
@@ -1273,7 +1274,7 @@ public class UpdateSite {
 
         public String getDisplayName() {
             String displayName;
-            if(title!=null)
+            if (title != null)
                 displayName = title;
             else
                 displayName = name;
@@ -1337,7 +1338,7 @@ public class UpdateSite {
         public List<Plugin> getNeededDependencies() {
             List<Plugin> deps = new ArrayList<>();
 
-            for(Map.Entry<String,String> e : dependencies.entrySet()) {
+            for (Map.Entry<String, String> e : dependencies.entrySet()) {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
                 Plugin depPlugin = Jenkins.get().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
@@ -1348,7 +1349,7 @@ public class UpdateSite {
                 // Is the plugin installed already? If not, add it.
                 PluginWrapper current = depPlugin.getInstalled();
 
-                if (current ==null) {
+                if (current == null) {
                     deps.add(depPlugin);
                 }
                 // If the dependency plugin is installed, is the version we depend on newer than
@@ -1362,7 +1363,7 @@ public class UpdateSite {
                 }
             }
 
-            for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
+            for (Map.Entry<String, String> e : optionalDependencies.entrySet()) {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
                 Plugin depPlugin = Jenkins.get().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
@@ -1383,7 +1384,7 @@ public class UpdateSite {
 
         public boolean isForNewerHudson() {
             try {
-                return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
+                return requiredCore != null && new VersionNumber(requiredCore).isNewerThan(
                   new VersionNumber(Jenkins.VERSION.replaceFirst("SHOT *\\(private.*\\)", "SHOT")));
             } catch (NumberFormatException nfe) {
                 return true;  // If unable to parse version
@@ -1412,7 +1413,7 @@ public class UpdateSite {
             } catch (NumberFormatException nfe) {
                 // unable to parse version
             }
-            for (Plugin p: getNeededDependencies()) {
+            for (Plugin p : getNeededDependencies()) {
                 VersionNumber v = p.getNeededDependenciesRequiredCore();
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
@@ -1432,7 +1433,7 @@ public class UpdateSite {
             } catch (NumberFormatException nfe) {
                 logBadMinJavaVersion();
             }
-            for (Plugin p: getNeededDependencies()) {
+            for (Plugin p : getNeededDependencies()) {
                 VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
                 if (v == null) {
                     continue;
@@ -1471,7 +1472,7 @@ public class UpdateSite {
          * @since 2.158
          */
         public boolean isNeededDependenciesForNewerJava() {
-            for (Plugin p: getNeededDependencies()) {
+            for (Plugin p : getNeededDependencies()) {
                 if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
                     return true;
                 }
@@ -1564,7 +1565,7 @@ public class UpdateSite {
             UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
             Set<Warning> warnings = new HashSet<>();
 
-            for (Warning warning: configuration.getAllWarnings()) {
+            for (Warning warning : configuration.getAllWarnings()) {
                 if (configuration.isIgnored(warning)) {
                     // warning is currently being ignored
                     continue;
@@ -1669,14 +1670,14 @@ public class UpdateSite {
                 }
             }
             PluginWrapper pw = getInstalled();
-            if(pw != null) { // JENKINS-34494 - check for this plugin being disabled
+            if (pw != null) { // JENKINS-34494 - check for this plugin being disabled
                 Future<UpdateCenterJob> enableJob = null;
-                if(!pw.isEnabled()) {
+                if (!pw.isEnabled()) {
                     UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
                     job.setCorrelationId(correlationId);
                     enableJob = uc.addJob(job);
                 }
-                if(pw.getVersionNumber().equals(new VersionNumber(version))) {
+                if (pw.getVersionNumber().equals(new VersionNumber(version))) {
                     return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, null, this));
                 }
             }
@@ -1697,6 +1698,7 @@ public class UpdateSite {
         /**
          * Making the installation web bound.
          */
+
         @RequirePOST
         public HttpResponse doInstall() throws IOException {
             deploy(false);
@@ -1725,6 +1727,6 @@ public class UpdateSite {
 
     // The name uses UpdateCenter for compatibility reason.
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName() + ".never");
 
 }

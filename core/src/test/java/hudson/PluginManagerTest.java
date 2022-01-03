@@ -153,7 +153,7 @@ public class PluginManagerTest {
         FileUtils.write(new File(tmp.toFile(), manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
 
         final File f = new File(tmp.toFile(), "my.hpi");
-        try(ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
+        try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
             ZipEntry e = new ZipEntry(manifestPath);
             out.putNextEntry(e);
             byte[] data = SAMPLE_MANIFEST_FILE.getBytes();

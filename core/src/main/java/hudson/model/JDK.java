@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.EnvVars;
@@ -103,14 +104,15 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to the bin directory.
      */
     public File getBinDir() {
-        return new File(getHome(),"bin");
+        return new File(getHome(), "bin");
     }
     /**
      * Gets the path to 'java'.
      */
+
     private File getExecutable() {
         String execName = File.separatorChar == '\\' ? "java.exe" : "java";
-        return new File(getHome(),"bin/"+execName);
+        return new File(getHome(), "bin/" + execName);
     }
 
     /**
@@ -124,13 +126,13 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
     @Deprecated
-    public void buildEnvVars(Map<String,String> env) {
+    public void buildEnvVars(Map<String, String> env) {
         String home = getHome();
         if (home == null) {
             return;
         }
         // see EnvVars javadoc for why this adds PATH.
-        env.put("PATH+JDK",home+"/bin");
+        env.put("PATH+JDK", home + "/bin");
         env.put("JAVA_HOME", home);
     }
 
@@ -139,7 +141,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     @Override
     public void buildEnvVars(EnvVars env) {
-        buildEnvVars((Map)env);
+        buildEnvVars((Map) env);
     }
 
     @Override
@@ -163,7 +165,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         try {
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
-            return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
+            return launcher.launch().cmds("java", "-fullversion").stdout(listener).join() == 0;
         } catch (IOException | InterruptedException e) {
             return false;
         }
@@ -206,13 +208,13 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
          * Checks if the JAVA_HOME is a valid JAVA_HOME path.
          */
         @Override protected FormValidation checkHomeDirectory(File value) {
-            File toolsJar = new File(value,"lib/tools.jar");
-            File mac = new File(value,"lib/dt.jar");
+            File toolsJar = new File(value, "lib/tools.jar");
+            File mac = new File(value, "lib/dt.jar");
 
             // JENKINS-25601: JDK 9+ no longer has tools.jar. Keep the existing dt.jar/tools.jar checks to be safe.
             File javac = new File(value, "bin/javac");
             File javacExe = new File(value, "bin/javac.exe");
-            if(!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
+            if (!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
@@ -222,8 +224,9 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
 
     public static class ConverterImpl extends ToolConverter {
         public ConverterImpl(XStream2 xstream) { super(xstream); }
+
         @Override protected String oldHomeField(ToolInstallation obj) {
-            return ((JDK)obj).javaHome;
+            return ((JDK) obj).javaHome;
         }
     }
 

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.diagnosis;
 
 import hudson.Extension;
@@ -115,7 +116,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     @RestrictedSince("2.235")
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if(no!=null) { // dismiss
+        if (no != null) { // dismiss
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             disable(true);
             // of course the irony is that this redirect won't work

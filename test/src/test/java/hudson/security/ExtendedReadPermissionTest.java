@@ -58,7 +58,7 @@ public class ExtendedReadPermissionTest {
 
         HtmlPage page = wc.goTo("job/a/configure");
         HtmlForm form = page.getFormByName("config");
-        HtmlButton saveButton = r.getButtonByCaption(form,"Save");
+        HtmlButton saveButton = r.getButtonByCaption(form, "Save");
         assertNull(saveButton);
     }
 

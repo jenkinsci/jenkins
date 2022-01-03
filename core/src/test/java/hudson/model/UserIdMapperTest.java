@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +44,7 @@ import org.junit.rules.TestName;
 public class UserIdMapperTest {
 
     @Rule
-    public TestName name= new TestName();
+    public TestName name = new TestName();
 
     @Test
     public void testNonexistentFileLoads() throws IOException {

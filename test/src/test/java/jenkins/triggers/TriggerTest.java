@@ -76,7 +76,7 @@ public class TriggerTest {
             }
 
             try {
-                Thread.sleep(Trigger.CRON_THRESHOLD*1000 + 100);
+                Thread.sleep(Trigger.CRON_THRESHOLD * 1000 + 100);
             } catch (Throwable e) {
                 LOGGER.log(Level.WARNING, "Interrupted: ", e);
             }
