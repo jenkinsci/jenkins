@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
@@ -134,10 +135,10 @@ public class ComboBoxTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList().add(new CompoundFieldComboBoxBuilder(new CompoundField("AABBCC", "XXYYZZ"), null));
         try {
-            j.createWebClient().getPage(p,"configure");
+            j.createWebClient().getPage(p, "configure");
 
-        } catch(AssertionError e) {
-            if(e.getMessage().contains("doFillFooItems is broken")) {
+        } catch (AssertionError e) {
+            if (e.getMessage().contains("doFillFooItems is broken")) {
                 fail("Nested field values required for prefill were null");
             } else {
                 throw e;
@@ -148,7 +149,7 @@ public class ComboBoxTest {
         }
     }
 
-    public static class XssProperty extends OptionalJobProperty<Job<?,?>> {
+    public static class XssProperty extends OptionalJobProperty<Job<?, ?>> {
         @TestExtension("testEnsureXssNotPossible")
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
 

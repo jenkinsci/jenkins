@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import static java.util.logging.Level.WARNING;
@@ -101,13 +102,13 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     public void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;
         super.load();
-        if (repositoryBrowser!=rb) { // XStream may overwrite even the final field.
+        if (repositoryBrowser != rb) { // XStream may overwrite even the final field.
             try {
                 Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
                 f.setAccessible(true);
-                f.set(this,rb);
+                f.set(this, rb);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
+                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field", e);
             }
         }
     }
@@ -163,7 +164,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      *      can be empty but never null.
      */
     public List<Descriptor<RepositoryBrowser<?>>> getBrowserDescriptors() {
-        if(repositoryBrowser==null)     return Collections.emptyList();
+        if (repositoryBrowser == null)     return Collections.emptyList();
         return RepositoryBrowsers.filter(repositoryBrowser);
     }
 

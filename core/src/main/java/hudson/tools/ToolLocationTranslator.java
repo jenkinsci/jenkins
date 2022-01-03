@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.ExtensionList;
@@ -39,7 +40,7 @@ import java.io.IOException;
  * This extension point is useful when there's a deterministic rule of where tools are installed.
  * One can program such a logic and contribute a {@link ToolLocationTranslator}.
  * Compared to manually specifying {@link ToolLocationNodeProperty}, duplicated configurations
- * can be avoided this way. 
+ * can be avoided this way.
  *
  * <p>
  * Entry point to the translation process is
@@ -60,7 +61,7 @@ public abstract class ToolLocationTranslator implements ExtensionPoint {
      *
      * <p>
      * Otherwise return null to let other {@link ToolLocationTranslator}s a chance to do translations
-     * on their own. 
+     * on their own.
      */
     public abstract String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException;
 

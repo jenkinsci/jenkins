@@ -30,7 +30,7 @@ public class ProcessTreeTest {
     }
 
     @Test public void remoting() throws Exception {
-        Assume.assumeFalse("on some platforms where we fail to list any processes", ProcessTree.get()==ProcessTree.DEFAULT);
+        Assume.assumeFalse("on some platforms where we fail to list any processes", ProcessTree.get() == ProcessTree.DEFAULT);
 
         Tag t = channels.french.call(new MyCallable());
 
@@ -41,7 +41,7 @@ public class ProcessTreeTest {
         t.p.getEnvironmentVariables();
 
         // it should point to the same object
-        assertEquals(t.id,t.p.getPid());
+        assertEquals(t.id, t.p.getPid());
 
         t.p.act(new ProcessCallableImpl());
     }

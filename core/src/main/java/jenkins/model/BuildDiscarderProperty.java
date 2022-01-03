@@ -36,7 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Defines a {@link BuildDiscarder}.
  * @since 1.637
  */
-public class BuildDiscarderProperty extends OptionalJobProperty<Job<?,?>> {
+public class BuildDiscarderProperty extends OptionalJobProperty<Job<?, ?>> {
 
     private final BuildDiscarder strategy;
 

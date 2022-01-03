@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 
@@ -51,7 +52,7 @@ public class UpdateCenterCustomTest {
         private final String updateCenterClassName;
         private String _oldValue = null;
 
-        private static final String PROPERTY_NAME = UpdateCenter.class.getName()+".className";
+        private static final String PROPERTY_NAME = UpdateCenter.class.getName() + ".className";
 
         CustomUpdateCenterRule(Class<?> ucClass) {
             this.updateCenterClassName = ucClass.getName();

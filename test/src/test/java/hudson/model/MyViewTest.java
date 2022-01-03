@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -62,7 +63,7 @@ public class MyViewTest {
     }
 
     @Test
-    public void testContains() throws Exception{
+    public void testContains() throws Exception {
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
@@ -78,7 +79,7 @@ public class MyViewTest {
     }
 
     @Test
-    public void testDoCreateItem() throws Exception{
+    public void testDoCreateItem() throws Exception {
         logs.record(AbstractItem.class, Level.ALL);
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);

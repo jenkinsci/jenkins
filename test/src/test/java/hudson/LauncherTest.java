@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -128,44 +129,54 @@ public class LauncherTest {
             rule.assertLogNotContains(windows ? "cmd /c" : "sh -xe", runOn(p, n));
         }
     }
+
     private FreeStyleBuild runOn(FreeStyleProject p, Node n) throws Exception {
         p.setAssignedNode(n);
         FreeStyleBuild b = rule.buildAndAssertSuccess(p);
         rule.assertLogContains("printed text", b);
         return b;
     }
+
     private static final class QuietLauncher extends Launcher.DecoratedLauncher {
         QuietLauncher(Launcher inner) {
             super(inner);
         }
+
         @Override public Proc launch(ProcStarter starter) throws IOException {
             return super.launch(starter.quiet(true));
         }
     }
+
     private static final class QuietShell extends Shell {
         QuietShell(String command) {
             super(command);
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
             return super.perform(build, new QuietLauncher(launcher), listener);
         }
+
         @Extension public static final class DescriptorImpl extends Shell.DescriptorImpl {
             @Override public String getDisplayName() {
                 return "QuietShell";
             }
         }
     }
+
     private static final class QuietBatchFile extends BatchFile {
         QuietBatchFile(String command) {
             super(command);
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
             return super.perform(build, new QuietLauncher(launcher), listener);
         }
+
         @Extension public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @Override public String getDisplayName() {
                 return "QuietBatchFile";
             }
+
             @SuppressWarnings("rawtypes")
             @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
@@ -188,6 +199,7 @@ public class LauncherTest {
             containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                            "[master → slave0] hello"));
     }
+
     private static class RemotableBuildListener implements BuildListener {
         private static final long serialVersionUID = 1;
         /** location of log file streamed to by multiple sources */
@@ -195,13 +207,16 @@ public class LauncherTest {
         /** records allocation & deserialization history; e.g., {@code master → agentName} */
         private final String id;
         private transient PrintStream logger;
+
         RemotableBuildListener(File logFile) {
             this(logFile, "master");
         }
+
         private RemotableBuildListener(File logFile, String id) {
             this.logFile = logFile;
             this.id = id;
         }
+
         @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
@@ -220,6 +235,7 @@ public class LauncherTest {
             }
             return logger;
         }
+
         private Object writeReplace() {
             Thread.dumpStack();
             String name = Channel.current().getName();
@@ -252,10 +268,12 @@ public class LauncherTest {
             }, true);
         }
     }
+
     @FunctionalInterface
     private interface ProcStarterCustomizer {
         void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener);
     }
+
     private void assertMultipleStdioCalls(String message, Node node, boolean emitStderr, ProcStarterCustomizer psCustomizer, boolean outputIn2) throws Exception {
         message = node.getDisplayName() + ": " + message;
         Launcher launcher = node.createLauncher(StreamTaskListener.fromStderr());

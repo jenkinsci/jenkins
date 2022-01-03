@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,7 +73,7 @@ public class SlaveComputerTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(authStrategy);
-        try(ACLContext context = ACL.as(User.getById(userAlice, true))) {
+        try (ACLContext context = ACL.as(User.getById(userAlice, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNull(path);
             Assert.assertNull(getRemoteFS(nodeA, userAlice));
@@ -81,7 +82,7 @@ public class SlaveComputerTest {
         //with auth
         String userBob = "bob";
         authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userBob);
-        try(ACLContext context = ACL.as(User.getById(userBob, true))) {
+        try (ACLContext context = ACL.as(User.getById(userBob, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNotNull(path);
             Assert.assertNotNull(getRemoteFS(nodeA, userBob));
@@ -145,7 +146,6 @@ public class SlaveComputerTest {
 
     @Test
     @Issue("JENKINS-57111")
-
     public void startupShouldFailOnErrorOnlineListener() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave nodeA = j.createSlave();
@@ -189,7 +189,7 @@ public class SlaveComputerTest {
      */
     private String getRemoteFS(Node node, String user) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        if(user != null) {
+        if (user != null) {
             wc.login(user);
         }
 
@@ -198,7 +198,7 @@ public class SlaveComputerTest {
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
 
         Object pathObj = json.get("absoluteRemotePath");
-        if(pathObj instanceof JSONNull) {
+        if (pathObj instanceof JSONNull) {
             return null; // the value is null in here
         } else {
             return pathObj.toString();

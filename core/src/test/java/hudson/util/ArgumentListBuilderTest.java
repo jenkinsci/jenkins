@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -191,6 +192,7 @@ public class ArgumentListBuilderTest {
     }
 
     private static final Map<String, String> KEY_VALUES = new LinkedHashMap<>();
+
     static {
         KEY_VALUES.put("key1", "value1");
         KEY_VALUES.put("key2", "value2");

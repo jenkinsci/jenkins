@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -67,14 +68,14 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @param <J>
  *      When you restrict your job property to be only applicable to a certain
  *      subtype of {@link Job}, you can use this type parameter to improve
- *      the type signature of this class. See {@link JobPropertyDescriptor#isApplicable(Class)}. 
+ *      the type signature of this class. See {@link JobPropertyDescriptor#isApplicable(Class)}.
  *
  * @author Kohsuke Kawaguchi
  * @see JobPropertyDescriptor
  * @since 1.72
  */
 @ExportedBean
-public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableDescribable<JobProperty<?>>, BuildStep, ExtensionPoint {
+public abstract class JobProperty<J extends Job<?, ?>> implements ReconfigurableDescribable<JobProperty<?>>, BuildStep, ExtensionPoint {
     /**
      * The {@link Job} object that owns this property.
      * This value will be set by the Hudson code.
@@ -132,7 +133,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
     public Collection<? extends Action> getJobActions(J job) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getJobAction(job);
-        if (a==null)    return Collections.emptyList();
+        if (a == null)    return Collections.emptyList();
         return Collections.singletonList(a);
     }
 
@@ -141,7 +142,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
 //
 
     @Override
-    public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
+    public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         return true;
     }
 
@@ -152,7 +153,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * Invoked after {@link Publisher}s have run.
      */
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
 
@@ -166,14 +167,14 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
     }
 
     @Override
-    public final Action getProjectAction(AbstractProject<?,?> project) {
-        return getJobAction((J)project);
+    public final Action getProjectAction(AbstractProject<?, ?> project) {
+        return getJobAction((J) project);
     }
 
     @Override
     @NonNull
-    public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
-        return getJobActions((J)project);
+    public final Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
+        return getJobActions((J) project);
     }
 
     /** @see Job#getOverrides */
@@ -183,7 +184,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
 
     @Override
     public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return form==null ? null : getDescriptor().newInstance(req,form);
+        return form == null ? null : getDescriptor().newInstance(req, form);
     }
 
     /**

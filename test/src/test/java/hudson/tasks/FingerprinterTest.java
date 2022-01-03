@@ -259,7 +259,7 @@ public class FingerprinterTest {
         Fingerprinter.FingerprintAction action = upstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         Collection<Fingerprint> fingerprints = action.getFingerprints().values();
-        for (Fingerprint f: fingerprints) {
+        for (Fingerprint f : fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
             assertEquals(renamedProject1, f.getOriginal().getName());
             assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
@@ -268,7 +268,7 @@ public class FingerprinterTest {
         action = downstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
-        for (Fingerprint f: fingerprints) {
+        for (Fingerprint f : fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
             assertEquals(renamedProject1, f.getOriginal().getName());
             assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
@@ -281,7 +281,7 @@ public class FingerprinterTest {
         action = upstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
-        for (Fingerprint f: fingerprints) {
+        for (Fingerprint f : fingerprints) {
             List<String> jobs = f.getJobs();
 
             assertTrue(jobs.contains(renamedProject2));
@@ -291,7 +291,7 @@ public class FingerprinterTest {
         action = downstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
-        for (Fingerprint f: fingerprints) {
+        for (Fingerprint f : fingerprints) {
             List<String> jobs = f.getJobs();
 
             assertTrue(jobs.contains(renamedProject2));
@@ -343,15 +343,15 @@ public class FingerprinterTest {
         j.buildAndAssertSuccess(p2);
         j.buildAndAssertSuccess(p3);
 
-        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+System.lineSeparator()));
+        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0] + System.lineSeparator()));
         assertNotNull(f);
-        assertEquals(3,f.getUsages().size());
+        assertEquals(3, f.getUsages().size());
 
         j.jenkins.rebuildDependencyGraph();
 
         assertEquals(Collections.singletonList(p1), p2.getUpstreamProjects());
         assertEquals(Collections.singletonList(p1), p3.getUpstreamProjects());
-        assertEquals(new HashSet(Arrays.asList(p2,p3)), new HashSet(p1.getDownstreamProjects()));
+        assertEquals(new HashSet(Arrays.asList(p2, p3)), new HashSet(p1.getDownstreamProjects()));
 
         // discard the p3 records
         p3.delete();
@@ -360,7 +360,7 @@ public class FingerprinterTest {
         j.jenkins.rebuildDependencyGraph();
 
         // records for p3 should have been deleted now
-        assertEquals(2,f.getUsages().size());
+        assertEquals(2, f.getUsages().size());
         assertEquals(Collections.singletonList(p1), p2.getUpstreamProjects());
         assertEquals(Collections.singletonList(p2), p1.getDownstreamProjects());
 
@@ -368,14 +368,14 @@ public class FingerprinterTest {
         // do a new build in p2 #2 that points to a separate fingerprints
         p2.getBuildersList().clear();
         p2.getPublishersList().clear();
-        addFingerprinterToProject(p2,singleContents2,singleFiles2);
+        addFingerprinterToProject(p2, singleContents2, singleFiles2);
         j.buildAndAssertSuccess(p2);
 
         // another garbage collection that gets rid of p2 records from the fingerprint
         p2.getBuildByNumber(1).delete();
         new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
 
-        assertEquals(1,f.getUsages().size());
+        assertEquals(1, f.getUsages().size());
     }
 
 
@@ -391,12 +391,12 @@ public class FingerprinterTest {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
             if (project instanceof MatrixProject) {
-                ((MatrixProject)project).getBuildersList().add(
+                ((MatrixProject) project).getBuildersList().add(
                         Functions.isWindows()
                                 ? new BatchFile("echo " + contents[i] + "> " + files[i])
                                 : new Shell("echo " + contents[i] + " > " + files[i]));
             } else {
-                ((FreeStyleProject)project).getBuildersList().add(
+                ((FreeStyleProject) project).getBuildersList().add(
                         Functions.isWindows()
                                 ? new BatchFile("echo " + contents[i] + "> " + files[i])
                                 : new Shell("echo " + contents[i] + " > " + files[i]));

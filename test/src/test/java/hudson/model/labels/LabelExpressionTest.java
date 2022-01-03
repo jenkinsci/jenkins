@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -101,17 +102,17 @@ public class LabelExpressionTest {
 
         // p3 is tied to 'win', so even though p1 is busy, this should still go ahead and complete
         FreeStyleBuild b3 = j.buildAndAssertSuccess(p3);
-        assertSame(w64,b3.getBuiltOn());
+        assertSame(w64, b3.getBuiltOn());
 
         seq.phase(3);   // once we confirm that p3 build is over, we let p1 proceed
 
         // p1 should have been built on w32
         FreeStyleBuild b1 = j.assertBuildStatusSuccess(f1);
-        assertSame(w32,b1.getBuiltOn());
+        assertSame(w32, b1.getBuiltOn());
 
         // and so is p2
         FreeStyleBuild b2 = j.assertBuildStatusSuccess(f2);
-        assertSame(w32,b2.getBuiltOn());
+        assertSame(w32, b2.getBuiltOn());
     }
 
     /**
@@ -126,15 +127,15 @@ public class LabelExpressionTest {
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
-        assertSame(j.jenkins,b.getBuiltOn());
+        assertSame(j.jenkins, b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("win"));
         b = j.buildAndAssertSuccess(p);
-        assertSame(s,b.getBuiltOn());
+        assertSame(s, b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
         b = j.buildAndAssertSuccess(p);
-        assertSame(j.jenkins,b.getBuiltOn());
+        assertSame(j.jenkins, b.getBuiltOn());
     }
 
     /**
@@ -175,7 +176,7 @@ public class LabelExpressionTest {
     @Issue("JENKINS-8537")
     @Test
     public void parser2() throws Exception {
-        parseAndVerify("aaa&&bbb&&ccc","aaa&&bbb&&ccc");
+        parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
     private void parseAndVerify(String expected, String expr) throws ANTLRException {
@@ -213,27 +214,27 @@ public class LabelExpressionTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedLabel(j.jenkins.getLabel("abc def"));
-        assertEquals("abc def",p.getAssignedLabel().getName());
-        assertEquals("\"abc def\"",p.getAssignedLabel().getExpression());
+        assertEquals("abc def", p.getAssignedLabel().getName());
+        assertEquals("\"abc def\"", p.getAssignedLabel().getExpression());
 
         // expression should be persisted, not the name
         Field f = AbstractProject.class.getDeclaredField("assignedNode");
         f.setAccessible(true);
-        assertEquals("\"abc def\"",f.get(p));
+        assertEquals("\"abc def\"", f.get(p));
 
         // but if the name is set, we'd still like to parse it
-        f.set(p,"a:b c");
-        assertEquals("a:b c",p.getAssignedLabel().getName());
+        f.set(p, "a:b c");
+        assertEquals("a:b c", p.getAssignedLabel().getName());
     }
 
     @Test
     public void quote() {
         Label l = j.jenkins.getLabel("\"abc\\\\\\\"def\"");
-        assertEquals("abc\\\"def",l.getName());
+        assertEquals("abc\\\"def", l.getName());
 
         l = j.jenkins.getLabel("label1||label2"); // create label expression
         l = j.jenkins.getLabel("\"label1||label2\"");
-        assertEquals("label1||label2",l.getName());
+        assertEquals("label1||label2", l.getName());
     }
 
     /**
@@ -242,9 +243,9 @@ public class LabelExpressionTest {
     @Test
     public void composite() {
         LabelAtom x = j.jenkins.getLabelAtom("x");
-        assertEquals("!!x",x.not().not().getName());
-        assertEquals("(x||x)&&x",x.or(x).and(x).getName());
-        assertEquals("x&&x||x",x.and(x).or(x).getName());
+        assertEquals("!!x", x.not().not().getName());
+        assertEquals("(x||x)&&x", x.or(x).and(x).getName());
+        assertEquals("x&&x||x", x.and(x).or(x).getName());
     }
 
     @Test
@@ -371,7 +372,7 @@ public class LabelExpressionTest {
         Set<LabelAtom> result = Label.parse("one two three");
         String[] expected = {"one", "two", "three"};
 
-        for(String e : expected) {
+        for (String e : expected) {
             assertTrue(result.contains(new LabelAtom(e)));
         }
 

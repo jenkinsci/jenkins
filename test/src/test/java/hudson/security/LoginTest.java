@@ -86,7 +86,7 @@ public class LoginTest {
         HtmlForm form = page.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");
         form.getInputByName("j_password").setValueAttribute("alice");
-        ((HtmlCheckBoxInput)form.getInputByName("remember_me")).setChecked(true);
+        ((HtmlCheckBoxInput) form.getInputByName("remember_me")).setChecked(true);
         return form;
     }
 

@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
  * Filtering {@link OutputStream} that looks for {@link #MARK} in the output stream and notifies the callback.
  *
  * The mark itself will be removed from the stream.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.458
  */
@@ -26,7 +26,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
 
     @Override
     public synchronized void write(int b) throws IOException {
-        if (MBYTES[match] == b) {// another byte matched. Good. Keep going...
+        if (MBYTES[match] == b) { // another byte matched. Good. Keep going...
             match++;
             if (match == MBYTES.length) {
                 // don't send MARK to the output, but instead notify the callback
@@ -49,27 +49,27 @@ public abstract class MarkFindingOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        final int start = off; 
+        final int start = off;
         final int end = off + len;
-        for (int i=off; i<end; ) {
-            if (MBYTES[match] == b[i]) {// another byte matched. Good. Keep going...
+        for (int i = off; i < end; ) {
+            if (MBYTES[match] == b[i]) { // another byte matched. Good. Keep going...
                 match++;
                 i++;
                 if (match == MBYTES.length) {
-                    base.write(b,off,i-off-MBYTES.length);    // flush the portion up to MARK
+                    base.write(b, off, i - off - MBYTES.length);    // flush the portion up to MARK
                     // don't send MARK to the output, but instead notify the callback
                     onMarkFound();
                     match = 0;
                     off = i;
-                    len = end-i;
+                    len = end - i;
                 }
             } else {
                 if (match > 0) {
                     // only matched partially.
                     // if a part of the partial match spans into the previous write, we need to fake that write.
-                    int extra = match-(i-start);
-                    if (extra>0) {
-                        base.write(MBYTES,0,extra);
+                    int extra = match - (i - start);
+                    if (extra > 0) {
+                        base.write(MBYTES, 0, extra);
                     }
                     match = 0;
 
@@ -83,8 +83,8 @@ public abstract class MarkFindingOutputStream extends OutputStream {
         }
 
         // if we are partially matching, can't send that portion yet.
-        if (len-match>0)
-            base.write(b, off, len-match);
+        if (len - match > 0)
+            base.write(b, off, len - match);
     }
 
     @Override
@@ -100,8 +100,8 @@ public abstract class MarkFindingOutputStream extends OutputStream {
     }
 
     private void flushPartialMatch() throws IOException {
-        if (match>0) {
-            base.write(MBYTES,0,match);
+        if (match > 0) {
+            base.write(MBYTES, 0, match);
             match = 0;
         }
     }
@@ -111,7 +111,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
     // having a new line in the end makes it work better with line-buffering transformation
     public static final String MARK = "[Jenkins:SYNC-MARK]\n";
     private static final byte[] MBYTES = toUTF8(MARK);
-    
+
     private static byte[] toUTF8(String s) {
         return s.getBytes(StandardCharsets.UTF_8);
     }

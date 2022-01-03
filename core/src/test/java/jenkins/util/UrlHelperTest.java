@@ -54,21 +54,21 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void fragmentIsForbidden(){
+    public void fragmentIsForbidden() {
         // this url will be used as a root url and so will be concatenated with other part, fragment part is not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins#fragment"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins.com#fragment"));
     }
 
     @Test
-    public void queryIsForbidden(){
+    public void queryIsForbidden() {
         // this url will be used as a root url and so will be concatenated with other part, query part is not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins?param=test"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins.com?param=test"));
     }
 
     @Test
-    public void otherCharactersAreForbidden(){
+    public void otherCharactersAreForbidden() {
         // other characters are not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenk@ins.com"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenk(ins.com"));
@@ -82,7 +82,7 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void ipv4Allowed(){
+    public void ipv4Allowed() {
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12"));
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12/jenkins"));
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12:8080"));

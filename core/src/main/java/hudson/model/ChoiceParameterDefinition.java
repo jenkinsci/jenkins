@@ -202,7 +202,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return Objects.equals(defaultValue, other.defaultValue);
     }
 
-    @Extension @Symbol({"choice","choiceParam"})
+    @Extension @Symbol({"choice", "choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

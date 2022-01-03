@@ -146,6 +146,7 @@ public class PluginWrapperTest {
     // per test
     private final HashMap<String, PluginWrapper> plugins = new HashMap<>();
     private final PluginManager pm = mock(PluginManager.class);
+
     {
         when(pm.getPlugin(any(String.class))).thenAnswer((Answer<PluginWrapper>) invocation -> plugins.get(invocation.getArguments()[0]));
     }
@@ -178,7 +179,7 @@ public class PluginWrapperTest {
         }
 
         public PluginWrapperBuilder deps(String... deps) {
-            for (String dep: deps) {
+            for (String dep : deps) {
                 this.deps.add(new PluginWrapper.Dependency(dep));
             }
             return this;
@@ -229,7 +230,7 @@ public class PluginWrapperTest {
 
     private static int countEnumerationElements(Enumeration<?> enumeration) {
         int elements = 0;
-        for (;enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
+        for (; enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
         return elements;
     }
 

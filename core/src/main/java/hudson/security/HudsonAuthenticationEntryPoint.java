@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
@@ -70,7 +71,7 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse rsp, AuthenticationException reason) throws IOException, ServletException {
         String requestedWith = req.getHeader("X-Requested-With");
-        if("XMLHttpRequest".equals(requestedWith)) {
+        if ("XMLHttpRequest".equals(requestedWith)) {
             // container authentication normally relies on session attribute to
             // remember where the user came from, so concurrent AJAX requests
             // often ends up sending users back to AJAX pages after successful login.
@@ -80,9 +81,9 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
-            if(!StringUtils.isEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
+            if (!StringUtils.isEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath() + loginFormUrl;
-            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
+            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom, "UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
             rsp.setStatus(SC_FORBIDDEN);
@@ -107,15 +108,15 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
             }
             printResponse(loginForm, out);
 
-            if (cause!=null)
+            if (cause != null)
                 cause.report(out);
 
             out.printf(
-                "-->%n%n"+
+                "-->%n%n" +
                 "</body></html>");
             // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
             // See http://support.microsoft.com/kb/294807
-            for (int i=0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
                 out.print("                              ");
             out.close();
         }
@@ -129,8 +130,8 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
             "<script>window.location.replace('%1$s');</script>" +
             "</head>" +
             "<body style='background-color:white; color:white;'>%n" +
-            "%n%n"+
-            "Authentication required%n"+
-            "<!--%n",loginForm);
+            "%n%n" +
+            "Authentication required%n" +
+            "<!--%n", loginForm);
     }
 }

@@ -152,17 +152,21 @@ public class RepeatablePropertyTest {
 
     public static final class ExcitingObject implements Describable<ExcitingObject> {
         private final String greatProperty;
+
         @DataBoundConstructor
         public ExcitingObject(final String greatProperty) {
             this.greatProperty = greatProperty;
         }
+
         public String getGreatProperty() {
             return greatProperty;
         }
+
         @Override
         public Descriptor<ExcitingObject> getDescriptor() {
             return Jenkins.get().getDescriptor(ExcitingObject.class);
         }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -172,10 +176,12 @@ public class RepeatablePropertyTest {
                 return false;
             return true;
         }
+
         @Override
         public int hashCode() {
             return greatProperty != null ? greatProperty.hashCode() : 0;
         }
+
         @Override
         public String toString() {
             return "ExcitingObject[" + greatProperty + ']';
@@ -198,12 +204,15 @@ public class RepeatablePropertyTest {
             this.containerName = containerName;
             this.excitingObjectList = excitingObjectList;
         }
+
         public String getContainerName() {
             return containerName;
         }
+
         public List<ExcitingObject> getExcitingObjectList() {
             return excitingObjectList;
         }
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<ExcitingObjectContainer> {
         }

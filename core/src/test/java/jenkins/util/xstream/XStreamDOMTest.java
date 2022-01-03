@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util.xstream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -83,8 +84,8 @@ public class XStreamDOMTest {
 
     private Foo createSomeFoo() {
         Foo foo = new Foo();
-        foo.bar = new XStreamDOM("test1", Collections.singletonMap("key", "value"),"text!");
-        foo.zot = new XStreamDOM("test2", Collections.singletonMap("key","value"),Collections.singletonList(foo.bar));
+        foo.bar = new XStreamDOM("test1", Collections.singletonMap("key", "value"), "text!");
+        foo.zot = new XStreamDOM("test2", Collections.singletonMap("key", "value"), Collections.singletonList(foo.bar));
         return foo;
     }
 
@@ -94,9 +95,9 @@ public class XStreamDOMTest {
         try (InputStream is = XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml")) {
             foo = (Foo) xs.fromXML(is);
         }
-        assertEquals("test1",foo.bar.getTagName());
-        assertEquals("value",foo.bar.getAttribute("key"));
-        assertEquals("text!",foo.bar.getValue());
+        assertEquals("test1", foo.bar.getTagName());
+        assertEquals("value", foo.bar.getAttribute("key"));
+        assertEquals("text!", foo.bar.getValue());
     }
 
     @Test
@@ -126,23 +127,23 @@ public class XStreamDOMTest {
         XStreamDOM dom = XStreamDOM.from(xs, o);
         System.out.println(xs.toXML(dom));
         Object out = dom.unmarshal(xs);
-        assertEquals(o.getClass(),out.getClass());
+        assertEquals(o.getClass(), out.getClass());
     }
 
     public static class Name_That_Gets_Escaped {}
 
     public static class DomInMap {
-        Map<String,XStreamDOM> values = new HashMap<>();
+        Map<String, XStreamDOM> values = new HashMap<>();
     }
 
     @Test
     public void testDomInMap() {
         DomInMap v = new DomInMap();
-        v.values.put("foo",createSomeFoo().bar);
+        v.values.put("foo", createSomeFoo().bar);
         String xml = xs.toXML(v);
         Object v2 = xs.fromXML(xml);
         assertThat(v2, instanceOf(DomInMap.class));
-        assertXStreamDOMEquals(v.values.get("foo"), ((DomInMap)v2).values.get("foo"));
+        assertXStreamDOMEquals(v.values.get("foo"), ((DomInMap) v2).values.get("foo"));
     }
 
     private void assertXStreamDOMEquals(XStreamDOM expected, XStreamDOM actual) {
@@ -150,7 +151,7 @@ public class XStreamDOMTest {
         assertEquals(expected.getValue(), actual.getValue());
 
         assertEquals(expected.getAttributeCount(), actual.getAttributeCount());
-        for (int i=0; i<expected.getAttributeCount(); i++) {
+        for (int i = 0; i < expected.getAttributeCount(); i++) {
             assertEquals(expected.getAttributeName(i), actual.getAttributeName(i));
             assertEquals(expected.getAttribute(i), actual.getAttribute(i));
         }
@@ -160,7 +161,7 @@ public class XStreamDOMTest {
         } else {
             assertEquals(expected.getChildren().size(), actual.getChildren().size());
             int childrenCount = expected.getChildren().size();
-            for (int i=0; i<childrenCount; i++) {
+            for (int i = 0; i < childrenCount; i++) {
                 assertXStreamDOMEquals(expected.getChildren().get(i), actual.getChildren().get(i));
             }
         }
@@ -168,12 +169,12 @@ public class XStreamDOMTest {
 
     @Test
     public void readFromInputStream() throws Exception {
-        for (String name : new String[]{"XStreamDOMTest.data1.xml","XStreamDOMTest.data2.xml"}) {
+        for (String name : new String[]{"XStreamDOMTest.data1.xml", "XStreamDOMTest.data2.xml"}) {
             String input = getTestData(name);
             XStreamDOM dom = XStreamDOM.from(new StringReader(input));
             StringWriter sw = new StringWriter();
             dom.writeTo(sw);
-            assertEquals(input.trim(),sw.toString().trim());
+            assertEquals(input.trim(), sw.toString().trim());
         }
     }
 

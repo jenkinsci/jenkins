@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -61,14 +62,14 @@ import org.mockito.MockedStatic;
 
 public class FunctionsTest {
     @Test
-    public void testGetActionUrl_absoluteUriWithAuthority(){
+    public void testGetActionUrl_absoluteUriWithAuthority() {
         String[] uris = {
             "http://example.com/foo/bar",
             "https://example.com/foo/bar",
             "ftp://example.com/foo/bar",
             "svn+ssh://nobody@example.com/foo/bar",
         };
-        for(String uri : uris) {
+        for (String uri : uris) {
             String result = Functions.getActionUrl(null, createMockAction(uri));
             assertEquals(uri, result);
         }
@@ -76,13 +77,13 @@ public class FunctionsTest {
 
     @Test
     @Issue("JENKINS-7725")
-    public void testGetActionUrl_absoluteUriWithoutAuthority(){
+    public void testGetActionUrl_absoluteUriWithoutAuthority() {
         String[] uris = {
             "mailto:nobody@example.com",
             "mailto:nobody@example.com?subject=hello",
             "javascript:alert('hello')",
         };
-        for(String uri : uris) {
+        for (String uri : uris) {
             String result = Functions.getActionUrl(null, createMockAction(uri));
             assertEquals(uri, result);
         }
@@ -99,7 +100,7 @@ public class FunctionsTest {
 
         try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
             mocked.when(Stapler::getCurrentRequest).thenReturn(req);
-            for(String path : paths) {
+            for (String path : paths) {
                 String result = Functions.getActionUrl(null, createMockAction(path));
                 assertEquals(contextPath + path, result);
             }
@@ -188,7 +189,7 @@ public class FunctionsTest {
         }
     }
 
-    private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
+    private interface TopLevelItemAndItemGroup<T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
 
     @Test
     public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
@@ -238,7 +239,7 @@ public class FunctionsTest {
         Item i = mock(Item.class);
         when(i.getName()).thenReturn("jobName");
         when(i.getFullDisplayName()).thenReturn("displayName");
-        assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
+        assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, null));
     }
 
     @Test
@@ -310,9 +311,9 @@ public class FunctionsTest {
 
     @Test
     @Issue("JENKINS-16630")
-    public void testHumanReadableFileSize(){
+    public void testHumanReadableFileSize() {
         Locale defaultLocale = Locale.getDefault();
-        try{
+        try {
             Locale.setDefault(Locale.ENGLISH);
             assertEquals("0 B", Functions.humanReadableByteSize(0));
             assertEquals("1023 B", Functions.humanReadableByteSize(1023));
@@ -322,7 +323,7 @@ public class FunctionsTest {
             assertEquals("1023.00 KB", Functions.humanReadableByteSize(1047552));
             assertEquals("1.00 MB", Functions.humanReadableByteSize(1048576));
             assertEquals("1.50 GB", Functions.humanReadableByteSize(1610612700));
-        }finally{
+        } finally {
             Locale.setDefault(defaultLocale);
         }
     }
@@ -428,7 +429,7 @@ public class FunctionsTest {
         StackTraceElement[] combined = new StackTraceElement[original.length + 1 + callSite.length];
         System.arraycopy(original, 0, combined, 0, original.length);
         combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
-        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
             "remote.Exception: oops\n" +
@@ -450,7 +451,7 @@ public class FunctionsTest {
         combined = new StackTraceElement[original.length + 1 + callSite.length];
         System.arraycopy(original, 0, combined, 0, original.length);
         combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
-        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
             "remote.Wrapper: remote.Exception: oops\n" +
@@ -554,13 +555,15 @@ public class FunctionsTest {
                             "\tat p.C.method1(C.java:17)\n");
         }
     }
+
     private static VersionNumber getVersion() {
         String version = System.getProperty("java.version");
-        if(version.startsWith("1.")) {
+        if (version.startsWith("1.")) {
             version = version.substring(2).replace("_", ".");
         }
         return new VersionNumber(version);
     }
+
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
@@ -569,9 +572,11 @@ public class FunctionsTest {
         System.out.println(actual);
         assertThat(actual.replace(System.lineSeparator(), "\n"), is(custom));
     }
+
     private static final class Stack extends Throwable {
         private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");
         private final String toString;
+
         Stack(String toString, String... stack) {
             this.toString = toString;
             StackTraceElement[] lines = new StackTraceElement[stack.length];
@@ -582,13 +587,16 @@ public class FunctionsTest {
             }
             setStackTrace(lines);
         }
+
         @Override
         public String toString() {
             return toString;
         }
+
         synchronized Stack cause(Throwable cause) {
             return (Stack) initCause(cause);
         }
+
         synchronized Stack suppressed(Throwable... suppressed) {
             for (Throwable t : suppressed) {
                 addSuppressed(t);

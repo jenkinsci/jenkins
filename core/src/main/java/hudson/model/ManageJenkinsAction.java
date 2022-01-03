@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Extension;
@@ -32,7 +33,7 @@ import org.jenkinsci.Symbol;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=100) @Symbol("manageJenkins")
+@Extension(ordinal = 100) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction {
     @Override
     public String getIconFileName() {

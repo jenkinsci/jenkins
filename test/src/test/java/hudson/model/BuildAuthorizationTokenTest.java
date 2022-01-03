@@ -37,9 +37,9 @@ public class BuildAuthorizationTokenTest {
     public void triggerJobWithTokenShouldSucceedWithPost() throws Exception {
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
-        HtmlPage page = wc.getPage(wc.addCrumb(new WebRequest(new URL(jr.getURL(), project.getUrl() +
-                                                                                   "build?delay=0&token="+token)
-                                                             ,HttpMethod.POST)));
+        HtmlPage page = wc.getPage(wc.addCrumb(new WebRequest(
+                new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+                HttpMethod.POST)));
         jr.waitUntilNoActivity();
         assertThat("the project should have been built", project.getBuilds(), hasSize(1));
     }
@@ -48,8 +48,9 @@ public class BuildAuthorizationTokenTest {
     public void triggerJobWithTokenShouldSucceedWithGet() throws Exception {
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
-        HtmlPage page = wc.getPage(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token)
-                                                  ,HttpMethod.GET));
+        HtmlPage page = wc.getPage(new WebRequest(
+                new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+                HttpMethod.GET));
         jr.waitUntilNoActivity();
         assertThat("the project should have been built", project.getBuilds(), hasSize(1));
     }

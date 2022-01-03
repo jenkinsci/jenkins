@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.ExtensionList;
@@ -104,9 +105,9 @@ public class Api extends AbstractModelObject {
 
         String[] excludes = req.getParameterValues("exclude");
 
-        if(xpath==null && excludes==null) {
+        if (xpath == null && excludes == null) {
             // serve the whole thing
-            rsp.serveExposedBean(req,bean,Flavor.XML);
+            rsp.serveExposedBean(req, bean, Flavor.XML);
             return;
         }
 
@@ -115,7 +116,7 @@ public class Api extends AbstractModelObject {
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
         TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
-        p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
+        p.writeTo(bean, pruner, Flavor.XML.createDataWriter(bean, sw));
 
         // apply XPath
         FilteredFunctionContext functionContext = new FilteredFunctionContext();
@@ -123,33 +124,33 @@ public class Api extends AbstractModelObject {
         try {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
             // apply exclusions
-            if (excludes!=null) {
+            if (excludes != null) {
                 for (String exclude : excludes) {
                     XPath xExclude = dom.createXPath(exclude);
                     xExclude.setFunctionContext(functionContext);
                     List<org.dom4j.Node> list = xExclude.selectNodes(dom);
                     for (org.dom4j.Node n : list) {
                         Element parent = n.getParent();
-                        if(parent!=null)
+                        if (parent != null)
                             parent.remove(n);
                     }
                 }
             }
-            
-            if(xpath==null) {
-            	result = dom;
+
+            if (xpath == null) {
+                result = dom;
             } else {
                 XPath comp = dom.createXPath(xpath);
                 comp.setFunctionContext(functionContext);
                 List list = comp.selectNodes(dom);
 
-                if (wrapper!=null) {
+                if (wrapper != null) {
                     // check if the wrapper is a valid entity name
                     // First position:  letter or underscore
                     // Other positions: \w (letter, number, underscore), dash or dot
                     String validNameRE = "^[a-zA-Z_][\\w-\\.]*$";
 
-                    if(!wrapper.matches(validNameRE)) {
+                    if (!wrapper.matches(validNameRE)) {
                         rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         rsp.getWriter().print(Messages.Api_WrapperParamInvalid());
                         return;
@@ -160,7 +161,7 @@ public class Api extends AbstractModelObject {
                         if (o instanceof String) {
                             root.addText(o.toString());
                         } else {
-                            root.add(((org.dom4j.Node)o).detach());
+                            root.add(((org.dom4j.Node) o).detach());
                         }
                     }
                     result = root;
@@ -170,7 +171,7 @@ public class Api extends AbstractModelObject {
                     return;
                 } else if (list.size() > 1) {
                     rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
+                    rsp.getWriter().print(Messages.Api_MultipleMatch(xpath, list.size()));
                     return;
                 } else {
                     result = list.get(0);
@@ -178,8 +179,8 @@ public class Api extends AbstractModelObject {
             }
 
         } catch (DocumentException e) {
-            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:"+sw, e);
-            throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
+            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:" + sw, e);
+            throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.", e);
         }
 
 
@@ -226,7 +227,7 @@ public class Api extends AbstractModelObject {
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
-            rsp.serveExposedBean(req,bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
+            rsp.serveExposedBean(req, bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
         } else {
             rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; implement jenkins.security.SecureRequester");
         }
@@ -237,7 +238,7 @@ public class Api extends AbstractModelObject {
      */
     public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         setHeaders(rsp);
-        rsp.serveExposedBean(req,bean, Flavor.PYTHON);
+        rsp.serveExposedBean(req, bean, Flavor.PYTHON);
     }
 
     private boolean permit(StaplerRequest req) {

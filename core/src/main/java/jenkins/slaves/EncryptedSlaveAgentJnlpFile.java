@@ -78,18 +78,19 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
                 @Override public ServletOutputStream getOutputStream() {
                     return csos;
                 }
+
                 @Override public PrintWriter getWriter() {
                     throw new IllegalStateException();
                 }
             });
             view.forward(req, temp);
 
-            byte[] iv = new byte[128/8];
+            byte[] iv = new byte[128 / 8];
             RANDOM.nextBytes(iv);
 
             byte[] jnlpMac;
-            if(it instanceof SlaveComputer) {
-                jnlpMac = Util.fromHexString(((SlaveComputer)it).getJnlpMac());
+            if (it instanceof SlaveComputer) {
+                jnlpMac = Util.fromHexString(((SlaveComputer) it).getJnlpMac());
             } else {
                 jnlpMac = JnlpAgentReceiver.SLAVE_SECRET.mac(slaveName.getBytes(StandardCharsets.UTF_8));
             }
@@ -115,7 +116,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
     /**
      * A {@link ServletOutputStream} that captures all the data rather than writing to a client.
      */
-    private static class CapturingServletOutputStream extends ServletOutputStream { 
+    private static class CapturingServletOutputStream extends ServletOutputStream {
 
         private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -139,18 +140,18 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         public void write(int b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             baos.write(b, off, len);
         }
-        
-        /** 
+
+        /**
          * Get the data that has been written to this ServletOutputStream.
          * @return the data that has been written to this ServletOutputStream.
          */

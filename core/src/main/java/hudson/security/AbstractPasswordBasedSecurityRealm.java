@@ -180,7 +180,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
 
         @Override
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            return doAuthenticate(username,authentication.getCredentials().toString());
+            return doAuthenticate(username, authentication.getCredentials().toString());
         }
     }
 

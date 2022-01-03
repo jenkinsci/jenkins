@@ -5,7 +5,7 @@ import java.util.Base64;
 
 /**
  * Fluent-API to instantiate {@link CLI}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class CLIConnectionFactory {
@@ -26,7 +26,7 @@ public class CLIConnectionFactory {
      * Currently unused.
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
-        return basicAuth(username+':'+password);
+        return basicAuth(username + ':' + password);
     }
 
     /**

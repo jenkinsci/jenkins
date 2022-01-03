@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
 
 import static org.junit.Assert.assertTrue;
@@ -51,8 +52,10 @@ public class TaskTest {
     }
 
     @TestExtension("postLink") public static final MockAction postLink = new MockAction();
+
     public static class MockAction implements UnprotectedRootAction {
         private boolean called = false;
+
         @RequirePOST public void doPost(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
             if (called) throw new AssertionError();
             called = true;
