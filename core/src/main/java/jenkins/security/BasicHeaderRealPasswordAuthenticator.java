@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jenkins.security;
 
 import static java.util.logging.Level.FINER;
@@ -62,7 +63,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
             return a;
         } catch (AuthenticationException failed) {
             // Authentication failed
-            LOGGER.log(FINER, "Authentication request for user: {0} failed: {1}", new Object[]{username,failed});
+            LOGGER.log(FINER, "Authentication request for user: {0} failed: {1}", new Object[]{username, failed});
             return null;
         }
     }

@@ -85,14 +85,14 @@ public final class RunIdMigrator {
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
-    private static final Map<String,Integer> EMPTY = new TreeMap<>();
+    private static final Map<String, Integer> EMPTY = new TreeMap<>();
 
     /**
      * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
      */
     private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
-    private @NonNull Map<String,Integer> idToNumber = EMPTY;
+    private @NonNull Map<String, Integer> idToNumber = EMPTY;
 
     public RunIdMigrator() {}
 
@@ -194,6 +194,7 @@ public final class RunIdMigrator {
     }
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
+
     private void doMigrate(File dir) {
         idToNumber = new TreeMap<>();
         File[] kids = dir.listFiles();
@@ -363,9 +364,11 @@ public final class RunIdMigrator {
             }
         }
     }
+
     private static final Pattern ID_ELT = Pattern.compile("(?m)^  <id>([0-9_-]+)</id>(\r?\n)");
     private static final Pattern TIMESTAMP_ELT = Pattern.compile("(?m)^  <timestamp>(\\d+)</timestamp>(\r?\n)");
     /** Inverse of {@link #doMigrate}. */
+
     private void unmigrateBuildsDir(File builds) throws Exception {
         File mapFile = new File(builds, MAP_FILE);
         if (!mapFile.isFile()) {

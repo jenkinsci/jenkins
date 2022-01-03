@@ -58,7 +58,7 @@ public class ApiTokenPropertyTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Before
-    public void setupLegacyConfig(){
+    public void setupLegacyConfig() {
         ApiTokenTestHelper.enableLegacyBehavior();
     }
 
@@ -106,12 +106,12 @@ public class ApiTokenPropertyTest {
         // the replacement for the compromised value must be consistent and cannot be random
         ApiTokenProperty t2 = new ApiTokenProperty(historicalInitialValue);
         u.addProperty(t2);
-        assertEquals(apiToken1,t2.getApiToken());
+        assertEquals(apiToken1, t2.getApiToken());
 
         // any other value is OK. those are changed values
-        t = new ApiTokenProperty(historicalInitialValue+"somethingElse");
+        t = new ApiTokenProperty(historicalInitialValue + "somethingElse");
         u.addProperty(t);
-        assertEquals(t.getApiToken(), Util.getDigestOf(historicalInitialValue+"somethingElse"));
+        assertEquals(t.getApiToken(), Util.getDigestOf(historicalInitialValue + "somethingElse"));
     }
 
     @Issue("SECURITY-200")
@@ -141,13 +141,13 @@ public class ApiTokenPropertyTest {
         // Make sure that Admin can reset a token of another user
         WebClient wc = createClientForUser("bar")
                 .withThrowExceptionOnFailingStatusCode(false);
-        HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken");
         assertEquals("method should not be allowed",
                 HttpURLConnection.HTTP_BAD_METHOD,
                 requirePOST.getWebResponse().getStatusCode());
 
         wc.setThrowExceptionOnFailingStatusCode(true);
-        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken"), HttpMethod.POST);
         HtmlPage res = wc.getPage(request);
 
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
@@ -285,11 +285,11 @@ public class ApiTokenPropertyTest {
     }
 
     private void checkUserIsNotConnected(WebClient wc) throws Exception {
-        try{
+        try {
             wc.goToXml("whoAmI/api/xml");
             fail();
         }
-        catch(FailingHttpStatusCodeException e){
+        catch (FailingHttpStatusCodeException e) {
             assertEquals(401, e.getStatusCode());
         }
     }
@@ -348,7 +348,7 @@ public class ApiTokenPropertyTest {
 
             checkCombinationWithConfigAndMethodForLegacyTokenCreation(config, wc, user);
         }
-        {// only the legacy token have impact on that capability
+        { // only the legacy token have impact on that capability
             generateNewToken(wc, "user", "New token");
 
             checkCombinationWithConfigAndMethodForLegacyTokenCreation(config, wc, user);
@@ -362,7 +362,7 @@ public class ApiTokenPropertyTest {
 
         config.setCreationOfLegacyTokenEnabled(true);
         {
-            {// change using web UI
+            { // change using web UI
                 changeLegacyToken(wc, "user", true);
                 String newLegacyToken = apiTokenProperty.getApiToken();
                 assertNotEquals(newLegacyToken, Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed());
@@ -378,7 +378,7 @@ public class ApiTokenPropertyTest {
 
         config.setCreationOfLegacyTokenEnabled(false);
         {
-            {// change not possible using web UI
+            { // change not possible using web UI
                 changeLegacyToken(wc, "user", false);
                 String newLegacyToken = apiTokenProperty.getApiToken();
                 assertEquals(newLegacyToken, Messages.ApiTokenProperty_NoLegacyToken());
@@ -411,7 +411,7 @@ public class ApiTokenPropertyTest {
                 .filter(filter)
                 .map(ApiTokenStore.HashedToken::getUuid)
                 .collect(Collectors.toList());
-        for(String uuid : uuidList){
+        for (String uuid : uuidList) {
             revokeToken(wc, user.getId(), uuid);
         }
     }
@@ -432,9 +432,9 @@ public class ApiTokenPropertyTest {
         );
         Page p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
-        if(success){
+        if (success) {
             assertThat(p.getWebResponse().getContentAsString(), not(containsString(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed())));
-        }else{
+        } else {
             assertThat(p.getWebResponse().getContentAsString(), containsString(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
         }
     }
@@ -488,10 +488,10 @@ public class ApiTokenPropertyTest {
 
         Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
 
-        checkInvalidTokenValue(apiTokenProperty,"invalid-token: too-long", "110123456789abcdef0123456789abcdefg");
-        checkInvalidTokenValue(apiTokenProperty,"invalid-token: too-short", "110123456789abcdef0123456789abcde");
-        checkInvalidTokenValue(apiTokenProperty,"invalid-token: non-hex", "110123456789abcdef0123456789abcdeg");
-        checkInvalidTokenValue(apiTokenProperty,"invalid-token: invalid-version", "120123456789abcdef0123456789abcdef");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-long", "110123456789abcdef0123456789abcdefg");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-short", "110123456789abcdef0123456789abcde");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: non-hex", "110123456789abcdef0123456789abcdeg");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: invalid-version", "120123456789abcdef0123456789abcdef");
 
         Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
         // ensure there is no new tokens

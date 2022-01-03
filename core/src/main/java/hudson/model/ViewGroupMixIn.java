@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -132,7 +133,7 @@ public abstract class ViewGroupMixIn {
             // Fallback to subview of primary view if it is a ViewGroup
             View pv = getPrimaryView();
             if (pv instanceof ViewGroup)
-                return ((ViewGroup)pv).getView(name);
+                return ((ViewGroup) pv).getView(name);
             if (pv instanceof AllView && AllView.DEFAULT_VIEW_NAME.equals(pv.name)) {
                 // JENKINS-38606: primary view is the default AllView, is somebody using an old link to localized form?
                 for (Locale l : Locale.getAvailableLocales()) {
@@ -169,7 +170,7 @@ public abstract class ViewGroupMixIn {
     @CheckForNull
     public View getPrimaryView() {
         View v = getView(primaryView());
-        if(v==null && !views().isEmpty()) // fallback
+        if (v == null && !views().isEmpty()) // fallback
             v = views().get(0);
         return v;
     }

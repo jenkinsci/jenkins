@@ -82,12 +82,14 @@ public class ClassFilterImplTest {
         p.getBuildersList().add(new M2SBuilder());
         r.assertLogContains("sent {}", r.buildAndAssertSuccess(p));
     }
+
     public static class M2SBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("sent " + launcher.getChannel().call(new M2S()));
             return true;
         }
+
         @TestExtension("controllerToAgentBypassesWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
@@ -97,8 +99,10 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class M2S extends MasterToSlaveCallable<String, RuntimeException> {
         private final LinkedListMultimap<?, ?> obj = LinkedListMultimap.create();
+
         @Override
         public String call() throws RuntimeException {
             return obj.toString();
@@ -115,12 +119,14 @@ public class ClassFilterImplTest {
         p.getBuildersList().add(new S2MBuilder());
         r.buildAndAssertStatus(Result.FAILURE, p);
     }
+
     public static class S2MBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("received " + launcher.getChannel().call(new S2M()));
             return true;
         }
+
         @TestExtension("agentToControllerRequiresWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
@@ -130,6 +136,7 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class S2M extends MasterToSlaveCallable<LinkedListMultimap<?, ?>, RuntimeException> {
         @Override
         public LinkedListMultimap<?, ?> call() throws RuntimeException {
@@ -170,6 +177,7 @@ public class ClassFilterImplTest {
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
         String unrelated;
+
         @Override
         protected XmlFile getConfigFile() {
             return super.getConfigFile();

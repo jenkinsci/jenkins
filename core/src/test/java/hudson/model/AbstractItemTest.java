@@ -91,7 +91,7 @@ public class AbstractItemTest {
 
     private static class NameNotEditableItem extends AbstractItem {
 
-        protected NameNotEditableItem(ItemGroup parent, String name){
+        protected NameNotEditableItem(ItemGroup parent, String name) {
             super(parent, name);
         }
 
@@ -111,7 +111,7 @@ public class AbstractItemTest {
     public void renameMethodShouldThrowExceptionWhenNotIsNameEditable() {
 
         //GIVEN
-        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
+        NameNotEditableItem item = new NameNotEditableItem(null, "NameNotEditableItem");
 
         //WHEN
         final IOException e = assertThrows("An item with isNameEditable false must throw exception when trying to rename it.",
@@ -126,7 +126,7 @@ public class AbstractItemTest {
     public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() {
 
         //GIVEN
-        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
+        NameNotEditableItem item = new NameNotEditableItem(null, "NameNotEditableItem");
 
         //WHEN
         final Failure f = assertThrows("An item with isNameEditable false must throw exception when trying to call doConfirmRename.",

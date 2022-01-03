@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -247,7 +248,7 @@ public class JenkinsGetRootUrlTest {
         try {
 
             return new URL(realUrl);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
 
             throw new RuntimeException(ex);
         }

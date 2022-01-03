@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -69,21 +70,21 @@ public class Search implements StaplerProxy {
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
-        for( int i=l.size()-1; i>=0; i-- ) {
+        for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
-                if(LOGGER.isLoggable(Level.FINE)){
-                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s", smo.getDisplayName(), smo.getSearchName()));
                 }
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
-                if(query!=null) {
+                if (query != null) {
                     SuggestedItem target = find(index, query, smo);
-                    if(target!=null) {
+                    if (target != null) {
                         // found
-                        rsp.sendRedirect2(req.getContextPath()+target.getUrl());
+                        rsp.sendRedirect2(req.getContextPath() + target.getUrl());
                         return;
                     }
                 }
@@ -92,7 +93,7 @@ public class Search implements StaplerProxy {
 
         // no exact match. show the suggestions
         rsp.setStatus(SC_NOT_FOUND);
-        req.getView(this,"search-failed.jelly").forward(req,rsp);
+        req.getView(this, "search-failed.jelly").forward(req, rsp);
     }
 
     /**
@@ -125,7 +126,7 @@ public class Search implements StaplerProxy {
         for (SuggestedItem item : getSuggestions(req, query))
             r.suggestions.add(new Item(item.getPath()));
 
-        rsp.serveExposedBean(req,r,Flavor.JSON);
+        rsp.serveExposedBean(req, r, Flavor.JSON);
     }
 
     /**
@@ -141,11 +142,11 @@ public class Search implements StaplerProxy {
         int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
         SearchableModelObject smo = findClosestSearchableModelObject(req);
         for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
-            if(r.size()>=max) {
+            if (r.size() >= max) {
                 r.hasMoreResults = true;
                 break;
             }
-            if(paths.add(i.getPath()))
+            if (paths.add(i.getPath()))
                 r.add(i);
         }
         return r;
@@ -153,10 +154,10 @@ public class Search implements StaplerProxy {
 
     private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
-        for( int i=l.size()-1; i>=0; i-- ) {
+        for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
-                return (SearchableModelObject)a.getObject();
+                return (SearchableModelObject) a.getObject();
             }
         }
         return null;
@@ -192,7 +193,7 @@ public class Search implements StaplerProxy {
         public List<Item> suggestions = new ArrayList<>();
     }
 
-    @ExportedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility = 999)
     public static class Item {
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
@@ -233,11 +234,11 @@ public class Search implements StaplerProxy {
      * SuggestedItem in the List is returned.
      */
     static SuggestedItem findClosestSuggestedItem(List<SuggestedItem> r, String query) {
-        for(SuggestedItem curItem : r) {
-            if(LOGGER.isLoggable(Level.FINE)) {
+        for (SuggestedItem curItem : r) {
+            if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
             }
-            if(curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
+            if (curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
                 return curItem;
             }
         }
@@ -262,10 +263,10 @@ public class Search implements StaplerProxy {
      */
     public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
         List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
-        if(r.isEmpty()){
+        if (r.isEmpty()) {
             return null;
         }
-        else if(1==r.size()){
+        else if (1 == r.size()) {
             return r.get(0);
         }
         else  {
@@ -289,7 +290,7 @@ public class Search implements StaplerProxy {
      */
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
 
-        class Tag implements Comparable<Tag>{
+        class Tag implements Comparable<Tag> {
             final SuggestedItem item;
             final int distance;
             /** If the path to this suggestion starts with the token list, 1. Otherwise 0. */
@@ -297,15 +298,15 @@ public class Search implements StaplerProxy {
 
             Tag(SuggestedItem i) {
                 item = i;
-                distance = EditDistance.editDistance(i.getPath(),tokenList);
-                prefixMatch = i.getPath().startsWith(tokenList)?1:0;
+                distance = EditDistance.editDistance(i.getPath(), tokenList);
+                prefixMatch = i.getPath().startsWith(tokenList) ? 1 : 0;
             }
 
             @Override
             public int compareTo(Tag that) {
-                int r = this.prefixMatch -that.prefixMatch;
-                if(r!=0)    return -r;  // ones with head match should show up earlier
-                return this.distance-that.distance;
+                int r = this.prefixMatch - that.prefixMatch;
+                if (r != 0)    return -r;  // ones with head match should show up earlier
+                return this.distance - that.distance;
             }
         }
 
@@ -313,7 +314,7 @@ public class Search implements StaplerProxy {
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
-        for( SuggestedItem i : items)
+        for (SuggestedItem i : items)
             buf.add(new Tag(i));
         Collections.sort(buf);
         items.clear();
@@ -327,7 +328,7 @@ public class Search implements StaplerProxy {
         private final String[] tokens;
 
         TokenList(String tokenList) {
-            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
+            tokens = tokenList != null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         public int length() { return tokens.length; }
@@ -342,14 +343,14 @@ public class Search implements StaplerProxy {
                 @Override
                 public String get(int index) {
                     StringBuilder buf = new StringBuilder();
-                    for(int i=start; i<=start+index; i++ )
+                    for (int i = start; i <= start + index; i++)
                         buf.append(tokens[i]);
                     return buf.toString().trim();
                 }
 
                 @Override
                 public int size() {
-                    return tokens.length-start;
+                    return tokens.length - start;
                 }
             };
         }
@@ -358,7 +359,7 @@ public class Search implements StaplerProxy {
         @Override
         public String toString() {
             StringBuilder s = new StringBuilder("TokenList{");
-            for(String token : tokens) {
+            for (String token : tokens) {
                 s.append(token);
                 s.append(",");
             }
@@ -370,10 +371,10 @@ public class Search implements StaplerProxy {
 
     private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList, SearchableModelObject searchContext) {
         TokenList tokens = new TokenList(tokenList);
-        if(tokens.length()==0) return Collections.emptyList();   // no tokens given
+        if (tokens.length() == 0) return Collections.emptyList();   // no tokens given
 
-        List<SuggestedItem>[] paths = new List[tokens.length()+1]; // we won't use [0].
-        for(int i=1;i<=tokens.length();i++)
+        List<SuggestedItem>[] paths = new List[tokens.length() + 1]; // we won't use [0].
+        for (int i = 1; i <= tokens.length(); i++)
             paths[i] = new ArrayList<>();
 
         List<SearchItem> items = new ArrayList<>(); // items found in 1 step
@@ -381,28 +382,28 @@ public class Search implements StaplerProxy {
         LOGGER.log(Level.FINE, "tokens={0}", tokens);
 
         // first token
-        int w=1;    // width of token
+        int w = 1;    // width of token
         for (String token : tokens.subSequence(0)) {
             items.clear();
-            m.find(index,token,items);
+            m.find(index, token, items);
             for (SearchItem si : items) {
-                paths[w].add(SuggestedItem.build(searchContext ,si));
+                paths[w].add(SuggestedItem.build(searchContext, si));
                 LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
         }
 
         // successive tokens
-        for (int j=1; j<tokens.length(); j++) {
+        for (int j = 1; j < tokens.length(); j++) {
             // for each length
-            w=1;
+            w = 1;
             for (String token : tokens.subSequence(j)) {
                 // for each candidate
                 for (SuggestedItem r : paths[j]) {
                     items.clear();
-                    m.find(r.item.getSearchIndex(),token,items);
+                    m.find(r.item.getSearchIndex(), token, items);
                     for (SearchItem i : items)
-                        paths[j+w].add(new SuggestedItem(r,i));
+                        paths[j + w].add(new SuggestedItem(r, i));
                 }
                 w++;
             }

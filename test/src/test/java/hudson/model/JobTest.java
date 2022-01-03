@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -146,7 +147,7 @@ public class JobTest {
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
                             if (buildNumber != savedBuildNumber - 1) {
-                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
+                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber - 1) + ")";
                                 this.passed = false;
                                 return;
                             }
@@ -171,7 +172,7 @@ public class JobTest {
 
                 this.passed = true;
             }
-            catch (InterruptedException e) {}
+            catch (InterruptedException e) { }
             catch (IOException e) {
                 throw new AssertionError("Failed to assign build number", e);
             }
@@ -181,7 +182,7 @@ public class JobTest {
         }
     }
 
-    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+    public static class JobPropertyImpl extends JobProperty<Job<?, ?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
 

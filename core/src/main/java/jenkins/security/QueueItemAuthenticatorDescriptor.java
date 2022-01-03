@@ -13,7 +13,7 @@ import jenkins.model.Jenkins;
 public abstract class QueueItemAuthenticatorDescriptor extends Descriptor<QueueItemAuthenticator> {
     // nothing defined here yet
 
-    public static DescriptorExtensionList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> all() {
+    public static DescriptorExtensionList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor> all() {
         return Jenkins.get().getDescriptorList(QueueItemAuthenticator.class);
     }
 }

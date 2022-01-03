@@ -26,8 +26,8 @@ public class CronTabEventualityTest {
         return parameters;
     }
 
-    private Calendar createLimit(Calendar start, int field, int amount){
-        Calendar limit = (Calendar)start.clone();
+    private Calendar createLimit(Calendar start, int field, int amount) {
+        Calendar limit = (Calendar) start.clone();
         limit.add(field, amount);
         return limit;
     }
@@ -101,7 +101,7 @@ public class CronTabEventualityTest {
     @Test
     public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() throws ANTLRException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
-        Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 31+7);
+        Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 31 + 7);
         // If both day of month and day of week are specified:
         //     UNIX: triggered when either matches
         //     Jenkins: triggered when both match
@@ -111,7 +111,7 @@ public class CronTabEventualityTest {
     private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) throws ANTLRException {
         CronTab cron = new CronTab(crontabFormat, hash);
         Calendar next = cron.ceil(start);
-        if(next.after(limit)) {
+        if (next.after(limit)) {
             DateFormat f = DateFormat.getDateTimeInstance();
             String msg = "Name: " + name
                     + " Limit: " + f.format(limit.getTime())

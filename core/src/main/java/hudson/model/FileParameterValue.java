@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -87,7 +88,7 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Overrides the location in the build to place this file. Initially set to {@link #getName()}
-     * The location could be directly the filename or also a hierarchical path. 
+     * The location could be directly the filename or also a hierarchical path.
      * The intermediate folders will be created automatically.
      * Take care that no escape from the current directory is allowed and will result in the failure of the build.
      */
@@ -127,8 +128,8 @@ public class FileParameterValue extends ParameterValue {
      * Exposes the originalFileName as an environment variable.
      */
     @Override
-    public void buildEnvironment(Run<?,?> build, EnvVars env) {
-        env.put(name,originalFileName);
+    public void buildEnvironment(Run<?, ?> build, EnvVars env) {
+        env.put(name, originalFileName);
     }
 
     @Override
@@ -152,13 +153,13 @@ public class FileParameterValue extends ParameterValue {
     }
 
     @Override
-    public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
+    public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         return new BuildWrapper() {
             @SuppressFBWarnings(value = {"FILE_UPLOAD_FILENAME", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"}, justification = "TODO needs triage")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
-            	    listener.getLogger().println("Copying file to "+location);
+                if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
+                    listener.getLogger().println("Copying file to " + location);
                     FilePath ws = build.getWorkspace();
                     if (ws == null) {
                         throw new IllegalStateException("The workspace should be created when setUp method is called");
@@ -176,48 +177,48 @@ public class FileParameterValue extends ParameterValue {
                         locationFilePath.delete();
                     }
 
-            	    locationFilePath.copyFrom(file);
+                    locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
-            	}
+                }
                 return new Environment() {};
             }
         };
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ (location == null ? 0 : location.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result
+                + (location == null ? 0 : location.hashCode());
+        return result;
+    }
 
-	/**
-	 * Compares file parameters (existing files will be considered as different).
-	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins.io/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FileParameterValue other = (FileParameterValue) obj;
-		
-		if (location == null && other.location == null) 
-			return true; // Consider null parameters as equal
+    /**
+     * Compares file parameters (existing files will be considered as different).
+     * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins.io/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FileParameterValue other = (FileParameterValue) obj;
 
-		//TODO: check fingerprints or checksums to improve the behavior (JENKINS-25211)
-		// Return false even if files are equal
-		return false;
-	}
+        if (location == null && other.location == null)
+            return true; // Consider null parameters as equal
+
+        //TODO: check fingerprints or checksums to improve the behavior (JENKINS-25211)
+        // Return false even if files are equal
+        return false;
+    }
 
     @Override
     public String toString() {
-    	return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
+        return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
     }
 
     @Override public String getShortDescription() {
@@ -228,7 +229,7 @@ public class FileParameterValue extends ParameterValue {
      * Serve this file parameter in response to a {@link StaplerRequest}.
      */
     public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
-        AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
+        AbstractBuild build = (AbstractBuild) request.findAncestor(AbstractBuild.class).getObject();
         File fileParameter = getFileParameterFolderUnderBuild(build);
         return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
     }
@@ -243,7 +244,7 @@ public class FileParameterValue extends ParameterValue {
         return new File(getFileParameterFolderUnderBuild(build), location);
     }
 
-    private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build){
+    private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build) {
         return new File(build.getRootDir(), FOLDER_NAME);
     }
 

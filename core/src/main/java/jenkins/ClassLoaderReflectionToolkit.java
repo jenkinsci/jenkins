@@ -103,7 +103,7 @@ public class ClassLoaderReflectionToolkit {
 
         static {
             try {
-                FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
+                FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass", String.class);
             } catch (NoSuchMethodException e) {
                 throw new AssertionError(e);
             }

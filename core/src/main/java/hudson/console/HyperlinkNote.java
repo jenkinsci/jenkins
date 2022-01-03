@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import hudson.Extension;
@@ -61,15 +62,15 @@ public class HyperlinkNote extends ConsoleNote {
         String url = this.url;
         if (url.startsWith("/")) {
             StaplerRequest req = Stapler.getCurrentRequest();
-            if (req!=null) {
+            if (req != null) {
                 // if we are serving HTTP request, we want to use app relative URL
-                url = req.getContextPath()+url;
+                url = req.getContextPath() + url;
             } else {
                 // otherwise presumably this is rendered for e-mails and other non-HTTP stuff
-                url = Jenkins.get().getRootUrl()+url.substring(1);
+                url = Jenkins.get().getRootUrl() + url.substring(1);
             }
         }
-        text.addMarkup(charPos, charPos + length, "<a href='" + Util.escape(url) + "'"+extraAttributes()+">", "</a>");
+        text.addMarkup(charPos, charPos + length, "<a href='" + Util.escape(url) + "'" + extraAttributes() + ">", "</a>");
         return null;
     }
 
@@ -91,10 +92,10 @@ public class HyperlinkNote extends ConsoleNote {
         // break the conversion.
         text = text.replace('\n', ' ');
         try {
-            return constructor.apply(url,text.length()).encode()+text;
+            return constructor.apply(url, text.length()).encode() + text;
         } catch (IOException e) {
             // impossible, but don't make this a fatal problem
-            LOGGER.log(Level.WARNING, "Failed to serialize "+HyperlinkNote.class,e);
+            LOGGER.log(Level.WARNING, "Failed to serialize " + HyperlinkNote.class, e);
             return text;
         }
     }

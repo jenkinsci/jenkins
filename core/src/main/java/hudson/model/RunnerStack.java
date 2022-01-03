@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -37,7 +38,7 @@ import java.util.WeakHashMap;
  * @since 1.319
  */
 final class RunnerStack {
-    private final Map<Executor,Stack<RunExecution>> stack = new WeakHashMap<>();
+    private final Map<Executor, Stack<RunExecution>> stack = new WeakHashMap<>();
 
     synchronized void push(RunExecution r) {
         Executor e = Executor.currentExecutor();
@@ -49,7 +50,7 @@ final class RunnerStack {
         Executor e = Executor.currentExecutor();
         Stack<RunExecution> s = stack.get(e);
         s.pop();
-        if(s.isEmpty()) stack.remove(e);
+        if (s.isEmpty()) stack.remove(e);
     }
 
     /**

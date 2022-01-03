@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -85,7 +86,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * <li>
  * This A → B → A redirect is a cyclic redirection, so we need to watch out for clients
  * that detect this as an error.
- * </ul> 
+ * </ul>
  *
  * @author Kohsuke Kawaguchi
  */
@@ -104,10 +105,10 @@ public class BasicAuthenticationFilter implements Filter {
         String authorization = req.getHeader("Authorization");
 
         String path = req.getServletPath();
-        if(authorization==null || req.getUserPrincipal() !=null || path.startsWith("/secured/")
+        if (authorization == null || req.getUserPrincipal() != null || path.startsWith("/secured/")
         || !Jenkins.get().isUseSecurity()) {
             // normal requests, or security not enabled
-            if(req.getUserPrincipal()!=null) {
+            if (req.getUserPrincipal() != null) {
                 // before we route this request, integrate the container authentication
                 // to Spring Security. For anonymous users that doesn't have user principal,
                 // AnonymousProcessingFilter that follows this should create
@@ -115,7 +116,7 @@ public class BasicAuthenticationFilter implements Filter {
                 SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
             }
             try {
-                chain.doFilter(request,response);
+                chain.doFilter(request, response);
             } finally {
                 SecurityContextHolder.clearContext();
             }
@@ -129,18 +130,18 @@ public class BasicAuthenticationFilter implements Filter {
         int idx = uidpassword.indexOf(':');
         if (idx >= 0) {
             username = uidpassword.substring(0, idx);
-            password = uidpassword.substring(idx+1);
+            password = uidpassword.substring(idx + 1);
         }
 
-        if(username==null) {
+        if (username == null) {
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            rsp.setHeader("WWW-Authenticate","Basic realm=\"Jenkins user\"");
+            rsp.setHeader("WWW-Authenticate", "Basic realm=\"Jenkins user\"");
             return;
         }
 
         {
             User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
-            if(u != null){
+            if (u != null) {
                 UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 Authentication auth = u.impersonate(userDetails);
 
@@ -148,7 +149,7 @@ public class BasicAuthenticationFilter implements Filter {
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 try {
-                    chain.doFilter(request,response);
+                    chain.doFilter(request, response);
                 } finally {
                     SecurityContextHolder.clearContext();
                 }
@@ -157,24 +158,24 @@ public class BasicAuthenticationFilter implements Filter {
         }
 
 
-        path = req.getContextPath()+"/secured"+path;
+        path = req.getContextPath() + "/secured" + path;
         String q = req.getQueryString();
-        if(q!=null)
-            path += '?'+q;
+        if (q != null)
+            path += '?' + q;
 
         // prepare a redirect
         prepareRedirect(rsp, path);
 
         // ... but first let the container authenticate this request
-        RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username="+
-            URLEncoder.encode(username,"UTF-8")+"&j_password="+URLEncoder.encode(password,"UTF-8"));
-        d.include(req,rsp);
+        RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username=" +
+            URLEncoder.encode(username, "UTF-8") + "&j_password=" + URLEncoder.encode(password, "UTF-8"));
+        d.include(req, rsp);
     }
 
     @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
     private void prepareRedirect(HttpServletResponse rsp, String path) {
         rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        rsp.setHeader("Location",path);
+        rsp.setHeader("Location", path);
     }
 
     @Override

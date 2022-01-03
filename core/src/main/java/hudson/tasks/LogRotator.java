@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static java.util.logging.Level.FINE;
@@ -107,13 +108,13 @@ public class LogRotator extends BuildDiscarder {
     private final Integer artifactNumToKeep;
 
     @DataBoundConstructor
-    public LogRotator (String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
-        this (parse(daysToKeepStr),parse(numToKeepStr),
-              parse(artifactDaysToKeepStr),parse(artifactNumToKeepStr));
+    public LogRotator(String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
+        this (parse(daysToKeepStr), parse(numToKeepStr),
+              parse(artifactDaysToKeepStr), parse(artifactNumToKeepStr));
     }
 
     public static int parse(String p) {
-        if(p==null)     return -1;
+        if (p == null)     return -1;
         try {
             return Integer.parseInt(p);
         } catch (NumberFormatException e) {
@@ -140,9 +141,9 @@ public class LogRotator extends BuildDiscarder {
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void perform(Job<?,?> job) throws IOException, InterruptedException {
+    public void perform(Job<?, ?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported
-        Map<Run<?,?>, Set<IOException>> exceptionMap = new HashMap<>();
+        Map<Run<?, ?>, Set<IOException>> exceptionMap = new HashMap<>();
 
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
 
@@ -150,13 +151,13 @@ public class LogRotator extends BuildDiscarder {
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
 
-        if(numToKeep!=-1) {
+        if (numToKeep != -1) {
             // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
             // However we would need to load the first numToKeep anyway, just to skip over them;
             // and we would need to load the rest anyway, to delete them.
             // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
             // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
-            RunList<? extends Run<?,?>> builds = job.getBuilds();
+            RunList<? extends Run<?, ?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), numToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
@@ -167,9 +168,9 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(daysToKeep!=-1) {
+        if (daysToKeep != -1) {
             Calendar cal = new GregorianCalendar();
-            cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
+            cal.add(Calendar.DAY_OF_YEAR, -daysToKeep);
             Run r = job.getFirstBuild();
             while (r != null) {
                 if (tooNew(r, cal)) {
@@ -184,8 +185,8 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
-            RunList<? extends Run<?,?>> builds = job.getBuilds();
+        if (artifactNumToKeep != null && artifactNumToKeep != -1) {
+            RunList<? extends Run<?, ?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
@@ -196,9 +197,9 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
+        if (artifactDaysToKeep != null && artifactDaysToKeep != -1) {
             Calendar cal = new GregorianCalendar();
-            cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
+            cal.add(Calendar.DAY_OF_YEAR, -artifactDaysToKeep);
             Run r = job.getFirstBuild();
             while (r != null) {
                 if (tooNew(r, cal)) {
@@ -285,11 +286,11 @@ public class LogRotator extends BuildDiscarder {
     }
 
     private int unbox(Integer i) {
-        return i==null ? -1: i;
+        return i == null ? -1 : i;
     }
 
     private String toString(Integer i) {
-        if (i==null || i==-1)   return "";
+        if (i == null || i == -1)   return "";
         return String.valueOf(i);
     }
 

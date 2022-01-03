@@ -79,6 +79,7 @@ public class Security218Test implements Serializable {
             assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
         }
     }
+
     private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
         @Override
         public Object call() {
@@ -103,14 +104,14 @@ public class Security218Test implements Serializable {
      * Launch a JNLP agent created by {@link #createJnlpSlave(String)}
      */
     public Channel launchJnlpSlave(Slave slave) throws Exception {
-        j.createWebClient().goTo("computer/"+slave.getNodeName()+"/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
+        j.createWebClient().goTo("computer/" + slave.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         File slaveJar = tmp.newFile();
         FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"),
                 "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", j.getURL() + "computer/"+slave.getNodeName()+"/jenkins-agent.jnlp", "-secret", secret);
+                "-jnlpUrl", j.getURL() + "computer/" + slave.getNodeName() + "/jenkins-agent.jnlp", "-secret", secret);
 
         pb.inheritIO();
         System.err.println("Running: " + pb.command());
@@ -129,7 +130,7 @@ public class Security218Test implements Serializable {
 
     @After
     public void tearDown() {
-        if (jnlp !=null)
+        if (jnlp != null)
             jnlp.destroy();
     }
 }
