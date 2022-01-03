@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
 import static hudson.Util.fixNull;
@@ -94,7 +95,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
                 updateValidationsForNextRun(validations, ctl);
                 return FormValidation.aggregate(validations);
             } catch (ANTLRException e) {
-                if (value.trim().indexOf('\n')==-1 && value.contains("**"))
+                if (value.trim().indexOf('\n') == -1 && value.contains("**"))
                     return FormValidation.error(Messages.TimerTrigger_MissingWhitespace());
                 return FormValidation.error(e.getMessage());
             }
@@ -102,7 +103,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
 
         private void updateValidationsForSanity(Collection<FormValidation> validations, CronTabList ctl) {
             String msg = ctl.checkSanity();
-            if(msg!=null)  validations.add(FormValidation.warning(msg));
+            if (msg != null)  validations.add(FormValidation.warning(msg));
         }
 
         private void updateValidationsForNextRun(Collection<FormValidation> validations, CronTabList ctl) {

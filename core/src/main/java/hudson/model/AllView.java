@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -72,7 +73,7 @@ public class AllView extends View {
         this(name);
         this.owner = owner;
     }
-    
+
     @Override
     public boolean isEditable() {
         return false;
@@ -94,13 +95,13 @@ public class AllView extends View {
             throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup)
-            return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            return ((ModifiableItemGroup<? extends TopLevelItem>) ig).doCreateItem(req, rsp);
         return null;
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return (Collection)getOwner().getItemGroup().getItems();
+        return (Collection) getOwner().getItemGroup().getItems();
     }
 
     @Override
@@ -138,7 +139,7 @@ public class AllView extends View {
             // modern name, we are safe
             return primaryView;
         }
-        if (SystemProperties.getBoolean(AllView.class.getName()+".JENKINS-38606", true)) {
+        if (SystemProperties.getBoolean(AllView.class.getName() + ".JENKINS-38606", true)) {
             AllView allView = null;
             for (View v : views) {
                 if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {

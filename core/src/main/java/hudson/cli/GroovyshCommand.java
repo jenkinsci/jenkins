@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -54,7 +55,7 @@ public class GroovyshCommand extends CLICommand {
         return Messages.GroovyshCommand_ShortDescription();
     }
 
-    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<>();
+    @Argument(metaVar = "ARGS") public List<String> args = new ArrayList<>();
 
     @Override
     protected int run() {
@@ -83,23 +84,23 @@ public class GroovyshCommand extends CLICommand {
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
-        binding.setProperty("out", new PrintWriter(stdout,true));
+        binding.setProperty("out", new PrintWriter(stdout, true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
-        IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
+        IO io = new IO(new BufferedInputStream(stdin), stdout, stderr);
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @SuppressFBWarnings(value = "UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS", justification = "Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert args.length == 1;
                 assert args[0] instanceof Shell;
 
-                Shell shell = (Shell)args[0];
+                Shell shell = (Shell) args[0];
                 XmlCommandRegistrar r = new XmlCommandRegistrar(shell, cl);
                 r.register(GroovyshCommand.class.getResource("commands.xml"));
 

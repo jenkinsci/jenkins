@@ -240,7 +240,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();
@@ -286,7 +286,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();
@@ -331,7 +331,7 @@ public class QuietDownCommandTest {
         beforeCli.block();
         assertJenkinsInQuietMode();
         try {
-            exec_task.get(2*TIMEOUT, TimeUnit.MILLISECONDS);
+            exec_task.get(2 * TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             throw new AssertionError("Blocking call didn't finish after timeout!", e);
         }
@@ -366,7 +366,7 @@ public class QuietDownCommandTest {
                 beforeCli.signal();
                 final CLICommandInvoker.Result result = command
                         .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", Integer.toString(2*TIMEOUT));
+                        .invokeWithArgs("-block", "-timeout", Integer.toString(2 * TIMEOUT));
                 fail("Blocking call shouldn't finish, should be killed by called thread!");
                 return null;
             }
@@ -380,7 +380,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();

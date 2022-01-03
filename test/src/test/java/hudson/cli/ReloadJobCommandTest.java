@@ -300,7 +300,7 @@ public class ReloadJobCommandTest {
     private void changeProjectOnTheDisc(final FreeStyleProject project, final String oldstr,
         final String newstr) throws Exception {
 
-        FilePath fp = new FilePath(new File(project.getRootDir()+"/config.xml"));
+        FilePath fp = new FilePath(new File(project.getRootDir() + "/config.xml"));
         fp.write(fp.readToString().replace(oldstr, newstr), null);
     }
 

@@ -142,15 +142,18 @@ public class AnnotatedLargeTextTest {
     static class TestNote extends ConsoleNote<Void> {
         private final String url;
         private final int length;
+
         TestNote(String url, int length) {
             this.url = url;
             this.length = length;
         }
+
         @Override
         public ConsoleAnnotator<?> annotate(Void context, MarkupText text, int charPos) {
             text.addMarkup(charPos, charPos + length, "<a href='" + url + "'" + ">", "</a>");
             return null;
         }
+
         static String encodeTo(String url, String text) throws IOException {
             return new TestNote(url, text.length()).encode() + text;
         }

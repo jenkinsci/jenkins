@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
@@ -68,7 +69,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Kohsuke Kawaguchi
  * @since 1.178
  */
-@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
+@SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
 public class DoubleLaunchChecker {
     /**
      * The timestamp of the owner file when we updated it for the last time.
@@ -97,10 +98,10 @@ public class DoubleLaunchChecker {
     }
 
     protected void execute() {
-        File timestampFile = new File(home,".owner");
+        File timestampFile = new File(home, ".owner");
 
         long t = timestampFile.lastModified();
-        if(t!=0 && lastWriteTime!=0 && t!=lastWriteTime && !ignore) {
+        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && !ignore) {
             try {
                 collidingId = FileUtils.readFileToString(timestampFile, Charset.defaultCharset());
             } catch (IOException e) {
@@ -108,8 +109,8 @@ public class DoubleLaunchChecker {
             }
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
-            Jenkins.get().servletContext.setAttribute("app",this);
-            LOGGER.severe("Collision detected. timestamp="+t+", expected="+lastWriteTime);
+            Jenkins.get().servletContext.setAttribute("app", this);
+            LOGGER.severe("Collision detected. timestamp=" + t + ", expected=" + lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
         }
 
@@ -118,7 +119,7 @@ public class DoubleLaunchChecker {
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             // if failed to write, err on the safe side and assume things are OK.
-            lastWriteTime=0;
+            lastWriteTime = 0;
         }
 
         schedule();
@@ -131,7 +132,7 @@ public class DoubleLaunchChecker {
         Jenkins h = Jenkins.get();
 
         // in servlet 2.5, we can get the context path
-        String contextPath="";
+        String contextPath = "";
         try {
             Method m = ServletContext.class.getMethod("getContextPath");
             contextPath = " contextPath=\"" + m.invoke(h.servletContext) + "\"";
@@ -141,7 +142,7 @@ public class DoubleLaunchChecker {
             // maybe running with Servlet 2.4
         }
 
-        return h.hashCode()+contextPath+" at "+ManagementFactory.getRuntimeMXBean().getName();
+        return h.hashCode() + contextPath + " at " + ManagementFactory.getRuntimeMXBean().getName();
     }
 
     public String getCollidingId() {
@@ -153,7 +154,7 @@ public class DoubleLaunchChecker {
      */
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
-        long MINUTE = 1000*60;
+        long MINUTE = 1000 * 60;
 
         Timer.get()
             .schedule(new SafeTimerTask() {
@@ -164,7 +165,7 @@ public class DoubleLaunchChecker {
             }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
     }
 
-    @Initializer(after= JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
         new DoubleLaunchChecker().schedule();
     }
@@ -174,7 +175,7 @@ public class DoubleLaunchChecker {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.setStatus(SC_INTERNAL_SERVER_ERROR);
-        req.getView(this,"index.jelly").forward(req,rsp);
+        req.getView(this, "index.jelly").forward(req, rsp);
     }
 
     /**
@@ -184,7 +185,7 @@ public class DoubleLaunchChecker {
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
         Jenkins.get().servletContext.setAttribute("app", Jenkins.get());
-        rsp.sendRedirect2(req.getContextPath()+'/');
+        rsp.sendRedirect2(req.getContextPath() + '/');
     }
 
     private static final Logger LOGGER = Logger.getLogger(DoubleLaunchChecker.class.getName());

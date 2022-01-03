@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.Extension;
@@ -35,7 +36,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=500) @Symbol({"builtInNode", "masterBuild"})
+@Extension(ordinal = 500) @Symbol({"builtInNode", "masterBuild"})
 public class MasterBuildConfiguration extends GlobalConfiguration {
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
@@ -52,9 +53,9 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
             // for compatibility reasons, this value is stored in Jenkins
             String num = json.getString("numExecutors");
             if (!num.matches("\\d+")) {
-                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(),"numExecutors");
+                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
             }
-            
+
             j.setNumExecutors(json.getInt("numExecutors"));
             if (req.hasParameter("builtin.mode"))
                 j.setMode(Mode.valueOf(req.getParameter("builtin.mode")));
@@ -65,7 +66,7 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
 
             return true;
         } catch (IOException e) {
-            throw new FormException(e,"numExecutors");
+            throw new FormException(e, "numExecutors");
         }
     }
 }

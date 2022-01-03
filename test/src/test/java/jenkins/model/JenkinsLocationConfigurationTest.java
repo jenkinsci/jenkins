@@ -38,7 +38,7 @@ public class JenkinsLocationConfigurationTest {
     private boolean lastRootUrlSet;
 
     @Rule
-    public JenkinsRule j = new JenkinsRule(){
+    public JenkinsRule j = new JenkinsRule() {
         @Override
         public URL getURL() throws IOException {
             // first call for the "Running on xxx" log message, Jenkins not being set at that point

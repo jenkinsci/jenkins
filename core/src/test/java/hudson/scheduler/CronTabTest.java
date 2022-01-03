@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scheduler;
 
 import static java.util.Calendar.MONDAY;
@@ -56,29 +57,29 @@ public class CronTabTest {
     @Test
     public void testCeil1() throws Exception {
         CronTab x = new CronTab("0,30 * * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,1,10);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,1,30),x.ceil(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 10);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 30), x.ceil(c));
 
         // roll up test
-        c =     new GregorianCalendar(2000, Calendar.MARCH,1,1,40);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,2, 0),x.ceil(c));
+        c =     new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 40);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 2, 0), x.ceil(c));
     }
 
     @Test
     public void testCeil2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,2,30);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,3,15),x.ceil(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 2, 30);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 3, 15), x.ceil(c));
     }
 
     @Test
     public void testCeil3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY, 1, 15, 55);
         // the first such day in 2010 is Aug 1st
-        compare(new GregorianCalendar(2010, Calendar.AUGUST,1,0,0),x.ceil(c));
+        compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.ceil(c));
     }
 
     @Test(timeout = 1000)
@@ -86,7 +87,7 @@ public class CronTabTest {
     public void testCeil3_DoW7() throws Exception {
         // similar to testCeil3, but DoW=7 may stuck in an infinite loop
         CronTab x = new CronTab("0 0 1 * 7");
-        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY, 1, 15, 55);
         // the first such day in 2010 is Aug 1st
         compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.ceil(c));
     }
@@ -138,29 +139,29 @@ public class CronTabTest {
     @Test
     public void testFloor1() throws Exception {
         CronTab x = new CronTab("30 * * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,1,40);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,1,30),x.floor(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 40);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 30), x.floor(c));
 
         // roll down test
-        c =     new GregorianCalendar(2000, Calendar.MARCH,1,1,10);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,0,30),x.floor(c));
+        c =     new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 10);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 0, 30), x.floor(c));
     }
 
     @Test
     public void testFloor2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,4,30);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,3,45),x.floor(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 4, 30);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 3, 45), x.floor(c));
     }
 
     @Test
     public void testFloor3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY, 1, 15, 55);
         // the last such day in 2010 is Aug 1st
-        compare(new GregorianCalendar(2010, Calendar.AUGUST,1,0,0),x.floor(c));
+        compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.floor(c));
     }
 
     @Issue("JENKINS-8401")
@@ -168,12 +169,12 @@ public class CronTabTest {
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY, 1, 15, 55);
         c.setFirstDayOfWeek(MONDAY);
         // the last such day in 2010 is Aug 1st
         GregorianCalendar answer = new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0);
         answer.setFirstDayOfWeek(MONDAY);
-        compare(answer,x.floor(c));
+        compare(answer, x.floor(c));
     }
 
     @Test public void checkSanity() throws Exception {
@@ -209,10 +210,10 @@ public class CronTabTest {
 
     @Test
     public void testHash1() throws Exception {
-        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *", new Hash() {
             @Override
             public int next(int n) {
-                return n-1;
+                return n - 1;
             }
         });
 
@@ -234,7 +235,7 @@ public class CronTabTest {
 
     @Test
     public void testHash2() throws Exception {
-        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *", new Hash() {
             @Override
             public int next(int n) {
                 return 1;

@@ -92,7 +92,7 @@ public class ExecutorTest {
         // make sure this information is recorded
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
-        assertEquals(1,iba.getCauses().size());
+        assertEquals(1, iba.getCauses().size());
         assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
 
         // make sure it shows up in the log
@@ -190,6 +190,7 @@ public class ExecutorTest {
                 Thread.sleep(100);
             }
         }
+
         @TestExtension
         public static class DescriptorImpl extends Descriptor<Builder> {}
     }

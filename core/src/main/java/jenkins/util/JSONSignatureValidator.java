@@ -60,12 +60,12 @@ public class JSONSignatureValidator {
 
             JSONObject signature = o.getJSONObject("signature");
             if (signature.isNullObject()) {
-                return FormValidation.error("No signature block found in "+name);
+                return FormValidation.error("No signature block found in " + name);
             }
             o.remove("signature");
 
             List<X509Certificate> certs = new ArrayList<>();
-            {// load and verify certificates
+            { // load and verify certificates
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
                 for (Object cert : signature.getJSONArray("certificates")) {
                     try {
@@ -136,10 +136,10 @@ public class JSONSignatureValidator {
                     throw new AssertionError("Unknown form validation kind: " + resultSha1.kind);
             }
 
-            if (warning!=null)  return warning;
+            if (warning != null)  return warning;
             return FormValidation.ok();
         } catch (GeneralSecurityException e) {
-            return FormValidation.error(e, "Signature verification failed in "+name);
+            return FormValidation.error(e, "Signature verification failed in " + name);
         }
     }
 
@@ -187,7 +187,7 @@ public class JSONSignatureValidator {
         //
         // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
         // the attacker to inject a fragment at the end of the json.
-        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), StandardCharsets.UTF_8)).close();
+        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos, sos), StandardCharsets.UTF_8)).close();
 
         // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
         // (which is more likely than someone tampering with update center), we can tell
@@ -202,7 +202,7 @@ public class JSONSignatureValidator {
         }
 
         if (!verifySignature(signature, providedSignature)) {
-            return FormValidation.error(digestName + " based signature in the update center doesn't match with the certificate in '"+name + "'");
+            return FormValidation.error(digestName + " based signature in the update center doesn't match with the certificate in '" + name + "'");
         }
 
         return FormValidation.ok();
@@ -223,7 +223,7 @@ public class JSONSignatureValidator {
             if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
                 return true;
             }
-        } catch (SignatureException|DecoderException ignore) {
+        } catch (SignatureException | DecoderException ignore) {
             // ignore
         }
 
@@ -231,7 +231,7 @@ public class JSONSignatureValidator {
             if (signature.verify(Base64.getDecoder().decode(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException|IllegalArgumentException ignore) {
+        } catch (SignatureException | IllegalArgumentException ignore) {
             // ignore
         }
         return false;
@@ -284,7 +284,7 @@ public class JSONSignatureValidator {
             }
         }
         File[] cas = new File(j.root, "update-center-rootCAs").listFiles();
-        if (cas!=null) {
+        if (cas != null) {
             for (File cert : cas) {
                 if (cert.isDirectory() || cert.getName().endsWith(".txt"))  {
                     continue;       // skip directories also any text files that are meant to be documentation

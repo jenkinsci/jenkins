@@ -21,6 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -73,7 +74,7 @@ public class DisplayNameTest {
         FreeStyleProject project = j.createFreeStyleProject(projectName);
         assertEquals(projectName, project.getDisplayName());
 
-        AbstractProject newProject = Jenkins.get().copy((AbstractProject)project, newProjectName);
+        AbstractProject newProject = Jenkins.get().copy((AbstractProject) project, newProjectName);
         assertEquals(newProjectName, newProject.getName());
         assertEquals(newProjectName, newProject.getDisplayName());
     }
@@ -88,7 +89,7 @@ public class DisplayNameTest {
         project.setDisplayName(oldDisplayName);
         assertEquals(oldDisplayName, project.getDisplayName());
 
-        AbstractProject newProject = Jenkins.get().copy((AbstractProject)project, newProjectName);
+        AbstractProject newProject = Jenkins.get().copy((AbstractProject) project, newProjectName);
         assertEquals(newProjectName, newProject.getName());
         assertEquals(newProjectName, newProject.getDisplayName());
 

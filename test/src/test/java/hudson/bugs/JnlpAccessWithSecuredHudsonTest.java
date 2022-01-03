@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.bugs;
 
 import static org.junit.Assert.assertFalse;
@@ -76,7 +77,7 @@ public class JnlpAccessWithSecuredHudsonTest {
      * Creates a new agent that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
-        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
+        return new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
@@ -93,11 +94,11 @@ public class JnlpAccessWithSecuredHudsonTest {
         JenkinsRule.WebClient jnlpAgent = r.createWebClient();
 
         // parse the JNLP page into DOM to list up the jars.
-        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
+        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/jenkins-agent.jnlp", "application/x-java-jnlp-file");
         URL baseUrl = jnlp.getUrl();
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
-        for( Object jar : dom.selectNodes("//jar") ) {
-            URL url = new URL(baseUrl,((Element)jar).attributeValue("href"));
+        for (Object jar : dom.selectNodes("//jar")) {
+            URL url = new URL(baseUrl, ((Element) jar).attributeValue("href"));
             System.out.println(url);
 
             // now make sure that these URLs are unprotected

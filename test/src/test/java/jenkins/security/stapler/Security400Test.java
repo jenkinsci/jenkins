@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -81,7 +82,7 @@ public class Security400Test {
     private static boolean filteredDoActionTriggered = false;
 
     @Before
-    public void prepareFilterListener(){
+    public void prepareFilterListener() {
         WebApp webApp = WebApp.get(j.jenkins.servletContext);
         webApp.setFilteredDoActionTriggerListener((f, req, rsp, node) -> {
             filteredDoActionTriggered = true;
@@ -94,16 +95,16 @@ public class Security400Test {
     }
 
     @After
-    public void resetFilter(){
+    public void resetFilter() {
         filteredDoActionTriggered = false;
     }
 
-    private void assertRequestWasBlockedAndResetFlag(){
+    private void assertRequestWasBlockedAndResetFlag() {
         assertTrue("No request was blocked", filteredDoActionTriggered);
         filteredDoActionTriggered = false;
     }
 
-    private void assertRequestWasNotBlocked(){
+    private void assertRequestWasNotBlocked() {
         assertFalse("There was at least a request that was blocked", filteredDoActionTriggered);
     }
 

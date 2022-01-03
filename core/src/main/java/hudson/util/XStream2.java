@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.google.common.collect.ImmutableList;
@@ -95,7 +96,7 @@ public class XStream2 extends XStream {
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
     private final @CheckForNull ClassOwnership classOwnership;
-    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<>();
+    private final Map<String, Class<?>> compatibilityAliases = new ConcurrentHashMap<>();
 
     /**
      * Hook to insert {@link Mapper}s after they are created.
@@ -166,7 +167,7 @@ public class XStream2 extends XStream {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
         Jenkins h = Jenkins.getInstanceOrNull();
-        if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
+        if (h != null && h.pluginManager != null && h.pluginManager.uberClassLoader != null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
 
@@ -184,6 +185,7 @@ public class XStream2 extends XStream {
                     }
                     super.moveUp();
                 }
+
                 @Override
                 public void moveDown() {
                     try {
@@ -218,9 +220,9 @@ public class XStream2 extends XStream {
             }
         }
 
-        if (oldData.get()!=null) {
+        if (oldData.get() != null) {
             oldData.remove();
-            if (o instanceof Saveable) OldDataMonitor.report((Saveable)o, "1.106");
+            if (o instanceof Saveable) OldDataMonitor.report((Saveable) o, "1.106");
         }
         return o;
     }
@@ -255,17 +257,17 @@ public class XStream2 extends XStream {
         // http://www.openwall.com/lists/oss-security/2017/04/03/4
         denyTypes(new Class[] { void.class, Void.class });
 
-        registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new RobustCollectionConverter(getMapper(), getReflectionProvider()), 10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
-        registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
-        registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
-        registerConverter(new Label.ConverterImpl(),10);
+        registerConverter(new ImmutableMapConverter(getMapper(), getReflectionProvider()), 10);
+        registerConverter(new ImmutableSortedSetConverter(getMapper(), getReflectionProvider()), 10);
+        registerConverter(new ImmutableSetConverter(getMapper(), getReflectionProvider()), 10);
+        registerConverter(new ImmutableListConverter(getMapper(), getReflectionProvider()), 10);
+        registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()), 10); // needs to override MapConverter
+        registerConverter(new DescribableList.ConverterImpl(getMapper()), 10); // explicitly added to handle subtypes
+        registerConverter(new Label.ConverterImpl(), 10);
         // SECURITY-637 against URL deserialization
-        registerConverter(new SafeURLConverter(),10); 
+        registerConverter(new SafeURLConverter(), 10);
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
@@ -278,6 +280,7 @@ public class XStream2 extends XStream {
             @Override public boolean canConvert(Class type) {
                 return /* this precedes NullConverter */ type != null && super.canConvert(type);
             }
+
             @Override public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
                 throw new ConversionException("<dynamic-proxy> not supported");
             }
@@ -368,7 +371,7 @@ public class XStream2 extends XStream {
      * @since 1.416
      */
     public void addCompatibilityAlias(String oldClassName, Class newClass) {
-        compatibilityAliases.put(oldClassName,newClass);
+        compatibilityAliases.put(oldClassName, newClass);
     }
 
     /**
@@ -386,7 +389,7 @@ public class XStream2 extends XStream {
         @Override
         public Class realClass(String elementName) {
             Class s = compatibilityAliases.get(elementName);
-            if (s!=null)    return s;
+            if (s != null)    return s;
 
             try {
                 return super.realClass(elementName);
@@ -409,7 +412,7 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class<?>,Converter> cache =
+        private final ConcurrentHashMap<Class<?>, Converter> cache =
                 new ConcurrentHashMap<>();
 
         private AssociatedConverterImpl(XStream xstream) {
@@ -421,14 +424,14 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
-            
+
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
                 final ClassLoader classLoader = t.getClassLoader();
-                if(classLoader == null) {
+                if (classLoader == null) {
                     return null;
                 }
                 Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
@@ -437,18 +440,18 @@ public class XStream2 extends XStream {
                 Class<?>[] p = c.getParameterTypes();
                 Object[] args = new Object[p.length];
                 for (int i = 0; i < p.length; i++) {
-                    if(p[i]==XStream.class || p[i]==XStream2.class)
+                    if (p[i] == XStream.class || p[i] == XStream2.class)
                         args[i] = xstream;
-                    else if(p[i]== Mapper.class)
+                    else if (p[i] == Mapper.class)
                         args[i] = xstream.getMapper();
                     else
-                        throw new InstantiationError("Unrecognized constructor parameter: "+p[i]);
+                        throw new InstantiationError("Unrecognized constructor parameter: " + p[i]);
 
                 }
-                ConverterMatcher cm = (ConverterMatcher)c.newInstance(args);
+                ConverterMatcher cm = (ConverterMatcher) c.newInstance(args);
                 result = cm instanceof SingleValueConverter
-                        ? new SingleValueConverterWrapper((SingleValueConverter)cm)
-                        : (Converter)cm;
+                        ? new SingleValueConverterWrapper((SingleValueConverter) cm)
+                        : (Converter) cm;
                 cache.put(t, result);
                 return result;
             } catch (ClassNotFoundException e) {
@@ -467,19 +470,19 @@ public class XStream2 extends XStream {
 
         @Override
         public boolean canConvert(Class type) {
-            return findConverter(type)!=null;
+            return findConverter(type) != null;
         }
 
         @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            findConverter(source.getClass()).marshal(source,writer,context);
+            findConverter(source.getClass()).marshal(source, writer, context);
         }
 
         @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            return findConverter(context.getRequiredType()).unmarshal(reader,context);
+            return findConverter(context.getRequiredType()).unmarshal(reader, context);
         }
     }
 
@@ -513,7 +516,7 @@ public class XStream2 extends XStream {
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             Object obj = converter.unmarshal(reader, context);
-            callback((T)obj, context);
+            callback((T) obj, context);
             return obj;
         }
 
@@ -531,7 +534,7 @@ public class XStream2 extends XStream {
          */
         @CheckForNull String ownerOf(Class<?> clazz);
     }
-    
+
     class PluginClassOwnership implements ClassOwnership {
 
         private PluginManager pm;

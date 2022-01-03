@@ -176,6 +176,7 @@ public class BuildCommandTest {
         assertThat(r.stderr(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
     }
     // <=>
+
     @TestExtension("consoleOutputWhenBuildSchedulingRefused")
     public static class UnschedulingVetoer extends QueueDecisionHandler {
         @Override

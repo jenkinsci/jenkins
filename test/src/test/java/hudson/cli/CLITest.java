@@ -101,6 +101,7 @@ public class CLITest {
         doInterrupt(p, "-http", "-auth", "admin:admin");
         doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }
+
     private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         List<String> args = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString()));
@@ -132,6 +133,7 @@ public class CLITest {
         assertNotEquals(0, ret);
         // TODO -webSocket currently produces a stack trace
     }
+
     @TestExtension("reportNotJenkins")
     public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
 
@@ -176,7 +178,7 @@ public class CLITest {
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
 
-        for (String transport: Arrays.asList("-http", "-webSocket")) {
+        for (String transport : Arrays.asList("-http", "-webSocket")) {
 
             String url = r.getURL().toString() + "cli-proxy/";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

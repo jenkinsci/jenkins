@@ -77,11 +77,14 @@ public class XStream2AnnotationTest {
         static AnnotatedProcessed get() {
             return ExtensionList.lookupSingleton(AnnotatedProcessed.class);
         }
+
         int x;
+
         public AnnotatedProcessed() {
             getConfigFile().getXStream().processAnnotations(AnnotatedProcessed.class);
             load();
         }
+
         String xml() throws IOException {
             return getConfigFile().asString().replaceAll("\n *", "").replaceAll("<[?].+?[?]>", "");
         }
@@ -93,13 +96,17 @@ public class XStream2AnnotationTest {
         static AnnotatedUnprocessed get() {
             return ExtensionList.lookupSingleton(AnnotatedUnprocessed.class);
         }
+
         int x;
+
         public AnnotatedUnprocessed() {
             load();
         }
+
         String xml() throws IOException {
             return getConfigFile().asString().replaceAll("\n *", "").replaceAll("<[?].+?[?]>", "");
         }
+
         void writeXml(String xml) throws IOException {
             FileUtils.write(getConfigFile().getFile(), xml, StandardCharsets.UTF_8);
         }
@@ -110,11 +117,14 @@ public class XStream2AnnotationTest {
         static Programmatic get() {
             return ExtensionList.lookupSingleton(Programmatic.class);
         }
+
         int x;
+
         public Programmatic() {
             getConfigFile().getXStream().alias("myconf-programmatic", Programmatic.class);
             load();
         }
+
         String xml() throws IOException {
             return getConfigFile().asString().replaceAll("\n *", "").replaceAll("<[?].+?[?]>", "");
         }

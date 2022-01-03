@@ -27,7 +27,7 @@ public class NioChannelSelector {
                 Computer.threadPoolForRemoting.submit(hub);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to launch NIO hub",e);
+            LOGGER.log(Level.SEVERE, "Failed to launch NIO hub", e);
             this.hub = null;
             DISABLED = true;
         }
@@ -39,7 +39,7 @@ public class NioChannelSelector {
 
     @Terminator
     public void cleanUp() throws IOException {
-        if (hub!=null) {
+        if (hub != null) {
             hub.close();
             hub = null;
         }
@@ -48,7 +48,7 @@ public class NioChannelSelector {
     /**
      * Escape hatch to disable use of NIO.
      */
-    static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
+    static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName() + ".disabled");
 
     private static final Logger LOGGER = Logger.getLogger(NioChannelSelector.class.getName());
 }

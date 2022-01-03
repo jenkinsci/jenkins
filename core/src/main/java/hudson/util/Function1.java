@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 /**
@@ -28,6 +29,6 @@ package hudson.util;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface Function1<R,P1> {
+public interface Function1<R, P1> {
     R call(P1 param1);
 }

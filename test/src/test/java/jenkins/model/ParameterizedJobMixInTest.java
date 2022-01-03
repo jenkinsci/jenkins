@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.model.FreeStyleProject;
@@ -39,26 +40,26 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Oleg Nenashev
  */
 public class ParameterizedJobMixInTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void doBuild_shouldFailWhenInvokingDisabledProject() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.doDisable();
-        
+
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.assertFails(project.getUrl() + "build", HttpServletResponse.SC_CONFLICT);
     }
-    
+
     @Test
     @Issue("JENKINS-36193")
     public void doBuildWithParameters_shouldFailWhenInvokingDisabledProject() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", "BAR")));
         project.doDisable();
-        
+
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.assertFails(project.getUrl() + "buildWithParameters", HttpServletResponse.SC_CONFLICT);
     }

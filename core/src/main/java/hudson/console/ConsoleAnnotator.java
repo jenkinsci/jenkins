@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -81,14 +82,14 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
      *      To indicate that you are not interested in the following lines, return {@code null}.
      */
     @CheckForNull
-    public abstract ConsoleAnnotator<T> annotate(@NonNull T context, @NonNull MarkupText text );
+    public abstract ConsoleAnnotator<T> annotate(@NonNull T context, @NonNull MarkupText text);
 
     /**
      * Cast operation that restricts T.
      */
     @SuppressWarnings("unchecked")
     public static <T> ConsoleAnnotator<T> cast(ConsoleAnnotator<? super T> a) {
-        return (ConsoleAnnotator)a;
+        return (ConsoleAnnotator) a;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"}) // unclear to jglick what is going on here
@@ -104,9 +105,9 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
             ListIterator<ConsoleAnnotator<T>> itr = list.listIterator();
             while (itr.hasNext()) {
                 ConsoleAnnotator a =  itr.next();
-                ConsoleAnnotator b = a.annotate(context,text);
-                if (a!=b) {
-                    if (b==null)    itr.remove();
+                ConsoleAnnotator b = a.annotate(context, text);
+                if (a != b) {
+                    if (b == null)    itr.remove();
                     else            itr.set(b);
                 }
             }
@@ -147,7 +148,7 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             if (f.type().isInstance(context)) {
                 ConsoleAnnotator ca = f.newInstance(context);
-                if (ca!=null)
+                if (ca != null)
                     r.add(ca);
             }
         }

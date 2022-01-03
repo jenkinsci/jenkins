@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -67,42 +68,44 @@ import org.kohsuke.stapler.WebMethod;
  * @since 1.175
  */
 public final class RemotingDiagnostics {
-    public static Map<Object,Object> getSystemProperties(VirtualChannel channel) throws IOException, InterruptedException {
-        if(channel==null)
-            return Collections.singletonMap("N/A","N/A");
+    public static Map<Object, Object> getSystemProperties(VirtualChannel channel) throws IOException, InterruptedException {
+        if (channel == null)
+            return Collections.singletonMap("N/A", "N/A");
         return channel.call(new GetSystemProperties());
     }
 
-    private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object,Object>,RuntimeException> {
+    private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object, Object>, RuntimeException> {
         @Override
-        public Map<Object,Object> call() {
+        public Map<Object, Object> call() {
             return new TreeMap<>(System.getProperties());
         }
+
         private static final long serialVersionUID = 1L;
     }
 
-    public static Map<String,String> getThreadDump(VirtualChannel channel) throws IOException, InterruptedException {
-        if(channel==null)
-            return Collections.singletonMap("N/A","N/A");
+    public static Map<String, String> getThreadDump(VirtualChannel channel) throws IOException, InterruptedException {
+        if (channel == null)
+            return Collections.singletonMap("N/A", "N/A");
         return channel.call(new GetThreadDump());
     }
 
-    public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
-        if(channel==null)
+    public static Future<Map<String, String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
+        if (channel == null)
             return new AsyncFutureImpl<>(Collections.singletonMap("N/A", "offline"));
         return channel.callAsync(new GetThreadDump());
     }
 
-    private static final class GetThreadDump extends MasterToSlaveCallable<Map<String,String>,RuntimeException> {
+    private static final class GetThreadDump extends MasterToSlaveCallable<Map<String, String>, RuntimeException> {
         @Override
-        public Map<String,String> call() {
-            Map<String,String> r = new LinkedHashMap<>();
+        public Map<String, String> call() {
+            Map<String, String> r = new LinkedHashMap<>();
                 ThreadInfo[] data = Functions.getThreadInfos();
                 Functions.ThreadGroupMap map = Functions.sortThreadsAndGetGroupMap(data);
                 for (ThreadInfo ti : data)
-                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti,map));
+                    r.put(ti.getThreadName(), Functions.dumpThreadInfo(ti, map));
             return r;
         }
+
         private static final long serialVersionUID = 1L;
     }
 
@@ -113,7 +116,7 @@ public final class RemotingDiagnostics {
         return channel.call(new Script(script));
     }
 
-    private static final class Script extends MasterToSlaveCallable<String,RuntimeException> implements DelegatingCallable<String,RuntimeException> {
+    private static final class Script extends MasterToSlaveCallable<String, RuntimeException> implements DelegatingCallable<String, RuntimeException> {
         private final String script;
         private transient ClassLoader cl;
 
@@ -131,27 +134,28 @@ public final class RemotingDiagnostics {
         @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
-            if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
+            if (cl == null)       cl = Thread.currentThread().getContextClassLoader();
             CompilerConfiguration cc = new CompilerConfiguration();
             cc.addCompilationCustomizers(new ImportCustomizer().addStarImports(
                     "jenkins",
                     "jenkins.model",
                     "hudson",
                     "hudson.model"));
-            GroovyShell shell = new GroovyShell(cl,new Binding(),cc);
+            GroovyShell shell = new GroovyShell(cl, new Binding(), cc);
 
             StringWriter out = new StringWriter();
             PrintWriter pw = new PrintWriter(out);
             shell.setVariable("out", pw);
             try {
                 Object output = shell.evaluate(script);
-                if(output!=null)
-                pw.println("Result: "+output);
+                if (output != null)
+                pw.println("Result: " + output);
             } catch (Throwable t) {
                 Functions.printStackTrace(t, pw);
             }
             return out.toString();
         }
+
         private static final long serialVersionUID = 1L;
     }
 
@@ -161,6 +165,7 @@ public final class RemotingDiagnostics {
     public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new GetHeapDump());
     }
+
     private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
             @Override
             public FilePath call() throws IOException {
@@ -200,7 +205,7 @@ public final class RemotingDiagnostics {
             rsp.sendRedirect("heapdump.hprof");
         }
 
-        @WebMethod(name="heapdump.hprof")
+        @WebMethod(name = "heapdump.hprof")
         public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
             owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");

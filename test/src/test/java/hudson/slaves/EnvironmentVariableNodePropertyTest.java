@@ -102,7 +102,7 @@ public class EnvironmentVariableNodePropertyTest {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1"))));
-        Map<String,String> envVars = executeBuild(j.jenkins);
+        Map<String, String> envVars = executeBuild(j.jenkins);
         assertEquals("value", envVars.get("KEY1"));
         assertEquals("value", envVars.get("KEY2"));
     }

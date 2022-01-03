@@ -73,7 +73,7 @@ public class RobustReflectionConverterTest {
         assertNotNull(p);
         assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
-        Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
         String text = data.values().iterator().next().extra;
         assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
@@ -132,7 +132,7 @@ public class RobustReflectionConverterTest {
         }
     }
 
-    public static class KeywordProperty extends JobProperty<Job<?,?>> {
+    public static class KeywordProperty extends JobProperty<Job<?, ?>> {
         private final AcceptOnlySpecificKeyword nonCriticalField;
         private final AcceptOnlySpecificKeyword criticalField;
 

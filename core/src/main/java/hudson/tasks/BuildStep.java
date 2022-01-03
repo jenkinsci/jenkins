@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -87,7 +88,7 @@ public interface BuildStep {
      *      be considered deprecated, and implementations are encouraged
      *      to throw {@link AbortException} to indicate a failure.
      */
-    boolean prebuild( AbstractBuild<?,?> build, BuildListener listener );
+    boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener);
 
     /**
      * Runs the step over the given build and reports the progress to the listener.
@@ -125,14 +126,14 @@ public interface BuildStep {
      *      provide a better error message, if it can do so, so that users have better
      *      understanding on why it failed.
      */
-    boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
+    boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
 
     /**
      * @deprecated as of 1.341.
      *      Use {@link #getProjectActions(AbstractProject)} instead.
      */
     @Deprecated
-    Action getProjectAction(AbstractProject<?,?> project);
+    Action getProjectAction(AbstractProject<?, ?> project);
 
     /**
      * Returns action objects if this {@link BuildStep} has actions
@@ -156,7 +157,7 @@ public interface BuildStep {
      *      can be empty but never null.
      */
     @NonNull
-    Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
+    Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project);
 
 
     /**
@@ -263,7 +264,7 @@ public interface BuildStep {
          * For descriptors that are manually registered, remember what kind it was since
          * older plugins don't extend from neither {@link Recorder} nor {@link Notifier}.
          */
-        /*package*/ static final WeakHashMap<Descriptor<Publisher>,Class<? extends Publisher>/*either Recorder.class or Notifier.class*/>
+        /*package*/ static final WeakHashMap<Descriptor<Publisher>, Class<? extends Publisher>/*either Recorder.class or Notifier.class*/>
                 KIND = new WeakHashMap<>();
 
         private PublisherList() {
@@ -279,11 +280,11 @@ public interface BuildStep {
          *
          * @see #addRecorder(Descriptor)
          */
-        public void addNotifier( Descriptor<Publisher> d ) {
-            KIND.put(d,Notifier.class);
+        public void addNotifier(Descriptor<Publisher> d) {
+            KIND.put(d, Notifier.class);
             core.add(d);
         }
-        
+
         /**
          * Adds a new publisher descriptor, which (generally speaking)
          * alter the build result based on some artifacts of the build.
@@ -291,10 +292,10 @@ public interface BuildStep {
          * <p>
          * This method adds the descriptor before all the "notifiers".
          *
-         * @see #addNotifier(Descriptor) 
+         * @see #addNotifier(Descriptor)
          */
-        public void addRecorder( Descriptor<Publisher> d ) {
-            KIND.put(d,Recorder.class);
+        public void addRecorder(Descriptor<Publisher> d) {
+            KIND.put(d, Recorder.class);
             core.add(d);
         }
 
@@ -305,7 +306,7 @@ public interface BuildStep {
 
         @Override
         public void add(int index, Descriptor<Publisher> d) {
-            if(!contains(d)) core.add(d);
+            if (!contains(d)) core.add(d);
         }
 
         @Override

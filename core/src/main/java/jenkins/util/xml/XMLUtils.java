@@ -267,6 +267,7 @@ public final class XMLUtils {
 
         return documentBuilderFactory;
     }
+
     private static void setDocumentBuilderFactoryFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean state) {
         try {
             documentBuilderFactory.setFeature(feature, state);
