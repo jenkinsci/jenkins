@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 /* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;

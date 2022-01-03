@@ -89,7 +89,7 @@ public class ShutdownLink extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
     }
-  
+
     @NonNull
     @Override
     public Category getCategory() {

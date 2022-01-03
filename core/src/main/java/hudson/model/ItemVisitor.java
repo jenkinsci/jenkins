@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import jenkins.model.Jenkins;
@@ -46,8 +47,8 @@ public abstract class ItemVisitor {
      * visits the children.
      */
     public void onItem(Item i) {
-        if(i instanceof ItemGroup)
-            onItemGroup((ItemGroup)i);
+        if (i instanceof ItemGroup)
+            onItemGroup((ItemGroup) i);
     }
 
     /**

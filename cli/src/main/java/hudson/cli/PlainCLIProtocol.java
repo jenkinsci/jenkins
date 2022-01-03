@@ -233,10 +233,12 @@ class PlainCLIProtocol {
                 public void write(int b) throws IOException {
                     send(op, new byte[] {(byte) b});
                 }
+
                 @Override
                 public void write(@NonNull byte[] b, int off, int len) throws IOException {
                     send(op, b, off, len);
                 }
+
                 @Override
                 public void write(@NonNull byte[] b) throws IOException {
                     send(op, b);

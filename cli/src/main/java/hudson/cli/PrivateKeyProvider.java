@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import static java.util.logging.Level.FINE;
@@ -110,15 +111,15 @@ public class PrivateKeyProvider {
         privateKeys.add(loadKey(keyFile, password));
     }
 
-    private static boolean isPemEncrypted(File f) throws IOException{
+    private static boolean isPemEncrypted(File f) throws IOException {
         //simple check if the file is encrypted
         return readPemFile(f).contains("4,ENCRYPTED");
     }
 
-    private static String askForPasswd(String filePath){
+    private static String askForPasswd(String filePath) {
         Console cons = System.console();
         String passwd = null;
-        if (cons != null){
+        if (cons != null) {
             char[] p = cons.readPassword("%s", "Enter passphrase for " + filePath + ":");
             passwd = String.valueOf(p);
         }
@@ -129,7 +130,7 @@ public class PrivateKeyProvider {
         return loadKey(readPemFile(f), passwd);
     }
 
-    private static String readPemFile(File f) throws IOException{
+    private static String readPemFile(File f) throws IOException {
         try (InputStream is = Files.newInputStream(f.toPath());
              DataInputStream dis = new DataInputStream(is)) {
             byte[] bytes = new byte[(int) f.length()];

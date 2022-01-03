@@ -27,7 +27,7 @@ public class ConsoleLogFilterTest {
     @Test public void decorateSlaveLog() throws Exception {
         SlaveComputer c = r.createSlave().getComputer();
         c.connect(false).get();
-        assertTrue(c.getLog().contains("[["+c.getName()+"]] "));
+        assertTrue(c.getLog().contains("[[" + c.getName() + "]] "));
     }
 
     @TestExtension
@@ -42,7 +42,7 @@ public class ConsoleLogFilterTest {
             return new LineTransformationOutputStream.Delegating(out) {
                 @Override
                 protected void eol(byte[] b, int len) throws IOException {
-                    out.write(("[["+c.getName()+"]] ").getBytes());
+                    out.write(("[[" + c.getName() + "]] ").getBytes());
                     out.write(b, 0, len);
                 }
             };

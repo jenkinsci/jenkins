@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -129,7 +130,7 @@ public class JenkinsGetRootUrlTest {
             rootUrlIs("https://ci/jenkins/");
         }
     }
-    
+
     @Issue("JENKINS-10675")
     @Test
     public void useForwardedProtoWhenPresent() {
@@ -203,7 +204,7 @@ public class JenkinsGetRootUrlTest {
     }
 
     private void rootUrlFromRequestIs(final String expectedRootUrl) {
-        
+
         assertThat(jenkins.getRootUrlFromRequest(), equalTo(expectedRootUrl));
     }
 
@@ -216,7 +217,7 @@ public class JenkinsGetRootUrlTest {
 
         when(config.getUrl()).thenReturn(configuredHost);
     }
-    
+
     private void withHeader(String name, final String value) {
         final StaplerRequest req = Stapler.getCurrentRequest();
         when(req.getHeader(name)).thenReturn(value);
@@ -247,7 +248,7 @@ public class JenkinsGetRootUrlTest {
         try {
 
             return new URL(realUrl);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
 
             throw new RuntimeException(ex);
         }

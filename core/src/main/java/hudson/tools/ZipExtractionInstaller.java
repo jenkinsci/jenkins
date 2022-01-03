@@ -100,7 +100,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         @RequirePOST
         public FormValidation doCheckUrl(@QueryParameter String value) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            
+
             try {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
@@ -113,7 +113,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
             } catch (MalformedURLException x) {
                 return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
             } catch (IOException x) {
-                return FormValidation.error(x,Messages.ZipExtractionInstaller_could_not_connect());
+                return FormValidation.error(x, Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 
@@ -125,12 +125,14 @@ public class ZipExtractionInstaller extends ToolInstaller {
      */
     static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
+
         @Override
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            if(!Functions.isWindows())
+            if (!Functions.isWindows())
                 process(d);
             return null;
         }
+
         private void process(File f) {
             if (f.isFile()) {
                 f.setExecutable(true, false);

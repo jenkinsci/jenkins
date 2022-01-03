@@ -75,7 +75,7 @@ public class UpdateSiteTest {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
             return url != null ? FileUtils.readFileToString(new File(url.toURI())) : null;
-        } catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             return null;
         }
     }
@@ -111,7 +111,7 @@ public class UpdateSiteTest {
     public void shutdownWebserver() throws Exception {
         server.stop();
     }
-    
+
     @Test public void relativeURLs() throws Exception {
         URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
@@ -139,7 +139,7 @@ public class UpdateSiteTest {
         UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
         overrideUpdateSite(site, alternativeSite);
-        // sites use different Wiki URL for dummy -> use URL from manifest 
+        // sites use different Wiki URL for dummy -> use URL from manifest
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://wiki.jenkins.io/display/JENKINS/dummy", wrapper.getUrl());
         // sites use the same Wiki URL for HTML Publisher -> use it
@@ -205,11 +205,11 @@ public class UpdateSiteTest {
 
     @Issue("JENKINS-31448")
     @Test public void isLegacyDefault() {
-        assertFalse("isLegacyDefault should be false with null id",new UpdateSite(null,"url").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false when id is not default and url is http://hudson-ci.org/",new UpdateSite("dummy","http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/",new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID,"http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/",new UpdateSite("dummy","http://updates.hudson-labs.org/").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
+        assertFalse("isLegacyDefault should be false with null id", new UpdateSite(null, "url").isLegacyDefault());
+        assertFalse("isLegacyDefault should be false when id is not default and url is http://hudson-ci.org/", new UpdateSite("dummy", "http://hudson-ci.org/").isLegacyDefault());
+        assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/", new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID, "http://hudson-ci.org/").isLegacyDefault());
+        assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/", new UpdateSite("dummy", "http://updates.hudson-labs.org/").isLegacyDefault());
+        assertFalse("isLegacyDefault should be false with null url", new UpdateSite(null, null).isLegacyDefault());
     }
 
     @Test public void getAvailables() throws Exception {

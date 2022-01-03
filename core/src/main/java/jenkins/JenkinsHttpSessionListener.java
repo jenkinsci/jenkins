@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import java.util.logging.Level;
@@ -32,18 +33,18 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Web container hook for the {@link HttpSessionListener} {@link hudson.ExtensionPoint}.
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Restricted(NoExternalUse.class)
 public final class JenkinsHttpSessionListener implements javax.servlet.http.HttpSessionListener {
-    
+
     // TODO: Seems like classes like this should live in the /war/src/java
     // But that applies to a number of other classes too and it has never happened, so will
     // not do it with this class for now anyway.
-    
+
     private static final Logger LOGGER = Logger.getLogger(JenkinsHttpSessionListener.class.getName());
-    
+
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
         for (HttpSessionListener listener : HttpSessionListener.all()) {

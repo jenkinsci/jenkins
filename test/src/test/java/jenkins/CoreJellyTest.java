@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.remoting.Which;
@@ -36,6 +37,6 @@ import org.jvnet.hudson.test.JellyTestSuiteBuilder;
  */
 public class CoreJellyTest extends TestCase {
     public static Test suite() throws Exception {
-        return JellyTestSuiteBuilder.build(Which.jarFile(Jenkins.class),true);
+        return JellyTestSuiteBuilder.build(Which.jarFile(Jenkins.class), true);
     }
 }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.logging.Logger;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -44,17 +46,17 @@ public abstract class SidACL extends ACL {
 
     @Override
     public boolean hasPermission2(@NonNull Authentication a, Permission permission) {
-        if(a.equals(SYSTEM2)) {
-            if(LOGGER.isLoggable(FINE))
-                LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
+        if (a.equals(SYSTEM2)) {
+            if (LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission(" + a + "," + permission + ")=>SYSTEM user has full access");
             return true;
         }
-        Boolean b = _hasPermission(a,permission);
+        Boolean b = _hasPermission(a, permission);
 
-        if(LOGGER.isLoggable(FINE))
-            LOGGER.fine("hasPermission("+a+","+permission+")=>"+(b==null?"null, thus false":b));
+        if (LOGGER.isLoggable(FINE))
+            LOGGER.fine("hasPermission(" + a + "," + permission + ")=>" + (b == null ? "null, thus false" : b));
 
-        if(b==null) b=false;    // default to rejection
+        if (b == null) b = false;    // default to rejection
         return b;
     }
 
@@ -65,31 +67,32 @@ public abstract class SidACL extends ACL {
      *      true or false if {@link #hasPermission(Sid, Permission)} returns it.
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
+    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
     protected Boolean _hasPermission(@NonNull Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
-        Boolean b = hasPermission(new PrincipalSid(a),permission);
-        if(LOGGER.isLoggable(FINER))
-            LOGGER.finer("hasPermission(PrincipalSID:"+a.getPrincipal()+","+permission+")=>"+b);
-        if(b!=null)
+        Boolean b = hasPermission(new PrincipalSid(a), permission);
+        if (LOGGER.isLoggable(FINER))
+            LOGGER.finer("hasPermission(PrincipalSID:" + a.getPrincipal() + "," + permission + ")=>" + b);
+        if (b != null)
             return b;
 
         // after that, we check if the groups this principal belongs to
         // has any ACL entries.
         // here we are using GrantedAuthority as a group
-        for(GrantedAuthority ga : a.getAuthorities()) {
-            b = hasPermission(new GrantedAuthoritySid(ga),permission);
-            if(LOGGER.isLoggable(FINER))
-                LOGGER.finer("hasPermission(GroupSID:"+ga.getAuthority()+","+permission+")=>"+b);
-            if(b!=null)
+        for (GrantedAuthority ga : a.getAuthorities()) {
+            b = hasPermission(new GrantedAuthoritySid(ga), permission);
+            if (LOGGER.isLoggable(FINER))
+                LOGGER.finer("hasPermission(GroupSID:" + ga.getAuthority() + "," + permission + ")=>" + b);
+            if (b != null)
                 return b;
         }
 
         // permissions granted to 'everyone' and 'anonymous' users are granted to everyone
         for (Sid sid : AUTOMATIC_SIDS) {
-            b = hasPermission(sid,permission);
-            if(LOGGER.isLoggable(FINER))
-                LOGGER.finer("hasPermission("+sid+","+permission+")=>"+b);
-            if(b!=null)
+            b = hasPermission(sid, permission);
+            if (LOGGER.isLoggable(FINER))
+                LOGGER.finer("hasPermission(" + sid + "," + permission + ")=>" + b);
+            if (b != null)
                 return b;
         }
 
@@ -112,7 +115,7 @@ public abstract class SidACL extends ACL {
      *      true if the access should be granted, false if it should be denied.
      *      The null value indicates that the ACL does no rule for this Sid/Permission
      *      combination. The caller can decide what to do—such as consulting the higher level ACL,
-     *      or denying the access (if the model is no-access-by-default.)  
+     *      or denying the access (if the model is no-access-by-default.)
      */
     protected abstract Boolean hasPermission(Sid p, Permission permission);
 
@@ -141,8 +144,8 @@ public abstract class SidACL extends ACL {
             @Override
             protected Boolean hasPermission(Sid p, Permission permission) {
                 Boolean b = child.hasPermission(p, permission);
-                if(b!=null) return b;
-                return parent.hasPermission(p,permission);
+                if (b != null) return b;
+                return parent.hasPermission(p, permission);
             }
         };
     }

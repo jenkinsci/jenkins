@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.google.common.collect.ImmutableList;
@@ -54,7 +55,7 @@ public class Iterators {
     /**
      * Produces {A,B,C,D,E,F} from {{A,B},{C},{},{D,E,F}}.
      */
-    public abstract static class FlattenIterator<U,T> implements Iterator<U> {
+    public abstract static class FlattenIterator<U, T> implements Iterator<U> {
         private final Iterator<? extends T> core;
         private Iterator<U> cur;
 
@@ -71,8 +72,8 @@ public class Iterators {
 
         @Override
         public boolean hasNext() {
-            while(!cur.hasNext()) {
-                if(!core.hasNext())
+            while (!cur.hasNext()) {
+                if (!core.hasNext())
                     return false;
                 cur = expand(core.next());
             }
@@ -81,7 +82,7 @@ public class Iterators {
 
         @Override
         public U next() {
-            if(!hasNext())  throw new NoSuchElementException();
+            if (!hasNext())  throw new NoSuchElementException();
             return cur.next();
         }
 
@@ -110,9 +111,9 @@ public class Iterators {
         }
 
         private void fetch() {
-            while(!fetched && core.hasNext()) {
+            while (!fetched && core.hasNext()) {
                 T n = core.next();
-                if(filter(n)) {
+                if (filter(n)) {
                     next = n;
                     fetched = true;
                 }
@@ -137,7 +138,7 @@ public class Iterators {
         @Override
         public T next() {
             fetch();
-            if(!fetched)  throw new NoSuchElementException();
+            if (!fetched)  throw new NoSuchElementException();
             fetched = false;
             return next;
         }
@@ -232,15 +233,15 @@ public class Iterators {
      */
     public static List<Integer> sequence(final int start, int end, final int step) {
 
-        final int size = (end-start)/step;
-        if(size<0)  throw new IllegalArgumentException("List size is negative");
+        final int size = (end - start) / step;
+        if (size < 0)  throw new IllegalArgumentException("List size is negative");
 
         return new AbstractList<Integer>() {
             @Override
             public Integer get(int index) {
-                if(index<0 || index>=size)
+                if (index < 0 || index >= size)
                     throw new IndexOutOfBoundsException();
-                return start+index*step;
+                return start + index * step;
             }
 
             @Override
@@ -251,7 +252,7 @@ public class Iterators {
     }
 
     public static List<Integer> sequence(int start, int end) {
-        return sequence(start,end,1);
+        return sequence(start, end, 1);
     }
 
     /**
@@ -260,11 +261,11 @@ public class Iterators {
      * @since 1.150
      */
     public static List<Integer> reverseSequence(int start, int end, int step) {
-        return sequence(end-1,start-1,-step);
+        return sequence(end - 1, start - 1, -step);
     }
 
     public static List<Integer> reverseSequence(int start, int end) {
-        return reverseSequence(start,end,1);
+        return reverseSequence(start, end, 1);
     }
 
     /**
@@ -272,7 +273,7 @@ public class Iterators {
      */
     @SuppressWarnings("unchecked")
     public static <T> Iterator<T> cast(Iterator<? extends T> itr) {
-        return (Iterator)itr;
+        return (Iterator) itr;
     }
 
     /**
@@ -280,15 +281,15 @@ public class Iterators {
      */
     @SuppressWarnings("unchecked")
     public static <T> Iterable<T> cast(Iterable<? extends T> itr) {
-        return (Iterable)itr;
+        return (Iterable) itr;
     }
 
     /**
      * Returns an {@link Iterator} that only returns items of the given subtype.
      */
     @SuppressWarnings("unchecked")
-    public static <U,T extends U> Iterator<T> subType(Iterator<U> itr, final Class<T> type) {
-        return (Iterator)new FilterIterator<U>(itr) {
+    public static <U, T extends U> Iterator<T> subType(Iterator<U> itr, final Class<T> type) {
+        return (Iterator) new FilterIterator<U>(itr) {
             @Override
             protected boolean filter(U u) {
                 return type.isInstance(u);
@@ -332,8 +333,8 @@ public class Iterators {
      * That is, this creates {A,B,C,D} from {A,B},{C,D}.
      */
     @SafeVarargs
-    public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
-        return () -> new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
+    public static <T> Iterable<T> sequence(final Iterable<? extends T>... iterables) {
+        return () -> new FlattenIterator<T, Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
             @Override
             protected Iterator<T> expand(Iterable<? extends T> iterable) {
                 return Iterators.<T>cast(iterable).iterator();
@@ -376,11 +377,11 @@ public class Iterators {
         return new Iterator<T>() {
             private T next;
             private boolean end;
-            private int index=0;
+            private int index = 0;
             @Override
             public boolean hasNext() {
                 fetch();
-                return next!=null;
+                return next != null;
             }
 
             @Override
@@ -392,10 +393,10 @@ public class Iterators {
             }
 
             private void fetch() {
-                if (next==null && !end) {
+                if (next == null && !end) {
                     if (base.hasNext()) {
                         next = base.next();
-                        if (!filter.apply(index++,next)) {
+                        if (!filter.apply(index++, next)) {
                             next = null;
                             end = true;
                         }

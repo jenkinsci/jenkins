@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -70,28 +71,28 @@ public class BuildCommand extends CLICommand {
         return Messages.BuildCommand_ShortDescription();
     }
 
-    @Argument(metaVar="JOB",usage="Name of the job to build",required=true)
-    public Job<?,?> job;
+    @Argument(metaVar = "JOB", usage = "Name of the job to build", required = true)
+    public Job<?, ?> job;
 
-    @Option(name="-f", usage="Follow the build progress. Like -s only interrupts are not passed through to the build.")
+    @Option(name = "-f", usage = "Follow the build progress. Like -s only interrupts are not passed through to the build.")
     public boolean follow = false;
 
-    @Option(name="-s",usage="Wait until the completion/abortion of the command. Interrupts are passed through to the build.")
+    @Option(name = "-s", usage = "Wait until the completion/abortion of the command. Interrupts are passed through to the build.")
     public boolean sync = false;
 
-    @Option(name="-w",usage="Wait until the start of the command")
+    @Option(name = "-w", usage = "Wait until the start of the command")
     public boolean wait = false;
 
-    @Option(name="-c",usage="Check for SCM changes before starting the build, and if there's no change, exit without doing a build")
+    @Option(name = "-c", usage = "Check for SCM changes before starting the build, and if there's no change, exit without doing a build")
     public boolean checkSCM = false;
 
-    @Option(name="-p",usage="Specify the build parameters in the key=value format.")
-    public Map<String,String> parameters = new HashMap<>();
+    @Option(name = "-p", usage = "Specify the build parameters in the key=value format.")
+    public Map<String, String> parameters = new HashMap<>();
 
-    @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
+    @Option(name = "-v", usage = "Prints out the console output of the build. Use with -s")
     public boolean consoleOutput = false;
 
-    @Option(name="-r") @Deprecated
+    @Option(name = "-r") @Deprecated
     public int retryCnt = 10;
 
     protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
@@ -103,8 +104,8 @@ public class BuildCommand extends CLICommand {
         ParametersAction a = null;
         if (!parameters.isEmpty()) {
             ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
-            if (pdp==null)
-                throw new IllegalStateException(job.getFullDisplayName()+" is not parameterized but the -p option was specified.");
+            if (pdp == null)
+                throw new IllegalStateException(job.getFullDisplayName() + " is not parameterized but the -p option was specified.");
 
             //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<>();
@@ -112,7 +113,7 @@ public class BuildCommand extends CLICommand {
             for (Map.Entry<String, String> e : parameters.entrySet()) {
                 String name = e.getKey();
                 ParameterDefinition pd = pdp.getParameterDefinition(name);
-                if (pd==null) {
+                if (pd == null) {
                     String nearest = EditDistance.findNearest(name, pdp.getParameterDefinitionNames());
                     throw new CmdLineException(null, nearest == null ?
                             String.format("'%s' is not a valid parameter.", name) :
@@ -120,20 +121,20 @@ public class BuildCommand extends CLICommand {
                 }
                 ParameterValue val = pd.createValue(this, Util.fixNull(e.getValue()));
                 if (val == null) {
-                    throw new CmdLineException(null, String.format("Cannot resolve the value for the parameter '%s'.",name));
+                    throw new CmdLineException(null, String.format("Cannot resolve the value for the parameter '%s'.", name));
                 }
                 values.add(val);
             }
 
             // handle missing parameters by adding as default values ISSUE JENKINS-7162
-            for(ParameterDefinition pd :  pdp.getParameterDefinitions()) {
+            for (ParameterDefinition pd : pdp.getParameterDefinitions()) {
                 if (parameters.containsKey(pd.getName()))
                     continue;
 
                 // not passed in use default
                 ParameterValue defaultValue = pd.getDefaultParameterValue();
                 if (defaultValue == null) {
-                    throw new CmdLineException(null, String.format("No default value for the parameter '%s'.",pd.getName()));
+                    throw new CmdLineException(null, String.format("No default value for the parameter '%s'.", pd.getName()));
                 }
                 values.add(defaultValue);
             }
@@ -144,7 +145,7 @@ public class BuildCommand extends CLICommand {
         if (checkSCM) {
             SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
             if (item == null)
-                throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
+                throw new AbortException(job.getFullDisplayName() + " has no SCM trigger, but checkSCM was specified");
             // preemptively check for a polling veto
             if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
                 return 0;
@@ -157,21 +158,21 @@ public class BuildCommand extends CLICommand {
             String msg = Messages.BuildCommand_CLICause_CannotBuildUnknownReasons(job.getFullDisplayName());
             if (job instanceof ParameterizedJobMixIn.ParameterizedJob && ((ParameterizedJobMixIn.ParameterizedJob) job).isDisabled()) {
                 msg = Messages.BuildCommand_CLICause_CannotBuildDisabled(job.getFullDisplayName());
-            } else if (job.isHoldOffBuildUntilSave()){
+            } else if (job.isHoldOffBuildUntilSave()) {
                 msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
             }
             throw new IllegalStateException(msg);
         }
 
         Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication2().getName())), a);
-        QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
-        
+        QueueTaskFuture<? extends Run<?, ?>> f = item != null ? (QueueTaskFuture) item.getFuture() : null;
+
         if (wait || sync || follow) {
             if (f == null) {
                 throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
             }
-            Run<?,?> b = f.waitForStart();    // wait for the start
-            stdout.println("Started "+b.getFullDisplayName());
+            Run<?, ?> b = f.waitForStart();    // wait for the start
+            stdout.println("Started " + b.getFullDisplayName());
             stdout.flush();
 
             if (sync || follow) {
@@ -182,13 +183,13 @@ public class BuildCommand extends CLICommand {
                         // exception on a slow/busy machine, if it takes
                         // longish to create the log file
                         int retryInterval = 100;
-                        for (int i=0;i<=retryCnt;) {
+                        for (int i = 0; i <= retryCnt; ) {
                             try {
                                 b.writeWholeLogTo(stdout);
                                 break;
                             }
                             catch (FileNotFoundException | NoSuchFileException e) {
-                                if ( i == retryCnt ) {
+                                if (i == retryCnt) {
                                     Exception myException = new AbortException();
                                     myException.initCause(e);
                                     throw myException;
@@ -199,7 +200,7 @@ public class BuildCommand extends CLICommand {
                         }
                     }
                     f.get();    // wait for the completion
-                    stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
+                    stdout.println("Completed " + b.getFullDisplayName() + " : " + b.getResult());
                     return b.getResult().ordinal;
                 } catch (InterruptedException e) {
                     if (follow) {
@@ -238,15 +239,15 @@ public class BuildCommand extends CLICommand {
 
     public static class CLICause extends UserIdCause {
 
-    	private String startedBy;
+        private String startedBy;
 
-    	public CLICause(){
-    		startedBy = "unknown";
-    	}
+        public CLICause() {
+            startedBy = "unknown";
+        }
 
-    	public CLICause(String startedBy){
-    		this.startedBy = startedBy;
-    	}
+        public CLICause(String startedBy) {
+            this.startedBy = startedBy;
+        }
 
         @Override
         public String getShortDescription() {

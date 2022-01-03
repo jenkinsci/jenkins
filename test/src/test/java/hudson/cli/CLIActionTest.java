@@ -78,7 +78,7 @@ public class CLIActionTest {
     @Test
     public void authentication() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
@@ -262,6 +262,7 @@ public class CLIActionTest {
             }
             return 0;
         }
+
         @Override
         public String getShortDescription() {
             return "";
@@ -272,6 +273,7 @@ public class CLIActionTest {
     public static final class LargeDownloadCommand extends CLICommand {
         @Option(name = "-size", required = true)
         public int size;
+
         @Override
         protected int run() throws Exception {
             try (OutputStream os = new BufferedOutputStream(stdout)) {
@@ -282,6 +284,7 @@ public class CLIActionTest {
             }
             return 0;
         }
+
         @Override
         public String getShortDescription() {
             return "";

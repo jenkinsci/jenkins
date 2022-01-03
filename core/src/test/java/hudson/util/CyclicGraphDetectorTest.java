@@ -16,7 +16,7 @@ import org.junit.Test;
 public class CyclicGraphDetectorTest {
 
     private static class Edge {
-        String src,dst;
+        String src, dst;
 
         private Edge(String src, String dst) {
             this.src = src;
@@ -26,7 +26,7 @@ public class CyclicGraphDetectorTest {
 
     private static class Graph extends ArrayList<Edge> {
         Graph e(String src, String dst) {
-            add(new Edge(src,dst));
+            add(new Edge(src, dst));
             return this;
         }
 
@@ -73,16 +73,16 @@ public class CyclicGraphDetectorTest {
 
     @Test
     public void cycle1() {
-        new Graph().e("A","B").e("B","C").e("C","A").mustContainCycle("A","B","C");
+        new Graph().e("A", "B").e("B", "C").e("C", "A").mustContainCycle("A", "B", "C");
     }
 
     @Test
     public void cycle2() {
-        new Graph().e("A","B").e("B","C").e("C","C").mustContainCycle("C");
+        new Graph().e("A", "B").e("B", "C").e("C", "C").mustContainCycle("C");
     }
 
     @Test
     public void cycle3() {
-        new Graph().e("A","B").e("B","C").e("C","D").e("B","E").e("E","D").e("E","A").mustContainCycle("A","B","E");
+        new Graph().e("A", "B").e("B", "C").e("C", "D").e("B", "E").e("E", "D").e("E", "A").mustContainCycle("A", "B", "E");
     }
 }

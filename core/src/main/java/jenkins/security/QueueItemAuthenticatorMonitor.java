@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Job;
@@ -72,6 +74,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
     }
 
     @RequirePOST
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static so that it can be written to by the static QueueListenerImpl class")
     public HttpResponse doAct(@QueryParameter String redirect, @QueryParameter String dismiss, @QueryParameter String reset) throws IOException {
         if (redirect != null) {
             return HttpResponses.redirectTo("https://www.jenkins.io/redirect/queue-item-security");

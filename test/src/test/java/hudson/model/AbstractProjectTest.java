@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -236,6 +237,7 @@ public class AbstractProjectTest {
             public boolean requiresWorkspaceForPolling() {
                 return true;
             }
+
             @Override
             public SCMDescriptor<?> getDescriptor() {
                 return new SCMDescriptor<SCM>(null) {
@@ -375,7 +377,7 @@ public class AbstractProjectTest {
      */
     @Test
     public void vectorTriggers() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
         assertEquals(1, p.triggers().size());
         Trigger<?> t = p.triggers().get(0);
         assertEquals(SCMTrigger.class, t.getClass());
@@ -385,7 +387,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void removeTrigger() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = (TriggerDescriptor) j.jenkins.getDescriptorOrDie(SCMTrigger.class);
         p.removeTrigger(SCM_TRIGGER_DESCRIPTOR);
@@ -395,7 +397,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void addTriggerSameType() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         SCMTrigger newTrigger = new SCMTrigger("H/5 * * * *");
         p.addTrigger(newTrigger);
@@ -409,7 +411,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void addTriggerDifferentType() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         TimerTrigger newTrigger = new TimerTrigger("20 * * * *");
         p.addTrigger(newTrigger);
@@ -476,7 +478,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-27549")
     public void loadingWithNPEOnTriggerStart() throws Exception {
-        AbstractProject<?, ?> project = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"));
+        AbstractProject<?, ?> project = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"));
 
         assertEquals(1, project.triggers().size());
     }
@@ -537,6 +539,7 @@ public class AbstractProjectTest {
         System.out.println(api);
         assertThat(api, not(containsString("upstream-project")));
     }
+
     @Test
     public void ensureWhenNonExistingLabelsProposalsAreMade() throws Exception {
         j.jenkins.setCrumbIssuer(null);
@@ -656,7 +659,7 @@ public class AbstractProjectTest {
 
     private JenkinsRule.JSONWebResponse requestAutoCompleteUpstreamProjectsWithUser(FreeStyleProject p, String value, String user) throws Exception {
         String relativeUrl = p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/autoCompleteUpstreamProjects?value=" + Util.rawEncode(value);
-        Page page = j.createWebClient().withBasicCredentials(user).goTo( relativeUrl, "application/json");
+        Page page = j.createWebClient().withBasicCredentials(user).goTo(relativeUrl, "application/json");
         return new JenkinsRule.JSONWebResponse(page.getWebResponse());
     }
 

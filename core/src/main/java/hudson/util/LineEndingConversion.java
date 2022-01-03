@@ -37,8 +37,8 @@ public class LineEndingConversion {
         }
         // Convert line endings to Unix LF,
         // which also sets up the string for other conversions
-        input = input.replace("\r\n","\n");
-        input = input.replace('\r','\n');
+        input = input.replace("\r\n", "\n");
+        input = input.replace('\r', '\n');
         switch (type) {
             case CR:
             case Mac:

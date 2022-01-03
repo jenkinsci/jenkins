@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static org.junit.Assert.assertEquals;
@@ -95,7 +96,7 @@ public class MavenTest {
         assertEquals("b.pom", m.pom);
         assertEquals("c=d", m.properties);
         assertEquals("-e", m.jvmOptions);
-	assertTrue(m.usesPrivateRepository());
+        assertTrue(m.usesPrivateRepository());
     }
 
     @Test public void withNodeProperty() throws Exception {
@@ -129,7 +130,7 @@ public class MavenTest {
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
-        MavenInstallation varMaven = new MavenInstallation("varMaven",mavenHomeVar, JenkinsRule.NO_PROPERTIES);
+        MavenInstallation varMaven = new MavenInstallation("varMaven", mavenHomeVar, JenkinsRule.NO_PROPERTIES);
         j.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
         JDK jdk = j.jenkins.getJDK("default");
@@ -163,8 +164,8 @@ public class MavenTest {
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
         b.click();
-        j.findPreviousInputElement(b,"name").setValueAttribute("myMaven");
-        j.findPreviousInputElement(b,"home").setValueAttribute("/tmp/foo");
+        j.findPreviousInputElement(b, "name").setValueAttribute("myMaven");
+        j.findPreviousInputElement(b, "home").setValueAttribute("/tmp/foo");
         j.submit(f);
         verify();
 
@@ -177,14 +178,14 @@ public class MavenTest {
 
     private void verify() throws Exception {
         MavenInstallation[] l = j.get(MavenInstallation.DescriptorImpl.class).getInstallations();
-        assertEquals(1,l.length);
-        j.assertEqualBeans(l[0],new MavenInstallation("myMaven","/tmp/foo", JenkinsRule.NO_PROPERTIES),"name,home");
+        assertEquals(1, l.length);
+        j.assertEqualBeans(l[0], new MavenInstallation("myMaven", "/tmp/foo", JenkinsRule.NO_PROPERTIES), "name,home");
 
         // by default we should get the auto installer
-        DescribableList<ToolProperty<?>,ToolPropertyDescriptor> props = l[0].getProperties();
-        assertEquals(1,props.size());
+        DescribableList<ToolProperty<?>, ToolPropertyDescriptor> props = l[0].getProperties();
+        assertEquals(1, props.size());
         InstallSourceProperty isp = props.get(InstallSourceProperty.class);
-        assertEquals(1,isp.installers.size());
+        assertEquals(1, isp.installers.size());
         assertNotNull(isp.installers.get(MavenInstaller.class));
     }
 
@@ -197,12 +198,12 @@ public class MavenTest {
         );
         project.addProperty(pdb);
         project.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
-        project.getBuildersList().add(new Maven("clean package",null));
+        project.getBuildersList().add(new Maven("clean package", null));
 
         FreeStyleBuild build = j.waitForCompletion(project.scheduleBuild2(0).waitForStart());
         j.assertLogNotContains("-Dpassword=12345", build);
     }
-    
+
     @Test
     public void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
         final String properties = "global.path=$GLOBAL_PATH\nmy.path=$PATH\\\\Dir";
@@ -227,26 +228,26 @@ public class MavenTest {
         {
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("a", null, "a.pom", "c=d", "-e", true));
-    
+
             Maven m = p.getBuildersList().get(Maven.class);
             assertNotNull(m);
             assertEquals(DefaultSettingsProvider.class, m.getSettings().getClass());
             assertEquals(DefaultGlobalSettingsProvider.class, m.getGlobalSettings().getClass());
         }
-        
+
         {
             GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
             assertNotNull("No global Maven Config available", globalMavenConfig);
             globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settings.xml"));
             globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settings.xml"));
-            
+
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
-            
+
             Maven m = p.getBuildersList().get(Maven.class);
             assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
-            assertEquals("/tmp/settings.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
-            assertEquals("/tmp/global-settings.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
+            assertEquals("/tmp/settings.xml", ((FilePathSettingsProvider) m.getSettings()).getPath());
+            assertEquals("/tmp/global-settings.xml", ((FilePathGlobalSettingsProvider) m.getGlobalSettings()).getPath());
         }
     }
 

@@ -49,16 +49,16 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
     @Override
     protected void eol(byte[] in, int sz) throws IOException {
 
-        int next = ConsoleNote.findPreamble(in,0,sz);
+        int next = ConsoleNote.findPreamble(in, 0, sz);
 
         // perform byte[]->char[] while figuring out the char positions of the BLOBs
         int written = 0;
-        while (next>=0) {
-            if (next>written) {
-                out.write(in,written,next-written);
+        while (next >= 0) {
+            if (next > written) {
+                out.write(in, written, next - written);
                 written = next;
             } else {
-                assert next==written;
+                assert next == written;
             }
 
             int rest = sz - next;
@@ -70,10 +70,10 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
             written += bytesUsed;
 
 
-            next = ConsoleNote.findPreamble(in,written,sz-written);
+            next = ConsoleNote.findPreamble(in, written, sz - written);
         }
         // finish the remaining bytes->chars conversion
-        out.write(in,written,sz-written);
+        out.write(in, written, sz - written);
     }
 
 }

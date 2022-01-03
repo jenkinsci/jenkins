@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot, Stephen Connolly, Tom Huybrechts
  *               2015 Kanstantsin Shautsou
  *
@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
 import antlr.ANTLRException;
@@ -92,7 +93,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public void start(J project, boolean newInstance) {
         this.job = project;
 
-        try {// reparse the tabs with the job as the hash
+        try { // reparse the tabs with the job as the hash
             if (spec != null) {
                 this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
             } else {
@@ -148,7 +149,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public Collection<? extends Action> getProjectActions() {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction();
-        if (a==null)    return Collections.emptyList();
+        if (a == null)    return Collections.emptyList();
         return Collections.singletonList(a);
     }
 
@@ -227,16 +228,16 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         @Override
         public void doRun() {
-            while(new Date().getTime() >= cal.getTimeInMillis()) {
+            while (new Date().getTime() >= cal.getTimeInMillis()) {
                 LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
                 try {
                     checkTriggers(cal);
                 } catch (Throwable e) {
-                    LOGGER.log(Level.WARNING,"Cron thread throw an exception",e);
+                    LOGGER.log(Level.WARNING, "Cron thread throw an exception", e);
                     // SafeTimerTask.run would also catch this, but be sure to increment cal too.
                 }
 
-                cal.add(Calendar.MINUTE,1);
+                cal.add(Calendar.MINUTE, 1);
             }
         }
     }
@@ -258,12 +259,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
-                    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "TODO needs triage")
                     @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
-                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                if (t.job != null) {
+                                    LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                } else {
+                                    LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
+                                }
                                 t.run();
                             }
                         }
@@ -278,7 +282,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         for (ParameterizedJobMixIn.ParameterizedJob<?, ?> p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
                 if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
-                    if (t !=null && t.spec != null && t.tabs != null) {
+                    if (t != null && t.spec != null && t.tabs != null) {
                         LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
                         if (t.tabs.check(cal)) {
@@ -338,7 +342,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Returns all the registered {@link Trigger} descriptors.
      */
-    public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
+    public static DescriptorExtensionList<Trigger<?>, TriggerDescriptor> all() {
         return (DescriptorExtensionList) Jenkins.get().getDescriptorList(Trigger.class);
     }
 
@@ -348,13 +352,13 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public static List<TriggerDescriptor> for_(Item i) {
         List<TriggerDescriptor> r = new ArrayList<>();
         for (TriggerDescriptor t : all()) {
-            if(!t.isApplicable(i))  continue;
+            if (!t.isApplicable(i))  continue;
 
-            if (i instanceof TopLevelItem) {// ugly
+            if (i instanceof TopLevelItem) { // ugly
                 TopLevelItemDescriptor tld = ((TopLevelItem) i).getDescriptor();
                 // tld shouldn't be really null in contract, but we often write test Describables that
                 // doesn't have a Descriptor.
-                if(tld!=null && !tld.isApplicable(t))    continue;
+                if (tld != null && !tld.isApplicable(t))    continue;
             }
 
             r.add(t);
