@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -87,10 +88,14 @@ public class CustomRoutingDecisionProviderTest {
     }
 
     private static class Renderable {
-        public void doIndex() {replyOk();}
+        public void doIndex() {
+            replyOk();
+        }
 
         @WebMethod(name = "valid")
-        public void valid() {replyOk();}
+        public void valid() {
+            replyOk();
+        }
     }
 
     private static void replyOk() {

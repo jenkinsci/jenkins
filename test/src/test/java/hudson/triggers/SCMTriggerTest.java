@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
 import static org.junit.Assert.assertEquals;
@@ -124,7 +125,7 @@ public class SCMTriggerTest {
         }
 
         @Override
-        public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+        public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
             checkoutStarted.signal();
             Thread.sleep(400);  // processing time for mock update
             synchronized (this) { if (myRev < 2) myRev = 2; }
@@ -152,7 +153,7 @@ public class SCMTriggerTest {
         });
 
         SCMTrigger t = new SCMTrigger("@daily");
-        t.start(p,true);
+        t.start(p, true);
         p.addTrigger(t);
 
         // Start one build to block others

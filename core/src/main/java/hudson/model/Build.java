@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.model.Result.FAILURE;
@@ -82,8 +83,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractBuild<P,B> {
+public abstract class Build<P extends Project<P, B>, B extends Build<P, B>>
+    extends AbstractBuild<P, B> {
 
     /**
      * Creates a new build.
@@ -100,7 +101,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      * Loads a build from a log file.
      */
     protected Build(P project, File buildDir) throws IOException {
-        super(project,buildDir);
+        super(project, buildDir);
     }
 
 //
@@ -140,9 +141,9 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
         @Override
         protected Result doRun(@NonNull BuildListener listener) throws Exception {
-            if(!preBuild(listener,project.getBuilders()))
+            if (!preBuild(listener, project.getBuilders()))
                 return FAILURE;
-            if(!preBuild(listener,project.getPublishersList()))
+            if (!preBuild(listener, project.getPublishersList()))
                 return FAILURE;
 
             Result r = null;
@@ -151,16 +152,16 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)
-                    parameters.createBuildWrappers(Build.this,wrappers);
+                    parameters.createBuildWrappers(Build.this, wrappers);
 
-                for( BuildWrapper w : wrappers ) {
-                    Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
-                    if(e==null)
+                for (BuildWrapper w : wrappers) {
+                    Environment e = w.setUp((AbstractBuild<?, ?>) Build.this, launcher, listener);
+                    if (e == null)
                         return r = FAILURE;
                     buildEnvironments.add(e);
                 }
 
-                if(!build(listener,project.getBuilders()))
+                if (!build(listener, project.getBuilders()))
                     r = FAILURE;
             } catch (InterruptedException e) {
                 r = Executor.currentExecutor().abortResult();
@@ -194,8 +195,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         private boolean build(@NonNull BuildListener listener, @NonNull Collection<Builder> steps) throws IOException, InterruptedException {
-            for( BuildStep bs : steps ) {
-                if(!perform(bs,listener)) {
+            for (BuildStep bs : steps) {
+                if (!perform(bs, listener)) {
                     LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {Build.this, bs});
                     return false;
                 }

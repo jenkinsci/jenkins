@@ -94,7 +94,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
         Set<UpdateSite.Warning> allWarnings = getAllWarnings();
 
         HashSet<UpdateSite.Warning> applicableWarnings = new HashSet<>();
-        for (UpdateSite.Warning warning: allWarnings) {
+        for (UpdateSite.Warning warning : allWarnings) {
             if (warning.isRelevant()) {
                 applicableWarnings.add(warning);
             }

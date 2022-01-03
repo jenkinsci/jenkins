@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2012, Dominik Bartholdi, Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.DescriptorExtensionList;
@@ -43,7 +44,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 /**
  * This ExtensionPoint allows to enforce the name of projects/jobs.
- * 
+ *
  * @author Dominik Bartholdi (imod)
  */
 public abstract class ProjectNamingStrategy implements Describable<ProjectNamingStrategy>, ExtensionPoint {
@@ -59,7 +60,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
     /**
      * Called when creating a new job.
-     * 
+     *
      * @param name
      *            the name given from the UI
      * @throws Failure
@@ -72,7 +73,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
     /**
      * This flag can be used to force existing jobs to be migrated to a new naming strategy - if this method returns true, the naming will be enforced at every config change. If {@code false} is
      * returned, only new jobs have to follow the strategy.
-     * 
+     *
      * @return {@code true} if existing jobs should be enforced to confirm to the naming standard.
      */
     public boolean isForceExistingJobs() {
@@ -188,8 +189,8 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             public String getHelpFile() {
                 return "/help/system-config/patternJobNamingStrategy.html";
             }
-            
-            public FormValidation doCheckNamePattern(@QueryParameter String value) 
+
+            public FormValidation doCheckNamePattern(@QueryParameter String value)
                     throws IOException, ServletException {
                 String pattern = Util.fixEmptyAndTrim(value);
                 if (pattern == null) {

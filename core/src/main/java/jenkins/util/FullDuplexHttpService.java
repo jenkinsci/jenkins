@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -100,7 +101,7 @@ public abstract class FullDuplexHttpService {
         out.write(0);
         out.flush();
 
-        {// wait until we have the other channel
+        { // wait until we have the other channel
             long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
             while (upload == null && System.currentTimeMillis() < end) {
                 LOGGER.log(Level.FINE, "Waiting for upload stream for {0}: {1}", new Object[] {uuid, this});

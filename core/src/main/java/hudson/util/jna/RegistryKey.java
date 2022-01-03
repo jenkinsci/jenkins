@@ -13,6 +13,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
@@ -44,16 +45,16 @@ public class RegistryKey implements AutoCloseable {
         path = "";
     }
 
-    private RegistryKey(RegistryKey ancestor, String path,int handle) {
+    private RegistryKey(RegistryKey ancestor, String path, int handle) {
         this.handle = handle;
         this.root = ancestor.root;
-        this.path = combine(ancestor.path,path);
+        this.path = combine(ancestor.path, path);
     }
 
     private static String combine(String a, String b) {
-        if(a.length()==0)   return b;
-        if(b.length()==0)   return a;
-        return a+'\\'+b;
+        if (a.length() == 0)   return b;
+        if (b.length() == 0)   return a;
+        return a + '\\' + b;
     }
 
     /**
@@ -96,7 +97,7 @@ public class RegistryKey implements AutoCloseable {
         lpcbData = new IntByReference();
 
         OUTER:
-        while(true) {
+        while (true) {
             int r = Advapi32.INSTANCE.RegQueryValueEx(handle, valueName, null, pType, lpData, lpcbData);
             switch (r) {
             case WINERROR.ERROR_MORE_DATA:
@@ -126,7 +127,7 @@ public class RegistryKey implements AutoCloseable {
      */
     public void setValue(String name, String value) {
         byte[] bytes = value.getBytes(StandardCharsets.UTF_16LE);
-        int newLength = bytes.length+2; // for 0 padding
+        int newLength = bytes.length + 2; // for 0 padding
         byte[] with0 = new byte[newLength];
         System.arraycopy(bytes, 0, with0, 0, newLength);
         check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, with0, with0.length));
@@ -156,9 +157,9 @@ public class RegistryKey implements AutoCloseable {
         lpcbData = new IntByReference();
 
         OUTER:
-        while(true) {
+        while (true) {
             int r = Advapi32.INSTANCE.RegQueryValueEx(handle, name, null, pType, lpData, lpcbData);
-            switch(r) {
+            switch (r) {
             case WINERROR.ERROR_MORE_DATA:
                 lpData = new byte[lpcbData.getValue()];
                 continue OUTER;
@@ -204,17 +205,17 @@ public class RegistryKey implements AutoCloseable {
     }
 
     public RegistryKey open(String subKeyName) {
-        return open(subKeyName,0xF003F/*KEY_ALL_ACCESS*/);
+        return open(subKeyName, 0xF003F/*KEY_ALL_ACCESS*/);
     }
 
     public RegistryKey openReadonly(String subKeyName) {
-        return open(subKeyName,0x20019/*KEY_READ*/);
+        return open(subKeyName, 0x20019/*KEY_READ*/);
     }
 
     public RegistryKey open(String subKeyName, int access) {
         IntByReference pHandle = new IntByReference();
         check(Advapi32.INSTANCE.RegOpenKeyEx(handle, subKeyName, 0, access, pHandle));
-        return new RegistryKey(this,subKeyName,pHandle.getValue());
+        return new RegistryKey(this, subKeyName, pHandle.getValue());
     }
 
     /**
@@ -266,7 +267,7 @@ public class RegistryKey implements AutoCloseable {
                     break; // not supported yet
                 }
                 break;
-            
+
             default:
                 check(result);
             }
@@ -283,7 +284,7 @@ public class RegistryKey implements AutoCloseable {
     }
 
     public void dispose() {
-        if(handle!=0)
+        if (handle != 0)
             Advapi32.INSTANCE.RegCloseKey(handle);
         handle = 0;
     }

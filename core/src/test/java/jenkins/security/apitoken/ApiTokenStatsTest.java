@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -301,7 +302,7 @@ public class ApiTokenStatsTest {
             field.setAccessible(true);
             field.set(result, counter);
         }
-        if(dateString != null){
+        if (dateString != null) {
             Field field = clazz.getDeclaredField("lastUseDate");
             field.setAccessible(true);
             field.set(result, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString));
@@ -336,7 +337,7 @@ public class ApiTokenStatsTest {
         }
     }
 
-    private ApiTokenStats createFromFile(File file){
+    private ApiTokenStats createFromFile(File file) {
         ApiTokenStats result = ApiTokenStats.internalLoad(file);
         if (result == null) {
             result = new ApiTokenStats();

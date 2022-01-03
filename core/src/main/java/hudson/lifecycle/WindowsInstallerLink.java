@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -108,7 +109,7 @@ public class WindowsInstallerLink extends ManagementLink {
      * Is the installation successful?
      */
     public boolean isInstalled() {
-        return installationDir!=null;
+        return installationDir != null;
     }
 
     /**
@@ -118,20 +119,20 @@ public class WindowsInstallerLink extends ManagementLink {
     public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        if(installationDir!=null) {
+        if (installationDir != null) {
             // installation already complete
-            sendError("Installation is already complete",req,rsp);
+            sendError("Installation is already complete", req, rsp);
             return;
         }
-        if(!DotNet.isInstalled(4,0)) {
-            sendError(".NET Framework 4.0 or later is required for this feature",req,rsp);
+        if (!DotNet.isInstalled(4, 0)) {
+            sendError(".NET Framework 4.0 or later is required for this feature", req, rsp);
             return;
         }
 
         final File dir = new File(_dir).getAbsoluteFile();
-        if(!dir.exists()) {
+        if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                sendError("Failed to create installation directory: "+dir,req,rsp);
+                sendError("Failed to create installation directory: " + dir, req, rsp);
                 return;
             }
         }
@@ -141,7 +142,7 @@ public class WindowsInstallerLink extends ManagementLink {
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"),         "jenkins.exe");
             Files.deleteIfExists(Util.fileToPath(dir).resolve("jenkins.exe.config"));
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"),         "jenkins.xml");
-            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
+            if (!hudsonWar.getCanonicalFile().equals(new File(dir, "jenkins.war").getCanonicalFile()))
                 copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");
 
             // install as a service
@@ -149,8 +150,8 @@ public class WindowsInstallerLink extends ManagementLink {
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
             int r = runElevated(new File(dir, "jenkins.exe"), "install", task, dir);
-            if(r!=0) {
-                sendError(baos.toString(Charset.defaultCharset()),req,rsp);
+            if (r != 0) {
+                sendError(baos.toString(Charset.defaultCharset()), req, rsp);
                 return;
             }
 
@@ -169,10 +170,10 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     private void copy(StaplerRequest req, StaplerResponse rsp, File dir, URL src, String name) throws ServletException, IOException {
         try {
-            FileUtils.copyURLToFile(src,new File(dir, name));
+            FileUtils.copyURLToFile(src, new File(dir, name));
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to copy "+name,e);
-            sendError("Failed to copy "+name+": "+e.getMessage(),req,rsp);
+            LOGGER.log(Level.SEVERE, "Failed to copy " + name, e);
+            sendError("Failed to copy " + name + ": " + e.getMessage(), req, rsp);
             throw new AbortException();
         }
     }
@@ -181,15 +182,15 @@ public class WindowsInstallerLink extends ManagementLink {
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        if(installationDir==null) {
+        if (installationDir == null) {
             // if the user reloads the page after Hudson has restarted,
             // it comes back here. In such a case, don't let this restart Hudson.
             // so just send them back to the top page
-            rsp.sendRedirect(req.getContextPath()+"/");
+            rsp.sendRedirect(req.getContextPath() + "/");
             return;
         }
 
-        rsp.forward(this,"_restart",req);
+        rsp.forward(this, "_restart", req);
         final File oldRoot = Jenkins.get().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
@@ -205,7 +206,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         @Override
                         public void run() {
                             try {
-                                if(!oldRoot.equals(installationDir)) {
+                                if (!oldRoot.equals(installationDir)) {
                                     LOGGER.info("Moving data");
                                     Move mv = new Move();
                                     Project p = new Project();
@@ -213,7 +214,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     mv.setProject(p);
                                     FileSet fs = new FileSet();
                                     fs.setDir(oldRoot);
-                                    fs.setExcludes("war/**"); // we can't really move the exploded war. 
+                                    fs.setExcludes("war/**"); // we can't really move the exploded war.
                                     mv.addFileset(fs);
                                     mv.setTodir(installationDir);
                                     mv.setFailOnError(false); // plugins can also fail to move
@@ -223,7 +224,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
                                 int r = runElevated(
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
-                                task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
+                                task.getLogger().println(r == 0 ? "Successfully started" : "start service failed. Exit code=" + r);
                             } catch (IOException | InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -250,13 +251,13 @@ public class WindowsInstallerLink extends ManagementLink {
      * Displays the error in a page.
      */
     protected final void sendError(Exception e, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        sendError(e.getMessage(),req,rsp);
+        sendError(e.getMessage(), req, rsp);
     }
 
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        req.setAttribute("message",message);
-        req.setAttribute("pre",true);
-        rsp.forward(Jenkins.get(),"error",req);
+        req.setAttribute("message", message);
+        req.setAttribute("pre", true);
+        rsp.forward(Jenkins.get(), "error", req);
     }
 
     /**
@@ -264,20 +265,20 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @Extension
     public static WindowsInstallerLink registerIfApplicable() {
-        if(!Functions.isWindows())
+        if (!Functions.isWindows())
             return null; // this is a Windows only feature
 
-        if(Lifecycle.get() instanceof WindowsServiceLifecycle)
+        if (Lifecycle.get() instanceof WindowsServiceLifecycle)
             return null; // already installed as Windows service
 
         // this system property is set by the launcher when we run "java -jar jenkins.war"
         // and this is how we know where is jenkins.war.
         String war = SystemProperties.getString("executable-war");
-        if(war!=null && new File(war).exists()) {
+        if (war != null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
             // TODO possibly now unused (JNLP installation mode is long gone):
-            if(SystemProperties.getString(WindowsInstallerLink.class.getName()+".prominent")!=null)
+            if (SystemProperties.getString(WindowsInstallerLink.class.getName() + ".prominent") != null)
                 Jenkins.get().getActions().add(link);
 
             return link;

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks._maven;
 
 import hudson.Extension;
@@ -42,7 +43,7 @@ public class MavenWarningNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        text.addMarkup(0,text.length(),"<span class=warning-inline>","</span>");
+        text.addMarkup(0, text.length(), "<span class=warning-inline>", "</span>");
         return null;
     }
 

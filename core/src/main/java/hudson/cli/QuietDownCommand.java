@@ -40,13 +40,13 @@ public class QuietDownCommand extends CLICommand {
 
     private static final Logger LOGGER = Logger.getLogger(QuietDownCommand.class.getName());
 
-    @Option(name="-block",usage="Block until the system really quiets down and no builds are running")
+    @Option(name = "-block", usage = "Block until the system really quiets down and no builds are running")
     public boolean block = false;
 
-    @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds")
+    @Option(name = "-timeout", usage = "If non-zero, only block up to the specified number of milliseconds")
     public int timeout = 0;
 
-    @Option(name="-reason",usage="Reason for quiet down that will be visible to users")
+    @Option(name = "-reason", usage = "Reason for quiet down that will be visible to users")
     public String reason = null;
 
     @Override

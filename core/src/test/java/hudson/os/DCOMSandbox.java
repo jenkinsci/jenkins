@@ -34,11 +34,11 @@ public class DCOMSandbox {
         private static Properties defaults = new Properties();
 
         static {
-                defaults.put("rpc.ntlm.lanManagerKey","false");
-                defaults.put("rpc.ntlm.sign","false");
-                defaults.put("rpc.ntlm.seal","false");
-                defaults.put("rpc.ntlm.keyExchange","false");
-                defaults.put("rpc.connectionContext","rpc.security.ntlm.NtlmConnectionContext");
+                defaults.put("rpc.ntlm.lanManagerKey", "false");
+                defaults.put("rpc.ntlm.sign", "false");
+                defaults.put("rpc.ntlm.seal", "false");
+                defaults.put("rpc.ntlm.keyExchange", "false");
+                defaults.put("rpc.connectionContext", "rpc.security.ntlm.NtlmConnectionContext");
         }
 
         @Override

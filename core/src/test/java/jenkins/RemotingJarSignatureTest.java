@@ -22,9 +22,9 @@ public class RemotingJarSignatureTest {
     @Test
     public void testSignature() throws Exception {
         File jar = Which.jarFile(Channel.class);
-        System.out.println("Verifying "+jar);
+        System.out.println("Verifying " + jar);
 
-        JarFile myJar = new JarFile(jar,true);
+        JarFile myJar = new JarFile(jar, true);
 
         Enumeration<JarEntry> entries = myJar.entries();
         while (entries.hasMoreElements()) {

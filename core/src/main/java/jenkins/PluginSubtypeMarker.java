@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Functions;
@@ -58,12 +59,12 @@ public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            ElementScanner6<Void,Void> scanner = new ElementScanner6<Void, Void>() {
+            ElementScanner6<Void, Void> scanner = new ElementScanner6<Void, Void>() {
                 @Override
                 public Void visitType(TypeElement e, Void aVoid) {
-                    if(!e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    if (!e.getModifiers().contains(Modifier.ABSTRACT)) {
                         Element sc = asElement(e.getSuperclass());
-                        if (sc!=null && ((TypeElement)sc).getQualifiedName().contentEquals("hudson.Plugin")) {
+                        if (sc != null && ((TypeElement) sc).getQualifiedName().contentEquals("hudson.Plugin")) {
                             try {
                                 write(e);
                             } catch (IOException x) {

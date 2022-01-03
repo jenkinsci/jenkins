@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static hudson.Util.fixEmpty;
@@ -84,7 +85,7 @@ public abstract class FormFieldValidator {
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
-        this(request, response, adminOnly? Jenkins.get():null, adminOnly?CHECK:null);
+        this(request, response, adminOnly ? Jenkins.get() : null, adminOnly ? CHECK : null);
     }
 
     /**
@@ -94,7 +95,7 @@ public abstract class FormFieldValidator {
      */
     @Deprecated
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
-        this(request,response, Jenkins.get(),permission);
+        this(request, response, Jenkins.get(), permission);
     }
 
     /**
@@ -102,7 +103,7 @@ public abstract class FormFieldValidator {
      *      Permission needed to perform this validation, or null if no permission is necessary.
      */
     protected FormFieldValidator(Permission permission) {
-        this(Stapler.getCurrentRequest(),Stapler.getCurrentResponse(),permission);
+        this(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), permission);
     }
 
     /**
@@ -119,22 +120,22 @@ public abstract class FormFieldValidator {
     }
 
     protected FormFieldValidator(AccessControlled subject, Permission permission) {
-        this(Stapler.getCurrentRequest(),Stapler.getCurrentResponse(),subject,permission);
+        this(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), subject, permission);
     }
 
     /**
      * Runs the validation code.
      */
     public final void process() throws IOException, ServletException {
-        if(permission!=null)
+        if (permission != null)
             try {
-                if(subject==null)
+                if (subject == null)
                     throw new AccessDeniedException("No subject");
                 subject.checkPermission(permission);
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wide admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
-                if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
                     throw e;
             }
 
@@ -174,15 +175,15 @@ public abstract class FormFieldValidator {
      *      can be used as {@code ok()}.
      */
     public void error(String message) throws IOException, ServletException {
-        errorWithMarkup(message==null?null:Util.escape(message));
+        errorWithMarkup(message == null ? null : Util.escape(message));
     }
 
     public void warning(String message) throws IOException, ServletException {
-        warningWithMarkup(message==null?null:Util.escape(message));
+        warningWithMarkup(message == null ? null : Util.escape(message));
     }
 
     public void ok(String message) throws IOException, ServletException {
-        okWithMarkup(message==null?null:Util.escape(message));
+        okWithMarkup(message == null ? null : Util.escape(message));
     }
 
     /**
@@ -190,15 +191,15 @@ public abstract class FormFieldValidator {
      * by formatting it with {@link String#format(String, Object[])}
      */
     public void error(String format, Object... args) throws IOException, ServletException {
-        error(String.format(format,args));
+        error(String.format(format, args));
     }
 
     public void warning(String format, Object... args) throws IOException, ServletException {
-        warning(String.format(format,args));
+        warning(String.format(format, args));
     }
 
     public void ok(String format, Object... args) throws IOException, ServletException {
-        ok(String.format(format,args));
+        ok(String.format(format, args));
     }
 
     /**
@@ -213,19 +214,19 @@ public abstract class FormFieldValidator {
      *      can be used as {@code ok()}.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
-        _errorWithMarkup(message,"error");
+        _errorWithMarkup(message, "error");
     }
 
     public void warningWithMarkup(String message) throws IOException, ServletException {
-        _errorWithMarkup(message,"warning");
+        _errorWithMarkup(message, "warning");
     }
 
     public void okWithMarkup(String message) throws IOException, ServletException {
-        _errorWithMarkup(message,"ok");
+        _errorWithMarkup(message, "ok");
     }
 
     private void _errorWithMarkup(String message, String cssClass) throws IOException, ServletException {
-        if(message==null) {
+        if (message == null) {
             ok();
         } else {
             response.setContentType("text/html;charset=UTF-8");
@@ -235,9 +236,9 @@ public abstract class FormFieldValidator {
                     response.setHeader(header, "sandbox; default-src 'none';");
                 }
             }
-            response.getWriter().print("<div class="+ cssClass +"><img src='"+
-                    request.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
-                    message+"</div>");
+            response.getWriter().print("<div class=" + cssClass + "><img src='" +
+                    request.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                    message + "</div>");
         }
     }
 
@@ -267,7 +268,7 @@ public abstract class FormFieldValidator {
                 throw new IOException(url.toExternalForm());
             }
             return new BufferedReader(
-                new InputStreamReader(con.getInputStream(),getCharset(con)));
+                new InputStreamReader(con.getInputStream(), getCharset(con)));
         }
 
         /**
@@ -277,8 +278,8 @@ public abstract class FormFieldValidator {
          */
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
-            while((line=in.readLine())!=null)
-                if(line.contains(literal))
+            while ((line = in.readLine()) != null)
+                if (line.contains(literal))
                     return true;
             return false;
         }
@@ -292,9 +293,9 @@ public abstract class FormFieldValidator {
          */
         protected void handleIOException(String url, IOException e) throws IOException, ServletException {
             // any invalid URL comes here
-            if(e.getMessage().equals(url))
+            if (e.getMessage().equals(url))
                 // Sun JRE (and probably others too) often return just the URL in the error.
-                error("Unable to connect "+url);
+                error("Unable to connect " + url);
             else
                 error(e.getMessage());
         }
@@ -303,9 +304,9 @@ public abstract class FormFieldValidator {
          * Figures out the charset from the content-type header.
          */
         private String getCharset(URLConnection con) {
-            for( String t : con.getContentType().split(";") ) {
+            for (String t : con.getContentType().split(";")) {
                 t = t.trim().toLowerCase(Locale.ENGLISH);
-                if(t.startsWith("charset="))
+                if (t.startsWith("charset="))
                     return t.substring(8);
             }
             // couldn't find it. HTML spec says default is US-ASCII,
@@ -328,32 +329,32 @@ public abstract class FormFieldValidator {
         @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
-            if(value==null) {// nothing entered yet
+            if (value == null) { // nothing entered yet
                 ok();
                 return;
             }
 
-            if(!value.endsWith("/")) value+='/';
+            if (!value.endsWith("/")) value += '/';
 
             try {
                 URL url = new URL(value);
                 HttpURLConnection con = openConnection(url);
                 con.connect();
-                if(con.getResponseCode()!=200
-                || con.getHeaderField("X-Hudson")==null) {
-                    error(value+" is not Hudson ("+con.getResponseMessage()+")");
+                if (con.getResponseCode() != 200
+                || con.getHeaderField("X-Hudson") == null) {
+                    error(value + " is not Hudson (" + con.getResponseMessage() + ")");
                     return;
                 }
 
                 ok();
             } catch (IOException e) {
-                handleIOException(value,e);
+                handleIOException(value, e);
             }
         }
 
         @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
         private HttpURLConnection openConnection(URL url) throws IOException {
-            return (HttpURLConnection)url.openConnection();
+            return (HttpURLConnection) url.openConnection();
         }
     }
 
@@ -380,9 +381,9 @@ public abstract class FormFieldValidator {
         @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
-            AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
+            AbstractProject<?, ?> p = (AbstractProject<?, ?>) subject;
 
-            if(value==null || p==null) {
+            if (value == null || p == null) {
                 ok(); // none entered yet, or something is seriously wrong
                 return;
             }
@@ -390,13 +391,13 @@ public abstract class FormFieldValidator {
             try {
                 FilePath ws = getBaseDirectory(p);
 
-                if(ws==null || !ws.exists()) {// no workspace. can't check
+                if (ws == null || !ws.exists()) { // no workspace. can't check
                     ok();
                     return;
                 }
 
                 String msg = ws.validateAntFileMask(value, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
-                if(errorIfNotExist)     error(msg);
+                if (errorIfNotExist)     error(msg);
                 else                    warning(msg);
             } catch (InterruptedException e) {
                 ok(Messages.FormFieldValidator_did_not_manage_to_validate_may_be_too_sl(value));
@@ -406,7 +407,7 @@ public abstract class FormFieldValidator {
         /**
          * The base directory from which the path name is resolved.
          */
-        protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
+        protected FilePath getBaseDirectory(AbstractProject<?, ?> p) {
             return p.getSomeWorkspace();
         }
     }
@@ -450,14 +451,14 @@ public abstract class FormFieldValidator {
         @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
-            AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
+            AbstractProject<?, ?> p = (AbstractProject<?, ?>) subject;
 
-            if(value==null || p==null) {
+            if (value == null || p == null) {
                 ok(); // none entered yet, or something is seriously wrong
                 return;
             }
 
-            if(value.contains("*")) {
+            if (value.contains("*")) {
                 // a common mistake is to use wildcard
                 error("Wildcard is not allowed here");
                 return;
@@ -466,31 +467,31 @@ public abstract class FormFieldValidator {
             try {
                 FilePath ws = getBaseDirectory(p);
 
-                if(ws==null) {// can't check
+                if (ws == null) { // can't check
                     ok();
                     return;
                 }
 
-                if(!ws.exists()) {// no workspace. can't check
+                if (!ws.exists()) { // no workspace. can't check
                     ok();
                     return;
                 }
 
-                if(ws.child(value).exists()) {
+                if (ws.child(value).exists()) {
                     if (expectingFile) {
-                        if(!ws.child(value).isDirectory())
+                        if (!ws.child(value).isDirectory())
                             ok();
                         else
-                            error(value+" is not a file");
+                            error(value + " is not a file");
                     } else {
-                        if(ws.child(value).isDirectory())
+                        if (ws.child(value).isDirectory())
                             ok();
                         else
-                            error(value+" is not a directory");
+                            error(value + " is not a directory");
                     }
                 } else {
-                    String msg = "No such "+(expectingFile?"file":"directory")+": " + value;
-                    if(errorIfNotExist)     error(msg);
+                    String msg = "No such " + (expectingFile ? "file" : "directory") + ": " + value;
+                    if (errorIfNotExist)     error(msg);
                     else                    warning(msg);
                 }
             } catch (InterruptedException e) {
@@ -501,7 +502,7 @@ public abstract class FormFieldValidator {
         /**
          * The base directory from which the path name is resolved.
          */
-        protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
+        protected FilePath getBaseDirectory(AbstractProject<?, ?> p) {
             return p.getSomeWorkspace();
         }
     }
@@ -573,9 +574,9 @@ public abstract class FormFieldValidator {
             Exception e = exceptions[0];
             if (e != null) {
                 if (e instanceof IOException)
-                    throw (IOException)e;
+                    throw (IOException) e;
                 if (e instanceof ServletException)
-                    throw (ServletException)e;
+                    throw (ServletException) e;
             }
         }
 
@@ -611,14 +612,14 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             try {
                 String v = request.getParameter("value");
-                if(!allowWhitespace) {
-                    if(v.indexOf(' ')>=0 || v.indexOf('\n')>=0) {
+                if (!allowWhitespace) {
+                    if (v.indexOf(' ') >= 0 || v.indexOf('\n') >= 0) {
                         fail();
                         return;
                     }
                 }
-                v=v.trim();
-                if(!allowEmpty && v.length()==0) {
+                v = v.trim();
+                if (!allowEmpty && v.length() == 0) {
                     fail();
                     return;
                 }
@@ -652,7 +653,7 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             try {
                 String value = request.getParameter("value");
-                if(Integer.parseInt(value)<0)
+                if (Integer.parseInt(value) < 0)
                     error(hudson.model.Messages.Hudson_NotAPositiveNumber());
                 else
                     ok();

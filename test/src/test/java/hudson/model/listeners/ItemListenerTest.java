@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.listeners;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,6 +53,7 @@ public class ItemListenerTest {
             @Override public void onCreated(Item item) {
                 events.append('C');
             }
+
             @Override public void onCopied(Item src, Item item) {
                 events.append('Y');
             }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import antlr.ANTLRException;
@@ -44,7 +45,7 @@ import jenkins.model.labels.LabelValidator;
 
 /**
  * Boolean expression of labels.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since  1.372
  */
@@ -62,7 +63,7 @@ public abstract class LabelExpression extends Label {
         public final Label base;
 
         public Not(Label base) {
-            super('!'+paren(LabelOperatorPrecedence.NOT,base));
+            super('!' + paren(LabelOperatorPrecedence.NOT, base));
             this.base = base;
         }
 
@@ -89,7 +90,7 @@ public abstract class LabelExpression extends Label {
         public final Label base;
 
         public Paren(Label base) {
-            super('('+base.getExpression()+')');
+            super('(' + base.getExpression() + ')');
             this.base = base;
         }
 
@@ -113,13 +114,13 @@ public abstract class LabelExpression extends Label {
      * Puts the label name into a parenthesis if the given operator will have a higher precedence.
      */
     static String paren(LabelOperatorPrecedence op, Label l) {
-        if (op.compareTo(l.precedence())<0)
-            return '('+l.getExpression()+')';
+        if (op.compareTo(l.precedence()) < 0)
+            return '(' + l.getExpression() + ')';
         return l.getExpression();
     }
 
     public abstract static class Binary extends LabelExpression {
-        public final Label lhs,rhs;
+        public final Label lhs, rhs;
 
         protected Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
             super(combine(lhs, rhs, op));
@@ -128,7 +129,7 @@ public abstract class LabelExpression extends Label {
         }
 
         private static String combine(Label lhs, Label rhs, LabelOperatorPrecedence op) {
-            return paren(op,lhs)+op.str+paren(op,rhs);
+            return paren(op, lhs) + op.str + paren(op, rhs);
         }
 
         /**
@@ -137,7 +138,7 @@ public abstract class LabelExpression extends Label {
          */
         @Override
         public boolean matches(VariableResolver<Boolean> resolver) {
-            return op(lhs.matches(resolver),rhs.matches(resolver));
+            return op(lhs.matches(resolver), rhs.matches(resolver));
         }
 
         protected abstract boolean op(boolean a, boolean b);

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 /**
@@ -28,7 +29,7 @@ package hudson.search;
  */
 public class SearchItems {
     public static SearchItem create(String searchName, String url) {
-        return create(searchName,url, SearchIndex.EMPTY);
+        return create(searchName, url, SearchIndex.EMPTY);
     }
 
     public static SearchItem create(final String searchName, final String url, final SearchIndex children) {

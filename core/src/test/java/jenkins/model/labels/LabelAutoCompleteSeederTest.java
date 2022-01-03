@@ -58,8 +58,8 @@ public class LabelAutoCompleteSeederTest {
         );
     }
 
-    @ParameterizedTest( name = "{index}" )
-    @MethodSource( "localParameters" )
+    @ParameterizedTest(name = "{index}")
+    @MethodSource("localParameters")
     public void testAutoCompleteSeeds(String underTest, List<String> expected) {
         LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(underTest);
         assertEquals(expected, seeder.getSeeds());

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -54,7 +55,7 @@ import java.util.TreeMap;
  * @author Kohsuke Kawaguchi
  */
 @SuppressWarnings("unchecked")
-public final class PackedMap<K,V> extends AbstractMap<K,V> {
+public final class PackedMap<K, V> extends AbstractMap<K, V> {
     private Object[] kvpairs;
 
     /**
@@ -62,34 +63,34 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
      * @param src
      *      Map to copy contents from. Iteration order is preserved.
      */
-    public static <K,V> PackedMap<K,V> of(Map<? extends K,? extends V> src) {
+    public static <K, V> PackedMap<K, V> of(Map<? extends K, ? extends V> src) {
         return new PackedMap<>(src);
     }
 
-    private PackedMap(Map<? extends K,? extends V> src) {
-        kvpairs = new Object[src.size()*2];
-        int i=0;
+    private PackedMap(Map<? extends K, ? extends V> src) {
+        kvpairs = new Object[src.size() * 2];
+        int i = 0;
         for (Entry<? extends K, ? extends V> e : src.entrySet()) {
             kvpairs[i++] = e.getKey();
             kvpairs[i++] = e.getValue();
         }
     }
 
-    private final Set<Entry<K,V>> entrySet = new AbstractSet<Entry<K, V>>() {
+    private final Set<Entry<K, V>> entrySet = new AbstractSet<Entry<K, V>>() {
         @Override
         public Iterator<Entry<K, V>> iterator() {
             return new Iterator<Entry<K, V>>() {
-                int index=0;
+                int index = 0;
                 @Override
                 public boolean hasNext() {
-                    return index<kvpairs.length;
+                    return index < kvpairs.length;
                 }
 
                 @Override
                 @SuppressWarnings("unchecked")
                 public Entry<K, V> next() {
-                    final K k = (K)kvpairs[index++];
-                    final V v = (V)kvpairs[index++];
+                    final K k = (K) kvpairs[index++];
+                    final V v = (V) kvpairs[index++];
                     return new Entry<K, V>() {
                         @Override
                         public K getKey() {
@@ -117,7 +118,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
         @Override
         public int size() {
-            return kvpairs.length/2;
+            return kvpairs.length / 2;
         }
     };
 
@@ -128,7 +129,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
     @Override
     public boolean containsKey(Object key) {
-        for (int i=0; i<kvpairs.length; i+=2)
+        for (int i = 0; i < kvpairs.length; i += 2)
             if (key.equals(kvpairs[i]))
                 return true;
         return false;
@@ -136,9 +137,9 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
     @Override
     public V get(Object key) {
-        for (int i=0; i<kvpairs.length; i+=2)
+        for (int i = 0; i < kvpairs.length; i += 2)
             if (key.equals(kvpairs[i]))
-                return (V)kvpairs[i+1];
+                return (V) kvpairs[i + 1];
         return null;
     }
 
@@ -147,7 +148,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {
-                return (V)kvpairs[index*2];
+                return (V) kvpairs[index * 2];
             }
 
             @Override
@@ -167,17 +168,17 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
         @Override
         public boolean canConvert(Class type) {
-            return type==PackedMap.class;
+            return type == PackedMap.class;
         }
 
         @Override
         protected Object createCollection(Class type) {
-            return new LinkedHashMap<String,String>();
+            return new LinkedHashMap<String, String>();
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            return PackedMap.of((Map)super.unmarshal(reader, context));
+            return PackedMap.of((Map) super.unmarshal(reader, context));
         }
     }
 }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.model.Messages.Hudson_ViewName;
@@ -133,7 +134,7 @@ public class ViewTest {
 
         final Map<String, String> values = new HashMap<>();
 
-        for(NameValuePair p : responseHeaders) {
+        for (NameValuePair p : responseHeaders) {
             values.put(p.getName(), p.getValue());
         }
 
@@ -308,7 +309,7 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetQueueItems() throws Exception{
+    public void testGetQueueItems() throws Exception {
         ListView view1 = listView("view1");
         view1.filterQueue = true;
         ListView view2 = listView("view2");
@@ -344,7 +345,7 @@ public class ViewTest {
     }
 
     private void assertContainsItems(View view, Task... items) {
-        for (Task job: items) {
+        for (Task job : items) {
             assertTrue(
                     "Queued items for " + view.getDisplayName() + " should contain " + job.getDisplayName(),
                     view.getQueueItems().contains(Queue.getInstance().getItem(job))
@@ -353,7 +354,7 @@ public class ViewTest {
     }
 
     private void assertNotContainsItems(View view, Task... items) {
-        for (Task job: items) {
+        for (Task job : items) {
             assertFalse(
                     "Queued items for " + view.getDisplayName() + " should not contain " + job.getDisplayName(),
                     view.getQueueItems().contains(Queue.getInstance().getItem(job))
@@ -362,13 +363,13 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetComputers() throws Exception{
+    public void testGetComputers() throws Exception {
         ListView view1 = listView("view1");
         ListView view2 = listView("view2");
         ListView view3 = listView("view3");
-        view1.filterExecutors=true;
-        view2.filterExecutors=true;
-        view3.filterExecutors=true;
+        view1.filterExecutors = true;
+        view2.filterExecutors = true;
+        view3.filterExecutors = true;
 
         Slave slave0 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
         Slave slave1 = j.createOnlineSlave(j.jenkins.getLabel("label1"));
@@ -428,7 +429,7 @@ public class ViewTest {
     }
 
     private void assertContainsNodes(View view, Node... slaves) {
-        for (Node slave: slaves) {
+        for (Node slave : slaves) {
             assertTrue(
                     "Filtered executors for " + view.getDisplayName() + " should contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
@@ -437,7 +438,7 @@ public class ViewTest {
     }
 
     private void assertNotContainsNodes(View view, Node... slaves) {
-        for (Node slave: slaves) {
+        for (Node slave : slaves) {
             assertFalse(
                     "Filtered executors for " + view.getDisplayName() + " should not contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
@@ -446,14 +447,14 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetItem() throws Exception{
+    public void testGetItem() throws Exception {
         ListView view = listView("foo");
         FreeStyleProject job1 = j.createFreeStyleProject("free");
         MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
         FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
-        assertEquals("View should return job " + job1.getDisplayName(),job1,  view.getItem("free"));
+        assertEquals("View should return job " + job1.getDisplayName(), job1,  view.getItem("free"));
         assertNotNull("View should return null.", view.getItem("not-included"));
     }
 
@@ -470,25 +471,25 @@ public class ViewTest {
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
+        assertEquals("View should have owner jenkins.", j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
 
     @Test
-    public void testGetOwnerPrimaryView() throws Exception{
+    public void testGetOwnerPrimaryView() throws Exception {
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(), view, view.getOwner().getPrimaryView());
     }
 
     @Test
-    public void testSave() throws Exception{
+    public void testSave() throws Exception {
         ListView view = listView("foo");
         FreeStyleProject job = j.createFreeStyleProject("free");
         view.jobNames.add("free");
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
+        if (j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading) {
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));
@@ -539,7 +540,7 @@ public class ViewTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Item.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
-        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
             public Void call() {
                 try {
@@ -551,7 +552,7 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
             public Void call() {
                 try {
@@ -570,7 +571,7 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
             public Void call() {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
@@ -614,11 +615,14 @@ public class ViewTest {
         }
         assertTrue(found);
     }
+
     private static class BrokenView extends ListView {
         static final String ERR = "oops I cannot retrieve items";
+
         BrokenView() {
             super("broken");
         }
+
         @Override
         public List<TopLevelItem> getItems() {
             throw new IllegalStateException(ERR);
@@ -993,8 +997,10 @@ public class ViewTest {
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
             @Override
             protected List<View> views() { return views; }
+
             @Override
             protected String primaryView() { return primaryView; }
+
             @Override
             protected void primaryView(String name) { primaryView = name; }
         };

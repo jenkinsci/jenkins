@@ -62,7 +62,7 @@ public class SystemLogLink extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
-    
+
     @NonNull
     @Override
     public Category getCategory() {

@@ -98,7 +98,7 @@ public abstract class DirectedGraph<N> {
     public List<SCC<N>> getStronglyConnectedComponents() {
         final Map<N, Node> nodes = new HashMap<>();
         for (N n : nodes()) {
-            nodes.put(n,new Node(n));
+            nodes.put(n, new Node(n));
         }
 
         final List<SCC<N>> sccs = new ArrayList<>();
@@ -110,30 +110,30 @@ public abstract class DirectedGraph<N> {
              * Nodes not yet classified for the strongly connected components
              */
             Stack<Node> pending = new Stack<>();
-            
+
             void traverse() {
                 for (Node n : nodes.values()) {
-                    if (n.index==-1)
+                    if (n.index == -1)
                         visit(n);
                 }
             }
-            
+
             void visit(Node v) {
                 v.index = v.lowlink = index++;
                 pending.push(v);
 
                 for (N q : v.edges()) {
                     Node w = nodes.get(q);
-                    if (w.index==-1) {
+                    if (w.index == -1) {
                         visit(w);
-                        v.lowlink = Math.min(v.lowlink,w.lowlink);
+                        v.lowlink = Math.min(v.lowlink, w.lowlink);
                     } else
                     if (pending.contains(w)) {
-                        v.lowlink = Math.min(v.lowlink,w.index);
+                        v.lowlink = Math.min(v.lowlink, w.index);
                     }
                 }
 
-                if (v.lowlink==v.index) {
+                if (v.lowlink == v.index) {
                     // found a new SCC
                     SCC<N> scc = new SCC<>(sccIndex++);
                     sccs.add(scc);
@@ -143,7 +143,7 @@ public abstract class DirectedGraph<N> {
                         w = pending.pop();
                         w.scc = scc;
                         scc.members.add(w.n);
-                    } while(w!=v);
+                    } while (w != v);
                 }
             }
         }

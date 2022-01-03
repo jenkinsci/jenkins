@@ -31,7 +31,7 @@ public class ExceptionAnnotationTest {
 
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
 
-        j.createWebClient().getPage(b,"console");
+        j.createWebClient().getPage(b, "console");
 
         // TODO: check if the annotation is placed
         // TODO: test an exception with cause and message

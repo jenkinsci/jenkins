@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -198,7 +199,7 @@ public class BuildTimeTrendTest {
 
         @Override
         protected SortedMap<Integer, NonAbstractBuild> _getRuns() {
-            if (runMap == null){
+            if (runMap == null) {
                 runMap = new RunMap<>(this.getBuildDir(), this::createBuildFromDir);
             }
             return runMap;
