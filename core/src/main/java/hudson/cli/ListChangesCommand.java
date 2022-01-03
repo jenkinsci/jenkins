@@ -37,7 +37,7 @@ public class ListChangesCommand extends RunRangeCommand {
         XML, CSV, PLAIN
     }
 
-    @Option(name="-format",usage="Controls how the output from this command is printed.")
+    @Option(name = "-format", usage = "Controls how the output from this command is printed.")
     public Format format = Format.PLAIN;
 
     @Override

@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Alan Harder, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -74,7 +75,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public ArgumentListBuilder add(String a) {
-        return add(a,false);
+        return add(a, false);
     }
 
     /**
@@ -87,20 +88,20 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.378
      */
     public ArgumentListBuilder add(String a, boolean mask) {
-        if(a!=null) {
-            if(mask) {
+        if (a != null) {
+            if (mask) {
                 this.mask.set(args.size());
             }
             args.add(a);
         }
         return this;
     }
-    
+
     public ArgumentListBuilder prepend(String... args) {
         // left-shift the mask
-        BitSet nm = new BitSet(this.args.size()+args.length);
-        for(int i=0; i<this.args.size(); i++)
-            nm.set(i+args.length, mask.get(i));
+        BitSet nm = new BitSet(this.args.size() + args.length);
+        for (int i = 0; i < this.args.size(); i++)
+            nm.set(i + args.length, mask.get(i));
         mask = nm;
 
         this.args.addAll(0, Arrays.asList(args));
@@ -113,17 +114,17 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * such as when adding argument for ssh and rsh.
      *
      * Normal process invocations don't need it, because each
-     * argument is treated as its own string and never merged into one. 
+     * argument is treated as its own string and never merged into one.
      */
     public ArgumentListBuilder addQuoted(String a) {
-        return add('"'+a+'"', false);
+        return add('"' + a + '"', false);
     }
 
     /**
      * @since 1.378
      */
     public ArgumentListBuilder addQuoted(String a, boolean mask) {
-        return add('"'+a+'"', mask);
+        return add('"' + a + '"', mask);
     }
 
     public ArgumentListBuilder add(String... args) {
@@ -132,7 +133,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         }
         return this;
     }
-    
+
     /**
      * @since 2.72
      */
@@ -147,7 +148,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * Decomposes the given token into multiple arguments by splitting via whitespace.
      */
     public ArgumentListBuilder addTokenized(String s) {
-        if(s==null) return this;
+        if (s == null) return this;
         add(Util.tokenize(s));
         return this;
     }
@@ -156,7 +157,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.378
      */
     public ArgumentListBuilder addKeyValuePair(String prefix, String key, String value, boolean mask) {
-        if(key==null) return this;
+        if (key == null) return this;
         add((prefix == null ? "-D" : prefix) + key + '=' + value, mask);
         return this;
     }
@@ -167,8 +168,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * {@code -D} portion is configurable as the 'prefix' parameter.
      * @since 1.114
      */
-    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
-        for (Map.Entry<String,String> e : props.entrySet())
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String, String> props) {
+        for (Map.Entry<String, String> e : props.entrySet())
             addKeyValuePair(prefix, e.getKey(), e.getValue(), false);
         return this;
     }
@@ -185,8 +186,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *      names that do not exist in the set will be added unmasked.
      * @since 1.378
      */
-    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
-        for (Map.Entry<String,String> e : props.entrySet()) {
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String, String> props, Set<String> propsToMask) {
+        for (Map.Entry<String, String> e : props.entrySet()) {
             addKeyValuePair(prefix, e.getKey(), e.getValue(), propsToMask != null && propsToMask.contains(e.getKey()));
         }
         return this;
@@ -224,12 +225,12 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.378
      */
     public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver<String> vr, Set<String> propsToMask) throws IOException {
-        if(properties==null)    return this;
+        if (properties == null)    return this;
 
         properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));
 
-        for (Map.Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), propsToMask != null && propsToMask.contains(entry.getKey()));
+        for (Map.Entry<Object, Object> entry : Util.loadProperties(properties).entrySet()) {
+            addKeyValuePair(prefix, (String) entry.getKey(), entry.getValue().toString(), propsToMask != null && propsToMask.contains(entry.getKey()));
         }
         return this;
     }
@@ -262,7 +263,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     public String[] toCommandArray() {
         return args.toArray(new String[0]);
     }
-    
+
     @Override
     public ArgumentListBuilder clone() {
         try {
@@ -294,9 +295,9 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
         for (String arg : args) {
-            if(buf.length()>0)  buf.append(' ');
+            if (buf.length() > 0)  buf.append(' ');
 
-            if(arg.indexOf(' ')>=0 || arg.length()==0)
+            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);
@@ -329,7 +330,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.386
      */
     public ArgumentListBuilder toWindowsCommand(boolean escapeVars) {
-    	ArgumentListBuilder windowsCommand = new ArgumentListBuilder().add("cmd.exe", "/C");
+        ArgumentListBuilder windowsCommand = new ArgumentListBuilder().add("cmd.exe", "/C");
         boolean quoted, percent;
         for (int i = 0; i < args.size(); i++) {
             StringBuilder quotedArgs = new StringBuilder();
@@ -359,7 +360,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
             }
             if (i == 0) {
                 if (quoted) {
-                    quotedArgs.insert(0, '"'); 
+                    quotedArgs.insert(0, '"');
                 } else {
                     quotedArgs.append('"');
                 }
@@ -369,7 +370,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
             } else {
                 quotedArgs.append(arg);
             }
-            
+
             windowsCommand.add(quotedArgs, mask.get(i));
         }
         // (comment copied from old code in hudson.tasks.Ant)
@@ -399,7 +400,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @return true if there are any masked arguments; false otherwise
      */
     public boolean hasMaskedArguments() {
-        return mask.length()>0;
+        return mask.length() > 0;
     }
 
     /**
@@ -408,7 +409,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public boolean[] toMaskArray() {
         boolean[] mask = new boolean[args.size()];
-        for( int i=0; i<mask.length; i++)
+        for (int i = 0; i < mask.length; i++)
             mask[i] = this.mask.get(i);
         return mask;
     }
@@ -422,7 +423,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public ArgumentListBuilder addMasked(Secret s) {
-        return add(Secret.toString(s),true);
+        return add(Secret.toString(s), true);
     }
 
     /**
@@ -431,14 +432,14 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        for (int i=0; i<args.size(); i++) {
+        for (int i = 0; i < args.size(); i++) {
             String arg = args.get(i);
             if (mask.get(i))
                 arg = "******";
 
-            if(buf.length()>0)  buf.append(' ');
+            if (buf.length() > 0)  buf.append(' ');
 
-            if(arg.indexOf(' ')>=0 || arg.length()==0)
+            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);

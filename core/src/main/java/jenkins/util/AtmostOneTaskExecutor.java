@@ -81,7 +81,7 @@ public class AtmostOneTaskExecutor<V> {
     }
 
     public synchronized Future<V> submit() {
-        if (pending==null) {
+        if (pending == null) {
             pending = new CompletableFuture<>();
             maybeRun();
         }
@@ -95,7 +95,7 @@ public class AtmostOneTaskExecutor<V> {
      */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     private synchronized void maybeRun() {
-        if (inprogress==null && pending!=null) {
+        if (inprogress == null && pending != null) {
             base.submit(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {

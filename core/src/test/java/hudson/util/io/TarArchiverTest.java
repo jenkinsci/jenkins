@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
@@ -55,10 +56,10 @@ public class TarArchiverTest {
     @Test public void permission() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        File tar = File.createTempFile("test","tar");
-        File zip = File.createTempFile("test","zip");
+        File tar = File.createTempFile("test", "tar");
+        File zip = File.createTempFile("test", "zip");
 
-        FilePath dir = new FilePath(File.createTempFile("test","dir"));
+        FilePath dir = new FilePath(File.createTempFile("test", "dir"));
 
         try {
             dir.delete();
@@ -73,7 +74,7 @@ public class TarArchiverTest {
             f.chmod(0644);
             int dirMode = dir.child("subdir").mode();
 
-            dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
+            dir.tar(Files.newOutputStream(tar.toPath()), "**/*");
             dir.zip(Files.newOutputStream(zip.toPath()));
 
 
@@ -83,9 +84,9 @@ public class TarArchiverTest {
             // extract via the tar command
             run(e, "tar", "xvpf", tar.getAbsolutePath());
 
-            assertEquals(0755,e.child("a.txt").mode());
-            assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0644,e.child("subdir/b.txt").mode());
+            assertEquals(0755, e.child("a.txt").mode());
+            assertEquals(dirMode, e.child("subdir").mode());
+            assertEquals(0644, e.child("subdir/b.txt").mode());
 
 
             // extract via the zip command
@@ -94,8 +95,8 @@ public class TarArchiverTest {
             e = e.listDirectories().get(0);
 
             assertEquals(0755, e.child("a.txt").mode());
-            assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0644,e.child("subdir/b.txt").mode());
+            assertEquals(dirMode, e.child("subdir").mode());
+            assertEquals(0644, e.child("subdir/b.txt").mode());
         } finally {
             tar.delete();
             zip.delete();
@@ -126,7 +127,7 @@ public class TarArchiverTest {
 
     @Issue("JENKINS-20187")
     @Test public void growingFileTar() throws Exception {
-        File file=new File(tmp.getRoot(),"growing.file");
+        File file = new File(tmp.getRoot(), "growing.file");
         GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
         Thread t1 = new Thread(runnable1);
         t1.start();

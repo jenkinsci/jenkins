@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks._maven;
 
 import hudson.Extension;
@@ -53,7 +54,7 @@ public class Maven3MojoNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        text.addMarkup(7,text.length(),"<b class=maven-mojo>","</b>");
+        text.addMarkup(7, text.length(), "<b class=maven-mojo>", "</b>");
         return null;
     }
 

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import java.util.Collections;
@@ -58,15 +59,16 @@ public class StructuredForm {
      * Because of the way structured form submission work, this is convenient way of
      * handling repeated multi-value entries.
      *
-     * @since 1.233 
+     * @since 1.233
      */
+
     public static List<JSONObject> toList(JSONObject parent, String propertyName) {
         Object v = parent.get(propertyName);
-        if(v==null)
+        if (v == null)
             return Collections.emptyList();
-        if(v instanceof JSONObject)
-            return Collections.singletonList((JSONObject)v);
-        if(v instanceof JSONArray)
+        if (v instanceof JSONObject)
+            return Collections.singletonList((JSONObject) v);
+        if (v instanceof JSONArray)
             return (List) v;
 
         throw new IllegalArgumentException();

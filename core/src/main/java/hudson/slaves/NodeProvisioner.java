@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static hudson.model.LoadStatistics.DECAY;
@@ -99,7 +100,7 @@ public class NodeProvisioner {
          * @param numExecutors The number of executors that will be provided by the launched {@link Node}.
          */
         public PlannedNode(String displayName, Future<Node> future, int numExecutors) {
-            if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
+            if (displayName == null || future == null || numExecutors < 1)  throw new IllegalArgumentException();
             this.displayName = displayName;
             this.future = future;
             this.numExecutors = numExecutors;
@@ -155,7 +156,7 @@ public class NodeProvisioner {
      * the comparison with other low-frequency only variables won't leave spikes.
      */
     private final MultiStageTimeSeries plannedCapacitiesEMA =
-            new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(),Color.WHITE,0,DECAY);
+            new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(), Color.WHITE, 0, DECAY);
 
     public NodeProvisioner(@CheckForNull Label label, LoadStatistics loadStatistics) {
         this.label = label;
@@ -681,7 +682,7 @@ public class NodeProvisioner {
                     excessWorkload = 1;
                 }
                 float m = calcThresholdMargin(state.getTotalSnapshot());
-                if (excessWorkload > 1 - m) {// and there's more work to do...
+                if (excessWorkload > 1 - m) { // and there's more work to do...
                     LOGGER.log(Level.FINE, "Excess workload {0,number,#.###} detected. "
                                     + "(planned capacity={1,number,#.###},connecting capacity={7,number,#.###},"
                                     + "Qlen={2,number,#.###},available={3,number,#.###}&{4,number,integer},"
@@ -801,9 +802,9 @@ public class NodeProvisioner {
          * can be brought online before we start allocating more.
          */
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-        public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName() + ".initialDelay", LoadStatistics.CLOCK * 10);
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-        public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
+        public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName() + ".recurrencePeriod", LoadStatistics.CLOCK);
 
         @Override
         public long getInitialDelay() {
@@ -819,26 +820,26 @@ public class NodeProvisioner {
         protected void doRun() {
             Jenkins j = Jenkins.get();
             j.unlabeledNodeProvisioner.update();
-            for( Label l : j.getLabels() )
+            for (Label l : j.getLabels())
                 l.nodeProvisioner.update();
         }
     }
 
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
-    private static final float MARGIN = SystemProperties.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
-    private static final float MARGIN0 = Math.max(MARGIN, getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN0",0.5f));
-    private static final float MARGIN_DECAY = getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN_DECAY",0.5f);
+    private static final float MARGIN = SystemProperties.getInteger(NodeProvisioner.class.getName() + ".MARGIN", 10) / 100f;
+    private static final float MARGIN0 = Math.max(MARGIN, getFloatSystemProperty(NodeProvisioner.class.getName() + ".MARGIN0", 0.5f));
+    private static final float MARGIN_DECAY = getFloatSystemProperty(NodeProvisioner.class.getName() + ".MARGIN_DECAY", 0.5f);
 
     // TODO: picker should be selectable
     private static final TimeScale TIME_SCALE = TimeScale.SEC10;
 
     private static float getFloatSystemProperty(String propName, float defaultValue) {
         String v = SystemProperties.getString(propName);
-        if (v!=null)
+        if (v != null)
             try {
                 return Float.parseFloat(v);
             } catch (NumberFormatException e) {
-                LOGGER.warning("Failed to parse a float value from system property "+propName+". value was "+v);
+                LOGGER.warning("Failed to parse a float value from system property " + propName + ". value was " + v);
             }
         return defaultValue;
     }

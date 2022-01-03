@@ -61,7 +61,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     private String jenkinsUrl;
 
     // just to suppress warnings
-    private transient String charset,useSsl;
+    private transient String charset, useSsl;
 
     public static @NonNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
@@ -71,7 +71,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * Gets local configuration. For explanation when it could die, see {@link #get()}
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull JenkinsLocationConfiguration getOrDie(){
+    public static @NonNull JenkinsLocationConfiguration getOrDie() {
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         if (config == null) {
             throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
@@ -84,17 +84,17 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
         // for backward compatibility, if we don't have our own data yet, then
         // load from Mailer.
         XmlFile file = getConfigFile();
-        if(!file.exists()) {
+        if (!file.exists()) {
             XStream2 xs = new XStream2();
-            xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.get().getRootDir(),"hudson.tasks.Mailer.xml"));
+            xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl", JenkinsLocationConfiguration.class);
+            file = new XmlFile(xs, new File(Jenkins.get().getRootDir(), "hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);
-                    if (jenkinsUrl==null)
+                    if (jenkinsUrl == null)
                         jenkinsUrl = hudsonUrl;
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+file, e);
+                    LOGGER.log(Level.WARNING, "Failed to load " + file, e);
                 }
             }
         } else {
@@ -114,7 +114,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      */
     public @NonNull String getAdminAddress() {
         String v = adminAddress;
-        if(v==null)     v = Messages.Mailer_Address_Not_Configured();
+        if (v == null)     v = Messages.Mailer_Address_Not_Configured();
         return v;
     }
 
@@ -124,10 +124,10 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      */
     public void setAdminAddress(@CheckForNull String adminAddress) {
         String address = Util.fixEmptyAndTrim(adminAddress);
-        if(address != null && address.startsWith("\"") && address.endsWith("\"")) {
+        if (address != null && address.startsWith("\"") && address.endsWith("\"")) {
             // some users apparently quote the whole thing. Don't know why
             // anyone does this, but it's a machine's job to forgive human mistake
-            address = address.substring(1,address.length()-1);
+            address = address.substring(1, address.length() - 1);
         }
         this.adminAddress = address;
         save();
@@ -139,7 +139,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
 
     public void setUrl(@CheckForNull String jenkinsUrl) {
         String url = Util.nullify(jenkinsUrl);
-        if(url!=null && !url.endsWith("/"))
+        if (url != null && !url.endsWith("/"))
             url += '/';
         this.jenkinsUrl = url;
 
@@ -199,7 +199,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * Checks the URL in {@code global.jelly}
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
-        if(value.startsWith("http://localhost"))
+        if (value.startsWith("http://localhost"))
             return FormValidation.warning(Messages.Mailer_Localhost_Error());
 
         if (!DISABLE_URL_VALIDATION && isInvalidRootUrl(value)) {

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static java.util.logging.Level.SEVERE;
@@ -101,7 +102,7 @@ public class HudsonFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         this.filterConfig = filterConfig;
         // this is how we make us available to the rest of Hudson.
-        filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
+        filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(), this);
         try {
             Jenkins hudson = Jenkins.getInstanceOrNull();
             if (hudson != null) {
@@ -118,7 +119,7 @@ public class HudsonFilter implements Filter {
             // the whole thing fail hard before a nicer error check
             // in WebAppMain.contextInitialized. So for now,
             // just report it here, and let the WebAppMain handle the failure gracefully.
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins", e);
         }
     }
 
@@ -126,7 +127,7 @@ public class HudsonFilter implements Filter {
      * Gets the {@link HudsonFilter} created for the given {@link ServletContext}.
      */
     public static HudsonFilter get(ServletContext context) {
-        return (HudsonFilter)context.getAttribute(HudsonFilter.class.getName());
+        return (HudsonFilter) context.getAttribute(HudsonFilter.class.getName());
     }
 
     /**
@@ -143,7 +144,7 @@ public class HudsonFilter implements Filter {
             Filter newf = securityRealm.createFilter(this.filterConfig);
             newf.init(this.filterConfig);
             this.filter = newf;
-            if(oldf!=null)
+            if (oldf != null)
                 oldf.destroy();
         } else {
             // no security related filter needed.
@@ -159,23 +160,23 @@ public class HudsonFilter implements Filter {
         LOGGER.entering(HudsonFilter.class.getName(), "doFilter");
 
         // this is not the best place to do it, but doing it here makes the patch smaller.
-        ((HttpServletResponse)response).setHeader("X-Content-Type-Options", "nosniff");
+        ((HttpServletResponse) response).setHeader("X-Content-Type-Options", "nosniff");
 
         // to deal with concurrency, we need to capture the object.
         Filter f = filter;
 
-        if(f==null) {
+        if (f == null) {
             // Hudson is starting up.
-            chain.doFilter(request,response);
+            chain.doFilter(request, response);
         } else {
-            f.doFilter(request,response,chain);
+            f.doFilter(request, response, chain);
         }
     }
 
     @Override
     public void destroy() {
         // the filter can be null if the filter is not initialized yet.
-        if(filter != null)
+        if (filter != null)
             filter.destroy();
     }
 

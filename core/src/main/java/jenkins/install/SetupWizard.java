@@ -140,10 +140,10 @@ public class SetupWizard extends PageDecorator {
     /*package*/ void init(boolean newInstall) throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.get();
 
-        if(newInstall) {
+        if (newInstall) {
             // Create an admin user by default with a difficult password
             FilePath iapf = getInitialAdminPasswordFile();
-            if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
+            if (jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
                 try (BulkChange bc = new BulkChange(jenkins)) {
                     HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                     jenkins.setSecurityRealm(securityRealm);
@@ -170,7 +170,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setAuthorizationStrategy(authStrategy);
 
                     // Disable jnlp by default, but honor system properties
-                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
+                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", -1));
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
@@ -180,7 +180,7 @@ public class SetupWizard extends PageDecorator {
                 }
             }
 
-            if(iapf.exists()) {
+            if (iapf.exists()) {
                 String setupKey = iapf.readToString().trim();
                 String ls = System.lineSeparator();
                 LOGGER.info(ls + ls + "*************************************************************" + ls
@@ -299,9 +299,9 @@ public class SetupWizard extends PageDecorator {
     /*package*/ boolean isUsingSecurityDefaults() {
         Jenkins j = Jenkins.get();
         if (j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) {
-            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
+            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm) j.getSecurityRealm();
             try {
-                if(securityRealm.getAllUsers().size() == 1) {
+                if (securityRealm.getAllUsers().size() == 1) {
                     HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
@@ -310,7 +310,7 @@ public class SetupWizard extends PageDecorator {
                         }
                     }
                 }
-            } catch(UsernameNotFoundException | IOException | InterruptedException e) {
+            } catch (UsernameNotFoundException | IOException | InterruptedException e) {
                 return false; // Not initial security setup if no transitional admin user / password found
             }
         }
@@ -413,14 +413,14 @@ public class SetupWizard extends PageDecorator {
         // pre-check data
         checkRootUrl(errors, rootUrl);
 
-        if(!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
         }
 
         // use the parameters to configure the instance
         useRootUrl(errors, rootUrl);
 
-        if(!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
         }
 
@@ -434,17 +434,17 @@ public class SetupWizard extends PageDecorator {
         return HttpResponses.okJSON(data);
     }
 
-    private void checkRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
-        if(rootUrl == null){
+    private void checkRootUrl(Map<String, String> errors, @CheckForNull String rootUrl) {
+        if (rootUrl == null) {
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Empty());
             return;
         }
-        if(!UrlHelper.isValidRootUrl(rootUrl)){
+        if (!UrlHelper.isValidRootUrl(rootUrl)) {
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Invalid());
         }
     }
 
-    private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
+    private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl) {
         LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
         JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
     }
@@ -459,7 +459,7 @@ public class SetupWizard extends PageDecorator {
      * This file records the version number that the installation has upgraded to.
      */
     /*package*/ static File getUpdateStateFile() {
-        return new File(Jenkins.get().getRootDir(),"jenkins.install.UpgradeWizard.state");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.UpgradeWizard.state");
     }
 
     /**
@@ -492,12 +492,12 @@ public class SetupWizard extends PageDecorator {
         if (setupWizard != null) {
             if (InstallState.UPGRADE.equals(Jenkins.get().getInstallState())) {
                 JSONArray initialPluginData = getPlatformPluginUpdates();
-                if(initialPluginData != null) {
+                if (initialPluginData != null) {
                     return HttpResponses.okJSON(initialPluginData);
                 }
             } else {
                 JSONArray initialPluginData = getPlatformPluginList();
-                if(initialPluginData != null) {
+                if (initialPluginData != null) {
                     return HttpResponses.okJSON(initialPluginData);
                 }
             }
@@ -557,9 +557,9 @@ public class SetupWizard extends PageDecorator {
 
                     JSONObject initialPluginObject = null;
 
-                    if(connection instanceof HttpURLConnection) {
-                        int responseCode = ((HttpURLConnection)connection).getResponseCode();
-                        if(HttpURLConnection.HTTP_OK != responseCode) {
+                    if (connection instanceof HttpURLConnection) {
+                        int responseCode = ((HttpURLConnection) connection).getResponseCode();
+                        if (HttpURLConnection.HTTP_OK != responseCode) {
                             throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
                         }
 
@@ -590,12 +590,12 @@ public class SetupWizard extends PageDecorator {
                         }
                     }
                     break updateSiteList;
-                } catch(Exception e) {
+                } catch (Exception e) {
                     // not found or otherwise unavailable
                     LOGGER.log(Level.FINE, e.getMessage(), e);
                     continue updateSiteList;
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 LOGGER.log(Level.FINE, e.getMessage(), e);
             }
         }
@@ -622,18 +622,18 @@ public class SetupWizard extends PageDecorator {
         for (Iterator<?> categoryIterator = pluginCategories.iterator(); categoryIterator.hasNext();) {
             Object category = categoryIterator.next();
             if (category instanceof JSONObject) {
-                JSONObject cat = (JSONObject)category;
+                JSONObject cat = (JSONObject) category;
                 JSONArray plugins = cat.getJSONArray("plugins");
 
                 nextPlugin: for (Iterator<?> pluginIterator = plugins.iterator(); pluginIterator.hasNext();) {
                     Object pluginData = pluginIterator.next();
                     if (pluginData instanceof JSONObject) {
-                        JSONObject plugin = (JSONObject)pluginData;
+                        JSONObject plugin = (JSONObject) pluginData;
                         if (plugin.has("added")) {
                             String sinceVersion = plugin.getString("added");
                             if (sinceVersion != null) {
                                 VersionNumber v = new VersionNumber(sinceVersion);
-                                if(v.compareTo(to) <= 0 && v.compareTo(from) > 0) {
+                                if (v.compareTo(to) <= 0 && v.compareTo(from) > 0) {
                                     // This plugin is valid, we'll leave "suggested" state
                                     // to match the experience during install
                                     // but only add it if it's currently uninstalled

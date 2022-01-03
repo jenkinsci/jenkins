@@ -46,6 +46,7 @@ public interface SecurityContext {
                 org.springframework.security.core.Authentication a = c.getAuthentication();
                 return a != null ? Authentication.fromSpring(a) : null;
             }
+
             @Override
             public void setAuthentication(Authentication a) {
                 c.setAuthentication(a != null ? a.toSpring() : null);
@@ -60,6 +61,7 @@ public interface SecurityContext {
                 Authentication a = SecurityContext.this.getAuthentication();
                 return a != null ? a.toSpring() : null;
             }
+
             @Override
             public void setAuthentication(org.springframework.security.core.Authentication authentication) {
                 SecurityContext.this.setAuthentication(authentication != null ? Authentication.fromSpring(authentication) : null);

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import java.io.BufferedReader;
@@ -173,7 +174,7 @@ public class DomainValidatorTest extends TestCase {
         assertFalse("a.-9 (- alphanum) should fail", validator.isValidDomainSyntax("a.-9"));
     }
 
-    public void testDomainNoDots() {// rfc1123
+    public void testDomainNoDots() { // rfc1123
         assertTrue("a (alpha) should validate", validator.isValidDomainSyntax("a"));
         assertTrue("9 (alphanum) should validate", validator.isValidDomainSyntax("9"));
         assertTrue("c-z (alpha - alpha) should validate", validator.isValidDomainSyntax("c-z"));
@@ -192,21 +193,21 @@ public class DomainValidatorTest extends TestCase {
         final String longString = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789A";
         assertEquals(63, longString.length()); // 26 * 2 + 11
 
-        assertTrue("63 chars label should validate", validator.isValidDomainSyntax(longString+".com"));
-        assertFalse("64 chars label should fail", validator.isValidDomainSyntax(longString+"x.com"));
+        assertTrue("63 chars label should validate", validator.isValidDomainSyntax(longString + ".com"));
+        assertFalse("64 chars label should fail", validator.isValidDomainSyntax(longString + "x.com"));
 
-        assertTrue("63 chars TLD should validate", validator.isValidDomainSyntax("test."+longString));
-        assertFalse("64 chars TLD should fail", validator.isValidDomainSyntax("test.x"+longString));
+        assertTrue("63 chars TLD should validate", validator.isValidDomainSyntax("test." + longString));
+        assertFalse("64 chars TLD should fail", validator.isValidDomainSyntax("test.x" + longString));
 
         final String longDomain =
                 longString
                 + "." + longString
                 + "." + longString
-                + "." + longString.substring(0,61)
+                + "." + longString.substring(0, 61)
                 ;
         assertEquals(253, longDomain.length());
         assertTrue("253 chars domain should validate", validator.isValidDomainSyntax(longDomain));
-        assertFalse("254 chars domain should fail", validator.isValidDomainSyntax(longDomain+"x"));
+        assertFalse("254 chars domain should fail", validator.isValidDomainSyntax(longDomain + "x"));
     }
 
     // Check that IDN.toASCII behaves as it should (when wrapped by DomainValidator.unicodeToASCII)
@@ -223,8 +224,8 @@ public class DomainValidatorTest extends TestCase {
                 ".a",
                 "..a",
         };
-        for(String s : asciidots) {
-            assertEquals(s,DomainValidator.unicodeToASCII(s));
+        for (String s : asciidots) {
+            assertEquals(s, DomainValidator.unicodeToASCII(s));
         }
         // RFC3490 3.1. 1)
 //      Whenever dots are used as label separators, the following
@@ -232,15 +233,15 @@ public class DomainValidatorTest extends TestCase {
 //      (ideographic full stop), U+FF0E (fullwidth full stop), U+FF61
 //      (halfwidth ideographic full stop).
         final String[][] otherDots = {
-                {"b\u3002", "b.",},
-                {"b\uFF0E", "b.",},
-                {"b\uFF61", "b.",},
-                {"\u3002", ".",},
-                {"\uFF0E", ".",},
-                {"\uFF61", ".",},
+                {"b\u3002", "b.", },
+                {"b\uFF0E", "b.", },
+                {"b\uFF61", "b.", },
+                {"\u3002", ".", },
+                {"\uFF0E", ".", },
+                {"\uFF61", ".", },
         };
-        for(String[] s : otherDots) {
-            assertEquals(s[1],DomainValidator.unicodeToASCII(s[0]));
+        for (String[] s : otherDots) {
+            assertEquals(s[1], DomainValidator.unicodeToASCII(s[0]));
         }
     }
 
@@ -249,7 +250,7 @@ public class DomainValidatorTest extends TestCase {
         System.out.println(">>DomainValidatorTest.testIsIDNtoASCIIBroken()");
         final String input = ".";
         final boolean ok = input.equals(IDN.toASCII(input));
-        System.out.println("IDN.toASCII is " + (ok? "OK" : "BROKEN"));
+        System.out.println("IDN.toASCII is " + (ok ? "OK" : "BROKEN"));
         String[] props = {
         "java.version", //    Java Runtime Environment version
         "java.vendor", // Java Runtime Environment vendor
@@ -264,7 +265,7 @@ public class DomainValidatorTest extends TestCase {
         "java.specification.name", // Java Runtime Environment specification name
         "java.class.version", //  Java class format version number
         };
-        for(String t : props) {
+        for (String t : props) {
             System.out.println(t + "=" + System.getProperty(t));
         }
         System.out.println("<<DomainValidatorTest.testIsIDNtoASCIIBroken()");
@@ -319,7 +320,7 @@ public class DomainValidatorTest extends TestCase {
         // Check the arrays first as this affects later checks
         // Doing this here makes it easier when updating the lists
         boolean OK = true;
-        for(String list : new String[]{"INFRASTRUCTURE_TLDS","COUNTRY_CODE_TLDS","GENERIC_TLDS","LOCAL_TLDS"}) {
+        for (String list : new String[]{"INFRASTRUCTURE_TLDS", "COUNTRY_CODE_TLDS", "GENERIC_TLDS", "LOCAL_TLDS"}) {
             OK &= isSortedLowerCase(list);
         }
         if (!OK) {
@@ -333,7 +334,7 @@ public class DomainValidatorTest extends TestCase {
         final File htmlFile = new File("target/tlds-alpha-by-domain.html");
         // N.B. sometimes the html file may be updated a day or so after the txt file
         // if the txt file contains entries not found in the html file, try again in a day or two
-        download(htmlFile,"https://www.iana.org/domains/root/db", timestamp);
+        download(htmlFile, "https://www.iana.org/domains/root/db", timestamp);
 
         BufferedReader br = new BufferedReader(new FileReader(txtFile));
         String line;
@@ -351,7 +352,7 @@ public class DomainValidatorTest extends TestCase {
         Map<String, String[]> htmlInfo = getHtmlInfo(htmlFile);
         Map<String, String> missingTLD = new TreeMap<>(); // stores entry and comments as String[]
         Map<String, String> missingCC = new TreeMap<>();
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             if (!line.startsWith("#")) {
                 final String unicodeTld; // only different from asciiTld if that was punycode
                 final String asciiTld = line.toLowerCase(Locale.ENGLISH);
@@ -377,7 +378,7 @@ public class DomainValidatorTest extends TestCase {
                             }
                         }
                     } else {
-                        System.err.println("Expected to find HTML info for "+ asciiTld);
+                        System.err.println("Expected to find HTML info for " + asciiTld);
                     }
                 }
                 ianaTlds.add(asciiTld);
@@ -391,12 +392,12 @@ public class DomainValidatorTest extends TestCase {
         }
         br.close();
         // List html entries not in TLD text list
-        for(String key : (new TreeMap<>(htmlInfo)).keySet()) {
+        for (String key : (new TreeMap<>(htmlInfo)).keySet()) {
             if (!ianaTlds.contains(key)) {
                 if (isNotInRootZone(key)) {
-                    System.out.println("INFO: HTML entry not yet in root zone: "+key);
+                    System.out.println("INFO: HTML entry not yet in root zone: " + key);
                 } else {
-                    System.err.println("WARN: Expected to find text entry for html: "+key);
+                    System.err.println("WARN: Expected to find text entry for html: " + key);
                 }
             }
         }
@@ -415,7 +416,7 @@ public class DomainValidatorTest extends TestCase {
     }
 
     private static void printMap(final String header, Map<String, String> map, String string) {
-        System.out.println("Entries missing from "+ string +" List\n");
+        System.out.println("Entries missing from " + string + " List\n");
         if (header != null) {
             System.out.println("        // Taken from " + header);
         }
@@ -438,7 +439,7 @@ public class DomainValidatorTest extends TestCase {
 
         final BufferedReader br = new BufferedReader(new FileReader(f));
         String line;
-        while((line=br.readLine())!=null){
+        while ((line = br.readLine()) != null) {
             Matcher m = domain.matcher(line);
             if (m.lookingAt()) {
                 String dom = m.group(1);
@@ -453,14 +454,14 @@ public class DomainValidatorTest extends TestCase {
                     typ = t.group(1);
                     line = br.readLine();
                     if (line.matches("\\s+<!--.*")) {
-                        while(!line.matches(".*-->.*")){
+                        while (!line.matches(".*-->.*")) {
                             line = br.readLine();
                         }
                         line = br.readLine();
                     }
                     // Should have comment; is it wrapped?
-                    while(!line.matches(".*</td>.*")){
-                        line += " " +br.readLine();
+                    while (!line.matches(".*</td>.*")) {
+                        line += " " + br.readLine();
                     }
                     Matcher n = comment.matcher(line);
                     if (n.lookingAt()) {
@@ -488,12 +489,12 @@ public class DomainValidatorTest extends TestCase {
      * Html page, so we check if it is newer than the txt file and skip download if so
      */
     private static long download(File f, String tldurl, long timestamp) throws IOException {
-        final int HOUR = 60*60*1000; // an hour in ms
+        final int HOUR = 60 * 60 * 1000; // an hour in ms
         final long modTime;
         // For testing purposes, don't download files more than once an hour
         if (f.canRead()) {
             modTime = f.lastModified();
-            if (modTime > System.currentTimeMillis()-HOUR) {
+            if (modTime > System.currentTimeMillis() - HOUR) {
                 System.out.println("Skipping download - found recent " + f);
                 return modTime;
             }
@@ -502,7 +503,7 @@ public class DomainValidatorTest extends TestCase {
         }
         HttpURLConnection hc = (HttpURLConnection) new URL(tldurl).openConnection();
         if (modTime > 0) {
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");//Sun, 06 Nov 1994 08:49:37 GMT
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z"); //Sun, 06 Nov 1994 08:49:37 GMT
             String since = sdf.format(new Date(modTime));
             hc.addRequestProperty("If-Modified-Since", since);
             System.out.println("Found " + f + " with date " + since);
@@ -516,7 +517,7 @@ public class DomainValidatorTest extends TestCase {
 
             FileOutputStream fos = new FileOutputStream(f);
             int len;
-            while((len=is.read(buff)) != -1) {
+            while ((len = is.read(buff)) != -1) {
                 fos.write(buff, 0, len);
             }
             fos.close();
@@ -536,7 +537,7 @@ public class DomainValidatorTest extends TestCase {
      */
     private static boolean isNotInRootZone(String domain) {
         String tldurl = "http://www.iana.org/domains/root/db/" + domain + ".html";
-        File rootCheck = new File("target","tld_" + domain + ".html");
+        File rootCheck = new File("target", "tld_" + domain + ".html");
         BufferedReader in = null;
         try {
             download(rootCheck, tldurl, 0L);
@@ -617,10 +618,10 @@ public class DomainValidatorTest extends TestCase {
         boolean sorted = true;
         boolean strictlySorted = true;
         final int length = array.length;
-        boolean lowerCase = isLowerCase(array[length-1]); // Check the last entry
-        for(int i = 0; i < length-1; i++) { // compare all but last entry with next
+        boolean lowerCase = isLowerCase(array[length - 1]); // Check the last entry
+        for (int i = 0; i < length - 1; i++) { // compare all but last entry with next
             final String entry = array[i];
-            final String nextEntry = array[i+1];
+            final String nextEntry = array[i + 1];
             final int cmp = entry.compareTo(nextEntry);
             if (cmp > 0) { // out of order
                 System.out.println("Out of order entry: " + entry + " < " + nextEntry + " in " + name);

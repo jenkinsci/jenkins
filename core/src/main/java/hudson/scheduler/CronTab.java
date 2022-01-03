@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scheduler;
 
 import static java.util.Calendar.DAY_OF_MONTH;
@@ -67,11 +68,11 @@ public final class CronTab {
     private @CheckForNull String specTimezone;
 
     public CronTab(String format) throws ANTLRException {
-        this(format,null);
+        this(format, null);
     }
 
     public CronTab(String format, Hash hash) throws ANTLRException {
-        this(format,1,hash);
+        this(format, 1, hash);
     }
 
     /**
@@ -118,9 +119,9 @@ public final class CronTab {
         specTimezone = timezone;
 
         parser.startRule(this);
-        if((dayOfWeek&(1<<7))!=0) {
+        if ((dayOfWeek & (1 << 7)) != 0) {
             dayOfWeek |= 1; // copy bit 7 over to bit 0
-            dayOfWeek &= ~(1<<7); // clear bit 7 or CalendarField#ceil will return an invalid value 7
+            dayOfWeek &= ~(1 << 7); // clear bit 7 or CalendarField#ceil will return an invalid value 7
         }
     }
 
@@ -132,21 +133,21 @@ public final class CronTab {
 
         Calendar checkCal = cal;
 
-        if(specTimezone != null && !specTimezone.isEmpty()) {
+        if (specTimezone != null && !specTimezone.isEmpty()) {
             Calendar tzCal = Calendar.getInstance(TimeZone.getTimeZone(specTimezone));
             tzCal.setTime(cal.getTime());
             checkCal = tzCal;
         }
 
-        if(!checkBits(bits[0],checkCal.get(MINUTE)))
+        if (!checkBits(bits[0], checkCal.get(MINUTE)))
             return false;
-        if(!checkBits(bits[1],checkCal.get(HOUR_OF_DAY)))
+        if (!checkBits(bits[1], checkCal.get(HOUR_OF_DAY)))
             return false;
-        if(!checkBits(bits[2],checkCal.get(DAY_OF_MONTH)))
+        if (!checkBits(bits[2], checkCal.get(DAY_OF_MONTH)))
             return false;
-        if(!checkBits(bits[3],checkCal.get(MONTH)+1))
+        if (!checkBits(bits[3], checkCal.get(MONTH) + 1))
             return false;
-        if(!checkBits(dayOfWeek,checkCal.get(Calendar.DAY_OF_WEEK)-1))
+        if (!checkBits(dayOfWeek, checkCal.get(Calendar.DAY_OF_WEEK) - 1))
             return false;
 
         return true;
@@ -189,7 +190,7 @@ public final class CronTab {
             this.displayName = displayName;
             this.field = field;
             this.min = min;
-            this.redoAdjustmentIfModified= redoAdjustmentIfModified;
+            this.redoAdjustmentIfModified = redoAdjustmentIfModified;
             this.lowerField = lowerField;
             this.offset = offset;
         }
@@ -198,15 +199,15 @@ public final class CronTab {
          * Gets the current value of this field in the given calendar.
          */
         int valueOf(Calendar c) {
-            return c.get(field)+offset;
+            return c.get(field) + offset;
         }
 
         void addTo(Calendar c, int i) {
-            c.add(field,i);
+            c.add(field, i);
         }
 
         void setTo(Calendar c, int i) {
-            c.set(field,Math.min(i-offset, c.getActualMaximum(field)));
+            c.set(field, Math.min(i - offset, c.getActualMaximum(field)));
         }
 
         void clear(Calendar c) {
@@ -222,8 +223,8 @@ public final class CronTab {
          */
         private int ceil(CronTab c, int n) {
             long bits = bits(c);
-            while ((bits|(1L<<n))!=bits) {
-                if (n>60)   return -1;
+            while ((bits | (1L << n)) != bits) {
+                if (n > 60)   return -1;
                 n++;
             }
             return n;
@@ -233,20 +234,20 @@ public final class CronTab {
          * Given a bit mask, finds the first bit that's on, and return its index.
          */
         private int first(CronTab c) {
-            return ceil(c,0);
+            return ceil(c, 0);
         }
 
         private int floor(CronTab c, int n) {
             long bits = bits(c);
-            while ((bits|(1L<<n))!=bits) {
-                if (n==0)   return -1;
+            while ((bits | (1L << n)) != bits) {
+                if (n == 0)   return -1;
                 n--;
             }
             return n;
         }
 
         private int last(CronTab c) {
-            return floor(c,63);
+            return floor(c, 63);
         }
 
         /**
@@ -262,30 +263,35 @@ public final class CronTab {
         private static final CalendarField MINUTE       = new CalendarField("minute", Calendar.MINUTE,        0, 0, false, null) {
             @Override
             long bits(CronTab c) { return c.bits[0]; }
+
             @Override
-            void rollUp(Calendar cal, int i) { cal.add(Calendar.HOUR_OF_DAY,i); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.HOUR_OF_DAY, i); }
         };
         private static final CalendarField HOUR         = new CalendarField("hour", Calendar.HOUR_OF_DAY,   0, 0, false, MINUTE) {
             @Override
             long bits(CronTab c) { return c.bits[1]; }
+
             @Override
-            void rollUp(Calendar cal, int i) { cal.add(Calendar.DAY_OF_MONTH,i); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.DAY_OF_MONTH, i); }
         };
         private static final CalendarField DAY_OF_MONTH = new CalendarField("day", Calendar.DAY_OF_MONTH,  1, 0, true,  HOUR) {
             @Override
             long bits(CronTab c) { return c.bits[2]; }
+
             @Override
-            void rollUp(Calendar cal, int i) { cal.add(Calendar.MONTH,i); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.MONTH, i); }
         };
         private static final CalendarField MONTH        = new CalendarField("month", Calendar.MONTH,         1, 1, false, DAY_OF_MONTH) {
             @Override
             long bits(CronTab c) { return c.bits[3]; }
+
             @Override
-            void rollUp(Calendar cal, int i) { cal.add(Calendar.YEAR,i); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.YEAR, i); }
         };
-        private static final CalendarField DAY_OF_WEEK  = new CalendarField("dow", Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
+        private static final CalendarField DAY_OF_WEEK  = new CalendarField("dow", Calendar.DAY_OF_WEEK,   1, -1, true,  HOUR) {
             @Override
             long bits(CronTab c) { return c.dayOfWeek; }
+
             @Override
             void rollUp(Calendar cal, int i) {
                 cal.add(Calendar.DAY_OF_WEEK, 7 * i);
@@ -293,15 +299,15 @@ public final class CronTab {
 
             @Override
             void setTo(Calendar c, int i) {
-                int v = i-offset;
+                int v = i - offset;
                 int was = c.get(field);
-                c.set(field,v);
+                c.set(field, v);
                 final int firstDayOfWeek = c.getFirstDayOfWeek();
                 if (v < firstDayOfWeek && was >= firstDayOfWeek) {
                     // in crontab, the first DoW is always Sunday, but in Java, it can be Monday or in theory arbitrary other days.
                     // When first DoW is 1/2 Monday, calendar points to 1/2 Monday, setting the DoW to Sunday makes
                     // the calendar moves forward to 1/8 Sunday, instead of 1/1 Sunday. So we need to compensate that effect here.
-                    addTo(c,-7);
+                    addTo(c, -7);
                 } else if (was < firstDayOfWeek && firstDayOfWeek <= v) {
                     // If we wrap the other way around, we need to adjust in the opposite direction of above.
                     addTo(c, 7);
@@ -357,26 +363,26 @@ public final class CronTab {
             }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
-                int next = f.ceil(this,cur);
-                if (cur==next)  continue;   // this field is already in a good shape. move on to next
+                int next = f.ceil(this, cur);
+                if (cur == next)  continue;   // this field is already in a good shape. move on to next
 
                 // we are modifying this field, so clear all the lower level fields
-                for (CalendarField l=f.lowerField; l!=null; l=l.lowerField)
+                for (CalendarField l = f.lowerField; l != null; l = l.lowerField)
                     l.clear(cal);
 
-                if (next<0) {
+                if (next < 0) {
                     // we need to roll over to the next field.
                     f.rollUp(cal, 1);
-                    f.setTo(cal,f.first(this));
+                    f.setTo(cal, f.first(this));
                     // since higher order field is affected by this, we need to restart from all over
                     continue OUTER;
                 } else {
-                    f.setTo(cal,next);
+                    f.setTo(cal, next);
                     //check if value was actually set
                     if (f.valueOf(cal) != next) {
                         // we need to roll over to the next field.
                         f.rollUp(cal, 1);
-                        f.setTo(cal,f.first(this));
+                        f.setTo(cal, f.first(this));
                         // since higher order field is affected by this, we need to restart from all over
                         continue OUTER;
                     }
@@ -427,30 +433,30 @@ public final class CronTab {
             }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
-                int next = f.floor(this,cur);
-                if (cur==next)  continue;   // this field is already in a good shape. move on to next
+                int next = f.floor(this, cur);
+                if (cur == next)  continue;   // this field is already in a good shape. move on to next
 
                 // we are modifying this field, so clear all the lower level fields
-                for (CalendarField l=f.lowerField; l!=null; l=l.lowerField)
+                for (CalendarField l = f.lowerField; l != null; l = l.lowerField)
                     l.clear(cal);
 
-                if (next<0) {
+                if (next < 0) {
                     // we need to borrow from the next field.
-                    f.rollUp(cal,-1);
+                    f.rollUp(cal, -1);
                     // the problem here, in contrast with the ceil method, is that
                     // the maximum value of the field is not always a fixed value (that is, day of month)
                     // so we zero-clear all the lower fields, set the desired value +1,
-                    f.setTo(cal,f.last(this));
-                    f.addTo(cal,1);
+                    f.setTo(cal, f.last(this));
+                    f.addTo(cal, 1);
                     // then subtract a minute to achieve maximum values on all the lower fields,
                     // with the desired value in 'f'
-                    CalendarField.MINUTE.addTo(cal,-1);
+                    CalendarField.MINUTE.addTo(cal, -1);
                     // since higher order field is affected by this, we need to restart from all over
                     continue OUTER;
                 } else {
-                    f.setTo(cal,next);
-                    f.addTo(cal,1);
-                    CalendarField.MINUTE.addTo(cal,-1);
+                    f.setTo(cal, next);
+                    f.addTo(cal, 1);
+                    CalendarField.MINUTE.addTo(cal, -1);
                     if (f.redoAdjustmentIfModified)
                         continue OUTER; // when we modify DAY_OF_MONTH and DAY_OF_WEEK, do it all over from the top
                 }
@@ -460,28 +466,28 @@ public final class CronTab {
     }
 
     void set(String format, Hash hash) throws ANTLRException {
-        set(format,1,hash);
+        set(format, 1, hash);
     }
 
     /**
      * Returns true if n-th bit is on.
      */
     private boolean checkBits(long bitMask, int n) {
-        return (bitMask|(1L<<n))==bitMask;
+        return (bitMask | (1L << n)) == bitMask;
     }
 
     @Override
     public String toString() {
-        return super.toString()+"["+
-            toString("minute",bits[0])+','+
-            toString("hour",bits[1])+','+
-            toString("dayOfMonth",bits[2])+','+
-            toString("month",bits[3])+','+
-            toString("dayOfWeek",dayOfWeek)+']';
+        return super.toString() + "[" +
+            toString("minute", bits[0]) + ',' +
+            toString("hour", bits[1]) + ',' +
+            toString("dayOfMonth", bits[2]) + ',' +
+            toString("month", bits[3]) + ',' +
+            toString("dayOfWeek", dayOfWeek) + ']';
     }
 
     private String toString(String key, long bit) {
-        return key+'='+Long.toHexString(bit);
+        return key + '=' + Long.toHexString(bit);
     }
 
     /**
@@ -496,11 +502,11 @@ public final class CronTab {
     public @CheckForNull String checkSanity() {
         OUTER: for (int i = 0; i < 5; i++) {
             long bitMask = i < 4 ? bits[i] : (long) dayOfWeek;
-            for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
-                if(!checkBits(bitMask,j)) {
+            for (int j = BaseParser.LOWER_BOUNDS[i]; j <= BaseParser.UPPER_BOUNDS[i]; j++) {
+                if (!checkBits(bitMask, j)) {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
-                    if(i>0)
+                    if (i > 0)
                         return Messages.CronTab_do_you_really_mean_every_minute_when_you(spec, "H " + spec.substring(spec.indexOf(' ') + 1));
                     // once we find a sparse rank, upper ranks don't matter
                     break OUTER;
@@ -536,9 +542,9 @@ public final class CronTab {
         if (spec.contains("H")) {
             // if someone is already using H, presumably he knows what it is, so a warning is likely false positive
             return null;
-        } else if (spec.startsWith("*/")) {// "*/15 ...." (every N minutes) to hash
+        } else if (spec.startsWith("*/")) { // "*/15 ...." (every N minutes) to hash
             return "H" + spec.substring(1);
-        } else if (spec.matches("\\d+ .+")) {// "0 ..." (certain minute) to hash
+        } else if (spec.matches("\\d+ .+")) { // "0 ..." (certain minute) to hash
             return "H " + spec.substring(spec.indexOf(' ') + 1);
         } else {
             Matcher m = Pattern.compile("0(,(\\d+)(,\\d+)*)( .+)").matcher(spec);

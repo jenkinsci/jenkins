@@ -59,8 +59,10 @@ public class RunActionTest {
                 assertEquals(p.getBuildByNumber(1), p.getBuildByNumber(2).getAction(BadAction.class).owner);
         });
     }
+
     static class BadAction extends InvisibleAction {
         final Run<?, ?> owner; // oops, should have been transient and used RunAction2
+
         BadAction(Run<?, ?> owner) {
             this.owner = owner;
         }

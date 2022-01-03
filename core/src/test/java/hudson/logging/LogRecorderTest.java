@@ -167,6 +167,7 @@ public class LogRecorderTest {
     private static void isCandidate(Set<String> candidates, String candidate) {
         assertTrue(candidate, candidates.contains(candidate));
     }
+
     private static void isNotCandidate(Set<String> candidates, String candidate) {
         assertFalse(candidate, candidates.contains(candidate));
     }

@@ -69,26 +69,32 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                 public Label getAssignedLabel() {
                     return null;
                 }
+
                 @Override
                 public Node getLastBuiltOn() {
                     return null;
                 }
+
                 @Override
                 public long getEstimatedDuration() {
                     return 0;
                 }
+
                 @Override
                 public Queue.Task getOwnerTask() {
                     return p;
                 }
+
                 @Override
                 public Object getSameNodeConstraint() {
                     return null;
                 }
+
                 @Override
                 public ResourceList getResourceList() {
                     return ResourceList.EMPTY;
                 }
+
                 @Override
                 public String getDisplayName() {
                     return "Subtask of " + p.getDisplayName();

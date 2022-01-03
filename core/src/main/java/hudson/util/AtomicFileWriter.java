@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -141,7 +142,7 @@ public class AtomicFileWriter extends Writer {
             // JENKINS-48407: NIO's createTempFile creates file with 0600 permissions, so we use pre-NIO for this...
             tmpPath = File.createTempFile("atomic", "tmp", dir.toFile()).toPath();
         } catch (IOException e) {
-            throw new IOException("Failed to create a temporary file in "+ dir,e);
+            throw new IOException("Failed to create a temporary file in " + dir, e);
         }
 
         if (DISABLE_FORCED_FLUSH) {
@@ -159,12 +160,12 @@ public class AtomicFileWriter extends Writer {
 
     @Override
     public void write(String str, int off, int len) throws IOException {
-        core.write(str,off,len);
+        core.write(str, off, len);
     }
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        core.write(cbuf,off,len);
+        core.write(cbuf, off, len);
     }
 
     @Override

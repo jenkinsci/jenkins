@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.io.UnsupportedEncodingException;
@@ -48,14 +49,14 @@ import javax.servlet.http.HttpServletRequest;
  * @since 1.394
  */
 public class QueryParameterMap {
-    private final Map<String,List<String>> store = new HashMap<>();
+    private final Map<String, List<String>> store = new HashMap<>();
 
     /**
      * @param queryString
      *      String that looks like {@code abc=def&ghi=jkl}
      */
     public QueryParameterMap(String queryString) {
-        if (queryString==null || queryString.length()==0)   return;
+        if (queryString == null || queryString.length() == 0)   return;
         try {
             for (String param : queryString.split("&")) {
                 String[] kv = param.split("=");
@@ -75,11 +76,11 @@ public class QueryParameterMap {
 
     public String get(String name) {
         List<String> v = store.get(name);
-        return v!=null?v.get(0):null;
+        return v != null ? v.get(0) : null;
     }
 
     public List<String> getAll(String name) {
         List<String> v = store.get(name);
-        return v!=null? Collections.unmodifiableList(v) : Collections.emptyList();
+        return v != null ? Collections.unmodifiableList(v) : Collections.emptyList();
     }
 }

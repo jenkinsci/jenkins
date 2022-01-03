@@ -17,7 +17,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * implementing other extension points that need to expose some global configuration, you can do so
  * with {@code global.groovy} or {@code global.jelly} from your {@link Descriptor} instance. However
  * each {@code global.*} file will appear as its own section in the global configuration page.
- * 
+ *
  * <p>
  * An option to present a single section for your plugin in the Jenkins global configuration page is
  * to use this class to manage the configuration for your plugin and its extension points. To access

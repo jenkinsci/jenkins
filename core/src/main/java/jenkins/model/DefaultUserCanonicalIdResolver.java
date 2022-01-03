@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.Extension;
@@ -41,9 +42,9 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
 
     @Override
     public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<', '_')
                 .replace('>', '_');  // 4 replace() still faster than regex
-        if (Functions.isWindows()) id = id.replace(':','_');
+        if (Functions.isWindows()) id = id.replace(':', '_');
         return id;
     }
 

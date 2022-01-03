@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm.browsers;
 
 /**
@@ -36,8 +37,8 @@ public final class QueryBuilder {
     }
 
     public QueryBuilder add(String s) {
-        if(s==null)     return this; // nothing to add
-        if(buf.length()==0) buf.append('?');
+        if (s == null)     return this; // nothing to add
+        if (buf.length() == 0) buf.append('?');
         else                buf.append('&');
         buf.append(s);
         return this;

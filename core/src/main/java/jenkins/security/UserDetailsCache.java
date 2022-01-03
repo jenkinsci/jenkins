@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import com.google.common.cache.Cache;
@@ -54,7 +55,7 @@ public final class UserDetailsCache {
      * Nr of seconds before a value expires after being cached, note full GC will also clear the cache.
      * Should be able to set this value in script and then reload from disk to change in runtime.
      */
-    private static /*not final*/ Integer EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
+    private static /*not final*/ Integer EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int) TimeUnit.MINUTES.toSeconds(2));
     private final Cache<String, UserDetails> detailsCache;
     private final Cache<String, Boolean> existenceCache;
 
@@ -67,10 +68,10 @@ public final class UserDetailsCache {
         Integer expireAfterWriteSec = EXPIRE_AFTER_WRITE_SEC;
         if (expireAfterWriteSec == null || expireAfterWriteSec <= 0) {
             //just in case someone is trying to trick us
-            expireAfterWriteSec = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
+            expireAfterWriteSec = SystemProperties.getInteger(SYS_PROP_NAME, (int) TimeUnit.MINUTES.toSeconds(2));
             if (expireAfterWriteSec <= 0) {
                 //The property could also be set to a negative value
-                expireAfterWriteSec = (int)TimeUnit.MINUTES.toSeconds(2);
+                expireAfterWriteSec = (int) TimeUnit.MINUTES.toSeconds(2);
             }
             EXPIRE_AFTER_WRITE_SEC = expireAfterWriteSec;
         }
@@ -119,7 +120,7 @@ public final class UserDetailsCache {
     @NonNull
     public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, ExecutionException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
-        if(exists != null && !exists) {
+        if (exists != null && !exists) {
             throw new UsernameNotFoundException(String.format("\"%s\" does not exist", idOrFullName));
         } else {
             try {

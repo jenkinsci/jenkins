@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -124,6 +125,7 @@ public class IconTest  {
                 public String getImageOf(String size) {
                     return "/plugin/12345/icons/s2.png";
                 }
+
                 @Override
                 public String getDescription() {
                     return "Unknown icon";

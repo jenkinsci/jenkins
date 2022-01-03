@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.logging;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -174,20 +175,23 @@ public class LogRecorderManagerTest {
         assertThat(log.getRecorders().size(), is(1));
     }
 
-    private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class Log extends MasterToSlaveCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
         private final String message;
         private final Object[] params;
+
         Log(Level level, String logger, String message) {
             this(level, logger, message, null);
         }
+
         Log(Level level, String logger, String message, Object[] params) {
             this.level = level;
             this.logger = logger;
             this.message = message;
             this.params = params;
         }
+
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             if (params != null) {
@@ -199,13 +203,15 @@ public class LogRecorderManagerTest {
         }
     }
 
-    private static final class LambdaLog extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class LambdaLog extends MasterToSlaveCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
+
         LambdaLog(Level level, String logger) {
             this.level = level;
             this.logger = logger;
         }
+
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
             log.log(level, () -> "LambdaLog @" + level);

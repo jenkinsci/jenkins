@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import com.jcraft.jzlib.GZIPInputStream;
@@ -161,7 +162,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      *
      * @return
      *      if non-null value is returned, this annotator will handle the next line.
-     *      this mechanism can be used to annotate multiple lines starting at the annotated position. 
+     *      this mechanism can be used to annotate multiple lines starting at the annotated position.
      */
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
@@ -238,7 +239,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         try {
             byte[] preamble = new byte[PREAMBLE.length];
             in.readFully(preamble);
-            if (!Arrays.equals(preamble,PREAMBLE))
+            if (!Arrays.equals(preamble, PREAMBLE))
                 return null;    // not a valid preamble
 
             byte[] mac;
@@ -263,7 +264,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);
-            if (!Arrays.equals(postamble,POSTAMBLE))
+            if (!Arrays.equals(postamble, POSTAMBLE))
                 return null;    // not a valid postamble
 
             if (!INSECURE) {
@@ -299,7 +300,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public static void skip(DataInputStream in) throws IOException {
         byte[] preamble = new byte[PREAMBLE.length];
         in.readFully(preamble);
-        if (!Arrays.equals(preamble,PREAMBLE))
+        if (!Arrays.equals(preamble, PREAMBLE))
             return;    // not a valid preamble
 
         DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
@@ -341,11 +342,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         int e = start + len - PREAMBLE.length + 1;
 
         OUTER:
-        for (int i=start; i<e; i++) {
-            if (buf[i]==PREAMBLE[0]) {
+        for (int i = start; i < e; i++) {
+            if (buf[i] == PREAMBLE[0]) {
                 // check for the rest of the match
-                for (int j=1; j<PREAMBLE.length; j++) {
-                    if (buf[i+j]!=PREAMBLE[j])
+                for (int j = 1; j < PREAMBLE.length; j++) {
+                    if (buf[i + j] != PREAMBLE[j])
                         continue OUTER;
                 }
                 return i; // found it
@@ -374,10 +375,10 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public static String removeNotes(String line) {
         while (true) {
             int idx = line.indexOf(PREAMBLE_STR);
-            if (idx<0)  return line;
-            int e = line.indexOf(POSTAMBLE_STR,idx);
-            if (e<0)    return line;
-            line = line.substring(0,idx)+line.substring(e+POSTAMBLE_STR.length());
+            if (idx < 0)  return line;
+            int e = line.indexOf(POSTAMBLE_STR, idx);
+            if (e < 0)    return line;
+            line = line.substring(0, idx) + line.substring(e + POSTAMBLE_STR.length());
         }
     }
 }

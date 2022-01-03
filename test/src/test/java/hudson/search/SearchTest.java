@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 import static org.junit.Assert.assertEquals;
@@ -109,7 +110,7 @@ public class SearchTest {
         FreeStyleProject myFreeStyleProject = j.createFreeStyleProject("testSearchByProjectName");
         MockFolder myMockFolder = j.createFolder("my-folder-1");
 
-        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q="+ myFreeStyleProject.getName());
+        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
@@ -229,7 +230,7 @@ public class SearchTest {
 
         String content = result.getWebResponse().getContentAsString();
         System.out.println(content);
-        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
         assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
@@ -238,14 +239,14 @@ public class SearchTest {
 
         boolean foundProjectName = false;
         boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
+        for (Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject) suggestion;
 
-            String name = (String)jsonSuggestion.get("name");
-            if(projectName.equals(name)) {
+            String name = (String) jsonSuggestion.get("name");
+            if (projectName.equals(name)) {
                 foundProjectName = true;
             }
-            else if(displayName.equals(name)) {
+            else if (displayName.equals(name)) {
                 foundDisplayName = true;
             }
         }
@@ -277,7 +278,7 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         String content = result.getWebResponse().getContentAsString();
-        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
         assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
@@ -285,11 +286,11 @@ public class SearchTest {
         assertEquals(2, jsonArray.size());
 
         boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
+        for (Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject) suggestion;
 
-            String name = (String)jsonSuggestion.get("name");
-            if(projectName1.equals(name)) {
+            String name = (String) jsonSuggestion.get("name");
+            if (projectName1.equals(name)) {
                 foundDisplayName = true;
             }
         }
@@ -320,7 +321,7 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         String content = result.getWebResponse().getContentAsString();
-        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
         assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
@@ -328,12 +329,12 @@ public class SearchTest {
         assertEquals(1, jsonArray.size());
 
         boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
+        for (Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject) suggestion;
 
-            String name = (String)jsonSuggestion.get("name");
+            String name = (String) jsonSuggestion.get("name");
 
-            if(displayName2.equals(name)) {
+            if (displayName2.equals(name)) {
                 foundDisplayName = true;
             }
         }
@@ -361,8 +362,8 @@ public class SearchTest {
     @Test
     public void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
-        ListView v = new ListView("empty1",j.jenkins);
-        ListView w = new ListView("empty2",j.jenkins);
+        ListView v = new ListView("empty1", j.jenkins);
+        ListView w = new ListView("empty2", j.jenkins);
         j.jenkins.addView(v);
         j.jenkins.addView(w);
         j.jenkins.setPrimaryView(w);
@@ -372,7 +373,7 @@ public class SearchTest {
         assertFalse(w.contains(p));
         assertFalse(j.jenkins.getPrimaryView().contains(p));
 
-        assertTrue(suggest(j.jenkins.getSearchIndex(),"foo").contains(p));
+        assertTrue(suggest(j.jenkins.getSearchIndex(), "foo").contains(p));
     }
 
     @Issue("SECURITY-385")
@@ -426,7 +427,7 @@ public class SearchTest {
         mas.grant(Jenkins.READ).onRoot().toEveryone();
         j.jenkins.setAuthorizationStrategy(mas);
 
-        try(ACLContext acl = ACL.as(User.get("alice"))) {
+        try (ACLContext acl = ACL.as(User.get("alice"))) {
             List<SearchItem> results = new ArrayList<>();
             j.jenkins.getSearchIndex().find("config", results);
             j.jenkins.getSearchIndex().find("manage", results);
@@ -464,7 +465,7 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         String content = result.getWebResponse().getContentAsString();
-        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
         assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);

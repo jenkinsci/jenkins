@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
@@ -74,16 +75,16 @@ public class UnixLifecycle extends Lifecycle {
 
         // close all files upon exec, except stdin, stdout, and stderr
         int sz = LIBC.getdtablesize();
-        for(int i=3; i<sz; i++) {
+        for (int i = 3; i < sz; i++) {
             int flags = LIBC.fcntl(i, F_GETFD);
-            if(flags<0) continue;
-            LIBC.fcntl(i, F_SETFD,flags| FD_CLOEXEC);
+            if (flags < 0) continue;
+            LIBC.fcntl(i, F_SETFD, flags | FD_CLOEXEC);
         }
 
         // exec to self
         String exe = args.get(0);
         LIBC.execvp(exe, new StringArray(args.toArray(new String[0])));
-        throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
+        throw new IOException("Failed to exec '" + exe + "' " + LIBC.strerror(Native.getLastError()));
     }
 
     @Override
@@ -96,8 +97,8 @@ public class UnixLifecycle extends Lifecycle {
         // according to http://www.mail-archive.com/wine-devel@winehq.org/msg66797.html this now works on Snow Leopard
         if (Platform.isDarwin() && !Platform.isSnowLeopardOrLater())
             throw new RestartNotSupportedException("Restart is not supported on Mac OS X");
-        if (args==null)
-            throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process",failedToObtainArgs);
+        if (args == null)
+            throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process", failedToObtainArgs);
     }
 
     private static final Logger LOGGER = Logger.getLogger(UnixLifecycle.class.getName());

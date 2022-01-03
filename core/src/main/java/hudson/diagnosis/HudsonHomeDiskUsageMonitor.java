@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.diagnosis;
 
 import hudson.Extension;
@@ -56,10 +57,10 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     public boolean isActivated() {
         return activated;
     }
-    
+
     @Override
     public String getDisplayName() {
-    	return Messages.HudsonHomeDiskUsageMonitor_DisplayName();
+        return Messages.HudsonHomeDiskUsageMonitor_DisplayName();
     }
 
     /**
@@ -67,7 +68,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if(no!=null) {
+        if (no != null) {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
@@ -83,8 +84,8 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
      * Binds a solution to the URL.
      */
     public Solution getSolution(String id) {
-        for( Solution s : Solution.all() )
-            if(s.id.equals(id))
+        for (Solution s : Solution.all())
+            if (s.id.equals(id))
                 return s;
         return null;
     }
@@ -129,7 +130,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
          * Returns the URL of this monitor, relative to the context path.
          */
         public String getUrl() {
-            return HudsonHomeDiskUsageMonitor.get().getUrl()+"/solution/"+id;
+            return HudsonHomeDiskUsageMonitor.get().getUrl() + "/solution/" + id;
         }
 
         /**

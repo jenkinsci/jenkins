@@ -56,9 +56,11 @@ public class BuildExecutionTest {
         @Override public boolean needsToRunAfterFinalized() {
             throw new IllegalStateException("oops");
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             return true;
         }
+
         @Override public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }

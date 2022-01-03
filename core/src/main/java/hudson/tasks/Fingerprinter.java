@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -86,7 +87,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
-    
+
     /**
      * Comma-separated list of files/directories to be fingerprinted.
      */
@@ -156,10 +157,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      * default values after deserialization.
      */
     private Object readResolve() {
-        if(defaultExcludes == null) {
+        if (defaultExcludes == null) {
             defaultExcludes = true;
         }
-        if(caseSensitive == null) {
+        if (caseSensitive == null) {
             caseSensitive = true;
         }
         return this;
@@ -174,13 +175,13 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, EnvVars environment, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?, ?> build, FilePath workspace, EnvVars environment, Launcher launcher, TaskListener listener) throws InterruptedException {
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
-            Map<String,String> record = new HashMap<>();
-            
-            if(targets.length()!=0) {
+            Map<String, String> record = new HashMap<>();
+
+            if (targets.length() != 0) {
                 String expandedTargets = targets;
                 if (build instanceof AbstractBuild) { // no expansion for pipelines
                     expandedTargets = environment.expand(expandedTargets);
@@ -192,7 +193,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             if (fingerprintAction != null) {
                 fingerprintAction.add(record);
             } else {
-                build.addAction(new FingerprintAction(build,record));
+                build.addAction(new FingerprintAction(build, record));
             }
 
             if (enableFingerprintsInDependencyGraph) {
@@ -267,7 +268,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         Fingerprint addRecord(Run build) throws IOException {
             FingerprintMap map = Jenkins.get().getFingerprintMap();
-            return map.getOrCreate(produced?build:null, fileName, md5sum);
+            return map.getOrCreate(produced ? build : null, fileName, md5sum);
         }
 
         private static final long serialVersionUID = 1L;
@@ -298,20 +299,20 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             src.setCaseSensitive(caseSensitive);
 
             DirectoryScanner ds = src.getDirectoryScanner();
-            for( String f : ds.getIncludedFiles() ) {
-                File file = new File(baseDir,f);
+            for (String f : ds.getIncludedFiles()) {
+                File file = new File(baseDir, f);
 
                 // consider the file to be produced by this build only if the timestamp
                 // is newer than when the build has started.
                 // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
-                boolean produced = buildTimestamp <= file.lastModified()+2000;
+                boolean produced = buildTimestamp <= file.lastModified() + 2000;
 
                 try {
-                    results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
+                    results.add(new Record(produced, f, file.getName(), new FilePath(file).digest()));
                 } catch (IOException e) {
-                    throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
+                    throw new IOException(Messages.Fingerprinter_DigestFailed(file), e);
                 } catch (InterruptedException e) {
-                    throw new IOException(Messages.Fingerprinter_Aborted(),e);
+                    throw new IOException(Messages.Fingerprinter_Aborted(), e);
                 }
             }
 
@@ -320,11 +321,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     }
 
-    private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
+    private void record(Run<?, ?> build, FilePath ws, TaskListener listener, Map<String, String> record, final String targets) throws IOException, InterruptedException {
         for (Record r : ws.act(new FindRecords(targets, excludes, defaultExcludes, caseSensitive, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
             fp.addFor(build);
-            record.put(r.relativePath,fp.getHashString());
+            record.put(r.relativePath, fp.getHashString());
         }
     }
 
@@ -340,11 +341,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return doCheckTargets(project, value);
         }
 
-        public FormValidation doCheckTargets(@AncestorInPath AbstractProject<?,?> project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckTargets(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) throws IOException {
             if (project == null) {
                 return FormValidation.ok();
             }
-            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
+            return FilePath.validateFileMask(project.getSomeWorkspace(), value);
         }
 
         @Override
@@ -368,9 +369,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /**
          * From file name to the digest.
          */
-        private /*almost final*/ PackedMap<String,String> record;
+        private /*almost final*/ PackedMap<String, String> record;
 
-        private transient WeakReference<Map<String,Fingerprint>> ref;
+        private transient WeakReference<Map<String, Fingerprint>> ref;
 
         public FingerprintAction(Run build, Map<String, String> record) {
             this.build = build;
@@ -382,8 +383,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             this((Run) build, record);
         }
 
-        public void add(Map<String,String> moreRecords) {
-            Map<String,String> r = new HashMap<>(record);
+        public void add(Map<String, String> moreRecords) {
+            Map<String, String> r = new HashMap<>(record);
             r.putAll(moreRecords);
             record = compact(r);
             synchronized (this) {
@@ -418,23 +419,23 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /**
          * Obtains the raw data.
          */
-        public Map<String,String> getRecords() {
+        public Map<String, String> getRecords() {
             return record;
         }
 
-        @Override public void onLoad(Run<?,?> r) {
+        @Override public void onLoad(Run<?, ?> r) {
             build = r;
             record = compact(record);
         }
 
-        @Override public void onAttached(Run<?,?> r) {
+        @Override public void onAttached(Run<?, ?> r) {
             // for historical reasons this setup is done in the constructor instead
         }
 
         /** Share data structure with other builds, mainly those of the same job. */
-        private PackedMap<String,String> compact(Map<String,String> record) {
-            Map<String,String> b = new HashMap<>();
-            for (Map.Entry<String,String> e : record.entrySet()) {
+        private PackedMap<String, String> compact(Map<String, String> record) {
+            Map<String, String> b = new HashMap<>();
+            for (Map.Entry<String, String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
             return PackedMap.of(b);
@@ -443,23 +444,23 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /**
          * Map from file names of the fingerprinted file to its fingerprint record.
          */
-        public synchronized Map<String,Fingerprint> getFingerprints() {
-            if(ref!=null) {
-                Map<String,Fingerprint> m = ref.get();
-                if(m!=null)
+        public synchronized Map<String, Fingerprint> getFingerprints() {
+            if (ref != null) {
+                Map<String, Fingerprint> m = ref.get();
+                if (m != null)
                     return m;
             }
 
             Jenkins h = Jenkins.get();
 
-            Map<String,Fingerprint> m = new TreeMap<>();
+            Map<String, Fingerprint> m = new TreeMap<>();
             for (Map.Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
-                    if(fp!=null)
+                    if (fp != null)
                         m.put(r.getKey(), fp);
                 } catch (IOException e) {
-                    logger.log(Level.WARNING,e.getMessage(),e);
+                    logger.log(Level.WARNING, e.getMessage(), e);
                 }
             }
 
@@ -471,10 +472,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /**
          * Gets the dependency to other existing builds in a map.
          */
-        public Map<AbstractProject,Integer> getDependencies() {
+        public Map<AbstractProject, Integer> getDependencies() {
             return getDependencies(false);
         }
-        
+
         /**
          * Gets the dependency to other builds in a map.
          *
@@ -482,29 +483,29 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          *  the result, even if it doesn't exist
          * @since 1.430
          */
-        public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
-            Map<AbstractProject,Integer> r = new HashMap<>();
+        public Map<AbstractProject, Integer> getDependencies(boolean includeMissing) {
+            Map<AbstractProject, Integer> r = new HashMap<>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();
-                if(bp==null)    continue;       // outside Hudson
-                if(bp.is(build))    continue;   // we are the owner
+                if (bp == null)    continue;       // outside Hudson
+                if (bp.is(build))    continue;   // we are the owner
 
                 try {
                     Job job = bp.getJob();
-                    if (job==null)  continue;   // project no longer exists
+                    if (job == null)  continue;   // project no longer exists
                     if (!(job instanceof AbstractProject)) {
                         // Ignoring this for now. In the future we may want a dependency map function not limited to AbstractProject.
                         // (Could be used by getDependencyChanges if pulled up from AbstractBuild into Run, for example.)
                         continue;
                     }
-                    if (job.getParent()==build.getParent())
+                    if (job.getParent() == build.getParent())
                         continue;   // we are the parent of the build owner, that is almost like we are the owner
-                    if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
+                    if (!includeMissing && job.getBuildByNumber(bp.getNumber()) == null)
                         continue;               // build no longer exists
 
                     Integer existing = r.get(job);
-                    if(existing!=null && existing>bp.getNumber())
+                    if (existing != null && existing > bp.getNumber())
                         continue;   // the record in the map is already up to date
                     r.put((AbstractProject) job, bp.getNumber());
                 } catch (AccessDeniedException e) {
@@ -513,7 +514,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
 
             }
-            
+
             return r;
         }
     }
