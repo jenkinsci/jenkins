@@ -23,14 +23,20 @@ public class ProcessTreeRemoting {
 
     public interface IOSProcess {
         int getPid();
+
         @CheckForNull
         IOSProcess getParent();
+
         void kill() throws InterruptedException;
+
         void killRecursively() throws InterruptedException;
+
         @NonNull
         List<String> getArguments();
+
         @NonNull
         EnvVars getEnvironmentVariables();
+
         <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException;
     }
 }

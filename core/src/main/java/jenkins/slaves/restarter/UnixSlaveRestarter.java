@@ -27,7 +27,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
     @Override
     public boolean canWork() {
         try {
-            if (File.pathSeparatorChar!=':')
+            if (File.pathSeparatorChar != ':')
                 return false;     // quick test to reject non-Unix without loading all the rest of the classes
 
             args = JavaVMArguments.current();
@@ -38,11 +38,11 @@ public class UnixSlaveRestarter extends SlaveRestarter {
             LIBC.fcntl(99999, F_SETFD, v);
 
             getCurrentExecutable();
-            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a","b","c"}));
+            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a", "b", "c"}));
 
             return true;
         } catch (UnsupportedOperationException | LinkageError e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
+            LOGGER.log(FINE, getClass() + " unsuitable", e);
             return false;
         }
     }

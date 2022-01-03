@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -102,10 +103,10 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      */
     public boolean isDue() {
         // user opted out. no data collection.
-        if(!Jenkins.get().isUsageStatisticsCollected() || DISABLED)     return false;
+        if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED)     return false;
 
         long now = System.currentTimeMillis();
-        if(now - lastAttempt > DAY) {
+        if (now - lastAttempt > DAY) {
             lastAttempt = now;
             return true;
         }
@@ -116,7 +117,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         try {
             if (key == null) {
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                key = (RSAPublicKey)keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
+                key = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
             }
             return key;
         } catch (GeneralSecurityException e) {
@@ -132,43 +133,43 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         Jenkins j = Jenkins.get();
 
         JSONObject o = new JSONObject();
-        o.put("stat",1);
+        o.put("stat", 1);
         o.put("install", j.getLegacyInstanceId());
         o.put("servletContainer", j.servletContext.getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<>();
-        for( Computer c : j.getComputers() ) {
+        for (Computer c : j.getComputers()) {
             JSONObject  n = new JSONObject();
-            if(c.getNode()==j) {
-                n.put("master",true);
+            if (c.getNode() == j) {
+                n.put("master", true);
                 n.put("jvm-vendor", System.getProperty("java.vm.vendor"));
                 n.put("jvm-name", System.getProperty("java.vm.name"));
                 n.put("jvm-version", System.getProperty("java.version"));
             }
-            n.put("executors",c.getNumExecutors());
+            n.put("executors", c.getNumExecutors());
             ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }
-        o.put("nodes",nodes);
+        o.put("nodes", nodes);
 
         List<JSONObject> plugins = new ArrayList<>();
-        for( PluginWrapper pw : j.getPluginManager().getPlugins() ) {
-            if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
+        for (PluginWrapper pw : j.getPluginManager().getPlugins()) {
+            if (!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
             JSONObject p = new JSONObject();
-            p.put("name",pw.getShortName());
-            p.put("version",pw.getVersion());
+            p.put("name", pw.getShortName());
+            p.put("version", pw.getVersion());
             plugins.add(p);
         }
-        o.put("plugins",plugins);
+        o.put("plugins", plugins);
 
         JSONObject jobs = new JSONObject();
         // capture the descriptors as these should be small compared with the number of items
         // so we will walk all items only once and we can short-cut the search of descriptors
         TopLevelItemDescriptor[] descriptors = Items.all().toArray(new TopLevelItemDescriptor[0]);
         int[] counts = new int[descriptors.length];
-        for (TopLevelItem item: j.allItems(TopLevelItem.class)) {
+        for (TopLevelItem item : j.allItems(TopLevelItem.class)) {
             TopLevelItemDescriptor d = item.getDescriptor();
             for (int i = 0; i < descriptors.length; i++) {
                 if (d == descriptors[i]) {
@@ -181,13 +182,13 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         for (int i = 0; i < descriptors.length; i++) {
             jobs.put(descriptors[i].getJsonSafeClassName(), counts[i]);
         }
-        o.put("jobs",jobs);
+        o.put("jobs", jobs);
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-            try (OutputStream cipheros = new CombinedCipherOutputStream(baos,getKey(),"AES");
+            try (OutputStream cipheros = new CombinedCipherOutputStream(baos, getKey(), "AES");
                  OutputStream zipos = new GZIPOutputStream(cipheros);
                  OutputStreamWriter w = new OutputStreamWriter(zipos, StandardCharsets.UTF_8)) {
                 o.write(w);
@@ -214,7 +215,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             Jenkins.get().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : true);
             return true;
         } catch (IOException e) {
-            throw new FormException(e,"usageStatisticsCollected");
+            throw new FormException(e, "usageStatisticsCollected");
         }
     }
 
@@ -237,12 +238,12 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
             // the rest of the data will be encrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.ENCRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
-            super.out = new CipherOutputStream(out,sym);
+            sym.init(Cipher.ENCRYPT_MODE, symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
+            super.out = new CipherOutputStream(out, sym);
         }
 
         public CombinedCipherOutputStream(OutputStream out, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
-            this(out,toCipher(key,Cipher.ENCRYPT_MODE),algorithm);
+            this(out, toCipher(key, Cipher.ENCRYPT_MODE), algorithm);
         }
     }
 
@@ -261,18 +262,18 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             String keyAlgorithm = getKeyAlgorithm(algorithm);
 
             // first read the symmetric key cipher
-            byte[] symKeyBytes = new byte[keyLength/8];
+            byte[] symKeyBytes = new byte[keyLength / 8];
             new DataInputStream(in).readFully(symKeyBytes);
-            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),keyAlgorithm);
+            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes), keyAlgorithm);
 
             // the rest of the data will be decrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.DECRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
-            super.in = new CipherInputStream(in,sym);
+            sym.init(Cipher.DECRYPT_MODE, symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
+            super.in = new CipherInputStream(in, sym);
         }
 
         public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
-            this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,key.getModulus().bitLength());
+            this(in, toCipher(key, Cipher.DECRYPT_MODE), algorithm, key.getModulus().bitLength());
         }
     }
 
@@ -283,7 +284,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(mode, (Key)key);
+        cipher.init(mode, (Key) key);
         return cipher;
     }
 
@@ -300,5 +301,5 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     private static final long DAY = DAYS.toMillis(1);
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
+    public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName() + ".disabled");
 }

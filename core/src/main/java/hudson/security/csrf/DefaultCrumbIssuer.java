@@ -1,8 +1,9 @@
 /*
  * Copyright (c) 2008-2010 Yahoo! Inc.
- * All rights reserved. 
+ * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -30,11 +31,11 @@ import org.springframework.security.core.Authentication;
 
 /**
  * A crumb issuing algorithm based on the request principal and the remote address.
- * 
+ *
  * @author dty
  */
 public class DefaultCrumbIssuer extends CrumbIssuer {
-    
+
     private transient MessageDigest md;
     private boolean excludeClientIPFromCrumb;
 
@@ -51,7 +52,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public boolean isExcludeClientIPFromCrumb() {
         return this.excludeClientIPFromCrumb;
     }
-    
+
     private Object readResolve() {
         initializeMessageDigest();
         return this;
@@ -65,7 +66,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             LOGGER.log(Level.SEVERE, e, () -> "Cannot find SHA-256 MessageDigest implementation.");
         }
     }
-    
+
     @Override
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
@@ -109,19 +110,19 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         String defaultAddress = req.getRemoteAddr();
         String forwarded = req.getHeader(X_FORWARDED_FOR);
         if (forwarded != null) {
-	        String[] hopList = forwarded.split(",");
+            String[] hopList = forwarded.split(",");
             if (hopList.length >= 1) {
                 return hopList[0];
             }
         }
         return defaultAddress;
     }
-    
+
     @Extension @Symbol("standard")
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject, PersistentDescriptor {
 
-        private static final HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
-        
+        private static final HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class, "crumbSalt", 16);
+
         public DescriptorImpl() {
             super(CRUMB_SALT.get(), SystemProperties.getString("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));
         }
@@ -141,6 +142,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             return req.bindJSON(DefaultCrumbIssuer.class, formData);
         }
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(DefaultCrumbIssuer.class.getName());
 }

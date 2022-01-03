@@ -57,17 +57,17 @@ public class StandardArtifactManager extends ArtifactManager {
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;
 
-    protected transient Run<?,?> build;
+    protected transient Run<?, ?> build;
 
-    public StandardArtifactManager(Run<?,?> build) {
+    public StandardArtifactManager(Run<?, ?> build) {
         onLoad(build);
     }
 
-    @Override public final void onLoad(Run<?,?> build) {
+    @Override public final void onLoad(Run<?, ?> build) {
         this.build = build;
     }
 
-    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
+    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String, String> artifacts) throws IOException, InterruptedException {
         File dir = getArtifactsDir();
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
         workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description, TAR_COMPRESSION);

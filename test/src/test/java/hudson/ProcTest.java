@@ -43,7 +43,7 @@ public class ProcTest {
 
         // keep the pipe fairly busy
         final Pipe p = Pipe.createRemoteToLocal();
-        for (int i=0; i<10; i++)
+        for (int i = 0; i < 10; i++)
             ch.callAsync(new ChannelFiller(p.getOut()));
         new Thread() {
             @Override
@@ -57,13 +57,13 @@ public class ProcTest {
 
         RemoteLauncher launcher = new RemoteLauncher(TaskListener.NULL, ch, true);
 
-        String str="";
-        for (int i=0; i<256; i++)
+        String str = "";
+        for (int i = 0; i < 256; i++)
             str += "oxox";
 
-        for (int i=0; i<1000; i++) {
+        for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            launcher.launch().cmds("echo",str).stdout(baos).join();
+            launcher.launch().cmds("echo", str).stdout(baos).join();
             assertEquals(str, baos.toString().trim());
         }
 
@@ -73,15 +73,15 @@ public class ProcTest {
     private VirtualChannel createSlaveChannel() throws Exception {
         DumbSlave s = j.createSlave();
         s.toComputer().connect(false).get();
-        VirtualChannel ch=null;
-        while (ch==null) {
+        VirtualChannel ch = null;
+        while (ch == null) {
             ch = s.toComputer().getChannel();
             Thread.sleep(100);
         }
         return ch;
     }
 
-    private static class ChannelFiller extends MasterToSlaveCallable<Void,IOException> {
+    private static class ChannelFiller extends MasterToSlaveCallable<Void, IOException> {
         private final OutputStream o;
 
         private ChannelFiller(OutputStream o) {
@@ -116,7 +116,7 @@ public class ProcTest {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).stdout(out).join();
-        assertEquals("Hello",out.toString());
+        assertEquals("Hello", out.toString());
 
         Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).readStdout().start();
         p.join();

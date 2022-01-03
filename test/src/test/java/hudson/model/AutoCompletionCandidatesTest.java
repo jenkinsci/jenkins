@@ -24,7 +24,7 @@ public class AutoCompletionCandidatesTest {
     public void completion() throws Exception {
         FreeStyleProject foo = j.createFreeStyleProject("foo");
         MatrixProject bar = j.jenkins.createProject(MatrixProject.class, "bar");
-        bar.setAxes(new AxisList(new TextAxis("x","1","2","3")));
+        bar.setAxes(new AxisList(new TextAxis("x", "1", "2", "3")));
 
         AutoCompletionCandidates c;
 

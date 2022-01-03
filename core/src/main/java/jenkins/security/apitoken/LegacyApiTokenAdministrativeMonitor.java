@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -53,16 +54,16 @@ import org.kohsuke.stapler.json.JsonBody;
 @Restricted(NoExternalUse.class)
 public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(LegacyApiTokenAdministrativeMonitor.class.getName());
-    
+
     public LegacyApiTokenAdministrativeMonitor() {
         super("legacyApiToken");
     }
-    
+
     @Override
     public String getDisplayName() {
         return Messages.LegacyApiTokenAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return User.getAll().stream()
@@ -80,7 +81,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     public HttpResponse doIndex() throws IOException {
         return new HttpRedirect("manage");
     }
-    
+
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public List<User> getImpactedUserList() {
@@ -91,14 +92,14 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@NonNull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         return apiTokenProperty.getTokenStore().getLegacyToken();
     }
-    
+
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@NonNull User user, ApiTokenStore.HashedToken legacyToken) {
@@ -107,11 +108,11 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
             return new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
         }
-        
+
         // in case the legacy token was revoked during the request
         return null;
     }
-    
+
     /**
      * Determine if the user has at least one "new" token that was created after the last use of the legacy token
      */
@@ -121,9 +122,9 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         if (legacyStats == null) {
             return false;
         }
-        
+
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        
+
         return apiTokenProperty.getTokenList().stream()
                 .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
@@ -135,7 +136,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                     return creationDate != null && lastUseDate != null && creationDate.after(lastUseDate);
                 });
     }
-    
+
     /**
      * Determine if the user has at least one "new" token that was used after the last use of the legacy token
      */
@@ -145,9 +146,9 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         if (legacyStats == null) {
             return false;
         }
-        
+
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        
+
         return apiTokenProperty.getTokenList().stream()
                 .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
@@ -159,7 +160,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                     return currentLastUseDate != null && legacyLastUseDate != null && currentLastUseDate.after(legacyLastUseDate);
                 });
     }
-    
+
     @RequirePOST
     @SuppressFBWarnings(
             value = {
@@ -194,12 +195,12 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         }
         return HttpResponses.ok();
     }
-    
+
     @Restricted(NoExternalUse.class)
     public static final class RevokeAllSelectedModel {
         public RevokeAllSelectedUserAndUuid[] values;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public static final class RevokeAllSelectedUserAndUuid {
         public String userId;

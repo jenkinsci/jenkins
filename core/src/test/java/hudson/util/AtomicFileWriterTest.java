@@ -105,7 +105,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertEquals("File writer did not properly flush to temporary file",
-                expectedContent.length()*2+1, Files.size(afw.getTemporaryPath()));
+                expectedContent.length() * 2 + 1, Files.size(afw.getTemporaryPath()));
     }
 
     @Test
@@ -118,8 +118,8 @@ public class AtomicFileWriterTest {
         afw.commit();
 
         // Then
-        assertEquals(expectedContent.length()+3, Files.size(af.toPath()));
-        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af, Charset.defaultCharset()));
+        assertEquals(expectedContent.length() + 3, Files.size(af.toPath()));
+        assertEquals(expectedContent + "hey", FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
 
     @Test
@@ -141,6 +141,7 @@ public class AtomicFileWriterTest {
         assertThrows(IndexOutOfBoundsException.class, () -> afw.write(expectedContent, 0, expectedContent.length() + 10));
         assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
+
     @Test
     public void badPath() throws Exception {
         final File newFile = tmp.newFile();

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
@@ -50,8 +51,8 @@ public class JenkinsLocationConfigurationTest {
 
     @Test
     public void setAdminEmail() {
-        final String email="test@foo.bar";
-        final String email2="test@bar.foo";
+        final String email = "test@foo.bar";
+        final String email2 = "test@bar.foo";
 
         // Assert the default value
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());
@@ -61,17 +62,17 @@ public class JenkinsLocationConfigurationTest {
         assertEquals(email, config.getAdminAddress());
 
         // Quoted value
-        config.setAdminAddress("\""+email2+"\"");
+        config.setAdminAddress("\"" + email2 + "\"");
         assertEquals(email2, config.getAdminAddress());
 
         config.setAdminAddress("    test@foo.bar     ");
-        assertEquals(email,config.getAdminAddress());
+        assertEquals(email, config.getAdminAddress());
     }
 
     @Test
     @Issue("JENKINS-28419")
     public void resetAdminEmail() {
-        final String email="test@foo.bar";
+        final String email = "test@foo.bar";
 
         // Set the e-mail
         config.setAdminAddress(email);

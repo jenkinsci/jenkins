@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -141,7 +142,7 @@ public abstract class Proc {
     public abstract OutputStream getStdin();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "Proc.executor")));
-    
+
     /**
      * Like {@link #join} but can be given a maximum time to wait.
      * @param timeout number of time units
@@ -175,42 +176,42 @@ public abstract class Proc {
             latch.countDown();
         }
     }
-    
+
     /**
      * Locally launched process.
      */
     public static final class LocalProc extends Proc {
         private final Process proc;
-        private final Thread copier,copier2;
+        private final Thread copier, copier2;
         private final OutputStream out;
         private final EnvVars cookie;
         private final String name;
 
-        private final InputStream stdout,stderr;
+        private final InputStream stdout, stderr;
         private final OutputStream stdin;
 
-        public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
-            this(cmd,Util.mapToEnv(env),out,workDir);
+        public LocalProc(String cmd, Map<String, String> env, OutputStream out, File workDir) throws IOException {
+            this(cmd, Util.mapToEnv(env), out, workDir);
         }
 
-        public LocalProc(String[] cmd, Map<String,String> env,InputStream in, OutputStream out) throws IOException {
-            this(cmd,Util.mapToEnv(env),in,out);
+        public LocalProc(String[] cmd, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
+            this(cmd, Util.mapToEnv(env), in, out);
         }
 
-        public LocalProc(String cmd,String[] env,OutputStream out, File workDir) throws IOException {
-            this( Util.tokenize(cmd), env, out, workDir );
+        public LocalProc(String cmd, String[] env, OutputStream out, File workDir) throws IOException {
+            this(Util.tokenize(cmd), env, out, workDir);
         }
 
-        public LocalProc(String[] cmd,String[] env,OutputStream out, File workDir) throws IOException {
-            this(cmd,env,null,out,workDir);
+        public LocalProc(String[] cmd, String[] env, OutputStream out, File workDir) throws IOException {
+            this(cmd, env, null, out, workDir);
         }
 
-        public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out) throws IOException {
-            this(cmd,env,in,out,null);
+        public LocalProc(String[] cmd, String[] env, InputStream in, OutputStream out) throws IOException {
+            this(cmd, env, in, out, null);
         }
 
-        public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out, File workDir) throws IOException {
-            this(cmd,env,in,out,null,workDir);
+        public LocalProc(String[] cmd, String[] env, InputStream in, OutputStream out, File workDir) throws IOException {
+            this(cmd, env, in, out, null, workDir);
         }
 
         /**
@@ -218,30 +219,30 @@ public abstract class Proc {
          *      null to redirect stderr to stdout.
          */
         @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "Command injection is the point of this old, barely used class.")
-        public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
-            this( calcName(cmd),
-                  stderr(environment(new ProcessBuilder(cmd),env).directory(workDir), err==null || err== SELFPUMP_OUTPUT),
-                  in, out, err );
+        public LocalProc(String[] cmd, String[] env, InputStream in, OutputStream out, OutputStream err, File workDir) throws IOException {
+            this(calcName(cmd),
+                  stderr(environment(new ProcessBuilder(cmd), env).directory(workDir), err == null || err == SELFPUMP_OUTPUT),
+                  in, out, err);
         }
 
         private static ProcessBuilder stderr(ProcessBuilder pb, boolean redirectError) {
-            if(redirectError)    pb.redirectErrorStream(true);
+            if (redirectError)    pb.redirectErrorStream(true);
             return pb;
         }
 
         private static ProcessBuilder environment(ProcessBuilder pb, String[] env) {
-            if(env!=null) {
+            if (env != null) {
                 Map<String, String> m = pb.environment();
                 m.clear();
                 for (String e : env) {
                     int idx = e.indexOf('=');
-                    m.put(e.substring(0,idx),e.substring(idx+1));
+                    m.put(e.substring(0, idx), e.substring(idx + 1));
                 }
             }
             return pb;
         }
 
-        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
+        private LocalProc(String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.name = name;
             this.out = out;
@@ -253,11 +254,11 @@ public abstract class Proc {
             this.proc = procBuilder.start();
 
             InputStream procInputStream = proc.getInputStream();
-            if (out==SELFPUMP_OUTPUT) {
+            if (out == SELFPUMP_OUTPUT) {
                 stdout = procInputStream;
                 copier = null;
             } else {
-                copier = new StreamCopyThread(name+": stdout copier", procInputStream, out);
+                copier = new StreamCopyThread(name + ": stdout copier", procInputStream, out);
                 copier.start();
                 stdout = null;
             }
@@ -267,21 +268,21 @@ public abstract class Proc {
                 stdin = null;
                 proc.getOutputStream().close();
             } else
-            if (in==SELFPUMP_INPUT) {
+            if (in == SELFPUMP_INPUT) {
                 stdin = proc.getOutputStream();
             } else {
-                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
+                new StdinCopyThread(name + ": stdin copier", in, proc.getOutputStream()).start();
                 stdin = null;
             }
 
             InputStream procErrorStream = proc.getErrorStream();
-            if(err!=null) {
-                if (err==SELFPUMP_OUTPUT) {
+            if (err != null) {
+                if (err == SELFPUMP_OUTPUT) {
                     stderr = procErrorStream;
                     copier2 = null;
                 } else {
                     stderr = null;
-                    copier2 = new StreamCopyThread(name+": stderr copier", procErrorStream, err);
+                    copier2 = new StreamCopyThread(name + ": stderr copier", procErrorStream, err);
                     copier2.start();
                 }
             } else {
@@ -290,7 +291,7 @@ public abstract class Proc {
                 // according to the source code, Sun JREs still still returns a distinct reader end of a pipe that needs to be closed.
                 // but apparently at least on some IBM JDK5, returned input and error streams are the same.
                 // so try to close them smartly
-                if (procErrorStream!=procInputStream) {
+                if (procErrorStream != procInputStream) {
                     procErrorStream.close();
                 }
                 copier2 = null;
@@ -319,12 +320,12 @@ public abstract class Proc {
         @Override
         public int join() throws InterruptedException, IOException {
             // show what we are waiting for in the thread title
-            // since this involves some native work, let's have some soak period before enabling this by default 
+            // since this involves some native work, let's have some soak period before enabling this by default
             Thread t = Thread.currentThread();
             String oldName = t.getName();
             if (SHOW_PID) {
                 ProcessTree.OSProcess p = ProcessTree.get().get(proc);
-                t.setName(oldName+" "+(p!=null?"waiting for pid="+p.getPid():"waiting for "+name));
+                t.setName(oldName + " " + (p != null ? "waiting for pid=" + p.getPid() : "waiting for " + name));
             }
 
             try {
@@ -332,14 +333,14 @@ public abstract class Proc {
                 // see https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                if (copier!=null)   copier.join(TimeUnit.SECONDS.toMillis(10));
-                if(copier2!=null)   copier2.join(TimeUnit.SECONDS.toMillis(10));
-                if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
+                if (copier != null)   copier.join(TimeUnit.SECONDS.toMillis(10));
+                if (copier2 != null)   copier2.join(TimeUnit.SECONDS.toMillis(10));
+                if ((copier != null && copier.isAlive()) || (copier2 != null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
                     String msg = "Process leaked file descriptors. See https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
                     Throwable e = new Exception().fillInStackTrace();
-                    LOGGER.log(Level.WARNING,msg,e);
+                    LOGGER.log(Level.WARNING, msg, e);
 
                     // doing proc.getInputStream().close() hangs in FileInputStream.close0()
                     // it could be either because another thread is blocking on read, or
@@ -388,7 +389,7 @@ public abstract class Proc {
          * Destroys the child process without join.
          */
         private void destroy() throws InterruptedException {
-            ProcessTree.get().killAll(proc,cookie);
+            ProcessTree.get().killAll(proc, cookie);
         }
 
         /**
@@ -467,9 +468,9 @@ public abstract class Proc {
                 kill();
                 throw e;
             } catch (ExecutionException e) {
-                if(e.getCause() instanceof IOException)
-                    throw (IOException)e.getCause();
-                throw new IOException("Failed to join the process",e);
+                if (e.getCause() instanceof IOException)
+                    throw (IOException) e.getCause();
+                throw new IOException("Failed to join the process", e);
             } catch (CancellationException x) {
                 return -1;
             } finally {
@@ -506,7 +507,7 @@ public abstract class Proc {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean SHOW_PID = false;
-    
+
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.

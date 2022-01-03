@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -138,11 +139,11 @@ public final class Permission {
      *      See {@link #impliedBy}.
      * @throws IllegalStateException if this permission was already defined
      */
-    public Permission(@NonNull PermissionGroup group, @NonNull String name, 
-            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
+    public Permission(@NonNull PermissionGroup group, @NonNull String name,
+            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable,
             @NonNull PermissionScope[] scopes) throws IllegalStateException {
-        if(!JSONUtils.isJavaIdentifier(name))
-            throw new IllegalArgumentException(name+" is not a Java identifier");
+        if (!JSONUtils.isJavaIdentifier(name))
+            throw new IllegalArgumentException(name + " is not a Java identifier");
         this.owner = group.owner;
         this.group = group;
         this.name = name;
@@ -156,10 +157,10 @@ public final class Permission {
         ALL.add(this);
     }
 
-    public Permission(@NonNull PermissionGroup group, @NonNull String name, 
+    public Permission(@NonNull PermissionGroup group, @NonNull String name,
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, @NonNull PermissionScope scope) {
-        this(group,name,description,impliedBy,true,new PermissionScope[]{scope});
-        assert scope!=null;
+        this(group, name, description, impliedBy, true, new PermissionScope[]{scope});
+        assert scope != null;
     }
 
     /**
@@ -168,7 +169,7 @@ public final class Permission {
      */
     @Deprecated
     public Permission(@NonNull PermissionGroup group, @NonNull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
-        this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
+        this(group, name, description, impliedBy, enable, new PermissionScope[]{PermissionScope.JENKINS});
     }
 
     /**
@@ -186,11 +187,11 @@ public final class Permission {
      */
     @Deprecated
     public Permission(@NonNull PermissionGroup group, @NonNull String name, @CheckForNull Permission impliedBy) {
-        this(group,name,null,impliedBy);
+        this(group, name, null, impliedBy);
     }
 
     private Permission(@NonNull PermissionGroup group, @NonNull String name) {
-        this(group,name,null,null);
+        this(group, name, null, null);
     }
 
     /**
@@ -211,7 +212,7 @@ public final class Permission {
      *
      * <p>
      * This string representation is suitable for persistence.
-     * @return ID with the following format: <i>permissionClass.permissionName</i> 
+     * @return ID with the following format: <i>permissionClass.permissionName</i>
      * @see #fromId(String)
      */
     public @NonNull String getId() {
@@ -238,14 +239,14 @@ public final class Permission {
      */
     public static @CheckForNull Permission fromId(@NonNull String id) {
         int idx = id.lastIndexOf('.');
-        if(idx<0)   return null;
+        if (idx < 0)   return null;
 
         try {
             // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.get().getPluginManager().uberClassLoader);
+            Class cl = Class.forName(id.substring(0, idx), true, Jenkins.get().getPluginManager().uberClassLoader);
             PermissionGroup g = PermissionGroup.get(cl);
-            if(g ==null)  return null;
-            return g.find(id.substring(idx+1));
+            if (g == null)  return null;
+            return g.find(id.substring(idx + 1));
         } catch (ClassNotFoundException e) {
             return null;
         }
@@ -253,7 +254,7 @@ public final class Permission {
 
     @Override
     public String toString() {
-        return "Permission["+owner+','+name+']';
+        return "Permission[" + owner + ',' + name + ']';
     }
 
     public void setEnabled(boolean enable) {
@@ -263,7 +264,7 @@ public final class Permission {
     public boolean getEnabled() {
         return enabled;
     }
-    
+
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return
@@ -304,7 +305,7 @@ public final class Permission {
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
     @Deprecated
-    public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
+    public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null);
 
 //
 //
@@ -314,7 +315,7 @@ public final class Permission {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
-    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
+    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class, Messages._Permission_Permissions_Title());
 
     /**
      * Historically this was separate from {@link #HUDSON_ADMINISTER} but such a distinction doesn't make sense
@@ -324,35 +325,35 @@ public final class Permission {
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
     @Deprecated
-    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
+    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl", null, HUDSON_ADMINISTER);
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
+    public static final Permission READ = new Permission(GROUP, "GenericRead", null, HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
+    public static final Permission WRITE = new Permission(GROUP, "GenericWrite", null, HUDSON_ADMINISTER);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
+    public static final Permission CREATE = new Permission(GROUP, "GenericCreate", null, WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
+    public static final Permission UPDATE = new Permission(GROUP, "GenericUpdate", null, WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
+    public static final Permission DELETE = new Permission(GROUP, "GenericDelete", null, WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
+    public static final Permission CONFIGURE = new Permission(GROUP, "GenericConfigure", null, UPDATE);
 }

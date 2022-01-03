@@ -144,7 +144,7 @@ public class DefaultCrumbIssuerTest {
         WebClient wc = r.createWebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
         JSONObject jsonObject = JSONObject.fromObject(json);
-        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(),jsonObject.getString("crumbRequestField"));
+        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(), jsonObject.getString("crumbRequestField"));
         assertTrue(jsonObject.getString("crumb").matches("[0-9a-f]+"));
         wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
     }

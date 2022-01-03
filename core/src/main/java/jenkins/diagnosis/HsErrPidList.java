@@ -32,7 +32,7 @@ import org.jenkinsci.Symbol;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(optional=true) @Symbol("hsErrPid")
+@Extension(optional = true) @Symbol("hsErrPid")
 // TODO why would an extension using a built-in extension point need to be marked optional?
 public class HsErrPidList extends AdministrativeMonitor {
     /**
@@ -51,15 +51,15 @@ public class HsErrPidList extends AdministrativeMonitor {
         }
         try {
             try (FileChannel ch = FileChannel.open(getSecretKeyFile().toPath(), StandardOpenOption.READ)) {
-                map = ch.map(MapMode.READ_ONLY,0,1);
+                map = ch.map(MapMode.READ_ONLY, 0, 1);
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
-                
+
             scan("./hs_err_pid%p.log");
             if (Functions.isWindows()) {
                 File dir = Kernel32Utils.getTempDir();
-                if (dir!=null) {
+                if (dir != null) {
                     scan(dir.getPath() + "\\hs_err_pid%p.log");
                 }
             } else {
@@ -96,32 +96,32 @@ public class HsErrPidList extends AdministrativeMonitor {
 
 
     private void scan(String pattern) {
-        LOGGER.fine("Scanning "+pattern+" for hs_err_pid files");
+        LOGGER.fine("Scanning " + pattern + " for hs_err_pid files");
 
-        pattern = pattern.replace("%p","*").replace("%%","%");
+        pattern = pattern.replace("%p", "*").replace("%%", "%");
         File f = new File(pattern).getAbsoluteFile();
         if (!pattern.contains("*"))
             scanFile(f);
-        else {// GLOB
+        else { // GLOB
             File commonParent = f;
-            while (commonParent!=null && commonParent.getPath().contains("*")) {
+            while (commonParent != null && commonParent.getPath().contains("*")) {
                 commonParent = commonParent.getParentFile();
             }
-            if (commonParent==null) {
-                LOGGER.warning("Failed to process "+f);
+            if (commonParent == null) {
+                LOGGER.warning("Failed to process " + f);
                 return; // huh?
             }
 
-            FileSet fs = Util.createFileSet(commonParent, f.getPath().substring(commonParent.getPath().length()+1), null);
+            FileSet fs = Util.createFileSet(commonParent, f.getPath().substring(commonParent.getPath().length() + 1), null);
             DirectoryScanner ds = fs.getDirectoryScanner(new Project());
             for (String child : ds.getIncludedFiles()) {
-                scanFile(new File(commonParent,child));
+                scanFile(new File(commonParent, child));
             }
         }
     }
 
     private void scanFile(File log) {
-        LOGGER.fine("Scanning "+log);
+        LOGGER.fine("Scanning " + log);
 
         try (Reader rawReader = new FileReader(log);
              BufferedReader r = new BufferedReader(rawReader)) {
@@ -134,9 +134,9 @@ public class HsErrPidList extends AdministrativeMonitor {
 
 
             String line;
-            while ((line=r.readLine())!=null) {
+            while ((line = r.readLine()) != null) {
                 if (line.contains(secretKey)) {
-                    files.add(new HsErrPidFile(this,log));
+                    files.add(new HsErrPidFile(this, log));
                     return;
                 }
             }
@@ -147,13 +147,13 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
     private File getSecretKeyFile() {
-        return new File(Jenkins.get().getRootDir(),"secret.key");
+        return new File(Jenkins.get().getRootDir(), "secret.key");
     }
 
     private boolean findHeader(BufferedReader r) throws IOException {
-        for (int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             String line = r.readLine();
-            if (line==null)
+            if (line == null)
                 return false;
             if (line.startsWith("# A fatal error has been detected by the Java Runtime Environment:"))
                 return true;

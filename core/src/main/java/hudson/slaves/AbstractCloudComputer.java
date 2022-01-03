@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -63,7 +64,7 @@ public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveCo
             }
             return new HttpRedirect("..");
         } catch (InterruptedException e) {
-            return HttpResponses.error(500,e);
+            return HttpResponses.error(500, e);
         }
     }
 }

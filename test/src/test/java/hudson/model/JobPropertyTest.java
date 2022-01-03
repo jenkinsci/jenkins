@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertNotSame;
@@ -64,15 +65,16 @@ public class JobPropertyTest {
 
     private void assertJobPropertySummaryIsShownInIndexPage(Class<? extends TopLevelItem> type) throws Exception {
         JobPropertyImpl jp = new JobPropertyImpl("NeedleInPage");
-        Job<?,?> project = (Job<?, ?>) j.jenkins.createProject(type, "job-test-case");
+        Job<?, ?> project = (Job<?, ?>) j.jenkins.createProject(type, "job-test-case");
         project.addProperty(jp);
 
         HtmlPage page = j.createWebClient().goTo("job/job-test-case");
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
 
-    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+    public static class JobPropertyImpl extends JobProperty<Job<?, ?>> {
         private final String propertyString;
+
         public JobPropertyImpl(String propertyString) {
             this.propertyString = propertyString;
         }
@@ -100,18 +102,18 @@ public class JobPropertyTest {
         FreeStyleProject p = j.createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
         p.addProperty(before);
-        j.configRoundtrip((Item)p);
+        j.configRoundtrip((Item) p);
         JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
-        assertNotSame(after,before);
+        assertNotSame(after, before);
         j.assertEqualDataBoundBeans(before, after);
         p.removeProperty(after);
         JobPropertyWithConfigImpl empty = new JobPropertyWithConfigImpl("");
         p.addProperty(empty);
-        j.configRoundtrip((Item)p);
+        j.configRoundtrip((Item) p);
         assertNull(p.getProperty(JobPropertyWithConfigImpl.class));
     }
 
-    public static class JobPropertyWithConfigImpl extends JobProperty<Job<?,?>> {
+    public static class JobPropertyWithConfigImpl extends JobProperty<Job<?, ?>> {
         public String name;
 
         @DataBoundConstructor
@@ -134,12 +136,12 @@ public class JobPropertyTest {
         FreeStyleProject p = j.createFreeStyleProject();
         InvisibleImpl before = new InvisibleImpl();
         p.addProperty(before);
-        j.configRoundtrip((Item)p);
+        j.configRoundtrip((Item) p);
         InvisibleImpl after = p.getProperty(InvisibleImpl.class);
-        assertSame(after,before);
+        assertSame(after, before);
     }
 
-    public static class InvisibleImpl extends JobProperty<Job<?,?>> {
+    public static class InvisibleImpl extends JobProperty<Job<?, ?>> {
         public String name;
 
         InvisibleImpl() {}

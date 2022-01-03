@@ -23,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import static java.lang.Math.abs;
@@ -90,15 +91,15 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        req.setAttribute("html",true);
-        doProgressText(req,rsp);
+        req.setAttribute("html", true);
+        doProgressText(req, rsp);
     }
 
     /**
      * Aliasing what I think was a wrong name in {@link LargeText}
      */
     public void doProgressiveText(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        doProgressText(req,rsp);
+        doProgressText(req, rsp);
     }
 
     /**
@@ -107,7 +108,7 @@ public class AnnotatedLargeText<T> extends LargeText {
      */
     private boolean isHtml() {
         StaplerRequest req = Stapler.getCurrentRequest();
-        return req!=null && req.getAttribute("html")!=null;
+        return req != null && req.getAttribute("html") != null;
     }
 
     @Override
@@ -117,15 +118,15 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
         try {
-            String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
-            if (base64!=null) {
+            String base64 = req != null ? req.getHeader("X-ConsoleAnnotator") : null;
+            if (base64 != null) {
                 Cipher sym = PASSING_ANNOTATOR.decrypt();
 
                 try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
                         new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8))), sym)),
                         Jenkins.get().pluginManager.uberClassLoader)) {
                     long timestamp = ois.readLong();
-                    if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                    if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return getConsoleAnnotator(ois);
                 } catch (RuntimeException ex) {
@@ -150,7 +151,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         if (isHtml())
             return writeHtmlTo(start, w);
         else
-            return super.writeLogTo(start,w);
+            return super.writeLogTo(start, w);
     }
 
     /**
@@ -176,16 +177,16 @@ public class AnnotatedLargeText<T> extends LargeText {
     public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
-        long r = super.writeLogTo(start,caw);
+        long r = super.writeLogTo(start, caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
-        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
         StaplerResponse rsp = Stapler.getCurrentResponse();
-        if (rsp!=null)
+        if (rsp != null)
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
         return r;
     }
@@ -193,5 +194,5 @@ public class AnnotatedLargeText<T> extends LargeText {
     /**
      * Used for sending the state of ConsoleAnnotator to the client, because we are deserializing this object later.
      */
-    private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class,"consoleAnnotator");
+    private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class, "consoleAnnotator");
 }

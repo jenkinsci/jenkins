@@ -120,21 +120,27 @@ public interface SCMTriggerItem {
 
         private static final class Bridge implements SCMTriggerItem {
             private final SCMedItem delegate;
+
             Bridge(SCMedItem delegate) {
                 this.delegate = delegate;
             }
+
             @Override public Item asItem() {
                 return delegate.asProject();
             }
+
             @Override public int getNextBuildNumber() {
                 return delegate.asProject().getNextBuildNumber();
             }
+
             @Override public int getQuietPeriod() {
                 return delegate.asProject().getQuietPeriod();
             }
+
             @Override public QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions) {
                 return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
             }
+
             @Override public PollingResult poll(TaskListener listener) {
                 SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(asItem());
                 if (veto != null && !veto.shouldPoll(asItem())) {
@@ -143,9 +149,11 @@ public interface SCMTriggerItem {
                 }
                 return delegate.poll(listener);
             }
+
             @Override public SCMTrigger getSCMTrigger() {
                 return delegate.asProject().getTrigger(SCMTrigger.class);
             }
+
             @Override public Collection<? extends SCM> getSCMs() {
                 return resolveMultiScmIfConfigured(delegate.asProject().getScm());
             }

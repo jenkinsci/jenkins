@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -48,7 +49,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.331
  */
@@ -60,7 +61,7 @@ public class InstallPluginCommand extends CLICommand {
         return Messages.InstallPluginCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SOURCE",required=true,usage=
+    @Argument(metaVar = "SOURCE", required = true, usage =
             "If this is an URL, Jenkins downloads the URL and installs that as a plugin. " +
             "If it is the string ‘=’, the file will be read from standard input of the command. " +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
@@ -73,10 +74,10 @@ public class InstallPluginCommand extends CLICommand {
     @Option(name = "-name", usage = "No longer used.")
     public String name;
 
-    @Option(name="-restart",usage="Restart Jenkins upon successful installation.")
+    @Option(name = "-restart", usage = "Restart Jenkins upon successful installation.")
     public boolean restart;
 
-    @Option(name="-deploy",usage="Deploy plugins right away without postponing them until the reboot.")
+    @Option(name = "-deploy", usage = "Deploy plugins right away without postponing them until the reboot.")
     public boolean dynamicLoad;
 
     @Override
@@ -124,15 +125,15 @@ public class InstallPluginCommand extends CLICommand {
             } else {
                 // try to find matching min version number
                 VersionNumber version = new VersionNumber(source.substring(index + 1));
-                p = h.getUpdateCenter().getPlugin(source.substring(0,index), version);
+                p = h.getUpdateCenter().getPlugin(source.substring(0, index), version);
                 if (p == null) {
                     p = h.getUpdateCenter().getPlugin(source);
                 }
             }
-            if (p!=null) {
+            if (p != null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
                 Throwable e = p.deploy(dynamicLoad).get().getError();
-                if (e!=null) {
+                if (e != null) {
                     AbortException myException = new AbortException("Failed to install plugin " + source);
                     myException.initCause(e);
                     throw myException;
@@ -150,12 +151,12 @@ public class InstallPluginCommand extends CLICommand {
                     Set<String> candidates = new HashSet<>();
                     for (UpdateSite s : h.getUpdateCenter().getSites()) {
                         Data dt = s.getData();
-                        if (dt==null)
+                        if (dt == null)
                             stdout.println(Messages.InstallPluginCommand_NoUpdateDataRetrieved(s.getUrl()));
                         else
                             candidates.addAll(dt.plugins.keySet());
                     }
-                    stdout.println(Messages.InstallPluginCommand_DidYouMean(source,EditDistance.findNearest(source,candidates)));
+                    stdout.println(Messages.InstallPluginCommand_DidYouMean(source, EditDistance.findNearest(source, candidates)));
                 }
             }
 

@@ -62,17 +62,17 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * {@link Queue#Queue(LoadBalancer)} is too early to do this
      */
-    @Initializer(after=JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void installDefaultQueueSorter() {
         ExtensionList<QueueSorter> all = all();
         if (all.isEmpty())  return;
 
         Queue q = Jenkins.get().getQueue();
-        if (q.getSorter()!=null)        return; // someone has already installed something. leave that alone.
+        if (q.getSorter() != null)        return; // someone has already installed something. leave that alone.
 
         q.setSorter(all.get(0));
-        if (all.size()>1)
-            LOGGER.warning("Multiple QueueSorters are registered. Only the first one is used and the rest are ignored: "+all);
+        if (all.size() > 1)
+            LOGGER.warning("Multiple QueueSorters are registered. Only the first one is used and the rest are ignored: " + all);
     }
 
     private static final Logger LOGGER = Logger.getLogger(QueueSorter.class.getName());
