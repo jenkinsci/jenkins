@@ -39,12 +39,12 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
 
     @Override
     public Object data(Computer c) {
-      	DiskSpace size = markNodeOfflineIfDiskspaceIsTooLow(c);
-	
-      	// mark online (again), if free space is over threshold
-        if(size!=null && size.size > getThresholdBytes() && c.isOffline() && c.getTemporarilyOfflineCause() instanceof DiskSpace)
-            if(this.getClass().equals(((DiskSpace)c.getOfflineCause()).getTrigger()))
-                if(getDescriptor().markOnline(c)) {
+        DiskSpace size = markNodeOfflineIfDiskspaceIsTooLow(c);
+
+        // mark online (again), if free space is over threshold
+        if (size != null && size.size > getThresholdBytes() && c.isOffline() && c.getTemporarilyOfflineCause() instanceof DiskSpace)
+            if (this.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger()))
+                if (getDescriptor().markOnline(c)) {
                     LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
                 }
         return size;
