@@ -56,7 +56,7 @@ THE SOFTWARE.
 
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
-      
+
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
     <st:attribute name="permissions">
@@ -139,41 +139,36 @@ THE SOFTWARE.
       <j:set var="icon" value="${rootURL}${icon.startsWith('/images/') || icon.startsWith('/plugin/') ? h.resourcePath : ''}${icon}"/>
       <j:when test="${enabled==false}">
         <div class="task disabled">
-          <span class="task-link-wrapper">
-            <span class="task-disabled-link">
-              <span class="task-icon-link">
-                <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
-              </span>
-              <span class="task-link-text">${title}</span>
-            </span>
+          <span class="task-icon-link">
+            <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
           </span>
+          <span class="task-link-text">${title}</span>
         </div>
       </j:when>
 
       <j:otherwise>
-        <div class="task ">
-          <span class="task-link-wrapper ${watch ? 'task--active' : ''}">
-            <j:choose>
-              <j:when test="${iconMetadata != null}">
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:when>
-              <j:otherwise>
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:otherwise>
-            </j:choose>
+        <div class="task ${watch ? 'task--active' : ''}">
+          <j:choose>
+            <j:when test="${iconMetadata != null}">
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
+            </j:when>
+            <j:otherwise>
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
+            </j:otherwise>
+          </j:choose>
 
-            <j:set var="id" value="${h.generateId()}"/>
-            <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-                <script>
-                    function postRequest_${id}(a) {
-                        new Ajax.Request(a.href);
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
-                    }
-                </script>
-            </j:if>
+          <j:set var="id" value="${h.generateId()}"/>
+          <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
+              <script>
+                  function postRequest_${id}(a) {
+                      new Ajax.Request(a.href);
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
+                  }
+              </script>
+          </j:if>
 
-            <j:choose>
+          <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
@@ -192,7 +187,6 @@ THE SOFTWARE.
                 </a>
               </j:otherwise>
             </j:choose>
-          </span>
 
           <j:if test="${match}">
             <div class="subtasks">
