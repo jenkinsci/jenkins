@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -62,8 +63,7 @@ public class TextFile {
     }
 
     /**
-     * Reads the entire contents and returns it. Bytes from the file are decoded into characters
-     * using the {@link StandardCharsets#UTF_8 UTF-8} {@link Charset charset}.
+     * Reads the entire contents and returns it.
      */
     public String read() throws IOException {
         StringWriter out = new StringWriter();
@@ -109,23 +109,12 @@ public class TextFile {
     }
 
     /**
-     * Reads the first N characters or until we hit EOF. Uses the platform default encoding.
-     * @deprecated use {@link #head(int, Charset)}
-     */
-    @Deprecated
-    @NonNull
-    public String head(int numChars) throws IOException {
-        return head(numChars, Charset.defaultCharset());
-    }
-
-    /**
      * Reads the first N characters or until we hit EOF.
      */
-    @NonNull
-    public String head(int numChars, Charset charset) throws IOException {
+    public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        try (Reader r = Files.newBufferedReader(Util.fileToPath(file), Charset.defaultCharset())) {
+        try (Reader r = new FileReader(file)) {
             while (read < numChars) {
                 int d = r.read(buf, read, buf.length - read);
                 if (d < 0)
@@ -187,9 +176,7 @@ public class TextFile {
 
     /**
      * Uses the platform default encoding.
-     * @deprecated use {@link #fastTail(int, Charset)}
      */
-    @Deprecated
     public @NonNull String fastTail(int numChars) throws IOException {
         return fastTail(numChars, Charset.defaultCharset());
     }
