@@ -357,17 +357,23 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
         assertNotNull(rsp.getResponseHeaderValue("Location"));
 
-        WebResponse rsp2 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp2 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
         assertEquals(rsp.getResponseHeaderValue("Location"), rsp2.getResponseHeaderValue("Location"));
 
         p.makeDisabled(true);
 
-        WebResponse rsp3 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp3 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
     }
 
