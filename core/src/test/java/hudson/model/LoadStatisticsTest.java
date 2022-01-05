@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -63,6 +64,7 @@ public class LoadStatisticsTest {
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
+
             @Override
             protected Iterable<Node> getNodes() {
                 throw new UnsupportedOperationException();

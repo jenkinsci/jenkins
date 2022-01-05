@@ -25,7 +25,7 @@ public class SequentialExecutionQueue implements Executor {
     /**
      * Access is synchronized by {@code Queue.this}
      */
-    private final Map<Runnable,QueueEntry> entries = new HashMap<>();
+    private final Map<Runnable, QueueEntry> entries = new HashMap<>();
     private ExecutorService executors;
 
     /**
@@ -62,9 +62,9 @@ public class SequentialExecutionQueue implements Executor {
     @Override
     public synchronized void execute(@NonNull Runnable item) {
         QueueEntry e = entries.get(item);
-        if(e==null) {
+        if (e == null) {
             e = new QueueEntry(item);
-            entries.put(item,e);
+            entries.put(item, e);
             e.submit();
         } else {
             e.queued = true;
@@ -73,12 +73,12 @@ public class SequentialExecutionQueue implements Executor {
 
     /**
      * Returns true if too much time is spent since some {@link Runnable} is submitted into the queue
-     * until they get executed. 
+     * until they get executed.
      */
     public synchronized boolean isStarving(long threshold) {
         long now = System.currentTimeMillis();
         for (QueueEntry e : entries.values())
-            if (now-e.submissionTime > threshold)
+            if (now - e.submissionTime > threshold)
                 return true;
         return false;
     }
@@ -123,7 +123,7 @@ public class SequentialExecutionQueue implements Executor {
                 item.run();
             } finally {
                 synchronized (SequentialExecutionQueue.this) {
-                    if(queued)
+                    if (queued)
                         // another polling for this job is requested while we were doing the polling. do it again.
                         submit();
                     else

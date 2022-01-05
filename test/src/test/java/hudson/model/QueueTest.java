@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -181,14 +182,14 @@ public class QueueTest {
 
         assertEquals(1, q.getItems().length);
         q.clear();
-        assertEquals(0,q.getItems().length);
+        assertEquals(0, q.getItems().length);
 
         // load the contents back
         q.load();
         assertEquals(1, q.getItems().length);
 
         // did it bind back to the same object?
-        assertSame(q.getItems()[0].task,testProject);
+        assertSame(q.getItems()[0].task, testProject);
     }
 
     /**
@@ -229,12 +230,12 @@ public class QueueTest {
 
         assertEquals(1, q.getItems().length);
         q.clear();
-        assertEquals(0,q.getItems().length);
+        assertEquals(0, q.getItems().length);
 
         // delete the project before loading the queue back
         testProject.delete();
         q.load();
-        assertEquals(0,q.getItems().length);
+        assertEquals(0, q.getItems().length);
 
         // The counter state should be maintained.
         assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
@@ -286,19 +287,20 @@ public class QueueTest {
 
         q.scheduleMaintenance().get();
         Queue.Item[] items = q.getItems();
-        assertEquals(1,items.length);
-        assertTrue("Got "+items[0], items[0] instanceof BlockedItem);
+        assertEquals(1, items.length);
+        assertTrue("Got " + items[0], items[0] instanceof BlockedItem);
 
         q.save();
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
         private static final long serialVersionUID = 1L;
+
         @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setContentType("text/html");
             resp.getWriter().println(
                     "<html><body><form action='/' method=post name=main enctype='multipart/form-data'>" +
-                    "<input type=file name=test><input type=submit>"+
+                    "<input type=file name=test><input type=submit>" +
                     "</form></body></html>"
             );
         }
@@ -307,7 +309,7 @@ public class QueueTest {
             try {
                 ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
                 List<?> v = f.parseRequest(req);
-                assertEquals(1,v.size());
+                assertEquals(1, v.size());
                 XStream2 xs = new XStream2();
                 System.out.println(xs.toXML(v.get(0)));
             } catch (FileUploadException e) {
@@ -319,7 +321,7 @@ public class QueueTest {
     @Test public void fileItemPersistence() throws Exception {
         // TODO: write a synchronous connector?
         byte[] testData = new byte[1024];
-        for( int i=0; i<testData.length; i++ )  testData[i] = (byte)i;
+        for (int i = 0; i < testData.length; i++)  testData[i] = (byte) i;
 
 
         Server server = new Server();
@@ -327,7 +329,7 @@ public class QueueTest {
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
-        handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
+        handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()), "/");
         server.setHandler(handler);
 
         server.start();
@@ -416,14 +418,14 @@ public class QueueTest {
     @Test public void flyweightTasks() throws Exception {
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
-                new StringParameterDefinition("FOO","value")
+                new StringParameterDefinition("FOO", "value")
         ));
         if (Functions.isWindows()) {
             m.getBuildersList().add(new BatchFile("ping -n 3 127.0.0.1 >nul"));
         } else {
             m.getBuildersList().add(new Shell("sleep 3"));
         }
-        m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
+        m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa", "bbb")));
 
         List<Future<MatrixBuild>> futures = new ArrayList<>();
 
@@ -569,16 +571,20 @@ public class QueueTest {
     public static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
         Executor exec;
         private final Label assignedLabel;
+
         public TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
             super(cnt);
             this.assignedLabel = assignedLabel;
         }
+
         @Override protected void doRun() {
             exec = Executor.currentExecutor();
         }
+
         @Override public Label getAssignedLabel() {
             return assignedLabel;
         }
+
         public Computer getOwner() {
             return exec == null ? null : exec.getOwner();
         }
@@ -596,6 +602,7 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
+
     static class TestTask implements Queue.Task {
         private final AtomicInteger cnt;
         boolean isBlocked;
@@ -612,22 +619,53 @@ public class QueueTest {
         @Override public boolean equals(Object o) {
             return o instanceof TestTask && cnt == ((TestTask) o).cnt;
         }
+
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
-        @Override public String getName() {return "test";}
-        @Override public String getFullDisplayName() {return "Test";}
+
+        @Override public CauseOfBlockage getCauseOfBlockage() {
+            return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;
+        }
+
+        @Override public String getName() {
+            return "test";
+        }
+
+        @Override public String getFullDisplayName() {
+            return "Test";
+        }
+
         @Override public void checkAbortPermission() {}
-        @Override public boolean hasAbortPermission() {return true;}
-        @Override public String getUrl() {return "test/";}
-        @Override public String getDisplayName() {return "Test";}
-        @Override public ResourceList getResourceList() {return new ResourceList();}
+
+        @Override public boolean hasAbortPermission() {
+            return true;
+        }
+
+        @Override public String getUrl() {
+            return "test/";
+        }
+
+        @Override public String getDisplayName() {
+            return "Test";
+        }
+
+        @Override public ResourceList getResourceList() {
+            return new ResourceList();
+        }
+
         protected void doRun() {}
+
         @Override public Executable createExecutable() {
             return new Executable() {
-                @Override public SubTask getParent() {return TestTask.this;}
-                @Override public long getEstimatedDuration() {return -1;}
+                @Override public SubTask getParent() {
+                    return TestTask.this;
+                }
+
+                @Override public long getEstimatedDuration() {
+                    return -1;
+                }
+
                 @Override public void run() {
                     doRun();
                     cnt.incrementAndGet();
@@ -649,7 +687,7 @@ public class QueueTest {
 
         QueueTaskFuture<FreeStyleBuild> v = p.scheduleBuild2(0);
         FreeStyleBuild b = v.waitForStart();
-        assertEquals(1,b.getNumber());
+        assertEquals(1, b.getNumber());
         assertTrue(b.isBuilding());
         assertSame(p, b.getProject());
 
@@ -674,7 +712,7 @@ public class QueueTest {
         r.buildAndAssertSuccess(p);
     }
 
-    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
+    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
     private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
 
 
@@ -708,17 +746,20 @@ public class QueueTest {
         r.jenkins.setAuthorizationStrategy(new AliceCannotBuild(b1.getBuiltOnStr()));
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
+
     private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
         private final String blocked;
+
         AliceCannotBuild(String blocked) {
             add(Jenkins.ADMINISTER, "anonymous");
             this.blocked = blocked;
         }
+
         @Override
         public ACL getACL(Node node) {
             if (node.getNodeName().equals(blocked)) {
@@ -732,15 +773,15 @@ public class QueueTest {
         }
     }
 
-    @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException{
+    @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException {
         FreeStyleProject project1 = r.createFreeStyleProject();
         FreeStyleProject project2 = r.createFreeStyleProject();
-        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
+        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return new FreeStyleProject(parent,name){
+                return new FreeStyleProject(parent, name) {
                      @Override
-                    public Label getAssignedLabel(){
+                    public Label getAssignedLabel() {
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
                     }
 
@@ -760,24 +801,24 @@ public class QueueTest {
         projectError.scheduleBuild2(0);
         Executor e = r.jenkins.toComputer().getExecutors().get(0);
         Thread.sleep(2000);
-        while(project2.getLastBuild()==null){
-             if(!e.isAlive()){
+        while (project2.getLastBuild() == null) {
+             if (!e.isAlive()) {
                     break; // executor is dead due to exception
              }
-             if(e.isIdle()){
+             if (e.isIdle()) {
                  assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());
              }
                 Thread.sleep(1000);
         }
-        if(project2.getLastBuild()!=null)
+        if (project2.getLastBuild() != null)
             return;
         Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        while(!e.isIdle()){ //executor should take project2 from queue
+        while (!e.isIdle()) { //executor should take project2 from queue
             Thread.sleep(1000);
         }
         //project2 should not be in pendings
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
-        for(Queue.BuildableItem item : items){
+        for (Queue.BuildableItem item : items) {
             assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
         }
     }
@@ -834,14 +875,14 @@ public class QueueTest {
         final String prefix = "JENKINS-27871";
         r.getInstance().setNumExecutors(4);
 
-        final FreeStyleProject projectA = r.createFreeStyleProject(prefix+"A");
+        final FreeStyleProject projectA = r.createFreeStyleProject(prefix + "A");
         projectA.getBuildersList().add(new SleepBuilder(5000));
 
-        final FreeStyleProject projectB = r.createFreeStyleProject(prefix+"B");
+        final FreeStyleProject projectB = r.createFreeStyleProject(prefix + "B");
         projectB.getBuildersList().add(new SleepBuilder(10000));
         projectB.setBlockBuildWhenUpstreamBuilding(true);
 
-        final FreeStyleProject projectC = r.createFreeStyleProject(prefix+"C");
+        final FreeStyleProject projectC = r.createFreeStyleProject(prefix + "C");
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
 
@@ -1007,9 +1048,9 @@ public class QueueTest {
         XmlPage p = webClient.goToXml("queue/api/xml");
 
         //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
-        for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
+        for (DomNode element : p.getFirstChild().getFirstChild().getChildNodes()) {
             if (element.getNodeName().equals("task")) {
-                for (DomNode child: ((DomElement) element).getChildNodes()) {
+                for (DomNode child : ((DomElement) element).getChildNodes()) {
                     if (child.getNodeName().equals("name")) {
                         assertEquals("project", child.asNormalizedText());
                     } else if (child.getNodeName().equals("url")) {
@@ -1085,6 +1126,7 @@ public class QueueTest {
     @TestExtension("load_queue_xml")
     public static final class QueueSaveSniffer extends SaveableListener {
         private static int count = 0;
+
         @Override public void onChange(Saveable o, XmlFile file) {
             if (o instanceof Queue) {
                 count++;
@@ -1139,7 +1181,7 @@ public class QueueTest {
                     .withRedirectEnabled(false)
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.login("user");
-            if(legacyRedirect) {
+            if (legacyRedirect) {
                 Page p = wc.getPage(request);
                 // the legacy endpoint returns a redirection to the previously visited page, none in our case
                 // (so force no redirect to avoid false positive error)
@@ -1252,24 +1294,29 @@ public class QueueTest {
         public BrokenAffinityKeyProject(ItemGroup parent, String name) {
             super(parent, name);
         }
+
         @Override
         public String getAffinityKey() {
             throw new NullPointerException("oops!");
         }
+
         @Override
         protected Class<BrokenAffinityKeyBuild> getBuildClass() {
             return BrokenAffinityKeyBuild.class;
         }
+
         @Override
         public TopLevelItemDescriptor getDescriptor() {
             return ExtensionList.lookupSingleton(DescriptorImpl.class);
         }
+
         @TestExtension("brokenAffinityKey")
         public static class DescriptorImpl extends AbstractProjectDescriptor {
             @Override
             public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new BrokenAffinityKeyProject(parent, name);
             }
+
             @Override
             public String getDisplayName() {
                 return "Broken Affinity Key Project";
@@ -1281,9 +1328,11 @@ public class QueueTest {
         public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project) throws IOException {
             super(project);
         }
+
         public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project, File buildDir) throws IOException {
             super(project, buildDir);
         }
+
         @Override
         public void run() {
             execute(new BuildExecution());

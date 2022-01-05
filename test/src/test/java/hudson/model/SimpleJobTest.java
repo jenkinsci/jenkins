@@ -37,8 +37,8 @@ public class SimpleJobTest {
 
         // without assuming to know too much about the internal calculation
         // we can only assume that the result is between the maximum and the minimum
-        assertTrue("Expected < 42, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
-        assertTrue("Expected > 15, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
+        assertTrue("Expected < 42, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
+        assertTrue("Expected > 15, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
     }
 
     @Test

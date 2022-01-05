@@ -57,10 +57,10 @@ public class CauseTest {
     @Test public void deeplyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
-        Run<?,?> early = null;
-        Run<?,?> last = null;
+        Run<?, ?> early = null;
+        Run<?, ?> last = null;
         for (int i = 1; i <= 15; i++) {
-            last = b.scheduleBuild2(0, new Cause.UpstreamCause((Run<?,?>) a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get())).get();
+            last = b.scheduleBuild2(0, new Cause.UpstreamCause((Run<?, ?>) a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get())).get();
             if (i == 5) {
                 early = last;
             }
@@ -76,16 +76,16 @@ public class CauseTest {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
         FreeStyleProject c = j.createFreeStyleProject("c");
-        Run<?,?> last = null;
+        Run<?, ?> last = null;
         for (int i = 1; i <= 10; i++) {
             Cause cause = last == null ? null : new Cause.UpstreamCause(last);
-            Future<? extends Run<?,?>> next1 = a.scheduleBuild2(0, cause);
+            Future<? extends Run<?, ?>> next1 = a.scheduleBuild2(0, cause);
             a.scheduleBuild2(0, cause);
             cause = new Cause.UpstreamCause(next1.get());
-            Future<? extends Run<?,?>> next2 = b.scheduleBuild2(0, cause);
+            Future<? extends Run<?, ?>> next2 = b.scheduleBuild2(0, cause);
             b.scheduleBuild2(0, cause);
             cause = new Cause.UpstreamCause(next2.get());
-            Future<? extends Run<?,?>> next3 = c.scheduleBuild2(0, cause);
+            Future<? extends Run<?, ?>> next3 = c.scheduleBuild2(0, cause);
             c.scheduleBuild2(0, cause);
             last = next3.get();
         }

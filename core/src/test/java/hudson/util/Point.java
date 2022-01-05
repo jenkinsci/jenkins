@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 /**
  * @author Kohsuke Kawaguchi
 */
 public class Point {
-    int x,y;
+    int x, y;
 }

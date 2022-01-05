@@ -186,7 +186,7 @@ public class HudsonPrivateSecurityRealmTest {
 
 
     private static String basicHeader(String user, String pass) {
-        String str = user +':' + pass;
+        String str = user + ':' + pass;
         String auth = Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
         return "Basic " + auth;
     }
@@ -239,7 +239,7 @@ public class HudsonPrivateSecurityRealmTest {
         signup.enterEmail("noone@nowhere.com");
         signup = new SignupPage(signup.submit(j));
         signup.assertErrorContains("prohibited as a username");
-        assertNull(User.get("system",false, Collections.emptyMap()));
+        assertNull(User.get("system", false, Collections.emptyMap()));
     }
 
     /**
@@ -258,7 +258,7 @@ public class HudsonPrivateSecurityRealmTest {
         signup.enterEmail("noone@nowhere.com");
         signup = new SignupPage(signup.submit(j));
         signup.assertErrorContains("prohibited as a full name");
-        assertNull(User.get("unknown2",false, Collections.emptyMap()));
+        assertNull(User.get("unknown2", false, Collections.emptyMap()));
     }
 
     @Issue("JENKINS-48383")
@@ -436,7 +436,7 @@ public class HudsonPrivateSecurityRealmTest {
         checkUserCanBeCreatedWith(securityRealm, "te-st_123" + i, password, "Test" + i, email);
         assertNotNull(User.getById("te-st_123" + i, false));
         i++;
-        {// user id that contains invalid characters
+        { // user id that contains invalid characters
             checkUserCannotBeCreatedWith(securityRealm, "test " + i, password, "Test" + i, email);
             i++;
             checkUserCannotBeCreatedWith(securityRealm, "te@st" + i, password, "Test" + i, email);
@@ -478,7 +478,7 @@ public class HudsonPrivateSecurityRealmTest {
         checkUserCanBeCreatedWith(securityRealm, "TEST123" + i, password, "Test" + i, email);
         assertNotNull(User.getById("TEST123" + i, false));
         i++;
-        {// user id that do not follow custom regex
+        { // user id that do not follow custom regex
             checkUserCannotBeCreatedWith_custom(securityRealm, "test " + i, password, "Test" + i, email, currentRegex);
             i++;
             checkUserCannotBeCreatedWith_custom(securityRealm, "@" + i, password, "Test" + i, email, currentRegex);

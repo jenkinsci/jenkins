@@ -12,7 +12,7 @@ import jnr.posix.util.DefaultPOSIXHandler;
 public class PosixAPI {
 
     private static POSIX posix;
-    
+
     /**
      * Load the JNR implementation of the POSIX APIs for the current platform.
      * Runtime exceptions will be of type {@link PosixException}.
@@ -26,6 +26,7 @@ public class PosixAPI {
                 @Override public void error(Errno error, String extraData) {
                     throw new PosixException("native error " + error.description() + " " + extraData);
                 }
+
                 @Override public void error(Errno error, String methodName, String extraData) {
                     throw new PosixException("native error calling " + methodName + ": " + error.description() + " " + extraData);
                 }

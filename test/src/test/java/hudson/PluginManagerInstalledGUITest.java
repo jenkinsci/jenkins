@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -78,7 +79,7 @@ public class PluginManagerInstalledGUITest {
     @Test
     public void test_enable_disable_uninstall() throws IOException, SAXException {
         InstalledPlugins installedPlugins = new InstalledPlugins();
-        
+
         InstalledPlugin matrixAuthPlugin = installedPlugins.get("matrix-auth");
         InstalledPlugin dependeePlugin = installedPlugins.get("dependee");
         InstalledPlugin dependerPlugin = installedPlugins.get("depender");
@@ -91,28 +92,28 @@ public class PluginManagerInstalledGUITest {
         // Leaf plugins:
         dependerPlugin.assertHasNoDependents();
         mandatoryDependerPlugin.assertHasNoDependents();
-        
+
         // This plugin should be enabled and it should be possible to disable it
         // because no other plugins depend on it.
         mandatoryDependerPlugin.assertEnabled();
         mandatoryDependerPlugin.assertEnabledStateChangeable();
         mandatoryDependerPlugin.assertUninstallable();
-        
+
         // This plugin should be enabled, but it should not be possible to disable or uninstall it
         // because another plugin depends on it.
         dependeePlugin.assertEnabled();
         dependeePlugin.assertEnabledStateNotChangeable();
         dependeePlugin.assertNotUninstallable();
-        
+
         // Disable one plugin
         mandatoryDependerPlugin.clickEnabledWidget();
-                
+
         // Now that plugin should be disabled, but it should be possible to re-enable it
         // and it should still be uninstallable.
         mandatoryDependerPlugin.assertNotEnabled(); // this is different to earlier
         mandatoryDependerPlugin.assertEnabledStateChangeable();
         mandatoryDependerPlugin.assertUninstallable();
-                
+
         // The dependee plugin should still be enabled, but it should now be possible to disable it because
         // the mandatory depender plugin is no longer enabled. Should still not be possible to uninstall it.
         // Note that the depender plugin does not block its disablement.
@@ -120,10 +121,10 @@ public class PluginManagerInstalledGUITest {
         dependeePlugin.assertEnabledStateChangeable(); // this is different to earlier
         dependeePlugin.assertNotUninstallable();
         dependerPlugin.assertEnabled();
-        
+
         // Disable the dependee plugin
         dependeePlugin.clickEnabledWidget();
-        
+
         // Now it should NOT be possible to change the enable state of the depender plugin because one
         // of the plugins it depends on is not enabled.
         mandatoryDependerPlugin.assertNotEnabled();
@@ -140,22 +141,22 @@ public class PluginManagerInstalledGUITest {
         matrixAuthPlugin.assertEnabledStateChangeable();
         matrixAuthPlugin.assertUninstallable();
     }
-    
+
     private class InstalledPlugins {
-        
+
         private final List<InstalledPlugin> installedPlugins;
 
-        private InstalledPlugins () throws IOException, SAXException {
+        private InstalledPlugins() throws IOException, SAXException {
             JenkinsRule.WebClient webClient = jenkinsRule.createWebClient();
             HtmlPage installedPage = webClient.goTo("pluginManager/installed");
-            
+
             // Note for debugging... simply print installedPage to get the JenkinsRule
             // Jenkins URL and then add a long Thread.sleep here. It's useful re being
             // able to see what the code is testing.
 
             DomElement pluginsTable = installedPage.getElementById("plugins");
             HtmlElement tbody = pluginsTable.getElementsByTagName("TBODY").get(0);
-            
+
             installedPlugins = new ArrayList<>();
             for (DomElement htmlTableRow : tbody.getChildElements()) {
                 installedPlugins.add(new InstalledPlugin((HtmlTableRow) htmlTableRow));
@@ -181,15 +182,15 @@ public class PluginManagerInstalledGUITest {
         InstalledPlugin(HtmlTableRow pluginRow) {
             this.pluginRow = pluginRow;
         }
-        
+
         public String getId() {
             return pluginRow.getAttribute("data-plugin-id");
         }
-        
+
         public boolean isPlugin(String pluginId) {
             return pluginId.equals(getId());
         }
-        
+
         private HtmlInput getEnableWidget() {
             HtmlElement input = pluginRow.getCells().get(1).getElementsByTagName("input").get(0);
             return (HtmlInput) input;
@@ -217,7 +218,7 @@ public class PluginManagerInstalledGUITest {
             if (allDependentsDisabled() && !hasDisabledDependency()) {
                 return;
             }
-            
+
             Assert.fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
         }
 
@@ -228,7 +229,7 @@ public class PluginManagerInstalledGUITest {
             if (!hasDependents() && hasDisabledDependency()) {
                 return;
             }
-            
+
             Assert.fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
         }
 

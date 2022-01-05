@@ -94,10 +94,10 @@ public class HelpLinkTest {
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
         List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='jenkins-help-button']");
-        assertTrue(helpLinks.size()>0);
-        System.out.println("Clicking "+helpLinks.size()+" help links");
+        assertTrue(helpLinks.size() > 0);
+        System.out.println("Clicking " + helpLinks.size() + " help links");
 
-        for (HtmlAnchor helpLink : (List<HtmlAnchor>)helpLinks) {
+        for (HtmlAnchor helpLink : (List<HtmlAnchor>) helpLinks) {
             HtmlElementUtil.click(helpLink);
         }
     }

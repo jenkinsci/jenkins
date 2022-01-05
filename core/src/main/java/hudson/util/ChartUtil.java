@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -50,8 +51,8 @@ public class ChartUtil {
      * Can be used as a graph label. Only displays numbers.
      */
     public static final class NumberOnlyBuildLabel implements Comparable<NumberOnlyBuildLabel> {
-        
-        private final Run<?,?> run;
+
+        private final Run<?, ?> run;
 
         @Deprecated
         public final AbstractBuild build;
@@ -59,7 +60,7 @@ public class ChartUtil {
         /**
          * @since 1.577
          */
-        public NumberOnlyBuildLabel(Run<?,?> run) {
+        public NumberOnlyBuildLabel(Run<?, ?> run) {
             this.run = run;
             this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
@@ -79,14 +80,14 @@ public class ChartUtil {
 
         @Override
         public int compareTo(NumberOnlyBuildLabel that) {
-            return this.run.number-that.run.number;
+            return this.run.number - that.run.number;
         }
 
         @Override
         public boolean equals(Object o) {
-            if(!(o instanceof NumberOnlyBuildLabel))    return false;
+            if (!(o instanceof NumberOnlyBuildLabel))    return false;
             NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
-            return run==that.run;
+            return run == that.run;
         }
 
         @Override
@@ -128,7 +129,7 @@ public class ChartUtil {
      */
     @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
-        generateGraph(req,rsp,chart,defaultSize.width, defaultSize.height);
+        generateGraph(req, rsp, chart, defaultSize.width, defaultSize.height);
     }
 
     /**
@@ -146,12 +147,12 @@ public class ChartUtil {
      */
     @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        new Graph(-1,defaultW,defaultH) {
+        new Graph(-1, defaultW, defaultH) {
             @Override
             protected JFreeChart createGraph() {
                 return chart;
             }
-        }.doPng(req,rsp);
+        }.doPng(req, rsp);
     }
 
     /**
@@ -163,7 +164,7 @@ public class ChartUtil {
      */
     @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
-        generateClickableMap(req,rsp,chart,defaultSize.width,defaultSize.height);
+        generateClickableMap(req, rsp, chart, defaultSize.width, defaultSize.height);
     }
 
     /**
@@ -175,12 +176,12 @@ public class ChartUtil {
      */
     @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        new Graph(-1,defaultW,defaultH) {
+        new Graph(-1, defaultW, defaultH) {
             @Override
             protected JFreeChart createGraph() {
                 return chart;
             }
-        }.doMap(req,rsp);
+        }.doMap(req, rsp);
     }
 
     /**
@@ -206,47 +207,47 @@ public class ChartUtil {
      */
     public static void adjustChebyshev(CategoryDataset dataset, NumberAxis yAxis) {
         // first compute E(X) and Var(X)
-        double sum=0,sum2=0;
+        double sum = 0, sum2 = 0;
 
         final int nColumns = dataset.getColumnCount();
         final int nRows    = dataset.getRowCount();
-        for (int i=0; i<nRows; i++ ) {
+        for (int i = 0; i < nRows; i++) {
             Comparable rowKey = dataset.getRowKey(i);
-            for( int j=0; j<nColumns; j++) {
+            for (int j = 0; j < nColumns; j++) {
                 Comparable columnKey = dataset.getColumnKey(j);
 
-                double n = dataset.getValue(rowKey,columnKey).doubleValue();
+                double n = dataset.getValue(rowKey, columnKey).doubleValue();
                 sum += n;
-                sum2 +=n*n;
+                sum2 += n * n;
             }
         }
 
-        double average = sum/(nColumns*nRows);
-        double stddev = Math.sqrt(sum2/(nColumns*nRows)-average*average);
+        double average = sum / (nColumns * nRows);
+        double stddev = Math.sqrt(sum2 / (nColumns * nRows) - average * average);
 
-        double rangeMin = average-stddev*CHEBYSHEV_N;
-        double rangeMax = average+stddev*CHEBYSHEV_N;
+        double rangeMin = average - stddev * CHEBYSHEV_N;
+        double rangeMax = average + stddev * CHEBYSHEV_N;
 
         // now see if there are any data points that fall outside (rangeMin,rangeMax)
         boolean found = false;
-        double min=0,max=0;
-        for (int i=0; i<nRows; i++ ) {
+        double min = 0, max = 0;
+        for (int i = 0; i < nRows; i++) {
             Comparable rowKey = dataset.getRowKey(i);
-            for( int j=0; j<nColumns; j++) {
+            for (int j = 0; j < nColumns; j++) {
                 Comparable columnKey = dataset.getColumnKey(j);
 
-                double n = dataset.getValue(rowKey,columnKey).doubleValue();
-                if(n<rangeMin || rangeMax<n) {
+                double n = dataset.getValue(rowKey, columnKey).doubleValue();
+                if (n < rangeMin || rangeMax < n) {
                     found = true;
                     continue;   // ignore this value
                 }
 
-                min = Math.min(min,n);
-                max = Math.max(max,n);
+                min = Math.min(min, n);
+                max = Math.max(max, n);
             }
         }
 
-        if(!found)
+        if (!found)
             return; // no adjustment was necessary
 
         // some values fell outside the range, so adjust the Y-axis
@@ -254,10 +255,10 @@ public class ChartUtil {
         // if we are ever to extend this method to handle negative value ranges correctly,
         // the code after this needs modifications
 
-        min = Math.min(0,min);  // always include 0 in the graph
-        max += yAxis.getUpperMargin()*(max-min);
+        min = Math.min(0, min);  // always include 0 in the graph
+        max += yAxis.getUpperMargin() * (max - min);
 
-        yAxis.setRange(min,max);
+        yAxis.setRange(min, max);
     }
 
     @Restricted(NoExternalUse.class)
@@ -266,7 +267,7 @@ public class ChartUtil {
 
     static {
         try {
-            new Font("SansSerif",Font.BOLD,18).toString();
+            new Font("SansSerif", Font.BOLD, 18).toString();
         } catch (Throwable t) {
             awtProblemCause = t;
             awtProblem = true;

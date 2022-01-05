@@ -48,7 +48,7 @@ public class LabelAutoCompleteSeeder {
             } else {
                 int space = source.lastIndexOf(' ');
                 if (space > -1) {
-                    terms.add(source.substring(space+1));
+                    terms.add(source.substring(space + 1));
                 } else {
                     terms.add(source);
                 }

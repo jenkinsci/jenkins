@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
@@ -134,11 +135,13 @@ public class RepeatableTest {
     public static class Foo {
         public String txt;
         public boolean bool;
+
         @DataBoundConstructor
         public Foo(String txt, boolean bool) {
             this.txt = txt;
             this.bool = bool;
         }
+
         @Override public String toString() { return "foo:" + txt + ':' + bool; }
     }
 
@@ -274,6 +277,7 @@ public class RepeatableTest {
 
     public static class FooRadio {
         public String txt, radio;
+
         public FooRadio(String txt, String radio) {
             this.txt = txt;
             this.radio = radio;
@@ -321,6 +325,7 @@ public class RepeatableTest {
 
     public static class Fruit implements ExtensionPoint, Describable<Fruit> {
         protected String name;
+
         private Fruit(String name) { this.name = name; }
 
         @Override
@@ -337,30 +342,39 @@ public class RepeatableTest {
 
     public static class Apple extends Fruit {
         private int seeds;
+
         @DataBoundConstructor public Apple(int seeds) {
             super("Apple");
             this.seeds = seeds;
         }
+
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Apple.class);
+
         @Override public String toString() { return name + " with " + seeds + " seeds"; }
     }
+
     public static class Banana extends Fruit {
         private boolean yellow;
+
         @DataBoundConstructor public Banana(boolean yellow) {
             super("Banana");
             this.yellow = yellow;
         }
+
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Banana.class);
+
         @Override public String toString() { return (yellow ? "Yellow" : "Green") + " " + name; }
     }
 
     public static class Fruity {
         public Fruit fruit;
         public String word;
+
         @DataBoundConstructor public Fruity(Fruit fruit, String word) {
             this.fruit = fruit;
             this.word = word;
         }
+
         @Override public String toString() { return fruit + " " + word; }
     }
 
@@ -375,7 +389,7 @@ public class RepeatableTest {
         getHtmlButton(f, "Add", false).click();
         waitForJavaScript(p);
         // select banana in 2nd select element:
-        ((HtmlSelect)f.getElementsByTagName("select").get(1)).getOption(1).click();
+        ((HtmlSelect) f.getElementsByTagName("select").get(1)).getOption(1).click();
         f.getInputsByName("yellow").get(1).click(); // checkbox
         f.getInputsByValue("").get(1).setValueAttribute("split"); // word
         String xml = f.asXml();
@@ -390,10 +404,12 @@ public class RepeatableTest {
     public static class FooList {
         public String title;
         public Foo[] list = new Foo[0];
+
         @DataBoundConstructor public FooList(String title, Foo[] foo) {
             this.title = title;
             this.list = foo;
         }
+
         @Override public String toString() {
             StringBuilder buf = new StringBuilder("FooList:" + title + ":[");
             for (int i = 0; i < list.length; i++) {
@@ -413,9 +429,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -440,9 +456,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -467,9 +483,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -494,9 +510,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -575,7 +591,7 @@ public class RepeatableTest {
     }
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
-        assertEquals(JSONArray.fromObject(golden),jsonArray);
+        assertEquals(JSONArray.fromObject(golden), jsonArray);
     }
 
     /**

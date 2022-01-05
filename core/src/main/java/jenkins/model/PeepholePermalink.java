@@ -58,7 +58,7 @@ import java.util.stream.Stream;
  *
  * @since 1.507
  */
-public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
+public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?, ?>> {
 
     /**
      * JENKINS-22822: avoids rereading caches.
@@ -73,7 +73,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      *
      * This is the "G(B)" as described in the class javadoc.
      */
-    public abstract boolean apply(Run<?,?> run);
+    public abstract boolean apply(Run<?, ?> run);
 
     @Override
     public boolean test(Run<?, ?> run) {
@@ -82,8 +82,8 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
 
     /** @deprecated No longer used. */
     @Deprecated
-    protected File getPermalinkFile(Job<?,?> job) {
-        return new File(job.getBuildDir(),getId());
+    protected File getPermalinkFile(Job<?, ?> job) {
+        return new File(job.getBuildDir(), getId());
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             b = job.getNearestOldBuild(n);
         }
 
-        if (b==null) {
+        if (b == null) {
             // no cache
             b = job.getLastBuild();
         }
@@ -122,16 +122,16 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         // start from the build 'b' and locate the build that matches the criteria going back in time
         b = find(b);
 
-        updateCache(job,b);
+        updateCache(job, b);
         return b;
     }
 
     /**
      * Start from the build 'b' and locate the build that matches the criteria going back in time
      */
-    private Run<?,?> find(Run<?,?> b) {
+    private Run<?, ?> find(Run<?, ?> b) {
         //noinspection StatementWithEmptyBody
-        for ( ; b!=null && !apply(b); b=b.getPreviousBuild())
+        for ( ; b != null && !apply(b); b = b.getPreviousBuild())
             ;
         return b;
     }
@@ -179,7 +179,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     /**
      * Remembers the value 'n' in the cache for future {@link #resolve(Job)}.
      */
-    protected void updateCache(@NonNull Job<?,?> job, @CheckForNull Run<?,?> b) {
+    protected void updateCache(@NonNull Job<?, ?> job, @CheckForNull Run<?, ?> b) {
         File buildDir = job.getBuildDir();
         Map<String, Integer> cache = cacheFor(buildDir);
         synchronized (cache) {
@@ -205,7 +205,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     @Extension
-    public static class RunListenerImpl extends RunListener<Run<?,?>> {
+    public static class RunListenerImpl extends RunListener<Run<?, ?>> {
         /**
          * If any of the peephole permalink points to the build to be deleted, update it to point to the new location.
          */
@@ -213,10 +213,10 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         public void onDeleted(Run run) {
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
-                if (pp.resolve(j)==run) {
-                    Run<?,?> r = pp.find(run.getPreviousBuild());
+                if (pp.resolve(j) == run) {
+                    Run<?, ?> r = pp.find(run.getPreviousBuild());
                     LOGGER.fine(() -> "Updating " + pp.getId() + " permalink from deleted " + run + " to " + (r == null ? -1 : r.getNumber()));
-                    pp.updateCache(j,r);
+                    pp.updateCache(j, r);
                 }
             }
         }
@@ -225,14 +225,14 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
          * See if the new build matches any of the peephole permalink.
          */
         @Override
-        public void onCompleted(Run<?,?> run, @NonNull TaskListener listener) {
+        public void onCompleted(Run<?, ?> run, @NonNull TaskListener listener) {
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
                 if (pp.apply(run)) {
                     Run<?, ?> cur = pp.resolve(j);
-                    if (cur==null || cur.getNumber()<run.getNumber()) {
+                    if (cur == null || cur.getNumber() < run.getNumber()) {
                         LOGGER.fine(() -> "Updating " + pp.getId() + " permalink to completed " + run);
-                        pp.updateCache(j,run);
+                        pp.updateCache(j, run);
                     }
                 }
             }

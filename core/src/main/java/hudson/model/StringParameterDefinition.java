@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Luca Domenico Milanesio, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -65,7 +66,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         setDefaultValue(defaultValue);
         setDescription(description);
     }
-    
+
     public StringParameterDefinition(@NonNull String name, @CheckForNull String defaultValue) {
         this(name);
         setDefaultValue(defaultValue);
@@ -87,7 +88,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
-     * 
+     *
      * @return original or trimmed defaultValue (depending on trim)
      */
     @Restricted(DoNotUse.class) // Jelly
@@ -104,7 +105,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
-     * 
+     *
      * @return trim - {@code true}, if trim options has been selected, else return {@code false}.
      *      Trimming will happen when creating {@link StringParameterValue}s,
      *      the value in the config will not be changed.
@@ -121,7 +122,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     public void setTrim(boolean trim) {
         this.trim = trim;
     }
-    
+
     @Override
     public StringParameterValue getDefaultParameterValue() {
         StringParameterValue value = new StringParameterValue(getName(), defaultValue, getDescription());
@@ -131,7 +132,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         return value;
     }
 
-    @Extension @Symbol({"string","stringParam"})
+    @Extension @Symbol({"string", "stringParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         @NonNull

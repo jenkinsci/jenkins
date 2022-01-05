@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -90,12 +91,12 @@ public final class TcpSlaveAgentListener extends Thread {
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
-        super("TCP agent listener port="+port);
+        super("TCP agent listener port=" + port);
         try {
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(port));
         } catch (BindException e) {
-            throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
+            throw (BindException) new BindException("Failed to listen on port " + port + " because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
@@ -193,8 +194,8 @@ public final class TcpSlaveAgentListener extends Thread {
                 }).start();
             }
         } catch (IOException e) {
-            if(!shuttingDown) {
-                LOGGER.log(Level.SEVERE,"Failed to accept TCP connections", e);
+            if (!shuttingDown) {
+                LOGGER.log(Level.SEVERE, "Failed to accept TCP connections", e);
             }
         }
     }
@@ -218,7 +219,7 @@ public final class TcpSlaveAgentListener extends Thread {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to close down TCP port",e);
+            LOGGER.log(Level.WARNING, "Failed to close down TCP port", e);
         }
     }
 
@@ -235,10 +236,10 @@ public final class TcpSlaveAgentListener extends Thread {
 
         ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
             this.s = s;
-            synchronized(getClass()) {
+            synchronized (getClass()) {
                 id = iotaGen++;
             }
-            setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
+            setName("TCP agent connection handler #" + id + " with " + s.getRemoteSocketAddress());
             setUncaughtExceptionHandler((t, e) -> {
                 LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener ConnectionHandler " + t, e);
                 try {
@@ -264,17 +265,17 @@ public final class TcpSlaveAgentListener extends Thread {
                 String header = new String(head, StandardCharsets.US_ASCII);
                 if (header.startsWith("GET ")) {
                     // this looks like an HTTP client
-                    respondHello(header,s);
+                    respondHello(header, s);
                     return;
                 }
 
                 // otherwise assume this is AgentProtocol and start from the beginning
-                String s = new DataInputStream(new SequenceInputStream(new ByteArrayInputStream(head),in)).readUTF();
+                String s = new DataInputStream(new SequenceInputStream(new ByteArrayInputStream(head), in)).readUTF();
 
-                if(s.startsWith("Protocol:")) {
+                if (s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
-                    if (p!=null) {
+                    if (p != null) {
                         if (Jenkins.get().getAgentProtocols().contains(protocol)) {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
@@ -287,7 +288,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     error("Unrecognized protocol: " + s, this.s);
                 }
             } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
+                LOGGER.log(Level.WARNING, "Connection #" + id + " aborted", e);
                 try {
                     s.close();
                 } catch (IOException ex) {
@@ -319,7 +320,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     response = "HTTP/1.0 200 OK\r\n" +
                             "Content-Type: text/plain;charset=UTF-8\r\n" +
                             "\r\n" +
-                            "Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n" +
+                            "Jenkins-Agent-Protocols: " + getAgentProtocolNames() + "\r\n" +
                             "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +
                             "Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n" +
                             "Client: " + s.getInetAddress().getHostAddress() + "\r\n" +
@@ -505,7 +506,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         public static void schedule(Thread originThread, Throwable cause) {
-            schedule(originThread, cause,5000);
+            schedule(originThread, cause, 5000);
         }
 
         public static void schedule(Thread originThread, Throwable cause, long approxDelay) {
@@ -528,7 +529,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
     }
 
-    private static int iotaGen=1;
+    private static int iotaGen = 1;
 
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
 
@@ -541,7 +542,7 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
-    public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName()+".hostName");
+    public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName() + ".hostName");
 
     /**
      * Port number that we advertise protocol clients to connect to.
@@ -555,5 +556,5 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
-    public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName()+".port");
+    public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".port");
 }

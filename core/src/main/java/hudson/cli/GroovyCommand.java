@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import groovy.lang.Binding;
@@ -47,13 +48,13 @@ public class GroovyCommand extends CLICommand {
         return Messages.GroovyCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SCRIPT",usage="Script to be executed. Only '=' (to represent stdin) is supported.")
+    @Argument(metaVar = "SCRIPT", usage = "Script to be executed. Only '=' (to represent stdin) is supported.")
     public String script;
 
     /**
      * Remaining arguments.
      */
-    @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
+    @Argument(metaVar = "ARGUMENTS", index = 1, usage = "Command line arguments to pass into script.")
     public List<String> remaining = new ArrayList<>();
 
     @Override
@@ -62,13 +63,13 @@ public class GroovyCommand extends CLICommand {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
-        binding.setProperty("out",new PrintWriter(stdout,true));
-        binding.setProperty("stdin",stdin);
-        binding.setProperty("stdout",stdout);
-        binding.setProperty("stderr",stderr);
+        binding.setProperty("out", new PrintWriter(stdout, true));
+        binding.setProperty("stdin", stdin);
+        binding.setProperty("stdout", stdout);
+        binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[0]));
+        groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }
 
@@ -76,7 +77,7 @@ public class GroovyCommand extends CLICommand {
      * Loads the script from the argument.
      */
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
-        if(script==null)
+        if (script == null)
             throw new CmdLineException(null, "No script is specified");
         if (script.equals("="))
             return IOUtils.toString(stdin);

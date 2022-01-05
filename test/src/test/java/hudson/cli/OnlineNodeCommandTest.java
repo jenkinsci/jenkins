@@ -342,6 +342,7 @@ public class OnlineNodeCommandTest {
             }
             return true;
         }
+
         @TestExtension("disconnectCause")
         public static class DescriptorImpl extends Descriptor<Builder> {}
     }

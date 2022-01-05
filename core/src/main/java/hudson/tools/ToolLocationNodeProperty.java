@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
@@ -87,7 +88,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @return
      *      never null.
      * @deprecated since 2009-04-09.
-     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
+     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)}
      */
     @Deprecated
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {

@@ -66,7 +66,7 @@ public class TriggerStartTest {
         MockTrigger t = new MockTrigger();
         p.addTrigger(t);
         p.save();
-        p = (FreeStyleProject)j.configRoundtrip((Item)p);
+        p = (FreeStyleProject) j.configRoundtrip((Item) p);
         t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
         assertEquals("[true]", t.calls.toString());
@@ -91,7 +91,7 @@ public class TriggerStartTest {
     }
 
     @Test public void copyCallsStartTrue() throws Exception {
-        AbstractProject<?,?> p = j.createFreeStyleProject();
+        AbstractProject<?, ?> p = j.createFreeStyleProject();
         MockTrigger t = new MockTrigger();
         p.addTrigger(t);
         p.save();

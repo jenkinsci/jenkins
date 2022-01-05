@@ -14,7 +14,7 @@ public abstract class InstallStateFilter implements ExtensionPoint {
      * Determine the current or next install state, proceed with `return proceed.next()`
      */
     public abstract InstallState getNextInstallState(InstallState current, Provider<InstallState> proceed);
-    
+
     /**
      * Get all the InstallStateFilters, in extension order
      */

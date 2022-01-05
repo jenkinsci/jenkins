@@ -54,11 +54,11 @@ class ErrorLoggingScheduledThreadPoolExecutor extends ScheduledThreadPoolExecuto
     ErrorLoggingScheduledThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler) {
         super(corePoolSize, handler);
     }
-    
+
     ErrorLoggingScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, threadFactory, handler);
     }
-    
+
     @Override protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
         if (t == null && r instanceof Future<?>) {

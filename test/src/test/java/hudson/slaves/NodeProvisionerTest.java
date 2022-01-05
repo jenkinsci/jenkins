@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
@@ -106,7 +107,7 @@ public class NodeProvisionerTest {
             f.get(30, TimeUnit.SECONDS); // if it's taking too long, abort.
 
             // since there's only one job, we expect there to be just one slave
-            assertEquals(1,cloud.numProvisioned);
+            assertEquals(1, cloud.numProvisioned);
         }
     }
 
@@ -123,7 +124,7 @@ public class NodeProvisionerTest {
 
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
-            assertEquals(5,cloud.numProvisioned);
+            assertEquals(5, cloud.numProvisioned);
         }
     }
 
@@ -142,7 +143,7 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
 
             // we should have used two static slaves, thus only 3 slaves should have been provisioned
-            assertEquals(3,cloud.numProvisioned);
+            assertEquals(3, cloud.numProvisioned);
         }
     }
 
@@ -173,7 +174,7 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(redJobs));
 
             // cloud should only give us 5 nodes for 5 red jobs
-            assertEquals(5,cloud.numProvisioned);
+            assertEquals(5, cloud.numProvisioned);
 
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
@@ -202,7 +203,7 @@ public class NodeProvisionerTest {
 
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
         List<FreeStyleProject> jobs = new ArrayList<>();
-        for( int i=0; i<l.init; i++)
+        for (int i = 0; i < l.init; i++)
             //set a large delay, to simulate the situation where we need to provision more agents
             // to keep up with the load
             jobs.add(createJob(l.createBuilder()));
@@ -213,7 +214,7 @@ public class NodeProvisionerTest {
      * Builds all the given projects at once.
      */
     private List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
-        System.out.println("Scheduling builds for "+jobs.size()+" jobs");
+        System.out.println("Scheduling builds for " + jobs.size() + " jobs");
         List<Future<FreeStyleBuild>> builds = new ArrayList<>();
         for (FreeStyleProject job : jobs)
             builds.add(job.scheduleBuild2(0));

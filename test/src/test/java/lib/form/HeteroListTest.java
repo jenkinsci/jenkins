@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -259,7 +260,7 @@ public class HeteroListTest {
 
             @Override
             public String getDisplayName() {
-                return "XSS: <img src=x onerror=console.warn('" + getClass().getName() +"') />";
+                return "XSS: <img src=x onerror=console.warn('" + getClass().getName() + "') />";
             }
 
             @Override

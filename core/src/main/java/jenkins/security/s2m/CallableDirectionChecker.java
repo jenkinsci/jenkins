@@ -27,9 +27,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends RoleChecker {
 
-    private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
+    private static final String BYPASS_PROP = CallableDirectionChecker.class.getName() + ".allow";
 
-    private static final String ALLOW_ANY_ROLE_PROP = CallableDirectionChecker.class.getName()+".allowAnyRole";
+    private static final String ALLOW_ANY_ROLE_PROP = CallableDirectionChecker.class.getName() + ".allowAnyRole";
 
     /**
      * Switch to disable all the defense mechanism completely.

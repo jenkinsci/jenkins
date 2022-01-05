@@ -57,7 +57,7 @@ public class TreeStringBuilder {
 
                         return middle.intern(s.substring(plen));
                     }
-                    else {// entire key is suffix
+                    else { // entire key is suffix
                         return e.getValue().intern(s.substring(plen));
                     }
                 }
@@ -124,7 +124,7 @@ public class TreeStringBuilder {
      * Interns a string.
      */
     public TreeString intern(final String s) {
-        if (s==null)    return null;
+        if (s == null)    return null;
         return root.intern(s).node;
     }
 
@@ -132,7 +132,7 @@ public class TreeStringBuilder {
      * Interns a {@link TreeString} created elsewhere.
      */
     public TreeString intern(final TreeString s) {
-        if (s==null)    return null;
+        if (s == null)    return null;
         return root.intern(s.toString()).node;
     }
 

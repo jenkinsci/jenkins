@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static org.junit.Assert.assertEquals;
@@ -112,15 +113,15 @@ public class BuildTriggerTest {
         j.assertBuildStatusSuccess(j.waitForCompletion(assertDownstreamBuild(dp, b)));
     }
 
-    private void assertNoDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
+    private void assertNoDownstreamBuild(FreeStyleProject dp, Run<?, ?> b) throws Exception {
         for (int i = 0; i < 3; i++) {
             Thread.sleep(200);
             assertTrue("downstream build should not run!  upstream log: " + b.getLog(),
-                       !dp.isInQueue() && !dp.isBuilding() && dp.getLastBuild()==null);
+                       !dp.isInQueue() && !dp.isBuilding() && dp.getLastBuild() == null);
         }
     }
 
-    private FreeStyleBuild assertDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
+    private FreeStyleBuild assertDownstreamBuild(FreeStyleProject dp, Run<?, ?> b) throws Exception {
         // Wait for downstream build
         FreeStyleBuild result = null;
         for (int i = 0; (result = dp.getLastBuild()) == null && i < 25; i++) {
@@ -149,10 +150,10 @@ public class BuildTriggerTest {
         auth.add(Computer.BUILD, "alice");
         auth.add(Computer.BUILD, "anonymous");
         j.jenkins.setAuthorizationStrategy(auth);
-        final FreeStyleProject upstream =j. createFreeStyleProject("upstream");
+        final FreeStyleProject upstream = j. createFreeStyleProject("upstream");
         org.acegisecurity.Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
-        Map<Permission,Set<String>> perms = new HashMap<>();
+        Map<Permission, Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
@@ -180,7 +181,7 @@ public class BuildTriggerTest {
         j.waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
         // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
-        Map<Permission,Set<String>> grantedPermissions = new HashMap<>();
+        Map<Permission, Set<String>> grantedPermissions = new HashMap<>();
         grantedPermissions.put(Item.READ, Collections.singleton("alice"));
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
@@ -241,6 +242,7 @@ public class BuildTriggerTest {
         assertEquals(3, downstream.getLastBuild().number);
         j.buildAndAssertSuccess(simple);
     }
+
     private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;
         try (ACLContext c = ACL.as(auth)) {
@@ -306,6 +308,7 @@ public class BuildTriggerTest {
 
         private static final class Dep extends Dependency {
             private static boolean block = false;
+
             private Dep(AbstractProject upstream, AbstractProject downstream) {
                 super(upstream, downstream);
             }
@@ -331,7 +334,7 @@ public class BuildTriggerTest {
 
         @Override @SuppressWarnings("rawtypes")
         public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-            for (AbstractProject ch: getChildProjects(owner)) {
+            for (AbstractProject ch : getChildProjects(owner)) {
                 graph.addDependency(new Dep(owner, ch));
             }
         }

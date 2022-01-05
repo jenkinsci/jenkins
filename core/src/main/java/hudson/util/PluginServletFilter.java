@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -79,7 +80,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
      * @return get the current PluginServletFilter if it is already available
      */
     private static @CheckForNull PluginServletFilter getInstance(ServletContext c) {
-        return (PluginServletFilter)c.getAttribute(KEY);
+        return (PluginServletFilter) c.getAttribute(KEY);
     }
 
     @Override
@@ -92,20 +93,20 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         for (Filter f : list) {
             f.init(config);
         }
-        config.getServletContext().setAttribute(KEY,this);
+        config.getServletContext().setAttribute(KEY, this);
     }
 
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
-        
+
         PluginServletFilter container = null;
-        if(j != null) {
+        if (j != null) {
             container = getInstance(j.servletContext);
-	}
+        }
         // https://marvelution.atlassian.net/browse/JJI-188
-        if (j==null || container == null) {
+        if (j == null || container == null) {
             // report who is doing legacy registration
-            LOGGER.log(Level.WARNING, "Filter instance is registered too early: "+filter, new Exception());
+            LOGGER.log(Level.WARNING, "Filter instance is registered too early: " + filter, new Exception());
             LEGACY.add(filter);
         } else {
             filter.init(container.config);
@@ -122,7 +123,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
         PluginServletFilter container = null;
-        if(j != null) {
+        if (j != null) {
             container = getInstance(j.servletContext);
         }
         if (j == null || container == null) {
@@ -134,7 +135,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
 
     public static void removeFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j==null || getInstance(j.servletContext) == null) {
+        if (j == null || getInstance(j.servletContext) == null) {
             LEGACY.remove(filter);
         } else {
             getInstance(j.servletContext).list.remove(filter);
@@ -148,15 +149,15 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
 
             @Override
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-                if(itr.hasNext()) {
+                if (itr.hasNext()) {
                     // call next
                     itr.next().doFilter(request, response, this);
                 } else {
                     // reached to the end
-                    chain.doFilter(request,response);
+                    chain.doFilter(request, response);
                 }
             }
-        }.doFilter(request,response);
+        }.doFilter(request, response);
     }
 
     @Override
@@ -177,7 +178,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         if (instance != null) {
             // While we could rely on the current implementation of list being a CopyOnWriteArrayList
             // safer to just take an explicit copy of the list and operate on the copy
-            for (Filter f: new ArrayList<>(instance.list)) {
+            for (Filter f : new ArrayList<>(instance.list)) {
                 instance.list.remove(f);
                 // remove from the list even if destroy() fails as a failed destroy is still a destroy
                 try {

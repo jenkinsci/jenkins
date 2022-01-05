@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.junit.Assert.assertEquals;
@@ -37,8 +38,8 @@ import org.junit.Test;
  */
 public class CopyOnWriteMapTest {
     public static final class HashData {
-        CopyOnWriteMap.Hash<String,String> map1 = new CopyOnWriteMap.Hash<>();
-        HashMap<String,String> map2 = new HashMap<>();
+        CopyOnWriteMap.Hash<String, String> map1 = new CopyOnWriteMap.Hash<>();
+        HashMap<String, String> map2 = new HashMap<>();
     }
 
     /**
@@ -52,7 +53,7 @@ public class CopyOnWriteMapTest {
         assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-HashData>"
                 + "<map1/><map2/></hudson.util.CopyOnWriteMapTest_-HashData>",
                 out.replaceAll("\\s+", ""));
-        HashData td2 = (HashData)xs.fromXML(out);
+        HashData td2 = (HashData) xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
 
@@ -64,18 +65,20 @@ public class CopyOnWriteMapTest {
                 + "<map2><entry><string>foo2</string><string>bar2</string></entry>"
                 + "</map2></hudson.util.CopyOnWriteMapTest_-HashData>",
                 out.replaceAll("\\s+", ""));
-        td2 = (HashData)xs.fromXML(out);
+        td2 = (HashData) xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
 
     public static final class TreeData {
-        CopyOnWriteMap.Tree<String,String> map1;
-        TreeMap<String,String> map2;
+        CopyOnWriteMap.Tree<String, String> map1;
+        TreeMap<String, String> map2;
+
         TreeData() {
             map1 = new CopyOnWriteMap.Tree<>();
             map2 = new TreeMap<>();
         }
+
         TreeData(Comparator<String> comparator) {
             map1 = new CopyOnWriteMap.Tree<>(comparator);
             map2 = new TreeMap<>(comparator);
@@ -95,7 +98,7 @@ public class CopyOnWriteMapTest {
                 + "<map1/><map2/>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
                 out.replaceAll("\\s+", ""));
-        TreeData td2 = (TreeData)xs.fromXML(out);
+        TreeData td2 = (TreeData) xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
 
@@ -111,14 +114,14 @@ public class CopyOnWriteMapTest {
                 + "<entry><string>foo2</string><string>bar2</string></entry></map2>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
                 out.replaceAll(">\\s+<", "><"));
-        td2 = (TreeData)xs.fromXML(out);
+        td2 = (TreeData) xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
 
     @Test public void equalsHashCodeToString() {
-        Map<String,Integer> m1 = new TreeMap<>();
-        Map<String,Integer> m2 = new CopyOnWriteMap.Tree<>();
+        Map<String, Integer> m1 = new TreeMap<>();
+        Map<String, Integer> m2 = new CopyOnWriteMap.Tree<>();
         m1.put("foo", 5);
         m1.put("bar", 7);
         m2.put("foo", 5);

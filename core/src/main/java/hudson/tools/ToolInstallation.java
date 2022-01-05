@@ -96,12 +96,12 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * {@link ToolProperty}s that are associated with this tool.
      */
-    private /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
+    private /*almost final*/ DescribableList<ToolProperty<?>, ToolPropertyDescriptor> properties
             = new DescribableList<>(Saveable.NOOP);
 
     /**
      * @deprecated
-     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
+     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)}
      */
     @Deprecated
     protected ToolInstallation(String name, String home) {
@@ -112,11 +112,11 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     protected ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         this.name = name;
         this.home = home;
-        if(properties!=null) {
+        if (properties != null) {
             try {
                 this.properties.replaceBy(properties);
                 for (ToolProperty<?> p : properties)
-                    _setTool(p,this);
+                    _setTool(p, this);
             } catch (IOException e) {
                 throw new AssertionError(e); // no Saveable, so can't happen
             }
@@ -137,7 +137,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
 
     /**
      * Gets the home directory of this tool.
-     * 
+     *
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
      * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on controller)
@@ -158,7 +158,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     public void buildEnvVars(EnvVars env) {
     }
 
-    public synchronized DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
+    public synchronized DescribableList<ToolProperty<?>, ToolPropertyDescriptor> getProperties() {
         if (properties == null) {
             properties = new DescribableList<>(Saveable.NOOP);
         }
@@ -184,11 +184,11 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;
-            t = (ToolInstallation)n.forNode(node,listener);
+            t = (ToolInstallation) n.forNode(node, listener);
         }
         if (t instanceof EnvironmentSpecific) {
             EnvironmentSpecific e = (EnvironmentSpecific) t;
-            t = (ToolInstallation)e.forEnvironment(envs);
+            t = (ToolInstallation) e.forEnvironment(envs);
         }
         return t;
     }
@@ -197,9 +197,9 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Convenient version of {@link #translate(Node, EnvVars, TaskListener)} that just takes a build object in progress.
      * @since 1.460
      */
-    public ToolInstallation translate(AbstractBuild<?,?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(AbstractBuild<?, ?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
         assert buildInProgress.isBuilding();
-        return translate(buildInProgress.getBuiltOn(),buildInProgress.getEnvironment(listener),listener);
+        return translate(buildInProgress.getBuiltOn(), buildInProgress.getEnvironment(listener), listener);
     }
 
     /**
@@ -261,6 +261,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
         protected ToolConverter(XStream2 xstream) { super(xstream); }
+
         @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;
@@ -269,13 +270,14 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
                 OldDataMonitor.report(context, "1.286");
             }
         }
+
         protected abstract String oldHomeField(ToolInstallation obj);
     }
 
     /**
      * Returns all the registered {@link ToolDescriptor}s.
      */
-    public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
+    public static DescriptorExtensionList<ToolInstallation, ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }

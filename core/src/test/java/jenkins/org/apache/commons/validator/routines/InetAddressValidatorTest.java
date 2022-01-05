@@ -91,10 +91,10 @@ public class InetAddressValidatorTest extends TestCase {
             "2001:0000:1234:0000:0000:C1C0:ABCD:0876%abc defgh", // space in node id
             "2001:0000:1234:0000:0000:C1C0:ABCD:0876%abc%defgh", // '%' in node id
             };
-        for(String item : valid) {
+        for (String item : valid) {
             assertTrue(String.format("%s should be valid", item), validator.isValid(item));
         }
-        for(String item : invalid) {
+        for (String item : invalid) {
             assertFalse(String.format("%s should be invalid", item), validator.isValid(item));
         }
     }
@@ -137,7 +137,7 @@ public class InetAddressValidatorTest extends TestCase {
         assertFalse("IP with leading zeroes should be invalid", validator.isValid("124.14.32.01"));
         assertFalse("IP with three groups should be invalid",   validator.isValid("23.64.12"));
         assertFalse("IP with five groups should be invalid",    validator.isValid("26.34.23.77.234"));
-        assertFalse("IP empty string should be invalid", validator.isValidInet6Address(""));// empty string
+        assertFalse("IP empty string should be invalid", validator.isValidInet6Address("")); // empty string
     }
 
     /**
@@ -149,17 +149,17 @@ public class InetAddressValidatorTest extends TestCase {
     public void testIPv6() {
         // The original Perl script contained a lot of duplicate tests.
         // I removed the duplicates I noticed, but there may be more.
-        assertFalse("IPV6 empty string should be invalid", validator.isValidInet6Address(""));// empty string
-        assertTrue("IPV6 ::1 should be valid", validator.isValidInet6Address("::1"));// loopback, compressed, non-routable
-        assertTrue("IPV6 :: should be valid", validator.isValidInet6Address("::"));// unspecified, compressed, non-routable
-        assertTrue("IPV6 0:0:0:0:0:0:0:1 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:0:1"));// loopback, full
-        assertTrue("IPV6 0:0:0:0:0:0:0:0 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:0:0"));// unspecified, full
-        assertTrue("IPV6 2001:DB8:0:0:8:800:200C:417A should be valid", validator.isValidInet6Address("2001:DB8:0:0:8:800:200C:417A"));// unicast, full
-        assertTrue("IPV6 FF01:0:0:0:0:0:0:101 should be valid", validator.isValidInet6Address("FF01:0:0:0:0:0:0:101"));// multicast, full
-        assertTrue("IPV6 2001:DB8::8:800:200C:417A should be valid", validator.isValidInet6Address("2001:DB8::8:800:200C:417A"));// unicast, compressed
-        assertTrue("IPV6 FF01::101 should be valid", validator.isValidInet6Address("FF01::101"));// multicast, compressed
-        assertFalse("IPV6 2001:DB8:0:0:8:800:200C:417A:221 should be invalid", validator.isValidInet6Address("2001:DB8:0:0:8:800:200C:417A:221"));// unicast, full
-        assertFalse("IPV6 FF01::101::2 should be invalid", validator.isValidInet6Address("FF01::101::2"));// multicast, compressed
+        assertFalse("IPV6 empty string should be invalid", validator.isValidInet6Address("")); // empty string
+        assertTrue("IPV6 ::1 should be valid", validator.isValidInet6Address("::1")); // loopback, compressed, non-routable
+        assertTrue("IPV6 :: should be valid", validator.isValidInet6Address("::")); // unspecified, compressed, non-routable
+        assertTrue("IPV6 0:0:0:0:0:0:0:1 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:0:1")); // loopback, full
+        assertTrue("IPV6 0:0:0:0:0:0:0:0 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:0:0")); // unspecified, full
+        assertTrue("IPV6 2001:DB8:0:0:8:800:200C:417A should be valid", validator.isValidInet6Address("2001:DB8:0:0:8:800:200C:417A")); // unicast, full
+        assertTrue("IPV6 FF01:0:0:0:0:0:0:101 should be valid", validator.isValidInet6Address("FF01:0:0:0:0:0:0:101")); // multicast, full
+        assertTrue("IPV6 2001:DB8::8:800:200C:417A should be valid", validator.isValidInet6Address("2001:DB8::8:800:200C:417A")); // unicast, compressed
+        assertTrue("IPV6 FF01::101 should be valid", validator.isValidInet6Address("FF01::101")); // multicast, compressed
+        assertFalse("IPV6 2001:DB8:0:0:8:800:200C:417A:221 should be invalid", validator.isValidInet6Address("2001:DB8:0:0:8:800:200C:417A:221")); // unicast, full
+        assertFalse("IPV6 FF01::101::2 should be invalid", validator.isValidInet6Address("FF01::101::2")); // multicast, compressed
         assertTrue("IPV6 fe80::217:f2ff:fe07:ed62 should be valid", validator.isValidInet6Address("fe80::217:f2ff:fe07:ed62"));
         assertTrue("IPV6 2001:0000:1234:0000:0000:C1C0:ABCD:0876 should be valid", validator.isValidInet6Address("2001:0000:1234:0000:0000:C1C0:ABCD:0876"));
         assertTrue("IPV6 3ffe:0b00:0000:0000:0001:0000:0000:000a should be valid", validator.isValidInet6Address("3ffe:0b00:0000:0000:0001:0000:0000:000a"));
@@ -278,10 +278,10 @@ public class InetAddressValidatorTest extends TestCase {
         assertFalse("IPV6 2001:1:1:1:1:1:255Z255X255Y255 should be invalid", validator.isValidInet6Address("2001:1:1:1:1:1:255Z255X255Y255")); // garbage instead of "." in IPv4
         assertFalse("IPV6 ::ffff:192x168.1.26 should be invalid", validator.isValidInet6Address("::ffff:192x168.1.26")); // ditto
         assertTrue("IPV6 ::ffff:192.168.1.1 should be valid", validator.isValidInet6Address("::ffff:192.168.1.1"));
-        assertTrue("IPV6 0:0:0:0:0:0:13.1.68.3 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:13.1.68.3"));// IPv4-compatible IPv6 address, full, deprecated
-        assertTrue("IPV6 0:0:0:0:0:FFFF:129.144.52.38 should be valid", validator.isValidInet6Address("0:0:0:0:0:FFFF:129.144.52.38"));// IPv4-mapped IPv6 address, full
-        assertTrue("IPV6 ::13.1.68.3 should be valid", validator.isValidInet6Address("::13.1.68.3"));// IPv4-compatible IPv6 address, compressed, deprecated
-        assertTrue("IPV6 ::FFFF:129.144.52.38 should be valid", validator.isValidInet6Address("::FFFF:129.144.52.38"));// IPv4-mapped IPv6 address, compressed
+        assertTrue("IPV6 0:0:0:0:0:0:13.1.68.3 should be valid", validator.isValidInet6Address("0:0:0:0:0:0:13.1.68.3")); // IPv4-compatible IPv6 address, full, deprecated
+        assertTrue("IPV6 0:0:0:0:0:FFFF:129.144.52.38 should be valid", validator.isValidInet6Address("0:0:0:0:0:FFFF:129.144.52.38")); // IPv4-mapped IPv6 address, full
+        assertTrue("IPV6 ::13.1.68.3 should be valid", validator.isValidInet6Address("::13.1.68.3")); // IPv4-compatible IPv6 address, compressed, deprecated
+        assertTrue("IPV6 ::FFFF:129.144.52.38 should be valid", validator.isValidInet6Address("::FFFF:129.144.52.38")); // IPv4-mapped IPv6 address, compressed
         assertTrue("IPV6 fe80:0:0:0:204:61ff:254.157.241.86 should be valid", validator.isValidInet6Address("fe80:0:0:0:204:61ff:254.157.241.86"));
         assertTrue("IPV6 fe80::204:61ff:254.157.241.86 should be valid", validator.isValidInet6Address("fe80::204:61ff:254.157.241.86"));
         assertTrue("IPV6 ::ffff:12.34.56.78 should be valid", validator.isValidInet6Address("::ffff:12.34.56.78"));

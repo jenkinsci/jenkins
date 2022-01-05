@@ -42,7 +42,7 @@ public class AsynchPeopleTest {
 
     @Issue("JENKINS-18641")
     @Test public void display() throws Exception {
-        User.getById(  "bob", true);
+        User.getById("bob", true);
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("asynchPeople");

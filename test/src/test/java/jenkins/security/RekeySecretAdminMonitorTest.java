@@ -89,12 +89,12 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml,"<foo>" + encryptOld(TEST_KEY) + "</foo>");
+        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>");
     }
 
     private void verifyRewrite(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
+        Pattern pattern = Pattern.compile("<foo>" + plain_regex_match + "</foo>");
         MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
