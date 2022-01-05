@@ -570,13 +570,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
-        <Or>
-          <Class name="hudson.model.ListView"/>
-          <Class name="jenkins.security.s2m.ConfigFile"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="UNENCRYPTED_SERVER_SOCKET"/>
         <Class name="hudson.slaves.Channels"/>
       </And>
