@@ -53,6 +53,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.SlaveComputer;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -157,6 +158,33 @@ public class NodeTest {
         assertNull(computer.getOfflineCause());
         assertNull(computer.getTemporarilyOfflineCause());
     }
+
+    @Test
+    public void testDisconnectDoesNotOverwriteTemporarilyOfflineCause() throws Exception {
+        Node node = j.createOnlineSlave();
+        Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+
+        final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
+        ACL.impersonate2(someone.impersonate2());
+
+        computer.doToggleOffline("original message");
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+        assertEquals(someone, cause.getUser());
+
+        final User root = User.getOrCreateByIdOrFullName("root@localhost");
+        ACL.impersonate2(root.impersonate2());
+
+        ((SlaveComputer) computer).doDoDisconnect("disconnect message");
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+        assertEquals(someone, cause.getUser());
+
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : disconnect message"));
+        assertEquals(root, cause.getUser());
+}
 
     @Test
     public void testGetLabelCloud() throws Exception {
