@@ -256,16 +256,16 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
-        
+
         DependencyGraph graphTemp;
-    	try {
-			graphTemp = Jenkins.get().getFutureDependencyGraph().get();
-		} catch (IllegalStateException | InterruptedException | ExecutionException e) {
-			//Use old version of dependency graph instead
-			graphTemp = Jenkins.get().getDependencyGraph();
-		}
+        try {
+            graphTemp = Jenkins.get().getFutureDependencyGraph().get();
+        } catch (IllegalStateException | InterruptedException | ExecutionException e) {
+            //Use old version of dependency graph instead
+            graphTemp = Jenkins.get().getDependencyGraph();
+        }
         DependencyGraph graph = graphTemp;
-        
+
         List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically

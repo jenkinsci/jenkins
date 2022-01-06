@@ -4887,27 +4887,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
-    
-    public Future<DependencyGraph> getFutureDependencyGraph(){
-        synchronized(dependencyGraphLock) {
+
+    public Future<DependencyGraph> getFutureDependencyGraph() {
+        synchronized (dependencyGraphLock) {
             //Scheduled future will be the most recent one --> Return
             if (scheduledFutureDependencyGraph != null) {
                 return scheduledFutureDependencyGraph;
             }
-            //Calculating future will be the most recent one --> Return 
-            if (calculatingFutureDependencyGraph != null ) {
+            //Calculating future will be the most recent one --> Return
+            if (calculatingFutureDependencyGraph != null) {
                 return calculatingFutureDependencyGraph;
             }
-            //No scheduled or calculating future --> Already completed dependency graph is the most recent one 
+            //No scheduled or calculating future --> Already completed dependency graph is the most recent one
             return CompletableFuture.completedFuture(dependencyGraph);
         }
     }
-    
-    
+
+
     public DependencyGraph createNewDependencyGraph() {
         return new DependencyGraph();
     }
-    
+
     /**
      * Rebuilds the dependency map.
      */
@@ -4929,7 +4929,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        synchronized(dependencyGraphLock) {
+        synchronized (dependencyGraphLock) {
             // Collects calls to this method to avoid unnecessary calculation of the dependency graph
             if (scheduledFutureDependencyGraph != null) {
                 return scheduledFutureDependencyGraph;
@@ -4938,11 +4938,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
         }
     }
-    
-    
+
+
     private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
-            
+
             //Wait for the currently running calculation to finish
             while (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
                 Thread.sleep(100);
@@ -4955,7 +4955,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             rebuildDependencyGraph();
-            
+
             // Mark that we finished calculating the dependency graph
             synchronized (dependencyGraphLock) {
                 calculatingFutureDependencyGraph = null;
@@ -4963,7 +4963,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return dependencyGraph;
         }, delay, unit);
     }
-    
+
 
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
