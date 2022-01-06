@@ -32,3 +32,5 @@ junit jaxb
 bouncycastle-api jaxb
 command-launcher jaxb
 jdk-tool jaxb
+
+javax-activation-api javax-mail-api

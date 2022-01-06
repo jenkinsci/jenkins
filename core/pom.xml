@@ -281,10 +281,6 @@ THE SOFTWARE.
       <artifactId>commons-compress</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>jakarta.mail</artifactId>
-    </dependency>
-    <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
       <exclusions>
