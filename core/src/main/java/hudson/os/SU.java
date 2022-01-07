@@ -43,6 +43,7 @@ import hudson.util.ArgumentListBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 /**
@@ -83,7 +84,7 @@ public abstract class SU {
                     return "sudo";
                 }
 
-                @SuppressFBWarnings(value = {"COMMAND_INJECTION", "DM_DEFAULT_ENCODING"}, justification = "TODO needs triage")
+                @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(), "-S");
@@ -92,7 +93,7 @@ public abstract class SU {
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
                     // TODO: detect if the password didn't work
-                    try (PrintStream ps = new PrintStream(p.getOutputStream())) {
+                    try (PrintStream ps = new PrintStream(p.getOutputStream(), false, Charset.defaultCharset().name())) {
                         ps.println(rootPassword);
                         ps.println(rootPassword);
                         ps.println(rootPassword);

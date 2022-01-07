@@ -36,6 +36,7 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -96,29 +97,29 @@ public class CauseTest {
 
 
     @Issue("JENKINS-48467")
-    @Test public void userIdCausePrintTest() {
+    @Test public void userIdCausePrintTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        TaskListener listener = new StreamTaskListener(baos);
+        TaskListener listener = new StreamTaskListener(baos, Charset.defaultCharset());
 
         //null userId - print unknown or anonymous
         Cause causeA = new Cause.UserIdCause(null);
         causeA.print(listener);
 
-        assertEquals("Started by user unknown or anonymous", baos.toString().trim());
+        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset().name()).trim());
         baos.reset();
 
         //SYSTEM userid  - getDisplayName() should be SYSTEM
         Cause causeB = new Cause.UserIdCause();
         causeB.print(listener);
 
-        assertThat(baos.toString(), containsString("SYSTEM"));
+        assertThat(baos.toString(Charset.defaultCharset().name()), containsString("SYSTEM"));
         baos.reset();
 
         //unknown userid - print unknown or anonymous
         Cause causeC = new Cause.UserIdCause("abc123");
         causeC.print(listener);
 
-        assertEquals("Started by user unknown or anonymous", baos.toString().trim());
+        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset().name()).trim());
         baos.reset();
 
         //More or less standard operation
@@ -127,7 +128,7 @@ public class CauseTest {
         Cause causeD = new Cause.UserIdCause(user.getId());
         causeD.print(listener);
 
-        assertThat(baos.toString(), containsString(user.getDisplayName()));
+        assertThat(baos.toString(Charset.defaultCharset().name()), containsString(user.getDisplayName()));
         baos.reset();
     }
 

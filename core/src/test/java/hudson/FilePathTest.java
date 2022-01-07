@@ -58,6 +58,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -657,9 +658,9 @@ public class FilePathTest {
         when(con.getInputStream()).thenThrow(new ConnectException());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, Charset.defaultCharset()), message));
         verify(con).setIfModifiedSince(123000);
-        String log = baos.toString();
+        String log = baos.toString(Charset.defaultCharset().name());
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
     }
@@ -701,7 +702,7 @@ public class FilePathTest {
         final ZipOutputStream zip = new ZipOutputStream(buf);
 
         zip.putNextEntry(new ZipEntry("abc"));
-        zip.write("abc".getBytes());
+        zip.write("abc".getBytes(StandardCharsets.US_ASCII));
         zip.close();
 
         return new ByteArrayInputStream(buf.toByteArray());

@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -142,8 +143,8 @@ public class ComputerLauncherTest {
 
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ComputerLauncher.checkJavaVersion(new PrintStream(os), "bin/java", new BufferedReader(new StringReader(text)));
-        String logged = os.toString();
+        ComputerLauncher.checkJavaVersion(new PrintStream(os, false, Charset.defaultCharset().name()), "bin/java", new BufferedReader(new StringReader(text)));
+        String logged = os.toString(Charset.defaultCharset().name());
         assertTrue(logged.contains(Messages.ComputerLauncher_JavaVersionResult("bin/java", spec)), logged);
     }
 }

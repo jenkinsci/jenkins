@@ -149,6 +149,14 @@
                   <pattern>net</pattern>
                   <shadedPattern>io.jenkins.cli.shaded.net</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>com</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.com</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>jakarta</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.jakarta</shadedPattern>
+                </relocation>
               </relocations>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">

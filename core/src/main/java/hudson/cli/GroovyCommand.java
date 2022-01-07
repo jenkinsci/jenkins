@@ -28,6 +28,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class GroovyCommand extends CLICommand {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
-        binding.setProperty("out", new PrintWriter(stdout, true));
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true));
         binding.setProperty("stdin", stdin);
         binding.setProperty("stdout", stdout);
         binding.setProperty("stderr", stderr);

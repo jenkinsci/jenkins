@@ -39,6 +39,7 @@ import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import jakarta.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -56,7 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import javax.annotation.PostConstruct;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionFilter;
 import jenkins.ExtensionRefreshException;
@@ -580,7 +580,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Arrays.stream(c.getDeclaredMethods())
                             .map(m -> getMethodAndInterfaceDeclarations(m, interfaces))
                             .flatMap(Collection::stream)
-                            .filter(m -> m.getAnnotation(PostConstruct.class) != null)
+                            .filter(m -> m.getAnnotation(PostConstruct.class) != null || m.getAnnotation(javax.annotation.PostConstruct.class) != null)
                             .findFirst()
                             .ifPresent(method -> methods.add(0, method));
                     c = c.getSuperclass();
