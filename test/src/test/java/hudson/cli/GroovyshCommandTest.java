@@ -30,6 +30,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class GroovyshCommandTest {
     @Test public void authentication() {
         CLICommandInvoker.Result result = new CLICommandInvoker(r, new GroovyshCommand())
             .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-            .withStdin(new ByteArrayInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\n:quit\n".getBytes()))
+            .withStdin(new ByteArrayInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\n:quit\n".getBytes(Charset.defaultCharset())))
             .invoke();
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());

@@ -38,8 +38,11 @@ import hudson.model.Node;
 import hudson.model.User;
 import hudson.tasks.Mailer;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -184,16 +187,19 @@ public class ReloadConfigurationCommandTest {
     private void replace(String path, String search, String replace) {
         File configFile = new File(j.jenkins.getRootDir(), path);
 
+        String oldConfig;
         try {
-            String oldConfig = Util.loadFile(configFile);
+            oldConfig = Util.loadFile(configFile, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
-            String newConfig = oldConfig.replaceAll(search, replace);
+        String newConfig = oldConfig.replaceAll(search, replace);
 
-            FileWriter fw = new FileWriter(configFile);
-            fw.write(newConfig);
-            fw.close();
-        } catch (IOException ex) {
-            throw new AssertionError(ex);
+        try (Writer writer = Files.newBufferedWriter(configFile.toPath(), StandardCharsets.UTF_8)) {
+            writer.write(newConfig);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
