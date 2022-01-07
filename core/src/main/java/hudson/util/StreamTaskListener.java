@@ -76,6 +76,13 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         this(out, null);
     }
 
+    /**
+     * @deprecated as of TODO
+     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *      the charset and output stream separately, so that this class can handle encoding correctly,
+     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
+     */
+    @Deprecated
     public StreamTaskListener(@NonNull OutputStream out) {
         this(out, null);
     }
@@ -83,7 +90,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
-                this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false);
+                this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false, Charset.defaultCharset().name());
             else
                 this.out = new PrintStream(out, false, charset.name());
             this.charset = charset;
@@ -93,6 +100,12 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         }
     }
 
+    /**
+     * @deprecated as of TODO
+     *      The caller should use {@link #StreamTaskListener(File, Charset)} to pass in
+     *      the charset and file separately, so that this class can handle encoding correctly.
+     */
+    @Deprecated
     public StreamTaskListener(@NonNull File out) throws IOException {
         this(out, null);
     }
@@ -187,8 +200,9 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     private static /* not final */ boolean AUTO_FLUSH = SystemProperties.getBoolean(KEY_AUTO_FLUSH);
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = new PrintStream((OutputStream) in.readObject(), AUTO_FLUSH);
+        OutputStream os = (OutputStream) in.readObject();
         String name = (String) in.readObject();
+        out = new PrintStream(os, AUTO_FLUSH, name != null ? name : Charset.defaultCharset().name());
         charset = name == null ? null : Charset.forName(name);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
