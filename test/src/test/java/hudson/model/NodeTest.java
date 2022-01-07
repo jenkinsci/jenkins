@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -171,6 +172,7 @@ public class NodeTest {
         computer.doToggleOffline("original message");
         cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+        assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
         assertEquals(someone, cause.getUser());
 
         final User root = User.getOrCreateByIdOrFullName("root@localhost");
@@ -179,10 +181,12 @@ public class NodeTest {
         ((SlaveComputer) computer).doDoDisconnect("disconnect message");
         cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+        assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
         assertEquals(someone, cause.getUser());
 
         cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : disconnect message"));
+        assertThat(computer.getOfflineCauseReason(), equalTo("disconnect message"));
         assertEquals(root, cause.getUser());
 }
 

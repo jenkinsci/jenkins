@@ -374,7 +374,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public OfflineCause getTemporarilyOfflineCause() {
         return temporarilyOfflineCause;
     }
-
+    
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
@@ -384,7 +384,32 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getOfflineCauseReason() {
-        if (temporarilyOfflineCause == null) {
+        return getOfflineCauseReason(offlineCause);
+    }
+
+    /**
+     * If the computer is temporarily offline,
+     * this method will return the cause as a string (without user info).
+     *
+     * @return
+     *      empty string if the system was put offline without given a cause.
+     */
+    @Exported
+    public String getTemporarilyOfflineCauseReason() {
+        return getOfflineCauseReason(temporarilyOfflineCause);
+    }
+
+    /**
+     * Return the given cause as a string (without user info).
+     *
+     * @param cause
+     *      The cause from which to extract the reason as string.
+     *
+     * @return
+     *      empty string if the cause is null
+     */
+    private String getOfflineCauseReason(OfflineCause cause) {
+        if (cause == null) {
             return "";
         }
         // fetch the localized string for "Disconnected By"
@@ -394,7 +419,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // regex to remove non-commented reason base string
         String gsub2 = "^" + gsub_base + "[\\w\\W]*";
 
-        String newString = temporarilyOfflineCause.toString().replaceAll(gsub1, "");
+        String newString = cause.toString().replaceAll(gsub1, "");
         return newString.replaceAll(gsub2, "");
     }
 
@@ -639,6 +664,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public final boolean isOnline() {
         return !isOffline();
     }
+
+    /**
+     * Helper for the UI
+     * @return
+     *   true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause 
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isOfflineAfterDisconnect()
+    {
+      return offlineCause != null && offlineCause != temporarilyOfflineCause && isOffline() && ! isConnecting();
+    }
+
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
