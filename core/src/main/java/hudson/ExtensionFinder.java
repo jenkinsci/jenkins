@@ -580,7 +580,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Arrays.stream(c.getDeclaredMethods())
                             .map(m -> getMethodAndInterfaceDeclarations(m, interfaces))
                             .flatMap(Collection::stream)
-                            .filter(m -> m.getAnnotation(PostConstruct.class) != null)
+                            .filter(m -> m.getAnnotation(PostConstruct.class) != null || m.getAnnotation(javax.annotation.PostConstruct.class) != null)
                             .findFirst()
                             .ifPresent(method -> methods.add(0, method));
                     c = c.getSuperclass();
