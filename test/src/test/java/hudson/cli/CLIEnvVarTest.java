@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -134,7 +135,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(), containsString("Authenticated as: anonymous"));
+            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: anonymous"));
         }
     }
 
@@ -152,7 +153,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -203,7 +204,7 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
         }
     }
 

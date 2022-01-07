@@ -45,22 +45,12 @@
       annotation indicating the reason why it is a false positive, then remove the exclusion from
       this section.
     - If it is not a false positive, fix the bug, then remove the exclusion from this section.
-  -->
+   -->
   <Match>
     <And>
       <Bug pattern="DM_DEFAULT_ENCODING"/>
       <Or>
-        <Class name="hudson.cli.CLICommand"/>
-        <Class name="hudson.cli.GroovyCommand"/>
-        <Class name="hudson.cli.GroovyshCommand"/>
-        <Class name="hudson.cli.ListChangesCommand"/>
-        <Class name="hudson.FilePath$CreateTextTempFile"/>
-        <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
-        <Class name="hudson.util.StreamTaskListener"/>
         <Class name="hudson.util.TextFile"/>
-        <Class name="jenkins.diagnosis.HsErrPidList"/>
-        <Class name="jenkins.security.s2m.AdminWhitelistRule"/>
-        <Class name="jenkins.slaves.DefaultJnlpSlaveReceiver"/>
       </Or>
     </And>
   </Match>
@@ -577,13 +567,6 @@
           <Class name="hudson.cli.Connection"/>
           <Class name="hudson.model.UsageStatistics$CombinedCipherOutputStream"/>
           <Class name="jenkins.security.CryptoConfidentialKey"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
-        <Or>
-          <Class name="hudson.model.ListView"/>
-          <Class name="jenkins.security.s2m.ConfigFile"/>
         </Or>
       </And>
       <And>

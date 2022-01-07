@@ -433,7 +433,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Restricted(NoExternalUse.class)
     public final String getLongDescription() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
+        PrintStream ps;
+        try {
+            ps = new PrintStream(out, false, getClientCharset().name());
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
 
         printUsageSummary(ps);
         ps.close();

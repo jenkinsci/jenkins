@@ -89,7 +89,7 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>");
+        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
     }
 
     private void verifyRewrite(File dir) throws Exception {
@@ -177,7 +177,7 @@ public class RekeySecretAdminMonitorTest {
     private static String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8))));
+        return Base64.getEncoder().encodeToString(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8)));
     }
 
     private String encryptNew(String str) {
