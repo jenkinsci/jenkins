@@ -368,7 +368,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * this method will return the cause.
      *
      * @return
-     *      null if the system was put offline without given a cause.
+     *      null if the system was put temporarily offline without given a cause.
      */
     @Exported
     public OfflineCause getTemporarilyOfflineCause() {
@@ -392,7 +392,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * this method will return the cause as a string (without user info).
      *
      * @return
-     *      empty string if the system was put offline without given a cause.
+     *      empty string if the system was put temporarily offline without given a cause.
      */
     @Exported
     public String getTemporarilyOfflineCauseReason() {
