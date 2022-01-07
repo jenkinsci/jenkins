@@ -667,6 +667,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Helper for the UI
+     *
      * @return
      *   true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause 
      */
