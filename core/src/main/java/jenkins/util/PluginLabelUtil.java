@@ -59,7 +59,7 @@ public class PluginLabelUtil {
      */
     public static String[] canonicalLabels(JSONArray labels) {
         HashSet<String> uniqueLabels = new HashSet<>();
-        for (Object label: labels) {
+        for (Object label : labels) {
             uniqueLabels.add(Util.intern(canonicalLabel(label.toString())));
         }
         return uniqueLabels.toArray(EMPTY_STRING_ARRAY);
