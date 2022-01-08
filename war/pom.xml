@@ -376,7 +376,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-3</version>
+                  <version>1.6.2-4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
