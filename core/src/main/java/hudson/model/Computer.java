@@ -374,7 +374,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public OfflineCause getTemporarilyOfflineCause() {
         return temporarilyOfflineCause;
     }
-    
+
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
@@ -669,7 +669,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Helper for the UI
      *
      * @return
-     *   true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause 
+     *   true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause
      */
     @Restricted(NoExternalUse.class)
     public boolean isOfflineAfterDisconnect()
