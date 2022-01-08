@@ -370,13 +370,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-activation-api</artifactId>
-                  <version>1.2.0-1</version>
+                  <version>1.2.0-2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-1</version>
+                  <version>1.6.2-2</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
