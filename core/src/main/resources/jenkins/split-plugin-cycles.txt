@@ -34,3 +34,5 @@ command-launcher jaxb
 jdk-tool jaxb
 
 javax-activation-api javax-mail-api
+javax-activation-api sshd
+javax-mail-api sshd
