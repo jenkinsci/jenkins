@@ -14,6 +14,7 @@ import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -336,7 +337,7 @@ public class TokenBasedRememberMeServices2Test {
         HudsonPrivateSecurityRealm.Details details = user.getProperty(HudsonPrivateSecurityRealm.Details.class);
         String signatureValue = tokenService.makeTokenSignature(expiryTime, details.getUsername(), details.getPassword());
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
-        String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
+        String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes(StandardCharsets.UTF_8));
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);
     }
 

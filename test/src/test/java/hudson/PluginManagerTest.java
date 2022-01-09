@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -244,9 +245,9 @@ public class PluginManagerTest {
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
-        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes())));
+        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes(StandardCharsets.UTF_8))));
         assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
-        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes()));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes(StandardCharsets.UTF_8)));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());

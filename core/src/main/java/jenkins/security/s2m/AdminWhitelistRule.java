@@ -22,7 +22,6 @@ public class AdminWhitelistRule {
     }
 
     public boolean getMasterKillSwitch() {
-        LOGGER.log(WARNING, "AdminWhitelistRule no longer has any effect but an attempt was made to read its current configuration value. See https://www.jenkins.io/redirect/AdminWhitelistRule to learn more.", new Exception());
         return false;
     }
 

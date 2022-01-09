@@ -16,10 +16,12 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.concurrent.ExecutionException;
@@ -152,7 +154,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        try (PrintWriter logw = new PrintWriter(log, true)) {
+        try (PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true)) {
             logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         }
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
@@ -172,7 +174,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
-            PrintWriter logw = new PrintWriter(state.getLog(), true);
+            PrintWriter logw = new PrintWriter(new OutputStreamWriter(state.getLog(), /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true);
             Functions.printStackTrace(e, logw);
             try {
                 event.getChannel().close();

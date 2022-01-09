@@ -15,6 +15,7 @@ import hudson.cli.GetNodeCommand;
 import hudson.cli.UpdateNodeCommand;
 import hudson.model.Node;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,10 +37,10 @@ public class NodeListenerTest {
     public void crud() throws Exception {
         Node agent = j.createSlave();
         String xml = cli(new GetNodeCommand()).invokeWithArgs(agent.getNodeName()).stdout();
-        cli(new UpdateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes())).invokeWithArgs(agent.getNodeName());
+        cli(new UpdateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()))).invokeWithArgs(agent.getNodeName());
         cli(new DeleteNodeCommand()).invokeWithArgs(agent.getNodeName());
 
-        cli(new CreateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes())).invokeWithArgs("replica");
+        cli(new CreateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()))).invokeWithArgs("replica");
         j.jenkins.getComputer("replica").doDoDelete();
 
         verify(mock, times(2)).onCreated(any(Node.class));
