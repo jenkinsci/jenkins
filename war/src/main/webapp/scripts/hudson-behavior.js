@@ -1507,18 +1507,6 @@ function rowvgStartEachRow(recursive,f) {
         adjustSticker();
     });
 
-  /**
-   * Converts markup for plugins that aren't using the repeatableDeleteButton tag
-   */
-  Behaviour.specify('input.repeatable-delete', 'repeatable-button-fallbacks', 1000, function (input) {
-    var button = document.createElement("button");
-    for (var index = input.attributes.length - 1; index >= 0; --index) {
-      button.attributes.setNamedItem(input.attributes[index].cloneNode());
-    }
-    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Close</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>'
-    input.parentNode.replaceChild(button, input);
-  });
-
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
