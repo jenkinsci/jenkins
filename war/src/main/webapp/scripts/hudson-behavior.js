@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -154,7 +154,7 @@ var crumb = {
     // else, the instance is starting, restarting, etc.
 })();
 
-var isRunAsTest = undefined; 
+var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
 var rootURL = 'not-defined-yet';
@@ -429,7 +429,7 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ 
+    return directionF(src,function(e){
         if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
             var r = 0;
             while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
@@ -779,7 +779,7 @@ function renderOnDemand(e,callback,noBehaviour) {
 }
 
 /**
- * Finds all the script tags 
+ * Finds all the script tags
  */
 function evalInnerHtmlScripts(text,callback) {
     var q = [];
@@ -1025,7 +1025,7 @@ function rowvgStartEachRow(recursive,f) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
-    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -1037,7 +1037,7 @@ function rowvgStartEachRow(recursive,f) {
             resultsList: "suggestions",
             fields: ["name"]
         };
-        
+
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
         ac.generateRequest = function(query) {
@@ -1078,7 +1078,7 @@ function rowvgStartEachRow(recursive,f) {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
-            
+
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
               lineNumbers: true,
@@ -1507,6 +1507,18 @@ function rowvgStartEachRow(recursive,f) {
         adjustSticker();
     });
 
+  /**
+   * Converts markup for plugins that aren't using the repeatableDeleteButton tag
+   */
+  Behaviour.specify('input.repeatable-delete', 'repeatable-button-fallbacks', 1000, function (input) {
+    var button = document.createElement("button");
+    for (var index = input.attributes.length - 1; index >= 0; --index) {
+      button.attributes.setNamedItem(input.attributes[index].cloneNode());
+    }
+    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Close</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>'
+    input.parentNode.replaceChild(button, input);
+  });
+
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
@@ -1786,8 +1798,8 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    
-    var n = button; 
+
+    var n = button;
     while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
@@ -2216,7 +2228,7 @@ function buildFormTree(form) {
                 addProperty(findParent(e),e.name,values);
                 continue;
             }
-                
+
             var p;
             var r;
             var type = e.getAttribute("type");
@@ -2341,7 +2353,7 @@ var hoverNotification = (function() {
         document.body.appendChild(div);
         div.innerHTML = "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
         body = $('hoverNotification');
-        
+
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
           zIndex:1000,
@@ -2424,7 +2436,7 @@ function safeValidateButton(yuiButton) {
 
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
-    
+
     validateButton(checkUrl, paramList, yuiButton);
 }
 
