@@ -60,6 +60,7 @@ import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import net.sf.json.JSONObject;
 import org.junit.ClassRule;
@@ -298,7 +299,7 @@ public class BuildCommandTest {
             }
         });
         assertThat(new CLICommandInvoker(j, "build").
-                withStdin(new ByteArrayInputStream("uploaded content here".getBytes())).
+                withStdin(new ByteArrayInputStream("uploaded content here".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("-f", "-p", "file=", "myjob"),
             CLICommandInvoker.Matcher.succeeded());
         FreeStyleBuild b = p.getBuildByNumber(1);

@@ -5,6 +5,7 @@ import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import jenkins.scm.RunWithSCM;
@@ -46,7 +47,7 @@ public class ListChangesCommand extends RunRangeCommand {
         // No other permission check needed.
         switch (format) {
         case XML:
-            PrintWriter w = new PrintWriter(stdout);
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()));
             w.println("<changes>");
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {

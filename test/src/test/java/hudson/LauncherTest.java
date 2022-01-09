@@ -56,6 +56,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -286,15 +287,15 @@ public class LauncherTest {
         }
         ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-        TaskListener listener = new StreamTaskListener(baos2);
+        TaskListener listener = new StreamTaskListener(baos2, Charset.defaultCharset());
         psCustomizer.run(ps, baos1, baos2, listener);
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
-            assertThat(message, baos2.toString(), containsString("hello"));
-            assertThat(message, baos1.toString(), is(emptyString()));
+            assertThat(message, baos2.toString(Charset.defaultCharset().name()), containsString("hello"));
+            assertThat(message, baos1.toString(Charset.defaultCharset().name()), is(emptyString()));
         } else {
-            assertThat(message, baos1.toString(), containsString("hello"));
-            assertThat(message, baos2.toString(), is(emptyString()));
+            assertThat(message, baos1.toString(Charset.defaultCharset().name()), containsString("hello"));
+            assertThat(message, baos2.toString(Charset.defaultCharset().name()), is(emptyString()));
         }
     }
 
