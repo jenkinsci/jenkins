@@ -16,14 +16,8 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
             l.task(icon:"icon-gear icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
         }
     }
+    l.app_bar(title: my.displayName)
     l.main_panel {
-        div(class: "jenkins-app-bar") {
-            div(class: "jenkins-app-bar__content") {
-                h1 {
-                    text(my.displayName)
-                }
-            }
-        }
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()

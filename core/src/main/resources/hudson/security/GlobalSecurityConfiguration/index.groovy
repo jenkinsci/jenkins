@@ -12,14 +12,9 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
+    l.app_bar(title: my.displayName)
+
     l.main_panel {
-        div(class: "jenkins-app-bar") {
-            div(class: "jenkins-app-bar__content") {
-                h1 {
-                    text(my.displayName)
-                }
-            }
-        }
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()

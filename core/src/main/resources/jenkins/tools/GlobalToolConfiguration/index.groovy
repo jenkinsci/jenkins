@@ -14,15 +14,9 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
             l.task(icon:"icon-gear icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
         }
     }
+    l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-setting icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
-        }
-
-        p()
         div(class:"behavior-loading") {
             l.spinner(text: _("LOADING"))
         }
