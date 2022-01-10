@@ -41,14 +41,14 @@ import jenkins.util.VirtualFile;
  * @see ArtifactManagerFactory
  * @since 1.532
  */
-public abstract class ArtifactManager {
+public interface ArtifactManager {
 
     /**
      * Called when this manager is loaded from disk.
      * The selected manager will be persisted inside a build, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
      * @param build a historical build with which this manager was associated
      */
-    public abstract void onLoad(@NonNull Run<?, ?> build);
+    void onLoad(@NonNull Run<?, ?> build);
 
     /**
      * Archive all configured artifacts from a build.
@@ -65,7 +65,7 @@ public abstract class ArtifactManager {
      * @throws InterruptedException if transfer was interrupted
      * @see ArtifactArchiver#perform(Run, FilePath, Launcher, TaskListener)
      */
-    public abstract void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException;
+    void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException;
 
     /**
      * Delete all artifacts associated with an earlier build (if any).
@@ -73,12 +73,12 @@ public abstract class ArtifactManager {
      * @throws IOException if deletion could not be completed
      * @throws InterruptedException if deletion was interrupted
      */
-    public abstract boolean delete() throws IOException, InterruptedException;
+    boolean delete() throws IOException, InterruptedException;
 
     /**
      * Returns a representation of the root directory of archived artifacts.
      * @return the archive root
      */
-    public abstract VirtualFile root();
+    VirtualFile root();
 
 }

@@ -46,7 +46,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * May be subclassed to provide an artifact manager which uses the standard storage but which only overrides {@link #archive}.
  * @since 1.532
  */
-public class StandardArtifactManager extends ArtifactManager {
+public class StandardArtifactManager implements ArtifactManager {
 
     private static final Logger LOG = Logger.getLogger(StandardArtifactManager.class.getName());
 

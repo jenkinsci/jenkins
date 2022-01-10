@@ -222,7 +222,7 @@ public class RunTest  {
         }
     }
 
-    public static final class Mgr extends ArtifactManager {
+    public static final class Mgr implements ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
 
         @Override public boolean delete() {

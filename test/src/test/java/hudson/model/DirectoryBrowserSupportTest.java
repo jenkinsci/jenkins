@@ -395,7 +395,7 @@ public class DirectoryBrowserSupportTest {
         public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
     }
 
-    private static final class ExternalArtifactManager extends ArtifactManager {
+    private static final class ExternalArtifactManager implements ArtifactManager {
         String hash;
 
         @Override
@@ -1162,7 +1162,7 @@ public class DirectoryBrowserSupportTest {
         public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
     }
 
-    private static final class SimulatedExternalArtifactManager extends ArtifactManager {
+    private static final class SimulatedExternalArtifactManager implements ArtifactManager {
         String hash;
 
         @Override
