@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,6 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -146,7 +148,7 @@ public class JobTest {
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
                             if (buildNumber != savedBuildNumber - 1) {
-                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
+                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber - 1) + ")";
                                 this.passed = false;
                                 return;
                             }
@@ -171,7 +173,7 @@ public class JobTest {
 
                 this.passed = true;
             }
-            catch (InterruptedException e) {}
+            catch (InterruptedException e) { }
             catch (IOException e) {
                 throw new AssertionError("Failed to assign build number", e);
             }
@@ -181,7 +183,7 @@ public class JobTest {
         }
     }
 
-    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+    public static class JobPropertyImpl extends JobProperty<Job<?, ?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
 
@@ -374,7 +376,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = out.toString();
+        final String oldB2Log = out.toString(Charset.defaultCharset().name());
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -391,7 +393,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = out.toString();
+        final String newB2Log = out.toString(Charset.defaultCharset().name());
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 

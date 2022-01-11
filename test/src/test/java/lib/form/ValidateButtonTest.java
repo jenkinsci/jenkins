@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -76,7 +77,7 @@ public class ValidateButtonTest {
         HtmlButton button = HtmlFormUtil.getButtonByCaption(p.getFormByName("config"), "test");
         HtmlElementUtil.click(button);
 
-        if (d.test1Outcome!=null)
+        if (d.test1Outcome != null)
             throw d.test1Outcome;
     }
 
@@ -110,11 +111,11 @@ public class ValidateButtonTest {
                                         @QueryParameter("c") boolean c, @QueryParameter("d") String d,
                                         @QueryParameter("e") String e) {
                 try {
-                    assertEquals("avalue",a);
+                    assertEquals("avalue", a);
                     assertTrue(b);
                     assertFalse(c);
-                    assertEquals("dvalue",d);
-                    assertEquals("e2",e);
+                    assertEquals("dvalue", d);
+                    assertEquals("e2", e);
                     test1Outcome = null;
                 } catch (RuntimeException t) {
                     test1Outcome = t;
@@ -175,7 +176,7 @@ public class ValidateButtonTest {
         assertTrue(descriptor.wasCalled);
     }
 
-    private HtmlButton getValidateButton(HtmlPage page){
+    private HtmlButton getValidateButton(HtmlPage page) {
         DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
         assertEquals(1, buttons.size());
         return (HtmlButton) buttons.get(0);
@@ -258,7 +259,7 @@ public class ValidateButtonTest {
         assertThat(descriptor.called, is(true));
     }
 
-    public static class ValidateProperty extends JobProperty<Job<?,?>> {
+    public static class ValidateProperty extends JobProperty<Job<?, ?>> {
         @TestExtension({"regularUsageOfUsingDescriptorUrl", "xssUsingDescriptorUrl"})
         public static class DescriptorImpl extends JobPropertyDescriptor {
             public boolean called = false;

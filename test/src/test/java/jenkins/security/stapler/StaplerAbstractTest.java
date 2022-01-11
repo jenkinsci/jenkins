@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -108,22 +109,29 @@ public abstract class StaplerAbstractTest {
     }
 
     public static final String RENDERABLE_CLASS_SIGNATURE = "class jenkins.security.stapler.StaplerAbstractTest.Renderable";
+
     protected static class Renderable {
 
-        public void doIndex() {replyOk();}
+        public void doIndex() {
+            replyOk();
+        }
 
         @WebMethod(name = "valid")
-        public void valid() {replyOk();}
+        public void valid() {
+            replyOk();
+        }
     }
 
     protected static class ParentRenderable {
-        public Renderable getRenderable(){
+        public Renderable getRenderable() {
             return new Renderable();
         }
     }
 
     protected static class RenderablePoint extends Point {
-        public void doIndex() {replyOk();}
+        public void doIndex() {
+            replyOk();
+        }
     }
 
     //================================= utility methods =================================
@@ -144,20 +152,25 @@ public abstract class StaplerAbstractTest {
         assertTrue("No get method request was blocked", filteredGetMethodTriggered);
         filteredGetMethodTriggered = false;
     }
+
     protected void assertDoActionRequestWasBlockedAndResetFlag() {
         assertTrue("No do action request was blocked", filteredDoActionTriggered);
         filteredDoActionTriggered = false;
     }
+
     protected void assertFieldRequestWasBlockedAndResetFlag() {
         assertTrue("No field request was blocked", filteredFieldTriggered);
         filteredFieldTriggered = false;
     }
+
     protected void assertGetMethodActionRequestWasNotBlocked() {
         assertFalse("There was at least one get method request that was blocked", filteredGetMethodTriggered);
     }
+
     protected void assertDoActionRequestWasNotBlocked() {
         assertFalse("There was at least one do action request that was blocked", filteredDoActionTriggered);
     }
+
     protected void assertFieldRequestWasNotBlocked() {
         assertFalse("There was at least one field request that was blocked", filteredFieldTriggered);
     }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -35,30 +36,30 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class BasicApiTokenHelper {
-    public static @CheckForNull User isConnectingUsingApiToken(String username, String tokenValue){
+    public static @CheckForNull User isConnectingUsingApiToken(String username, String tokenValue) {
         User user = User.getById(username, false);
-        if(user == null){
+        if (user == null) {
             ApiTokenPropertyConfiguration apiTokenConfiguration = GlobalConfiguration.all().getInstance(ApiTokenPropertyConfiguration.class);
-            if(apiTokenConfiguration.isTokenGenerationOnCreationEnabled()){
+            if (apiTokenConfiguration.isTokenGenerationOnCreationEnabled()) {
                 String generatedTokenOnCreation = Util.getDigestOf(ApiTokenProperty.API_KEY_SEED.mac(username));
                 boolean areTokenEqual = MessageDigest.isEqual(
                         generatedTokenOnCreation.getBytes(StandardCharsets.US_ASCII),
                         tokenValue.getBytes(StandardCharsets.US_ASCII)
                 );
-                if(areTokenEqual){
+                if (areTokenEqual) {
                     // directly return the user freshly created
-                    // and no need to check its token as the generated token 
+                    // and no need to check its token as the generated token
                     // will be the same as the one we checked just above
                     return User.getById(username, true);
                 }
             }
-        }else{
+        } else {
             ApiTokenProperty t = user.getProperty(ApiTokenProperty.class);
-            if (t!=null && t.matchesPassword(tokenValue)) {
+            if (t != null && t.matchesPassword(tokenValue)) {
                 return user;
             }
         }
-        
+
         return null;
     }
 }

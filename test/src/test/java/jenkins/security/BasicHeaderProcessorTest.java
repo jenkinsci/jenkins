@@ -36,7 +36,7 @@ public class BasicHeaderProcessorTest {
     private SpySecurityListener spySecurityListener;
 
     @Before
-    public void prepareListeners(){
+    public void prepareListeners() {
         this.spySecurityListener = ExtensionList.lookupSingleton(SpySecurityListener.class);
     }
 
@@ -126,38 +126,38 @@ public class BasicHeaderProcessorTest {
             // call with API token
             ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
             final String token = t.getApiToken();
-            String authCode1 = encode(prefix,"foo:"+token);
+            String authCode1 = encode(prefix, "foo:" + token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
             spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with invalid API token
-            String authCode2 = encode(prefix,"foo:abcd"+token);
+            String authCode2 = encode(prefix, "foo:abcd" + token);
             makeRequestWithAuthCodeAndFail(authCode2);
             spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
             // call with password
-            String authCode3 = encode(prefix,"foo:foo");
+            String authCode3 = encode(prefix, "foo:foo");
             makeRequestWithAuthCodeAndVerify(authCode3, "foo");
             spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with incorrect password
-            String authCode4 = encode(prefix,"foo:bar");
+            String authCode4 = encode(prefix, "foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
             spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
         }
     }
 
     private String encode(String prefix, String userAndPass) {
-        if (userAndPass==null) {
+        if (userAndPass == null) {
             return null;
         }
         return prefix + " " + Base64.getEncoder().encodeToString(userAndPass.getBytes(StandardCharsets.UTF_8));
     }
 
     private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException {
-        WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
+        WebRequest req = new WebRequest(new URL(j.getURL(), "test"));
         req.setEncodingType(null);
-        if (authCode!=null)
+        if (authCode != null)
             req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
         assertEquals(expectedLogin, p.getWebResponse().getContentAsString());
@@ -191,7 +191,7 @@ public class BasicHeaderProcessorTest {
 
         public HttpResponse doIndex() {
             User u = User.current();
-            return HttpResponses.text(u!=null ? u.getId() : "anonymous");
+            return HttpResponses.text(u != null ? u.getId() : "anonymous");
         }
     }
 

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -44,7 +45,7 @@ import org.apache.commons.lang.StringUtils;
  * In order to hook into the setup wizard lifecycle, you should
  * include something in a script that call
  * to {@code onSetupWizardInitialized} with a callback
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @StaplerAccessibleType
@@ -52,12 +53,12 @@ public class InstallState implements ExtensionPoint {
 
     /**
      * Only here for XStream compatibility. <p>
-     * 
+     *
      * Please DO NOT ADD ITEM TO THIS LIST. <p>
-     * If you add an item here, the deserialization process will break 
-     * because it is used for serialized state like "jenkins.install.InstallState$4" 
+     * If you add an item here, the deserialization process will break
+     * because it is used for serialized state like "jenkins.install.InstallState$4"
      * before the change from anonymous class to named class. If you need to add a new InstallState, you can just add a new inner named class but nothing to change in this list.
-     * 
+     *
      * @deprecated see {@link #readResolve()}
      */
     @Deprecated
@@ -76,31 +77,35 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState UNKNOWN = new Unknown();
+
     private static class Unknown extends InstallState {
         Unknown() {
             super("UNKNOWN", true);
         }
+
         @Override
         public void initializeState() {
             InstallUtil.proceedToNextStateFrom(this);
         }
     }
-    
+
     /**
      * After any setup / restart / etc. hooks are done, states should be running
      */
     @Extension
     public static final InstallState RUNNING = new InstallState("RUNNING", true);
-    
+
     /**
      * The initial set up has been completed
      */
     @Extension
     public static final InstallState INITIAL_SETUP_COMPLETED = new InitialSetupCompleted();
+
     private static final class InitialSetupCompleted extends InstallState {
         InitialSetupCompleted() {
             super("INITIAL_SETUP_COMPLETED", true);
         }
+
         @Override
         public void initializeState() {
             Jenkins j = Jenkins.get();
@@ -112,16 +117,18 @@ public class InstallState implements ExtensionPoint {
             j.setInstallState(RUNNING);
         }
     }
-    
+
     /**
      * Creating an admin user for an initial Jenkins install.
      */
     @Extension
     public static final InstallState CREATE_ADMIN_USER = new CreateAdminUser();
+
     private static final class CreateAdminUser extends InstallState {
         CreateAdminUser() {
             super("CREATE_ADMIN_USER", false);
         }
+
         @Override
         public void initializeState() {
             Jenkins j = Jenkins.get();
@@ -132,13 +139,15 @@ public class InstallState implements ExtensionPoint {
             }
         }
     }
-    
+
     @Extension
     public static final InstallState CONFIGURE_INSTANCE = new ConfigureInstance();
+
     private static final class ConfigureInstance extends InstallState {
         ConfigureInstance() {
             super("CONFIGURE_INSTANCE", false);
         }
+
         @Override
         public void initializeState() {
             // Skip this state if a boot script already configured the root URL
@@ -148,7 +157,7 @@ public class InstallState implements ExtensionPoint {
             }
         }
     }
-    
+
     /**
      * New Jenkins install. The user has kicked off the process of installing an
      * initial set of plugins (via the install wizard).
@@ -161,10 +170,12 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState INITIAL_SECURITY_SETUP = new InitialSecuritySetup();
+
     private static final class InitialSecuritySetup extends InstallState {
         InitialSecuritySetup() {
             super("INITIAL_SECURITY_SETUP", false);
         }
+
         @Override
         public void initializeState() {
             try {
@@ -176,7 +187,7 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.proceedToNextStateFrom(INITIAL_SECURITY_SETUP);
         }
     }
-    
+
     /**
      * New Jenkins install.
      */
@@ -188,21 +199,24 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState RESTART = new Restart();
+
     private static final class Restart extends InstallState {
         Restart() {
             super("RESTART", true);
         }
+
         @Override
         public void initializeState() {
             InstallUtil.saveLastExecVersion();
         }
     }
-    
+
     /**
      * Upgrade of an existing Jenkins install.
      */
     @Extension
     public static final InstallState UPGRADE = new Upgrade();
+
     private static final class Upgrade extends InstallState {
 
         Upgrade() {
@@ -215,19 +229,19 @@ public class InstallState implements ExtensionPoint {
 
             // Schedule an update of the update center after a Jenkins upgrade
             reloadUpdateSiteData();
-            
+
             InstallUtil.saveLastExecVersion();
         }
 
         /**
          * Put here the different changes that are enforced after an update.
          */
-        private void applyForcedChanges(){
+        private void applyForcedChanges() {
             // Disable the legacy system of API Token only if the new system was not installed
             // in such case it means there was already an upgrade before
             // and potentially the admin has re-enabled the features
             ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ApiTokenPropertyConfiguration.get();
-            if(!apiTokenPropertyConfiguration.hasExistingConfigFile()){
+            if (!apiTokenPropertyConfiguration.hasExistingConfigFile()) {
                 LOGGER.log(Level.INFO, "New API token system configured with insecure options to keep legacy behavior");
                 apiTokenPropertyConfiguration.setCreationOfLegacyTokenEnabled(false);
                 apiTokenPropertyConfiguration.setTokenGenerationOnCreationEnabled(false);
@@ -245,10 +259,12 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState DOWNGRADE = new Downgrade();
+
     private static final class Downgrade extends InstallState {
         Downgrade() {
             super("DOWNGRADE", true);
         }
+
         @Override
         public void initializeState() {
             // Schedule an update of the update center after a Jenkins downgrade
@@ -257,14 +273,14 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.saveLastExecVersion();
         }
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(InstallState.class.getName());
-    
+
     /**
      * Jenkins started in test mode (JenkinsRule).
      */
     public static final InstallState TEST = new InstallState("TEST", true);
-    
+
     /**
      * Jenkins started in development mode: Boolean.getBoolean("hudson.Main.development").
      * Can be run normally with the -Djenkins.install.runSetupWizard=true
@@ -282,7 +298,7 @@ public class InstallState implements ExtensionPoint {
         this.name = name;
         this.isSetupComplete = isSetupComplete;
     }
-    
+
     /**
      * Process any initialization this install state requires
      */
@@ -303,13 +319,13 @@ public class InstallState implements ExtensionPoint {
             LOGGER.log(Level.WARNING, "Read install state with blank name: ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
-        
+
         InstallState state = InstallState.valueOf(name);
         if (state == null) {
             LOGGER.log(Level.WARNING, "Cannot locate an extension point for the state ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
-        
+
         // Otherwise we return the actual state
         return state;
     }
@@ -320,24 +336,24 @@ public class InstallState implements ExtensionPoint {
     public boolean isSetupComplete() {
         return isSetupComplete;
     }
-    
+
     public String name() {
         return name;
     }
-    
+
     @Override
     public int hashCode() {
         return name.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof InstallState) {
-            return name.equals(((InstallState)obj).name());
+        if (obj instanceof InstallState) {
+            return name.equals(((InstallState) obj).name());
         }
         return false;
     }
-    
+
     @Override
     public String toString() {
         return "InstallState (" + name + ")";

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -51,7 +52,7 @@ public class EnvVarsFilterRuleWrapper implements Serializable {
     }
 
     public static @NonNull
-    EnvVarsFilterRuleWrapper createRuleWrapper(@CheckForNull Run<?,?> run,
+    EnvVarsFilterRuleWrapper createRuleWrapper(@CheckForNull Run<?, ?> run,
                                                @NonNull Object builder,
                                                @NonNull Launcher launcher,
                                                @NonNull List<EnvVarsFilterLocalRule> localRules) {

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import hudson.MarkupText;
@@ -50,21 +51,21 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * @author Kohsuke Kawaguchi
  */
-@ExportedBean(defaultVisibility=999)
+@ExportedBean(defaultVisibility = 999)
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
      * Build whose change log this object represents.
      */
-    private final Run<?,?> run;
+    private final Run<?, ?> run;
     @Deprecated
-    public final AbstractBuild<?,?> build;
+    public final AbstractBuild<?, ?> build;
     private final RepositoryBrowser</* ideally T */?> browser;
 
     /**
      * @since 1.568
      */
-    protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser) {
+    protected ChangeLogSet(Run<?, ?> run, RepositoryBrowser<?> browser) {
         this.run = run;
         build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         this.browser = browser;
@@ -74,7 +75,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     protected ChangeLogSet(AbstractBuild<?, ?> build) {
         this(build, browserFromBuild(build));
     }
-    private static RepositoryBrowser<?> browserFromBuild(AbstractBuild<?,?> build) {
+
+    private static RepositoryBrowser<?> browserFromBuild(AbstractBuild<?, ?> build) {
         if (build == null) { // not generally allowed, but sometimes done in unit tests
             return null;
         }
@@ -84,7 +86,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * @since 1.568
      */
-    public Run<?,?> getRun() {
+    public Run<?, ?> getRun() {
         return run;
     }
 
@@ -101,7 +103,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public abstract boolean isEmptySet();
 
     /**
-     * All changes in this change set. 
+     * All changes in this change set.
      */
     // method for the remote API.
     @Exported
@@ -135,7 +137,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         return createEmpty((Run) build);
     }
 
-    @ExportedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility = 999)
     public abstract static class Entry {
         private ChangeLogSet parent;
 
@@ -216,29 +218,29 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          */
         @Exported
         public abstract Collection<String> getAffectedPaths();
-        
+
         /**
          * Returns a set of paths in the workspace that was
          * affected by this change.
          * <p>
-         * Noted: since this is a new interface, some of the SCMs may not have 
-         * implemented this interface. The default implementation for this 
+         * Noted: since this is a new interface, some of the SCMs may not have
+         * implemented this interface. The default implementation for this
          * interface is throw UnsupportedOperationException
          * <p>
-         * It doesn't throw NoSuchMethodException because I rather to throw a 
+         * It doesn't throw NoSuchMethodException because I rather to throw a
          * runtime exception
          *
          * @return AffectedFile never null.
          * @since 1.309
          */
         public Collection<? extends AffectedFile> getAffectedFiles() {
-	        String scm = "this SCM";
-	        ChangeLogSet parent = getParent();
-	        if ( null != parent ) {
-		        String kind = parent.getKind();
-		        if ( null != kind && kind.trim().length() > 0 ) scm = kind;
-	        }
-	        throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
+            String scm = "this SCM";
+            ChangeLogSet parent = getParent();
+            if (null != parent) {
+                String kind = parent.getKind();
+                if (null != kind && kind.trim().length() > 0) scm = kind;
+            }
+            throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
         }
 
         /**
@@ -249,9 +251,9 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 try {
                     a.annotate(parent.run, this, markup);
-                } catch(RuntimeException e) {
+                } catch (RuntimeException e) {
                     LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
-                } catch(Error e) {
+                } catch (Error e) {
                     LOGGER.severe("ChangeLogAnnotator " + a + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
                 }
 
@@ -264,13 +266,13 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
-        
+
         static final Logger LOGGER = Logger.getLogger(ChangeLogSet.Entry.class.getName());
     }
-    
+
     /**
      * Represents a file change. Contains filename, edit type, etc.
-     * 
+     *
      * I checked the API names against some some major SCMs and most SCMs
      * can adapt to this interface with very little changes
      *
@@ -286,8 +288,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return never null.
          */
         String getPath();
-	    
-	    
+
+
         /**
          * Return whether the file is new/modified/deleted
          */

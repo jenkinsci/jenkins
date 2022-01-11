@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -129,10 +130,12 @@ public class FingerprintTest {
 
     public static final class TestFacet extends FingerprintFacet {
         final String property;
+
         public TestFacet(Fingerprint fingerprint, long timestamp, String property) {
             super(fingerprint, timestamp);
             this.property = property;
         }
+
         @Override public String toString() {
             return "TestFacet[" + property + "@" + getTimestamp() + "]";
         }
@@ -447,8 +450,8 @@ public class FingerprintTest {
         // required as cf1.xml is outside the temporary folders created for the test
         // and if the test is failing, it will not be deleted
         targetFile.deleteOnExit();
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
         String id = first + second + "/../../" + first + "/" + second + "/../../../../cf1";
         Fingerprint fingerprint = Fingerprint.load(id);
         assertNull(fingerprint);
@@ -469,8 +472,8 @@ public class FingerprintTest {
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf2.xml");
         Util.touch(targetFile);
         targetFile.deleteOnExit();
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
         rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf2/")));
         assertTrue(targetFile.exists());
     }
@@ -490,8 +493,8 @@ public class FingerprintTest {
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf3.xml");
         Util.copyFile(sourceFile, targetFile);
         targetFile.deleteOnExit();
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
         String id = first + second + "/../../" + first + "/" + second + "/../../../../cf3";
         Fingerprint fingerprint = Fingerprint.load(id);
         assertNull(fingerprint);
@@ -517,8 +520,8 @@ public class FingerprintTest {
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf4.xml");
         Util.copyFile(sourceFile, targetFile);
         targetFile.deleteOnExit();
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
 
         rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf4/")));
         assertTrue(targetFile.exists());
@@ -535,8 +538,8 @@ public class FingerprintTest {
         FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         Fingerprint fp = getFingerprint(build, "test.txt");
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
         String id = first + second + "/../../" + first + "/" + second + "/../../../../cf5";
         Fingerprint fingerprint = Fingerprint.load(id);
         assertNull(fingerprint);
@@ -553,8 +556,8 @@ public class FingerprintTest {
         FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         Fingerprint fp = getFingerprint(build, "test.txt");
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
         rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf6/")));
     }
 
@@ -573,8 +576,8 @@ public class FingerprintTest {
         FileUtils.writeStringToFile(targetFile, TEST_FINGERPRINT_CONFIG_FILE_CONTENT, StandardCharsets.UTF_8);
         targetFile.deleteOnExit();
 
-        String first = fp.getHashString().substring(0,2);
-        String second = fp.getHashString().substring(2,4);
+        String first = fp.getHashString().substring(0, 2);
+        String second = fp.getHashString().substring(2, 4);
 
         Page page = null;
         try {
@@ -641,7 +644,8 @@ public class FingerprintTest {
         rule.jenkins.setAuthorizationStrategy(str);
     }
     //TODO: could be reworked to support multiple assignments
-    private void setJobPermissionsOnce(Job<?,?> job, String username, @NonNull Permission ... s)
+
+    private void setJobPermissionsOnce(Job<?, ?> job, String username, @NonNull Permission ... s)
             throws IOException {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
 
@@ -664,7 +668,7 @@ public class FingerprintTest {
         public ACL getACL(Job<?, ?> project) {
             AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
             if (amp != null) {
-                return amp.getACL().newInheritingACL((SidACL)getRootACL());
+                return amp.getACL().newInheritingACL((SidACL) getRootACL());
             } else {
                 return getRootACL();
             }
@@ -679,7 +683,7 @@ public class FingerprintTest {
             "    <name>test0</name>\n" +
             "    <number>1</number>\n" +
             "  </original>\n" +
-            "  <md5sum>"+TEST_FINGERPRINT_ID+"</md5sum>\n" +
+            "  <md5sum>" + TEST_FINGERPRINT_ID + "</md5sum>\n" +
             "  <fileName>test.txt</fileName>\n" +
             "  <usages>\n" +
             "  </usages>\n" +

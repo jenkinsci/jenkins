@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.Util.fixNull;
@@ -100,7 +101,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     protected Label(@NonNull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
-        this.loadStatistics = new LoadStatistics(0,0) {
+        this.loadStatistics = new LoadStatistics(0, 0) {
             @Override
             public int computeIdleExecutors() {
                 return Label.this.getIdleExecutors();
@@ -133,7 +134,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Alias for {@link #getDisplayName()}.
      */
-    @Exported(visibility=2)
+    @Exported(visibility = 2)
     public final String getName() {
         return getDisplayName();
     }
@@ -224,14 +225,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public Set<Node> getNodes() {
         Set<Node> nodes = this.nodes;
-        if(nodes!=null) return nodes;
+        if (nodes != null) return nodes;
 
         Set<Node> r = new HashSet<>();
         Jenkins h = Jenkins.get();
-        if(this.matches(h))
+        if (this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
-            if(this.matches(n))
+            if (this.matches(n))
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
@@ -249,11 +250,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public Set<Cloud> getClouds() {
-        if(clouds==null) {
+        if (clouds == null) {
             Set<Cloud> r = new HashSet<>();
             Jenkins h = Jenkins.get();
             for (Cloud c : h.clouds) {
-                if(c.canProvision(this))
+                if (c.canProvision(this))
                     r.add(c);
             }
             clouds = Collections.unmodifiableSet(r);
@@ -271,7 +272,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public boolean isAssignable() {
         for (Node n : getNodes())
-            if(n.getNumExecutors()>0)
+            if (n.getNumExecutors() > 0)
                 return true;
         return !getClouds().isEmpty();
     }
@@ -287,7 +288,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * into account. If you just want to test if there's some executors, use {@link #isAssignable()}.
      */
     public int getTotalConfiguredExecutors() {
-        int r=0;
+        int r = 0;
         for (Node n : getNodes())
             r += n.getNumExecutors();
         return r;
@@ -300,10 +301,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public int getTotalExecutors() {
-        int r=0;
+        int r = 0;
         for (Node n : getNodes()) {
             Computer c = n.toComputer();
-            if(c!=null && c.isOnline())
+            if (c != null && c.isOnline())
                 r += c.countExecutors();
         }
         return r;
@@ -314,10 +315,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public int getBusyExecutors() {
-        int r=0;
+        int r = 0;
         for (Node n : getNodes()) {
             Computer c = n.toComputer();
-            if(c!=null && c.isOnline())
+            if (c != null && c.isOnline())
                 r += c.countBusy();
         }
         return r;
@@ -328,10 +329,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public int getIdleExecutors() {
-        int r=0;
+        int r = 0;
         for (Node n : getNodes()) {
             Computer c = n.toComputer();
-            if(c!=null && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
+            if (c != null && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         }
         return r;
@@ -344,7 +345,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public boolean isOffline() {
         for (Node n : getNodes()) {
             Computer c = n.toComputer();
-            if(c != null && !c.isOffline())
+            if (c != null && !c.isOffline())
                 return false;
         }
         return true;
@@ -356,30 +357,30 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public String getDescription() {
         Set<Node> nodes = getNodes();
-        if(nodes.isEmpty()) {
+        if (nodes.isEmpty()) {
             Set<Cloud> clouds = getClouds();
-            if(clouds.isEmpty())
+            if (clouds.isEmpty())
                 return Messages.Label_InvalidLabel();
 
             return Messages.Label_ProvisionedFrom(toString(clouds));
         }
 
-        if(nodes.size()==1)
+        if (nodes.size() == 1)
             return nodes.iterator().next().getNodeDescription();
 
         return Messages.Label_GroupOf(toString(nodes));
     }
 
     private String toString(Collection<? extends ModelObject> model) {
-        boolean first=true;
+        boolean first = true;
         StringBuilder buf = new StringBuilder();
         for (ModelObject c : model) {
-            if(buf.length()>80) {
+            if (buf.length() > 80) {
                 buf.append(",...");
                 break;
             }
-            if(!first)  buf.append(',');
-            else        first=false;
+            if (!first)  buf.append(',');
+            else        first = false;
             buf.append(c.getDisplayName());
         }
         return buf.toString();
@@ -447,7 +448,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Accepts a visitor and call its respective "onXYZ" method based no the actual type of 'this'.
      */
-    public abstract <V,P> V accept(LabelVisitor<V,P> visitor, P param);
+    public abstract <V, P> V accept(LabelVisitor<V, P> visitor, P param);
 
     /**
      * Lists up all the atoms contained in in this label.
@@ -456,7 +457,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public Set<LabelAtom> listAtoms() {
         Set<LabelAtom> r = new HashSet<>();
-        accept(ATOM_COLLECTOR,r);
+        accept(ATOM_COLLECTOR, r);
         return r;
     }
 
@@ -464,28 +465,28 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Returns the label that represents {@code this&&rhs}
      */
     public Label and(Label rhs) {
-        return new LabelExpression.And(this,rhs);
+        return new LabelExpression.And(this, rhs);
     }
 
     /**
      * Returns the label that represents {@code this||rhs}
      */
     public Label or(Label rhs) {
-        return new LabelExpression.Or(this,rhs);
+        return new LabelExpression.Or(this, rhs);
     }
 
     /**
      * Returns the label that represents {@code this<->rhs}
      */
     public Label iff(Label rhs) {
-        return new LabelExpression.Iff(this,rhs);
+        return new LabelExpression.Iff(this, rhs);
     }
 
     /**
      * Returns the label that represents {@code this->rhs}
      */
     public Label implies(Label rhs) {
-        return new LabelExpression.Implies(this,rhs);
+        return new LabelExpression.Implies(this, rhs);
     }
 
     /**
@@ -515,7 +516,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if (this == that) return true;
         if (that == null || getClass() != that.getClass()) return false;
 
-        return matches(((Label)that).name);
+        return matches(((Label) that).name);
 
     }
 
@@ -586,7 +587,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public static Set<LabelAtom> parse(String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if(labels.length()>0) {
+        if (labels.length() > 0) {
             final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
             while (tokenizer.hasMoreTokens())
                 r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
@@ -614,7 +615,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Collects all the atoms in the expression.
      */
-    private static final LabelVisitor<Void,Set<LabelAtom>> ATOM_COLLECTOR = new LabelVisitor<Void,Set<LabelAtom>>() {
+    private static final LabelVisitor<Void, Set<LabelAtom>> ATOM_COLLECTOR = new LabelVisitor<Void, Set<LabelAtom>>() {
         @Override
         public Void onAtom(LabelAtom a, Set<LabelAtom> param) {
             param.add(a);
@@ -623,37 +624,37 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         @Override
         public Void onParen(Paren p, Set<LabelAtom> param) {
-            return p.base.accept(this,param);
+            return p.base.accept(this, param);
         }
 
         @Override
         public Void onNot(Not p, Set<LabelAtom> param) {
-            return p.base.accept(this,param);
+            return p.base.accept(this, param);
         }
 
         @Override
         public Void onAnd(And p, Set<LabelAtom> param) {
-            return onBinary(p,param);
+            return onBinary(p, param);
         }
 
         @Override
         public Void onOr(Or p, Set<LabelAtom> param) {
-            return onBinary(p,param);
+            return onBinary(p, param);
         }
 
         @Override
         public Void onIff(Iff p, Set<LabelAtom> param) {
-            return onBinary(p,param);
+            return onBinary(p, param);
         }
 
         @Override
         public Void onImplies(Implies p, Set<LabelAtom> param) {
-            return onBinary(p,param);
+            return onBinary(p, param);
         }
 
         private Void onBinary(Binary b, Set<LabelAtom> param) {
-            b.lhs.accept(this,param);
-            b.rhs.accept(this,param);
+            b.lhs.accept(this, param);
+            b.rhs.accept(this, param);
             return null;
         }
     };

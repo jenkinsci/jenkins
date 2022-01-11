@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 /* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;
@@ -106,7 +107,7 @@ public class InetAddressValidator implements Serializable {
 
             try {
                 iIpSegment = Integer.parseInt(ipSegment);
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return false;
             }
 
@@ -127,7 +128,7 @@ public class InetAddressValidator implements Serializable {
      * Validates an IPv6 address. Returns true if valid.
      * @param inet6Address the IPv6 address to validate
      * @return true if the argument contains a valid IPv6 address
-     * 
+     *
      * @since 1.4.1
      */
     public boolean isValidInet6Address(String inet6Address) {
@@ -151,7 +152,7 @@ public class InetAddressValidator implements Serializable {
         parts = parts[0].split("%", -1);
         if (parts.length > 2) {
             return false;
-        } else if (parts.length == 2){
+        } else if (parts.length == 2) {
             // The id syntax is implemenatation independent, but it presumably cannot allow:
             // whitespace, '/' or '%'
             if (!parts[1].matches("[^\\s/%]+")) {

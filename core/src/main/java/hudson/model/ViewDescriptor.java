@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -70,7 +71,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Jelly fragment included in the "new view" page.
      */
     public final String getNewViewDetailPage() {
-        return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newViewDetail.jelly";
+        return '/' + clazz.getName().replace('.', '/').replace('$', '/') + "/newViewDetail.jelly";
     }
 
     protected ViewDescriptor(Class<? extends View> clazz) {
@@ -142,7 +143,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
             // no custom name, no need to check
             return FormValidation.ok();
         }
-        for (View v: view.owner.getViews()) {
+        for (View v : view.owner.getViews()) {
             if (v.getViewName().equals(view.getViewName())) {
                 continue;
             }

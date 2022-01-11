@@ -48,7 +48,7 @@ public abstract class ComputerPinger implements ExtensionPoint {
 
         return false;
     }
-    
+
     /**
      * Default pinger - use Java built-in functionality.  This doesn't always work,
      * a host may be reachable even if this returns false.
@@ -57,7 +57,7 @@ public abstract class ComputerPinger implements ExtensionPoint {
     public static class BuiltInComputerPinger extends ComputerPinger {
         @Override
         public boolean isReachable(InetAddress ia, int timeout) throws IOException {
-            return ia.isReachable((int)TimeUnit.SECONDS.toMillis(timeout));
+            return ia.isReachable((int) TimeUnit.SECONDS.toMillis(timeout));
         }
     }
 

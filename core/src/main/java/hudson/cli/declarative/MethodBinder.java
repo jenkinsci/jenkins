@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
 import hudson.cli.CLICommand;
@@ -93,15 +94,15 @@ class MethodBinder {
                 }
             };
             Option option = p.annotation(Option.class);
-            if (option!=null) {
-                parser.addOption(setter,option);
+            if (option != null) {
+                parser.addOption(setter, option);
             }
             Argument arg = p.annotation(Argument.class);
-            if (arg!=null) {
-                if (bias>0) arg = new ArgumentImpl(arg,bias);
-                parser.addArgument(setter,arg);
+            if (arg != null) {
+                if (bias > 0) arg = new ArgumentImpl(arg, bias);
+                parser.addArgument(setter, arg);
             }
-            if (p.type()==CLICommand.class)
+            if (p.type() == CLICommand.class)
                 arguments[index] = command;
 
             if (p.type().isPrimitive())
@@ -111,7 +112,7 @@ class MethodBinder {
 
     public Object call(Object instance) throws Exception {
         try {
-            return method.invoke(instance,arguments);
+            return method.invoke(instance, arguments);
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
             if (t instanceof Exception)
@@ -155,7 +156,7 @@ class MethodBinder {
 
         @Override
         public int index() {
-            return base.index()+bias;
+            return base.index() + bias;
         }
 
         @Override

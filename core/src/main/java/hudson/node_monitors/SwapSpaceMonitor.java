@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -50,15 +51,15 @@ public class SwapSpaceMonitor extends NodeMonitor {
      * Returns the HTML representation of the space.
      */
     public String toHtml(MemoryUsage usage) {
-        if(usage.availableSwapSpace==-1)
+        if (usage.availableSwapSpace == -1)
             return "N/A";
 
        String humanReadableSpace = Functions.humanReadableByteSize(usage.availableSwapSpace);
-       
+
         long free = usage.availableSwapSpace;
-        free/=1024L;   // convert to KB
-        free/=1024L;   // convert to MB
-        if(free>256 || usage.totalSwapSpace<usage.availableSwapSpace*5)
+        free /= 1024L;   // convert to KB
+        free /= 1024L;   // convert to MB
+        if (free > 256 || usage.totalSwapSpace < usage.availableSwapSpace * 5)
             return humanReadableSpace; // if we have more than 256MB free or less than 80% filled up, it's OK
 
         // Otherwise considered dangerously low.
@@ -66,12 +67,12 @@ public class SwapSpaceMonitor extends NodeMonitor {
     }
 
     public long toMB(MemoryUsage usage) {
-        if(usage.availableSwapSpace==-1)
+        if (usage.availableSwapSpace == -1)
             return -1;
 
         long free = usage.availableSwapSpace;
-        free/=1024L;   // convert to KB
-        free/=1024L;   // convert to MB
+        free /= 1024L;   // convert to KB
+        free /= 1024L;   // convert to MB
         return free;
     }
 
@@ -114,7 +115,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage,IOException> {
+    private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage, IOException> {
         @Override
         public MemoryUsage call() throws IOException {
             MemoryMonitor mm;

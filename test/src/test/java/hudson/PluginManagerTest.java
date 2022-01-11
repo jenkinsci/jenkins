@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.junit.Assert.assertEquals;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -92,11 +94,11 @@ public class PluginManagerTest {
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"),plugin);
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"), plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
     }
 
     /**
@@ -107,12 +109,12 @@ public class PluginManagerTest {
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
         File plugin = new File(dir, "legacy.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"),plugin);
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"), plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
         // uploaded legacy plugins get renamed to *.jpi
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/legacy.jpi").exists());
     }
 
     @Test public void deployJpiFromUrl() throws Exception {
@@ -121,7 +123,7 @@ public class PluginManagerTest {
         f.getInputByName("pluginUrl").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
         r.submit(f);
 
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
     }
 
     @TestExtension("deployJpiFromUrl")
@@ -243,9 +245,9 @@ public class PluginManagerTest {
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
-        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes())));
+        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes(StandardCharsets.UTF_8))));
         assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
-        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes()));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes(StandardCharsets.UTF_8)));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());
@@ -290,7 +292,7 @@ public class PluginManagerTest {
     private String callDependerValue() throws Exception {
         Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
         Method m = c.getMethod("getValue");
-        return (String)m.invoke(null);
+        return (String) m.invoke(null);
     }
 
     /**
@@ -517,7 +519,7 @@ public class PluginManagerTest {
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
         File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"),plugin);
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"), plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
@@ -529,19 +531,19 @@ public class PluginManagerTest {
         do {
             Thread.sleep(100);
             done = true;
-            for(UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if(job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
+            for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
+                if (job instanceof UpdateCenter.DownloadJob) {
+                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);
                 }
             }
-        } while(!done);
+        } while (!done);
 
         // the files get renamed to .jpi
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/Parameterized-Remote-Trigger.jpi").exists() );
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/token-macro.jpi").exists() );
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/Parameterized-Remote-Trigger.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/token-macro.jpi").exists());
 
         // now the other plugins should have been found as dependencies and downloaded
         assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -50,7 +51,7 @@ public class ResourceController {
     private final Collection<ResourceList> resourceView = new AbstractCollection<ResourceList>() {
         @Override
         public Iterator<ResourceList> iterator() {
-            return new AdaptedIterator<ResourceActivity,ResourceList>(inProgress.iterator()) {
+            return new AdaptedIterator<ResourceActivity, ResourceList>(inProgress.iterator()) {
                 @Override
                 protected ResourceList adapt(ResourceActivity item) {
                     return item.getResourceList();
@@ -79,9 +80,9 @@ public class ResourceController {
      * @throws InterruptedException
      *      the thread can be interrupted while waiting for the available resources.
      */
-    public void execute(@NonNull Runnable task, final ResourceActivity activity ) throws InterruptedException {
+    public void execute(@NonNull Runnable task, final ResourceActivity activity) throws InterruptedException {
         final ResourceList resources = activity.getResourceList();
-        _withLock(new NotReallyRoleSensitiveCallable<Void,InterruptedException>() {
+        _withLock(new NotReallyRoleSensitiveCallable<Void, InterruptedException>() {
             @Override
             public Void call() throws InterruptedException {
                 while (inUse.isCollidingWith(resources)) {
@@ -162,7 +163,7 @@ public class ResourceController {
     public ResourceActivity getBlockingActivity(ResourceActivity activity) {
         ResourceList res = activity.getResourceList();
         for (ResourceActivity a : inProgress)
-            if(res.isCollidingWith(a.getResourceList()))
+            if (res.isCollidingWith(a.getResourceList()))
                 return a;
         return null;
     }
@@ -188,7 +189,7 @@ public class ResourceController {
         }
     }
 
-    protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V,T> callable) throws T {
+    protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V, T> callable) throws T {
         synchronized (this) {
             return callable.call();
         }

@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
  *      Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -73,7 +74,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ParameterDefinition
  * @see ParametersAction
  */
-@ExportedBean(defaultVisibility=3)
+@ExportedBean(defaultVisibility = 3)
 @StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
 
@@ -147,7 +148,7 @@ public abstract class ParameterValue implements Serializable {
      *      Use {@link #buildEnvironment(Run, EnvVars)} instead.
      */
     @Deprecated
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild<?, ?> build, Map<String, String> env) {
         if (env instanceof EnvVars) {
             if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
                 // if the subtype already derives buildEnvironment, then delegate to it
@@ -161,12 +162,12 @@ public abstract class ParameterValue implements Serializable {
 
     /** @deprecated Use {@link #buildEnvironment(Run, EnvVars)} instead. */
     @Deprecated
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
         if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
             buildEnvironment(build, env);
         } else {
             // for backward compatibility
-            buildEnvVars(build,(Map<String,String>)env);
+            buildEnvVars(build, (Map<String, String>) env);
         }
     }
 
@@ -188,7 +189,7 @@ public abstract class ParameterValue implements Serializable {
      *      The build for which this parameter is being used. Never null.
      * @since 1.556
      */
-    public void buildEnvironment(Run<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?, ?> build, EnvVars env) {
         if (build instanceof AbstractBuild) {
             buildEnvVars((AbstractBuild) build, env);
         }
@@ -209,7 +210,7 @@ public abstract class ParameterValue implements Serializable {
      * @return
      *      null if the parameter has no {@link BuildWrapper} to contribute to.
      */
-    public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
+    public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         return null;
     }
 
@@ -227,7 +228,7 @@ public abstract class ParameterValue implements Serializable {
      *      if the parameter value is not interested in participating to the
      *      variable replacement process, return {@link VariableResolver#NONE}.
      */
-    public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return VariableResolver.NONE;
     }
 

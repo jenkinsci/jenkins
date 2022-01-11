@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static java.util.logging.Level.FINE;
@@ -66,19 +67,19 @@ public class SparseACL extends SidACL {
     }
 
     public void add(Sid sid, Permission permission, boolean allowed) {
-        add(new Entry(sid,permission,allowed));
+        add(new Entry(sid, permission, allowed));
     }
 
     @Override
     public boolean hasPermission2(Authentication a, Permission permission) {
-        if(a.equals(SYSTEM2))   return true;
-        Boolean b = _hasPermission(a,permission);
-        if(b!=null) return b;
+        if (a.equals(SYSTEM2))   return true;
+        Boolean b = _hasPermission(a, permission);
+        if (b != null) return b;
 
-        if(parent!=null) {
-            if(LOGGER.isLoggable(FINE))
-                LOGGER.fine("hasPermission("+a+","+permission+") is delegating to parent ACL: "+parent);
-            return parent.hasPermission2(a,permission);
+        if (parent != null) {
+            if (LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission(" + a + "," + permission + ") is delegating to parent ACL: " + parent);
+            return parent.hasPermission2(a, permission);
         }
 
         // the ultimate default is to reject everything
@@ -88,9 +89,9 @@ public class SparseACL extends SidACL {
     @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
     @Override
     protected Boolean hasPermission(Sid p, Permission permission) {
-        for( ; permission!=null; permission=permission.impliedBy ) {
+        for ( ; permission != null; permission = permission.impliedBy) {
             for (Entry e : entries) {
-                if(e.permission==permission && e.sid.equals(p))
+                if (e.permission == permission && e.sid.equals(p))
                     return e.allowed;
             }
         }

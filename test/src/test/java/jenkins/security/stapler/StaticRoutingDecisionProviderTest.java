@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.junit.Assert.assertFalse;
@@ -180,7 +181,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
 
         StaticRoutingDecisionProvider whitelist = ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class);
 
-        {// add entry in the set loaded from the standard whitelist file and reload
+        { // add entry in the set loaded from the standard whitelist file and reload
             Method resetMetaClassCache = StaticRoutingDecisionProvider.class.getDeclaredMethod("resetMetaClassCache");
             resetMetaClassCache.setAccessible(true);
 
@@ -202,7 +203,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
         assertTrue(ContentProvider.called);
         assertTrue(ContentProvider.called2);
 
-        {// reset to previous state
+        { // reset to previous state
             ContentProvider.called = false;
             ContentProvider.called2 = false;
 

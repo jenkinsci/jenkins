@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
 
 import static org.junit.Assert.assertEquals;
@@ -113,7 +114,7 @@ public class StopButtonTest {
         assertTrue(p.getWebResponse().getContentAsString().contains("Alternative text for icon"));
     }
 
-    private HtmlAnchor getStopLink(HtmlPage page){
+    private HtmlAnchor getStopLink(HtmlPage page) {
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
         return (HtmlAnchor) anchors.get(0);

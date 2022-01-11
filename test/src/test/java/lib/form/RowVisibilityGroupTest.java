@@ -54,9 +54,9 @@ public class RowVisibilityGroupTest {
     public void test1() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test1");
 
-        HtmlElement outer = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
-        HtmlElement inner = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
-        HtmlInput field = (HtmlInput)DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
+        HtmlElement outer = (HtmlElement) DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
+        HtmlElement inner = (HtmlElement) DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
+        HtmlInput field = (HtmlInput) DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
 
         // outer gets unfolded, but inner should be still folded
         outer.click();
@@ -80,32 +80,32 @@ public class RowVisibilityGroupTest {
     public void test2() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test2");
 
-        HtmlSelect s = (HtmlSelect)DomNodeUtil.selectSingleNode(p, "//SELECT");
+        HtmlSelect s = (HtmlSelect) DomNodeUtil.selectSingleNode(p, "//SELECT");
         List<HtmlOption> opts = s.getOptions();
 
         // those first selections will load additional HTMLs
-        s.setSelectedAttribute(opts.get(0),true);
-        s.setSelectedAttribute(opts.get(1),true);
+        s.setSelectedAttribute(opts.get(0), true);
+        s.setSelectedAttribute(opts.get(1), true);
 
         // now select back what's already loaded, to cause the existing elements to be displayed
-        s.setSelectedAttribute(opts.get(0),true);
+        s.setSelectedAttribute(opts.get(0), true);
 
         // make sure that the inner control is still hidden
         List<HtmlInput> textboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='_.textbox2']");
-        assertEquals(2,textboxes.size());
+        assertEquals(2, textboxes.size());
         for (HtmlInput e : textboxes)
             assertFalse(e.isDisplayed());
 
         // reveal the text box
         List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
-        assertEquals(2,checkboxes.size());
+        assertEquals(2, checkboxes.size());
         checkboxes.get(0).click();
         assertTrue(textboxes.get(0).isDisplayed());
         textboxes.get(0).type("Budweiser");
 
         // toggle the selection again
-        s.setSelectedAttribute(opts.get(1),true);
-        s.setSelectedAttribute(opts.get(0),true);
+        s.setSelectedAttribute(opts.get(1), true);
+        s.setSelectedAttribute(opts.get(0), true);
 
         // make sure it's still displayed this time
         assertTrue(checkboxes.get(0).isChecked());

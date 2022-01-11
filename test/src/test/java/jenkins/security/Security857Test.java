@@ -66,7 +66,7 @@ public class Security857Test {
      */
     private String getJellyContent(Boolean escape) throws IOException {
         String jelly = IOUtils.toString(this.getClass().getResourceAsStream("escape.jelly"));
-        if(escape != null) {
+        if (escape != null) {
             jelly = String.format("<?jelly escape-by-default='%s'?>%n%s", escape, jelly);
         }
 
@@ -101,7 +101,7 @@ public class Security857Test {
      * @param response The response of the parse of the jelly.
      * @param escape How the escape-by-default directive was set. null: not set, true: set to true, false: set to false
      */
-    private void checkResponse(String response, Boolean escape){
+    private void checkResponse(String response, Boolean escape) {
         if (escape == null) {
             Assert.assertFalse("There is no escape-by-default tag in the jelly (true is assumed) but there are unescaped characters in the response.", response.contains(EVIDENCE));
         } else if (escape) {

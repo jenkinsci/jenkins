@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.EnvVars;
@@ -52,7 +53,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
      * Agent-specific environment variables
      */
     private final EnvVars envVars;
-    
+
     @DataBoundConstructor
     public EnvironmentVariablesNodeProperty(List<Entry> env) {
         this.envVars = toMap(env);
@@ -61,9 +62,9 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     public EnvironmentVariablesNodeProperty(Entry... env) {
         this(Arrays.asList(env));
     }
-	
+
     public EnvVars getEnvVars() {
-    	return envVars;
+        return envVars;
     }
 
     /**
@@ -76,8 +77,8 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws IOException, InterruptedException {
-    	return Environment.create(envVars);
+            BuildListener listener) throws IOException, InterruptedException {
+        return Environment.create(envVars);
     }
 
     @Override
@@ -89,9 +90,9 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         @Override
-		public String getDisplayName() {
-			return Messages.EnvironmentVariablesNodeProperty_displayName();
-		}
+        public String getDisplayName() {
+            return Messages.EnvironmentVariablesNodeProperty_displayName();
+        }
 
         public String getHelpPage() {
             // yes, I know this is a hack.
@@ -105,27 +106,27 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
             }
         }
     }
-	
-	public static class Entry {
-		public String key, value;
 
-		private Entry(Map.Entry<String,String> e) {
-		    this(e.getKey(), e.getValue());
+    public static class Entry {
+        public String key, value;
+
+        private Entry(Map.Entry<String, String> e) {
+            this(e.getKey(), e.getValue());
         }
 
-		@DataBoundConstructor
-		public Entry(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
-	}
-	
-	private static EnvVars toMap(List<Entry> entries) {
-		EnvVars map = new EnvVars();
-        if (entries!=null)
-            for (Entry entry: entries)
-                map.put(entry.key,entry.value);
-		return map;
-	}
+        @DataBoundConstructor
+        public Entry(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    private static EnvVars toMap(List<Entry> entries) {
+        EnvVars map = new EnvVars();
+        if (entries != null)
+            for (Entry entry : entries)
+                map.put(entry.key, entry.value);
+        return map;
+    }
 
 }

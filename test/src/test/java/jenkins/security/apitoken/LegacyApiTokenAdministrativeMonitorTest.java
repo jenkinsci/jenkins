@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,11 +108,11 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         apiTokenProperty.changeApiToken();
         assertTrue(monitor.isActivated());
 
-        {//revoke the legacy token
+        { //revoke the legacy token
             JenkinsRule.WebClient wc = j.createWebClient();
 
             HtmlPage page = wc.goTo(monitor.getUrl() + "/manage");
-            {// select all (only one user normally)
+            { // select all (only one user normally)
                 HtmlAnchor filterAll = getFilterByIndex(page, SelectFilter.ALL);
                 HtmlElementUtil.click(filterAll);
             }
@@ -138,17 +139,17 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         int numFreshToken = 0;
         int numRecentToken = 0;
 
-        {// no user
+        { // no user
             checkUserWithLegacyTokenListIsEmpty(wc, monitor);
         }
-        {// with user without any token
+        { // with user without any token
             User user = User.getById("user", true);
             ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
             assertFalse(apiTokenProperty.hasLegacyToken());
 
             checkUserWithLegacyTokenListIsEmpty(wc, monitor);
         }
-        {// with user with token but without legacy token
+        { // with user with token but without legacy token
             User user = User.getById("user", true);
             ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
             assertFalse(apiTokenProperty.hasLegacyToken());
@@ -158,14 +159,14 @@ public class LegacyApiTokenAdministrativeMonitorTest {
             checkUserWithLegacyTokenListIsEmpty(wc, monitor);
             checkUserWithLegacyTokenListHasSizeOf(wc, monitor, numToken, numFreshToken, numRecentToken);
         }
-        {// one user with just legacy token
+        { // one user with just legacy token
             createUserWithToken(true, false, false);
 
             numToken++;
 
             checkUserWithLegacyTokenListHasSizeOf(wc, monitor, numToken, numFreshToken, numRecentToken);
         }
-        {// one user with a fresh token
+        { // one user with a fresh token
             // fresh = created after the last use of the legacy token (or its creation)
             createUserWithToken(true, true, false);
 
@@ -174,7 +175,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
             checkUserWithLegacyTokenListHasSizeOf(wc, monitor, numToken, numFreshToken, numRecentToken);
         }
-        {// one user with a recent token (that is not fresh)
+        { // one user with a recent token (that is not fresh)
             // recent = last use after the last use of the legacy token (or its creation)
             createUserWithToken(true, false, true);
 
@@ -183,7 +184,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
             checkUserWithLegacyTokenListHasSizeOf(wc, monitor, numToken, numFreshToken, numRecentToken);
         }
-        {// one user with a fresh + recent token
+        { // one user with a fresh + recent token
             createUserWithToken(true, true, true);
 
             numToken++;
@@ -300,7 +301,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         HtmlPage page = wc.goTo(monitor.getUrl() + "/manage");
         checkUserWithLegacyTokenListHasSizeOf(page, 1 + 2 + 3 + 4, 2 + 4, 3 + 4);
 
-        {// select 2
+        { // select 2
             HtmlAnchor filterOnlyFresh = getFilterByIndex(page, SelectFilter.ONLY_FRESH);
             HtmlElementUtil.click(filterOnlyFresh);
         }
@@ -311,7 +312,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         HtmlPage newPage = checkUserWithLegacyTokenListHasSizeOf(wc, monitor, 1 + 3, 0, 3);
         assertTrue(monitor.isActivated());
 
-        {// select 1 + 3
+        { // select 1 + 3
             HtmlAnchor filterAll = getFilterByIndex(newPage, SelectFilter.ALL);
             HtmlElementUtil.click(filterAll);
         }

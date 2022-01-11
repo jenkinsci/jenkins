@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -95,7 +96,7 @@ public final class Secret implements Serializable {
     @Deprecated
     public String toString() {
         final String from = new Throwable().getStackTrace()[1].toString();
-        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://www.jenkins.io/redirect/hudson.util.Secret/");
+        LOGGER.warning("Use of toString() on hudson.util.Secret from " + from + ". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://www.jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
@@ -111,7 +112,7 @@ public final class Secret implements Serializable {
 
     @Override
     public boolean equals(Object that) {
-        return that instanceof Secret && value.equals(((Secret)that).value);
+        return that instanceof Secret && value.equals(((Secret) that).value);
     }
 
     @Override
@@ -137,16 +138,16 @@ public final class Secret implements Serializable {
             int pos = 0;
             // For PAYLOAD_V1 we use this byte shifting model, V2 probably will need DataOutput
             payload[pos++] = PAYLOAD_V1;
-            payload[pos++] = (byte)(iv.length >> 24);
-            payload[pos++] = (byte)(iv.length >> 16);
-            payload[pos++] = (byte)(iv.length >> 8);
-            payload[pos++] = (byte)iv.length;
-            payload[pos++] = (byte)(encrypted.length >> 24);
-            payload[pos++] = (byte)(encrypted.length >> 16);
-            payload[pos++] = (byte)(encrypted.length >> 8);
-            payload[pos++] = (byte)encrypted.length;
+            payload[pos++] = (byte) (iv.length >> 24);
+            payload[pos++] = (byte) (iv.length >> 16);
+            payload[pos++] = (byte) (iv.length >> 8);
+            payload[pos++] = (byte) iv.length;
+            payload[pos++] = (byte) (encrypted.length >> 24);
+            payload[pos++] = (byte) (encrypted.length >> 16);
+            payload[pos++] = (byte) (encrypted.length >> 8);
+            payload[pos++] = (byte) encrypted.length;
             System.arraycopy(iv, 0, payload, pos, iv.length);
-            pos+=iv.length;
+            pos += iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
             return "{" + Base64.getEncoder().encodeToString(payload) + "}";
         } catch (GeneralSecurityException e) {
@@ -169,12 +170,12 @@ public final class Secret implements Serializable {
      */
     @CheckForNull
     public static Secret decrypt(@CheckForNull String data) {
-        if(!isValidData(data))      return null;
+        if (!isValidData(data))      return null;
 
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
             try {
-                payload = Base64.getDecoder().decode(data.substring(1, data.length()-1));
+                payload = Base64.getDecoder().decode(data.substring(1, data.length() - 1));
             } catch (IllegalArgumentException e) {
                 return null;
             }
@@ -194,7 +195,7 @@ public final class Secret implements Serializable {
                         return null;
                     }
                     byte[] iv = Arrays.copyOfRange(payload, 9, 9 + ivLength);
-                    byte[] code = Arrays.copyOfRange(payload, 9+ivLength, payload.length);
+                    byte[] code = Arrays.copyOfRange(payload, 9 + ivLength, payload.length);
                     String text;
                     try {
                         text = new String(KEY.decrypt(iv).doFinal(code), UTF_8);
@@ -221,7 +222,7 @@ public final class Secret implements Serializable {
         if (data == null || "{}".equals(data) || "".equals(data.trim())) return false;
 
         if (data.startsWith("{") && data.endsWith("}")) {
-            return !"".equals(data.substring(1, data.length()-1).trim());
+            return !"".equals(data.substring(1, data.length() - 1).trim());
         }
 
         return true;
@@ -249,7 +250,7 @@ public final class Secret implements Serializable {
     public static Secret fromString(@CheckForNull String data) {
         data = Util.fixNull(data);
         Secret s = decrypt(data);
-        if(s==null) s=new Secret(data);
+        if (s == null) s = new Secret(data);
         return s;
     }
 
@@ -260,7 +261,7 @@ public final class Secret implements Serializable {
      */
     @NonNull
     public static String toString(@CheckForNull Secret s) {
-        return s==null ? "" : s.value;
+        return s == null ? "" : s.value;
     }
 
     public static final class ConverterImpl implements Converter {
@@ -269,7 +270,7 @@ public final class Secret implements Serializable {
 
         @Override
         public boolean canConvert(Class type) {
-            return type==Secret.class;
+            return type == Secret.class;
         }
 
         @Override
@@ -288,7 +289,7 @@ public final class Secret implements Serializable {
      * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
-    private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
+    private static final String PROVIDER = SystemProperties.getString(Secret.class.getName() + ".provider");
 
     /**
      * For testing only.

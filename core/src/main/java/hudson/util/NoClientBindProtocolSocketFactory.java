@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
- 
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -35,47 +36,47 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 /**
  * A SecureProtocolSocketFactory that creates sockets without binding to a specific interface.
  * Based on org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory
- * 
+ *
  */
 public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory {
- 
+
     public NoClientBindProtocolSocketFactory() {
     }
- 
+
     @Override
-    public Socket createSocket(String host, 
+    public Socket createSocket(String host,
                                int port,
                                InetAddress localAddress,
                                int localPort) throws IOException {
         // ignore the local address/port for binding
         return createSocket(host, port);
     }
- 
+
     /**
      * Attempts to get a new socket connection to the given host within the given time limit.
      * <p>
-     * This method employs several techniques to circumvent the limitations of older JREs that 
-     * do not support connect timeout. When running in JRE 1.4 or above reflection is used to 
-     * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older 
+     * This method employs several techniques to circumvent the limitations of older JREs that
+     * do not support connect timeout. When running in JRE 1.4 or above reflection is used to
+     * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older
      * JREs a controller thread is executed. The controller thread attempts to create a new socket
-     * within the given limit of time. If socket constructor does not return until the timeout 
+     * within the given limit of time. If socket constructor does not return until the timeout
      * expires, the controller terminates and throws an {@link ConnectTimeoutException}
      * </p>
-     *  
+     *
      * @param host the host name/IP
      * @param port the port on the host
      * @param localAddress the local host name/IP to bind the socket to, ignored
      * @param localPort the port on the local machine, ignored
      * @param params {@link HttpConnectionParams Http connection parameters}
-     * 
+     *
      * @return Socket a new socket
-     * 
+     *
      * @throws IOException if an I/O error occurs while creating the socket
      * @throws UnknownHostException if the IP address of the host cannot be
      * determined
      * @throws ConnectTimeoutException if socket cannot be connected within the
      *  given time limit
-     * 
+     *
      * @since 3.0
      */
     @Override
@@ -90,12 +91,12 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
             // ignore the local address/port for binding
             return createSocket(host, port);
         } else {
-            Socket s=new Socket();
-            s.connect(new InetSocketAddress(host,port),timeout);
+            Socket s = new Socket();
+            s.connect(new InetSocketAddress(host, port), timeout);
             return s;
         }
     }
-    
+
     /**
      * @see ProtocolSocketFactory#createSocket(java.lang.String,int)
      */
@@ -103,7 +104,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
     public Socket createSocket(String host, int port) throws IOException {
         return new Socket(host, port);
     }
-    
+
     /**
      * All instances are the same.
      */

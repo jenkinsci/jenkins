@@ -128,7 +128,7 @@ public class ChunkedInputStream extends InputStream {
      * @throws IOException if an IO problem occurs.
      */
     @Override
-    public int read (byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException {
 
         if (advanceChunk()) return -1;
         len = Math.min(len, chunkSize - pos);
@@ -163,7 +163,7 @@ public class ChunkedInputStream extends InputStream {
      * @throws IOException if an IO problem occurs.
      */
     @Override
-    public int read (byte[] b) throws IOException {
+    public int read(byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
 
@@ -271,7 +271,7 @@ public class ChunkedInputStream extends InputStream {
         try {
             result = Integer.parseInt(dataString.trim(), 16);
         } catch (NumberFormatException e) {
-            throw new IOException ("Bad chunk size: " + dataString, e);
+            throw new IOException("Bad chunk size: " + dataString, e);
         }
         return result;
     }

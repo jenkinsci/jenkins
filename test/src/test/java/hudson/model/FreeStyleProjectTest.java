@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,6 +48,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
@@ -83,15 +85,15 @@ public class FreeStyleProjectTest {
 
         // emulate the user behavior
         WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
+        HtmlPage page = webClient.getPage(project, "configure");
 
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
 
         List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
+        assertEquals(1, builders.size());
+        assertEquals(Shell.class, builders.get(0).getClass());
+        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
         assertNotSame(builders.get(0), shell);
     }
 
@@ -114,33 +116,33 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-3997")
     public void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(j.createTmpDir(),"${JOB_NAME}");
+        File d = new File(j.createTmpDir(), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
         assertFalse(path.contains("${JOB_NAME}"));
-        assertEquals(b.getWorkspace().getName(),f.getName());
+        assertEquals(b.getWorkspace().getName(), f.getName());
     }
 
     @Test
     @Issue("JENKINS-15817")
     public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
-        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
         WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
+        HtmlPage page = webClient.getPage(project, "configure");
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
         List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
+        assertEquals(1, builders.size());
+        assertEquals(Shell.class, builders.get(0).getClass());
+        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
         assertNotSame(builders.get(0), shell);
         System.out.println(project.getConfigFile().asString());
     }
@@ -166,7 +168,7 @@ public class FreeStyleProjectTest {
             }
             HealthReport health = p.getBuildHealth();
 
-            assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100*(5-expectedFails)/5));
+            assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100 * (5 - expectedFails) / 5));
         }
     }
 
@@ -252,7 +254,7 @@ public class FreeStyleProjectTest {
     public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -268,7 +270,7 @@ public class FreeStyleProjectTest {
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -284,7 +286,7 @@ public class FreeStyleProjectTest {
         System.setProperty(propName, "false");
         try {
             assertThat(j.jenkins.getItems(), hasSize(0));
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         }
         finally {
             if (initialValue == null) {

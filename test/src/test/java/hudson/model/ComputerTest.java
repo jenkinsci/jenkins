@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -130,6 +131,7 @@ public class ComputerTest {
     public void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
         class A extends InvisibleAction {}
+
         assertEquals(0, c.getActions(A.class).size());
         c.addAction(new A());
         assertEquals(1, c.getActions(A.class).size());

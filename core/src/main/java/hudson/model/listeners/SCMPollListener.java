@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.listeners;
 
 import hudson.ExtensionList;
@@ -48,7 +49,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
      *      Connected to the polling log.
      */
     // TODO switch to Job
-	public void onBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {}
+    public void onBeforePolling(AbstractProject<?, ?> project, TaskListener listener) {}
 
     /**
      * Called when the polling successfully concluded.
@@ -56,7 +57,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
      * @param result
      *      The result of the polling.
      */
-	public void onPollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result) {}
+    public void onPollingSuccess(AbstractProject<?, ?> project, TaskListener listener, PollingResult result) {}
 
     /**
      * Called when the polling concluded with an error.
@@ -65,24 +66,24 @@ public abstract class SCMPollListener implements ExtensionPoint {
      *      The problem reported. This can include {@link InterruptedException} (that corresponds to the user cancelling it),
      *      some anticipated problems like {@link IOException}, or bug in the code ({@link RuntimeException})
      */
-    public void onPollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
+    public void onPollingFailed(AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
 
-	public static void fireBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {
+    public static void fireBeforePolling(AbstractProject<?, ?> project, TaskListener listener) {
         Listeners.notify(SCMPollListener.class, true, l -> l.onBeforePolling(project, listener));
     }
 
-	public static void firePollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result ) {
+    public static void firePollingSuccess(AbstractProject<?, ?> project, TaskListener listener, PollingResult result) {
         Listeners.notify(SCMPollListener.class, true, l -> l.onPollingSuccess(project, listener, result));
-	}
+    }
 
-    public static void firePollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception ) {
+    public static void firePollingFailed(AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {
         Listeners.notify(SCMPollListener.class, true, l -> l.onPollingFailed(project, listener, exception));
-   	}
+    }
 
-	/**
-	 * Returns all the registered {@link SCMPollListener}s.
-	 */
-	public static ExtensionList<SCMPollListener> all() {
-		return ExtensionList.lookup( SCMPollListener.class );
-	}
+    /**
+     * Returns all the registered {@link SCMPollListener}s.
+     */
+    public static ExtensionList<SCMPollListener> all() {
+        return ExtensionList.lookup(SCMPollListener.class);
+    }
 }
