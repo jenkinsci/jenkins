@@ -134,8 +134,10 @@ var breadcrumbs = (function() {
                     function fillMenuItem(e) {
                         if (e.type === "HEADER") {
                             e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                            e.disabled = true;
                         } else if (e.type === "SEPARATOR") {
-                            e.text = "<span class='separator'>--</span>"
+                            e.text = "<span class='separator'>--</span>";
+                            e.disabled = true;
                         } else {
                           e.text = makeMenuHtml(e.icon, e.displayName);
                         }
