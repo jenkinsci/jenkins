@@ -56,7 +56,7 @@ THE SOFTWARE.
                 </a>
               </li>
               <j:choose>
-                <j:when test="${h.isModelWithChildren(anc.object)}">
+                <j:when test="${h.isModelWithContextMenu(anc.object) or h.isModelWithChildren(anc.object)}">
                   <li class="children" href="${anc.url}/">
                     <!-- shows '>' for rendering children -->
                   </li>
