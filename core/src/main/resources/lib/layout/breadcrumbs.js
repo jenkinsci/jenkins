@@ -135,7 +135,7 @@ var breadcrumbs = (function() {
                         if (e.type === "HEADER") {
                             e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
                         } else if (e.type === "SEPARATOR") {
-                            e.text = "-------------------------";
+                            e.text = "<span class='separator'>--</span>"
                         } else {
                           e.text = makeMenuHtml(e.icon, e.displayName);
                         }
