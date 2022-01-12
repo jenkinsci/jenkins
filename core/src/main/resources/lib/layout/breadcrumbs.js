@@ -162,7 +162,9 @@ var breadcrumbs = (function() {
     }
 
     Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (link) {
-        const dropdownChevron = document.createElement("button")
+        const isFirefox = (navigator.userAgent.indexOf("Firefox") !== -1)
+        // Firefox adds unwanted lines when copying buttons in text, so use a span instead
+        const dropdownChevron = document.createElement(isFirefox ? "span" : "button")
         dropdownChevron.className = "jenkins-menu-dropdown-chevron"
         dropdownChevron.addEventListener("click", function(e) {
             e.preventDefault();

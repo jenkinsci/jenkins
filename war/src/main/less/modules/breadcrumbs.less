@@ -136,7 +136,7 @@
 
 .jenkins-menu-dropdown-chevron {
   position: relative;
-  display: inline;
+  display: inline-block;
   width: 14px;
   height: 14px;
   border: none;
@@ -190,7 +190,17 @@
 }
 
 .model-link {
+  position: relative;
   transition: var(--standard-transition) !important;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: -10px;
+    bottom: -7px;
+    right: -10px;
+  }
 
   &:hover {
     .jenkins-menu-dropdown-chevron {
@@ -214,6 +224,65 @@
 .inside {
   &:hover {
     margin-right: calc((14px + 1ch) * -1) !important;
+  }
+}
+
+.model-link--float {
+  z-index: 0;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: -10px;
+    bottom: -7px;
+    right: -10px;
+    opacity: 0;
+    border-radius: 6px;
+    transition: var(--standard-transition);
+  }
+
+  &::before {
+    z-index: -2;
+    background: var(--background);
+  }
+
+  &::after {
+    z-index: -1;
+    background: var(--text-color);
+  }
+
+  .jenkins-menu-dropdown-chevron {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    margin-left: 0 !important;
+  }
+
+  &:hover {
+    z-index: 10;
+
+    &::before,
+    &::after {
+      right: calc((2ch + 14px) * -1);
+    }
+
+    &::before {
+      opacity: 1;
+    }
+
+    &::after {
+      opacity: 0.05;
+    }
+
+    .jenkins-menu-dropdown-chevron {
+      right: calc((1ch + 14px) * -1);
+
+      &::after {
+        opacity: 0.5;
+      }
+    }
   }
 }
 
