@@ -264,7 +264,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.32.1</version>
+                  <version>408.vd726a_1130320</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -288,7 +288,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>1.18</version>
+                  <version>1.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
