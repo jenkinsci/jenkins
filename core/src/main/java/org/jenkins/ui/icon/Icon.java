@@ -62,6 +62,7 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
+    private String xml;
     private IconType iconType;
     private IconFormat iconFormat;
 
@@ -133,6 +134,22 @@ public class Icon {
         this.style = style;
         this.iconType = iconType;
         this.iconFormat = iconFormat;
+    }
+
+    /**
+     * @param xml The XML of the SVG image you want to use
+     *            You can use icon sources such as Ionicon eg
+     *            'Icon.fromSvg(IconSet.getIonicon("terminal-outline", null))' to get SVG data
+     * @return an Icon object with the svg field set
+     */
+    public static Icon fromSvg(String xml) {
+        if (xml == null) {
+            return null;
+        }
+
+        Icon icon = new Icon("", "", "", IconFormat.EXTERNAL_SVG_SPRITE);
+        icon.xml = xml;
+        return icon;
     }
 
     /**
@@ -209,6 +226,10 @@ public class Icon {
      */
     public String getStyle() {
         return style;
+    }
+
+    public String getXml() {
+        return xml;
     }
 
     /**
