@@ -45,7 +45,7 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> IONICONS = new ConcurrentHashMap<>();
+    private static final Map<String, String> SCALABLE_ICONS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -73,34 +73,34 @@ public class IconSet {
         return icon;
     }
 
-    public static String getIonicon(String name, String title) {
-        if (IONICONS.containsKey(name)) {
-            String icon = IONICONS.get(name);
+    public static String getScalableIcon(String name, String title) {
+        if (SCALABLE_ICONS.containsKey(name)) {
+            String icon = SCALABLE_ICONS.get(name);
             return prependTitleIfRequired(icon, title);
         }
 
         // Load icon if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
-        String ionicon = null;
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/scalable/" + name + ".svg");
+        String scalableIcon = null;
 
         try {
             if (inputStream != null) {
-                ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                scalableIcon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             // ignored
         }
-        if (ionicon == null) {
-            ionicon = PLACEHOLDER_SVG;
+        if (scalableIcon == null) {
+            scalableIcon = PLACEHOLDER_SVG;
         }
 
-        ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+        scalableIcon = scalableIcon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        scalableIcon = scalableIcon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        scalableIcon = scalableIcon.replace("stroke:#000", "stroke:currentColor");
 
-        IONICONS.put(name, ionicon);
+        SCALABLE_ICONS.put(name, scalableIcon);
 
-        return prependTitleIfRequired(ionicon, title);
+        return prependTitleIfRequired(scalableIcon, title);
     }
 
     public IconSet addIcon(Icon icon) {

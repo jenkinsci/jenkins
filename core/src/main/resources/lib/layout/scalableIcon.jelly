@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
     <st:documentation>
-        Provides ionicon icons
+        Provides scalable icons
         <st:attribute name="name" use="required">
             The name of the icon
         </st:attribute>
@@ -10,7 +10,7 @@
         </st:attribute>
     </st:documentation>
 
-    <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getIonicon">
+    <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getScalableIcon">
         <j:arg value="${attrs.name}"/>
         <j:arg value="${attrs.title ?: ''}"/>
     </j:invokeStatic>
