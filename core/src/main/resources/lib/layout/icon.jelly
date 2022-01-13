@@ -38,6 +38,10 @@ THE SOFTWARE.
       Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
+    <st:attribute name="svg">
+      TODO
+    </st:attribute>
+
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
     <st:attribute name="title">title</st:attribute>
     <st:attribute name="style">style</st:attribute>
@@ -45,45 +49,51 @@ THE SOFTWARE.
     <st:attribute name="alt">alt</st:attribute>
   </st:documentation>
 
-  <j:set var="iconSrc" value="${attrs.src}"/>
-  <j:set var="imgStyle" value="${attrs.style}"/>
-
   <j:choose>
-    <j:when test="${attrs.class != null}">
-      <!-- Derive the icon url and style from the class spec -->
-      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
+    <j:when test="${attrs.svg != null}">
+      <l:scalableIcon name="${attrs.svg}" />
     </j:when>
     <j:otherwise>
-      <!-- Attempt to work back from the image url (backward compatibility)... -->
-      <j:set var="iconMetadata" value="${icons.getIconByUrl(iconSrc)}"/>
-    </j:otherwise>
-  </j:choose>
+      <j:set var="iconSrc" value="${attrs.src}"/>
+      <j:set var="imgStyle" value="${attrs.style}"/>
 
-  <j:if test="${iconMetadata != null}">
-    <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
-    <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
-  </j:if>
+      <j:choose>
+        <j:when test="${attrs.class != null}">
+          <!-- Derive the icon url and style from the class spec -->
+          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
+        </j:when>
+        <j:otherwise>
+          <!-- Attempt to work back from the image url (backward compatibility)... -->
+          <j:set var="iconMetadata" value="${icons.getIconByUrl(iconSrc)}"/>
+        </j:otherwise>
+      </j:choose>
 
-  <j:choose>
-    <j:when test="${iconMetadata.buildStatus}">
-      <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
+      <j:if test="${iconMetadata != null}">
+        <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
+        <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
+      </j:if>
 
-      <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
-          <span class="build-status-icon__outer">
-            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+      <j:choose>
+        <j:when test="${iconMetadata.buildStatus}">
+          <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
+
+          <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
+            <span class="build-status-icon__outer">
+              <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+            </span>
+            <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
           </span>
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
-      </span>
-    </j:when>
+        </j:when>
 
-    <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
-      <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
-    </j:when>
+        <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+        </j:when>
 
-    <j:otherwise>
-      <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
+        <j:otherwise>
+          <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
+        </j:otherwise>
+      </j:choose>
     </j:otherwise>
   </j:choose>
-  
 </j:jelly>
