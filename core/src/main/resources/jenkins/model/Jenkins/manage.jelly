@@ -72,7 +72,7 @@ THE SOFTWARE.
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" class="icon" />
+                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" xml="${icon.xml}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -82,7 +82,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:when test="${m.requiresPOST}">
                   <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" class="icon" />
+                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" xml="${icon.xml}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -92,7 +92,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <a href="${m.urlName}">
-                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" class="icon" />
+                    <l:icon src="${rootURL + '/images/' + icon.url}" svg="${icon.svg}" xml="${icon.xml}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>

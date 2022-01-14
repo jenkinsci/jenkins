@@ -517,23 +517,10 @@ public class IconSet {
         images.add("warning");
         images.add("document-properties");
 
-        Map<String, String> materialIcons = new HashMap<>();
-        materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");
-
         for (Map.Entry<String, String> size : sizes.entrySet()) {
             for (String image : images) {
                 icons.addIcon(new Icon("icon-" + image + " " + size.getKey(),
                         "svgs/" + image + ".svg", size.getValue()));
-            }
-
-            for (Map.Entry<String, String> imageEntry : materialIcons.entrySet()) {
-                icons.addIcon(new Icon(
-                        "icon-" + imageEntry.getKey() + " " + size.getKey(),
-                                "material-icons/" + imageEntry.getValue(),
-                                size.getValue(),
-                                IconFormat.EXTERNAL_SVG_SPRITE
-                        )
-                );
             }
         }
     }
