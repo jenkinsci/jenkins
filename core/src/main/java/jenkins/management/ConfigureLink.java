@@ -29,6 +29,8 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
 
 /**
@@ -36,10 +38,9 @@ import org.jenkinsci.Symbol;
  */
 @Extension(ordinal = Integer.MAX_VALUE - 200) @Symbol("configure")
 public class ConfigureLink extends ManagementLink {
-
     @Override
-    public String getIconFileName() {
-        return "gear2.png";
+    public Icon getIcon() {
+        return Icon.fromSvg(IconSet.getScalableIcon("settings-outline", null));
     }
 
     @Override

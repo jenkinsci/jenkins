@@ -44,6 +44,9 @@ THE SOFTWARE.
     <st:attribute name="scalableIcon">
       TODO
     </st:attribute>
+    <st:attribute name="xml">
+      TODO
+    </st:attribute>
     <st:attribute name="title" use="required">
       Human readable text that follows the icon.
     </st:attribute>
@@ -145,7 +148,7 @@ THE SOFTWARE.
           <span class="task-link-wrapper">
             <span class="task-disabled-link">
               <span class="task-icon-link">
-                <l:icon svg="${attrs.scalableIcon}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
               </span>
               <span class="task-link-text">${title}</span>
             </span>
@@ -180,7 +183,7 @@ THE SOFTWARE.
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
-                    <l:icon svg="${attrs.scalableIcon}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
                   </span>
                   <span>${title}</span>
                 </l:confirmationLink>
@@ -189,7 +192,7 @@ THE SOFTWARE.
               <j:otherwise>
                 <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
                   <span class="task-icon-link">
-                    <l:icon svg="${attrs.scalableIcon}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>

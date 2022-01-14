@@ -41,6 +41,9 @@ THE SOFTWARE.
     <st:attribute name="svg">
       TODO
     </st:attribute>
+    <st:attribute name="xml">
+      TODO
+    </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
     <st:attribute name="title">title</st:attribute>
@@ -50,8 +53,15 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:choose>
-    <j:when test="${attrs.svg != null}">
-      <l:scalableIcon name="${attrs.svg}" />
+    <j:when test="${attrs.svg != null || attrs.xml != null}">
+      <j:choose>
+        <j:when test="${attrs.svg != null}">
+          <l:scalableIcon name="${attrs.svg}" />
+        </j:when>
+        <j:otherwise>
+          <j:out value="${attrs.xml}" />
+        </j:otherwise>
+      </j:choose>
     </j:when>
     <j:otherwise>
       <j:set var="iconSrc" value="${attrs.src}"/>

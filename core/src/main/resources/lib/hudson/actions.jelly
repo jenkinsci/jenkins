@@ -38,12 +38,8 @@ THE SOFTWARE.
     -->
     <st:include page="action.jelly" from="${action}" optional="true">
       <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.icon}"/>
-
-      ${icon}
-      ${action.icon}
-
       <j:if test="${icon!=null}">
-        <l:task icon="${icon}" title="${action.displayName}"
+        <l:task icon="${icon.url}" xml="${icon.xml}" title="${action.displayName}"
                 href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
       </j:if>
     </st:include>
