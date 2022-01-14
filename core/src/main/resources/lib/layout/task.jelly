@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:attribute name="href" use="required">
       Link target. Relative to the current page.
     </st:attribute>
-    <st:attribute name="icon" use="required">
+    <st:attribute name="icon">
       URL to an icon image, or the icon class specification.  If using an image URL,
       the image should be 24x24 in size and relative to the context path of Hudson.
 

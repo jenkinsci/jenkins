@@ -26,6 +26,8 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
 
 /**
@@ -36,9 +38,9 @@ import org.jenkinsci.Symbol;
 @Extension(ordinal = 100) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction {
     @Override
-    public String getIconFileName() {
+    public Icon getIcon() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return "gear.png";
+            return Icon.fromSvg(IconSet.getScalableIcon("settings-outline", null));
         else
             return null;
     }
