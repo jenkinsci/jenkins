@@ -179,9 +179,7 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(JellyContext context) {
-        System.out.println("Succession");
         if (url != null) {
-            System.out.println("qualified url");
             return iconType.toQualifiedUrl(url, context.getVariable("resURL").toString());
         } else {
             return "";
@@ -197,9 +195,7 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(String resUrl) {
-        System.out.println("succession 2");
         if (url != null) {
-            System.out.println(resUrl);
             return iconType.toQualifiedUrl(url, resUrl);
         } else {
             return "";

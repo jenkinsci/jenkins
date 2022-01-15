@@ -58,24 +58,12 @@ THE SOFTWARE.
       <j:out value="${icon}" />
     </j:when>
     <j:otherwise>
-      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(attrs.src) + ' icon-md')}"/>
-      </j:if>
+      <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
+      <j:set var="iconMetadata" value="${h.tryGetIcon(src, context)}"/>
 
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.src)}"/>
-      </j:if>
-
-      <j:if test="${iconMetadata != null}">
-        <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
-        <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
-      </j:if>
-
-      <j:if test="${iconMetadata == null}">
-        <j:set var="iconSrc" value="${rootURL}${attrs.src.startsWith('/images/') || attrs.src.startsWith('/plugin/') ? h.resourcePath : ''}${attrs.src}"/>
+      <j:if test="${iconSrc == null}">
+        <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
+        <j:set var="iconMetadata" value="${h.tryGetIcon(class, context)}"/>
       </j:if>
 
       <j:choose>

@@ -133,7 +133,7 @@ THE SOFTWARE.
           <span class="task-link-wrapper">
             <span class="task-disabled-link">
               <span class="task-icon-link">
-                <l:icon class="${icon}" src="${icon}" />
+                <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
             </span>
@@ -144,15 +144,11 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="task ">
           <span class="task-link-wrapper ${watch ? 'task--active' : ''}">
-            <j:choose>
-              <j:when test="${iconMetadata != null}">
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:when>
-              <j:otherwise>
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:otherwise>
-            </j:choose>
-
+            <j:set var="iconSrc" value="${h.tryGetIconPath(icon, context)}"/>
+            <j:set var="iconXml">
+              <l:icon src="${icon}" />
+            </j:set>
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
             <j:set var="id" value="${h.generateId()}"/>
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
@@ -168,7 +164,7 @@ THE SOFTWARE.
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
-                    <l:icon class="${icon}" src="${icon}" />
+                    <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
                 </l:confirmationLink>
@@ -177,7 +173,7 @@ THE SOFTWARE.
               <j:otherwise>
                 <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
                   <span class="task-icon-link">
-                    <l:icon class="${icon}" src="${icon}" />
+                    <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>
