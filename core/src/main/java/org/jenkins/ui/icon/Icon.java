@@ -62,7 +62,6 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
-    private String bitmap;
     private String symbol;
     private IconType iconType;
     private IconFormat iconFormat;
@@ -137,14 +136,13 @@ public class Icon {
         this.iconFormat = iconFormat;
     }
 
-    // TODO
-    public static Icon fromBitmap(String bitmap) {
-        Icon icon = new Icon("", "", "", IconFormat.EXTERNAL_SVG_SPRITE);
-        icon.bitmap = bitmap;
-        return icon;
-    }
-
-    // TODO
+    /**
+     * Creates an icon object from a Jenkins Symbol
+     *
+     * @param symbol The symbol to use
+     * @return An icon object with the Jenkins Symbol
+     * @since TODO
+     */
     public static Icon fromSymbol(String symbol) {
         Icon icon = new Icon("", "", "", IconFormat.EXTERNAL_SVG_SPRITE);
         icon.symbol = symbol;
@@ -225,10 +223,6 @@ public class Icon {
      */
     public String getStyle() {
         return style;
-    }
-
-    public String getBitmap() {
-        return bitmap;
     }
 
     public String getSymbol() {
