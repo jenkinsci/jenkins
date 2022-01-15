@@ -74,9 +74,6 @@ THE SOFTWARE.
         <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
       </j:if>
 
-<!--      ${attrs.src}-->
-<!--      ${iconSrc}-->
-
       <j:choose>
         <j:when test="${iconMetadata.buildStatus}">
           <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
