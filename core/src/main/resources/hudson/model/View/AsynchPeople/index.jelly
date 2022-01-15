@@ -44,7 +44,7 @@ THE SOFTWARE.
 
       <!-- cloned from JS -->
       <span id="person-circle-outline" class="default-hidden">
-        <l:scalableIcon name="person-circle-outline" />
+        <l:symbol name="person-circle-outline" />
       </span>
 
       <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people">

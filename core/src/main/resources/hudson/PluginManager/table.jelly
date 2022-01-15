@@ -46,7 +46,7 @@ THE SOFTWARE.
           value="${request.getParameter('filter')}"
           placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
         <div class="jenkins-search__icon">
-          <l:scalableIcon name="search-outline"/>
+          <l:symbol name="search-outline"/>
         </div>
       </div>
     </l:app-bar>

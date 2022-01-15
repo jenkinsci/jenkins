@@ -1,7 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
     <st:documentation>
-        Deprecated: Provides scalable icons
+        Deprecated
+        Provides Jenkins Symbols - use l:icon instead
         <st:attribute name="name" use="required">
             The name of the icon
         </st:attribute>

@@ -64,7 +64,7 @@ THE SOFTWARE.
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
-                  <l:scalableIcon name="settings-outline" />
+                  <l:symbol name="settings-outline" />
                 </a>
               </div>
             </l:isAdmin>
