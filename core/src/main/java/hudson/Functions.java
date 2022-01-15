@@ -2322,18 +2322,7 @@ public class Functions {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
-        Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
-
-        if (iconMetadata == null) {
-            // Icon could be provided as a simple iconFileName e.g. "settings.png"
-            iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
-        }
-
-        if (iconMetadata == null) {
-            // Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png"
-            iconMetadata = IconSet.icons.getIconByUrl(iconGuess);
-        }
-
+        Icon iconMetadata = tryGetIcon(iconGuess, context);
         String iconSource = null;
 
         if (iconMetadata != null) {

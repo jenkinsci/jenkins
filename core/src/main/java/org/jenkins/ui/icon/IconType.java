@@ -24,8 +24,6 @@
 
 package org.jenkins.ui.icon;
 
-import jnr.ffi.annotations.Out;
-
 /**
  * Icon type.
  *
