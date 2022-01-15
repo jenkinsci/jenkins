@@ -62,7 +62,6 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
-    private String symbol;
     private IconType iconType;
     private IconFormat iconFormat;
 
@@ -137,19 +136,6 @@ public class Icon {
     }
 
     /**
-     * Creates an icon object from a Jenkins Symbol
-     *
-     * @param symbol The symbol to use
-     * @return An icon object with the Jenkins Symbol
-     * @since TODO
-     */
-    public static Icon fromSymbol(String symbol) {
-        Icon icon = new Icon("", "", "", IconFormat.EXTERNAL_SVG_SPRITE);
-        icon.symbol = symbol;
-        return icon;
-    }
-
-    /**
      * Get the class specification for this Icon.
      * @return The class specification for this Icon.
      */
@@ -193,7 +179,9 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(JellyContext context) {
+        System.out.println("Succession");
         if (url != null) {
+            System.out.println("qualified url");
             return iconType.toQualifiedUrl(url, context.getVariable("resURL").toString());
         } else {
             return "";
@@ -209,7 +197,9 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(String resUrl) {
+        System.out.println("succession 2");
         if (url != null) {
+            System.out.println(resUrl);
             return iconType.toQualifiedUrl(url, resUrl);
         } else {
             return "";
@@ -223,10 +213,6 @@ public class Icon {
      */
     public String getStyle() {
         return style;
-    }
-
-    public String getSymbol() {
-        return symbol;
     }
 
     /**

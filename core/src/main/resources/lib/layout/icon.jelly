@@ -26,16 +26,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     @since 1.576
-    <st:attribute name="symbol" use="optional">
-      The symbol for the icon to use. If set, takes priority over @class and @src attributes
+
+    <st:attribute name="src" use="optional">
+      Icon source
+      Supports Jenkins Symbols (e.g. 'symbol-search')
+      Supports path to bitmap image
+      Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
     <st:attribute name="class" use="optional">
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
-    </st:attribute>
-
-    <st:attribute name="src" use="optional">
-      Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
     <st:attribute name="id">
@@ -50,20 +50,20 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:choose>
-    <j:when test="${attrs.symbol != null}">
+    <j:when test="${attrs.src.startsWith('symbol-')}">
       <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
-        <j:arg value="${attrs.symbol}" />
+        <j:arg value="${attrs.src.substring(7)}" />
         <j:arg value="${attrs.alt ?: ''}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>
     <j:otherwise>
-
       <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
       <j:if test="${iconMetadata == null}">
         <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
         <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(attrs.src) + ' icon-md')}"/>
       </j:if>
+
       <j:if test="${iconMetadata == null}">
         <!-- Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png" -->
         <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.src)}"/>
@@ -72,6 +72,10 @@ THE SOFTWARE.
       <j:if test="${iconMetadata != null}">
         <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
         <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
+      </j:if>
+
+      <j:if test="${iconMetadata == null}">
+        <j:set var="iconSrc" value="${rootURL}${attrs.src.startsWith('/images/') || attrs.src.startsWith('/plugin/') ? h.resourcePath : ''}${attrs.src}"/>
       </j:if>
 
       <j:choose>

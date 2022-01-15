@@ -2290,9 +2290,4 @@ public class Functions {
             return true;
         }
     }
-
-    @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
-    public static boolean isIcon(Object o) {
-        return o instanceof Icon;
-    }
 }

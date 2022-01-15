@@ -26,8 +26,6 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Functions;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -99,16 +97,7 @@ public interface Action extends ModelObject {
      * @see Functions#isAnonymous()
      * @see Functions#getIconFilePath(Action)
      */
-    @Deprecated
-    default String getIconFileName() {
-        return null;
-    }
-
-    @CheckForNull
-    default Icon getIcon() {
-        return IconSet.icons.getIconByClassSpec(
-                IconSet.toNormalizedIconNameClass(getIconFileName()) + " icon-xlg");
-    }
+    @CheckForNull String getIconFileName();
 
     /**
      * Gets the string to be displayed.

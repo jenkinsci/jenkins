@@ -291,7 +291,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
-import org.jenkins.ui.icon.Icon;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
@@ -4939,7 +4938,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Map<ManagementLink.Category, List<ManagementLink>> getCategorizedManagementLinks() {
         Map<ManagementLink.Category, List<ManagementLink>> byCategory = new TreeMap<>();
         for (ManagementLink link : ManagementLink.all()) {
-            if (link.getIcon() == null) {
+            if (link.getIconFileName() == null) {
                 continue;
             }
             if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {

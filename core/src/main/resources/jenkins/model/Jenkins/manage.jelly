@@ -54,14 +54,14 @@ THE SOFTWARE.
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
           <div class="jenkins-section__items">
           <j:forEach var="m" items="${category.value}">
-            <j:if test="${m.icon != null}">
+            <j:if test="${m.iconFileName != null}">
               <div class="jenkins-section__item">
               <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, m.icon.url, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, m.iconFileName, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <l:icon src="${m.icon.url}" symbol="${m.icon.symbol}" class="icon" />
+                    <l:icon src="${m.iconFileName}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -71,7 +71,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:when test="${m.requiresPOST}">
                   <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <l:icon src="${m.icon.url}" symbol="${m.icon.symbol}" class="icon" />
+                    <l:icon src="${m.iconFileName}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -81,7 +81,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <a href="${m.urlName}">
-                    <l:icon src="${m.icon.url}" symbol="${m.icon.symbol}" class="icon" />
+                    <l:icon src="${m.iconFileName}" class="icon" />
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>

@@ -1580,7 +1580,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 .add("console")
                 .add("changes");
         for (Action a : getAllActions()) {
-            if (a.getIcon() != null)
+            if (a.getIconFileName() != null)
                 builder.add(a.getUrlName());
         }
         return builder;

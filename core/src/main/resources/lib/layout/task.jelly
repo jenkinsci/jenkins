@@ -37,12 +37,10 @@ THE SOFTWARE.
 
       Common values include:
 
+      # "symbol-search" "symbol-terminal" "symbol-settings" - use a Jenkins Symbol as the icon for your task
       # "icon-folder icon-md" is an example of using a class spec for a medium folder icon
       # "images/24x24/..." then points to the stock icon resources
       # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
-    </st:attribute>
-    <st:attribute name="symbol">
-      TODO
     </st:attribute>
     <st:attribute name="title" use="required">
       Human readable text that follows the icon.
@@ -120,16 +118,6 @@ THE SOFTWARE.
         <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
       </j:if>
 
-      <j:set var="iconUrl" value="${icon}" />
-      <j:set var="iconClass" value="${icon}" />
-      <j:set var="iconSymbol" value="${symbol}" />
-
-      <j:if test="${h.isIcon(icon)}">
-        <j:set var="iconUrl" value="${icon.url}" />
-        <j:set var="iconClass" value="${icon.classSpec}" />
-        <j:set var="iconSymbol" value="${icon.symbol}" />
-      </j:if>
-
       <!--
       The icon attribute can be an icon class spec, or can be the url of an icon image.
       Within core Jenkins, we've updated all usages of the task element to use icon class specs,
@@ -145,7 +133,7 @@ THE SOFTWARE.
           <span class="task-link-wrapper">
             <span class="task-disabled-link">
               <span class="task-icon-link">
-                <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
+                <l:icon class="${icon}" src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
             </span>
@@ -180,7 +168,7 @@ THE SOFTWARE.
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
-                    <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
+                    <l:icon class="${icon}" src="${icon}" />
                   </span>
                   <span>${title}</span>
                 </l:confirmationLink>
@@ -189,7 +177,7 @@ THE SOFTWARE.
               <j:otherwise>
                 <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
                   <span class="task-icon-link">
-                    <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
+                    <l:icon class="${icon}" src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>
