@@ -41,10 +41,7 @@ THE SOFTWARE.
       # "images/24x24/..." then points to the stock icon resources
       # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
     </st:attribute>
-    <st:attribute name="scalableIcon">
-      TODO
-    </st:attribute>
-    <st:attribute name="xml">
+    <st:attribute name="symbol">
       TODO
     </st:attribute>
     <st:attribute name="title" use="required">
@@ -119,6 +116,20 @@ THE SOFTWARE.
       </j:when>
       <j:set var="match" value="${isCurrent or hasMatchingChild}" />
 
+      <j:if test="${attrs.permission != null}">
+        <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
+      </j:if>
+
+      <j:set var="iconUrl" value="${icon}" />
+      <j:set var="iconClass" value="${icon}" />
+      <j:set var="iconSymbol" value="${symbol}" />
+
+      <j:if test="${h.isIcon(icon)}">
+        <j:set var="iconUrl" value="${icon.url}" />
+        <j:set var="iconClass" value="${icon.classSpec}" />
+        <j:set var="iconSymbol" value="${icon.symbol}" />
+      </j:if>
+
       <!--
       The icon attribute can be an icon class spec, or can be the url of an icon image.
       Within core Jenkins, we've updated all usages of the task element to use icon class specs,
@@ -129,26 +140,12 @@ THE SOFTWARE.
       icon class spec from the icon metadata, otherwise we create an icon element instance using
       icon attribute value as an icon "src" (Vs class spec).
       -->
-      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.icon)}"/>
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(attrs.icon) + ' icon-md')}"/>
-      </j:if>
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.icon)}"/>
-      </j:if>
-
-      <j:if test="${!icon.startsWith('/')}">
-        <j:set var="icon" value="/${icon}"/>
-      </j:if>
-      <j:set var="icon" value="${rootURL}${icon.startsWith('/images/') || icon.startsWith('/plugin/') ? h.resourcePath : ''}${icon}"/>
       <j:when test="${enabled==false}">
         <div class="task disabled">
           <span class="task-link-wrapper">
             <span class="task-disabled-link">
               <span class="task-icon-link">
-                <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
               </span>
               <span class="task-link-text">${title}</span>
             </span>
@@ -183,7 +180,7 @@ THE SOFTWARE.
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
-                    <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
                   </span>
                   <span>${title}</span>
                 </l:confirmationLink>
@@ -192,7 +189,7 @@ THE SOFTWARE.
               <j:otherwise>
                 <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
                   <span class="task-icon-link">
-                    <l:icon svg="${attrs.scalableIcon}" xml="${attrs.xml}" alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon symbol="${iconSymbol}" class="${iconClass}" src="${iconUrl}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>

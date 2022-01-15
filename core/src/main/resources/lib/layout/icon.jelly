@@ -26,62 +26,56 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     @since 1.576
-    <st:attribute name="class">
+    <st:attribute name="symbol" use="optional">
+      The symbol for the icon to use. If set, takes priority over @class and @src attributes
+    </st:attribute>
+
+    <st:attribute name="class" use="optional">
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
+    </st:attribute>
+
+    <st:attribute name="src" use="optional">
+      Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
     <st:attribute name="id">
       ID of the icon element. Since TODO.
     </st:attribute>
 
-    <st:attribute name="src">
-      Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
-    </st:attribute>
-
-    <st:attribute name="svg">
-      TODO
-    </st:attribute>
-    <st:attribute name="xml">
-      TODO
-    </st:attribute>
-
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
-    <st:attribute name="title">title</st:attribute>
+    <st:attribute name="title" deprecated="true">title</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
     <st:attribute name="alt">alt</st:attribute>
   </st:documentation>
 
   <j:choose>
-    <j:when test="${attrs.svg != null || attrs.xml != null}">
-      <j:choose>
-        <j:when test="${attrs.svg != null}">
-          <l:scalableIcon name="${attrs.svg}" />
-        </j:when>
-        <j:otherwise>
-          <j:out value="${attrs.xml}" />
-        </j:otherwise>
-      </j:choose>
+    <j:when test="${attrs.symbol != null}">
+      <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
+        <j:arg value="${attrs.symbol}" />
+        <j:arg value="${attrs.alt ?: ''}" />
+      </j:invokeStatic>
+      <j:out value="${icon}" />
     </j:when>
     <j:otherwise>
-      <j:set var="iconSrc" value="${attrs.src}"/>
-      <j:set var="imgStyle" value="${attrs.style}"/>
 
-      <j:choose>
-        <j:when test="${attrs.class != null}">
-          <!-- Derive the icon url and style from the class spec -->
-          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
-        </j:when>
-        <j:otherwise>
-          <!-- Attempt to work back from the image url (backward compatibility)... -->
-          <j:set var="iconMetadata" value="${icons.getIconByUrl(iconSrc)}"/>
-        </j:otherwise>
-      </j:choose>
+      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
+      <j:if test="${iconMetadata == null}">
+        <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
+        <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(attrs.src) + ' icon-md')}"/>
+      </j:if>
+      <j:if test="${iconMetadata == null}">
+        <!-- Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png" -->
+        <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.src)}"/>
+      </j:if>
 
       <j:if test="${iconMetadata != null}">
         <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
         <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
       </j:if>
+
+<!--      ${attrs.src}-->
+<!--      ${iconSrc}-->
 
       <j:choose>
         <j:when test="${iconMetadata.buildStatus}">

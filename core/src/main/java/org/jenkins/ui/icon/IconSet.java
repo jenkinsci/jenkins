@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * An icon set.
@@ -45,7 +47,7 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> SCALABLE_ICONS = new ConcurrentHashMap<>();
+    private static final Map<String, String> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -73,34 +75,36 @@ public class IconSet {
         return icon;
     }
 
-    public static String getScalableIcon(String name, String title) {
-        if (SCALABLE_ICONS.containsKey(name)) {
-            String icon = SCALABLE_ICONS.get(name);
-            return prependTitleIfRequired(icon, title);
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public static String getSymbol(String name, String title) {
+        if (SYMBOLS.containsKey(name)) {
+            String symbol = SYMBOLS.get(name);
+            return prependTitleIfRequired(symbol, title);
         }
 
-        // Load icon if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/scalable/" + name + ".svg");
-        String scalableIcon = null;
+        // Load symbol if it exists
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + name + ".svg");
+        String symbol = null;
 
         try {
             if (inputStream != null) {
-                scalableIcon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                symbol = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             // ignored
         }
-        if (scalableIcon == null) {
-            scalableIcon = PLACEHOLDER_SVG;
+        if (symbol == null) {
+            symbol = PLACEHOLDER_SVG;
         }
 
-        scalableIcon = scalableIcon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        scalableIcon = scalableIcon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        scalableIcon = scalableIcon.replace("stroke:#000", "stroke:currentColor");
+        symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        SCALABLE_ICONS.put(name, scalableIcon);
+        SYMBOLS.put(name, symbol);
 
-        return prependTitleIfRequired(scalableIcon, title);
+        return prependTitleIfRequired(symbol, title);
     }
 
     public IconSet addIcon(Icon icon) {

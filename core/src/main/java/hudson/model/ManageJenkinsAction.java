@@ -27,7 +27,6 @@ package hudson.model;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
 
 /**
@@ -40,7 +39,7 @@ public class ManageJenkinsAction implements RootAction {
     @Override
     public Icon getIcon() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return Icon.fromSvg(IconSet.getScalableIcon("settings-outline", null));
+            return Icon.fromSymbol("settings-outline");
         else
             return null;
     }

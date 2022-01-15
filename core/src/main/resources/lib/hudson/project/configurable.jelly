@@ -38,10 +38,10 @@ THE SOFTWARE.
     </j:if>
     <j:choose>
         <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-            <l:task href="${url}/configure" scalableIcon="settings-outline" title="${%Configure}"/>
+            <l:task href="${url}/configure" icon="settings-outline" title="${%Configure}"/>
         </j:when>
         <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-            <l:task href="${url}/configure" scalableIcon="settings-outline" title="${%View Configuration}"/>
+            <l:task href="${url}/configure" icon="settings-outline" title="${%View Configuration}"/>
         </j:when>
     </j:choose>
     <l:task confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}" href="${url}/doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" post="true" requiresConfirmation="true" title="${%delete(it.pronoun)}"/>

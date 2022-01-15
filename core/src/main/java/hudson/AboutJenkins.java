@@ -6,7 +6,6 @@ import hudson.security.Permission;
 import java.net.URL;
 import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -20,7 +19,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class AboutJenkins extends ManagementLink {
     @Override
     public Icon getIcon() {
-        return Icon.fromSvg(IconSet.getScalableIcon("help-circle-outline", null));
+        return Icon.fromSymbol("help-circle-outline");
     }
 
     @Override
