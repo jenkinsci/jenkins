@@ -44,6 +44,7 @@ public enum IconType {
      * @return The qualified icon url.
      */
     public String toQualifiedUrl(String url, String resURL) {
+
         switch (this) {
             case CORE: {
                 return resURL + "/images/" + url;

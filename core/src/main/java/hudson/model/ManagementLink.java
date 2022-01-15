@@ -57,6 +57,19 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public abstract class ManagementLink implements ExtensionPoint, Action {
 
     /**
+     * Mostly works like {@link Action#getIconFileName()}, except that
+     * the expected icon size is 48x48, not 24x24. So if you give
+     * just a file name, "/images/48x48" will be assumed.
+     *
+     * @return
+     *      As a special case, return null to exclude this object from the management link.
+     *      This is useful for defining {@link ManagementLink} that only shows up under
+     *      certain circumstances.
+     */
+    @Override
+    public abstract @CheckForNull String getIconFileName();
+
+    /**
      * Returns a short description of what this link does. This text
      * is the one that's displayed in grey. This can include HTML,
      * although the use of block tags is highly discouraged.
