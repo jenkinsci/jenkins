@@ -60,10 +60,15 @@ THE SOFTWARE.
     <j:otherwise>
       <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
       <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
+      <j:set var="imgStyle" value="${attrs.style}"/>
 
       <j:if test="${iconSrc == null}">
         <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
         <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
+      </j:if>
+
+      <j:if test="${iconMetadata != null}">
+        <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
       </j:if>
 
       <j:choose>
