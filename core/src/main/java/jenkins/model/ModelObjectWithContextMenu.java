@@ -284,7 +284,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Optional icon XML, if set it's used instead of @icon for the menu item
          */
         @Exported
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         private String iconXml;
 
         /**
