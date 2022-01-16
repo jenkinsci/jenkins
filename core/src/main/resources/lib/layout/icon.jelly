@@ -43,7 +43,7 @@ THE SOFTWARE.
     </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
-    <st:attribute name="title" deprecated="true">title</st:attribute>
+    <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
     <st:attribute name="alt">alt</st:attribute>
@@ -59,11 +59,11 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
-      <j:set var="iconMetadata" value="${h.tryGetIcon(src, context)}"/>
+      <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
 
       <j:if test="${iconSrc == null}">
         <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
-        <j:set var="iconMetadata" value="${h.tryGetIcon(class, context)}"/>
+        <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
       </j:if>
 
       <j:choose>

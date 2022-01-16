@@ -39,7 +39,7 @@ THE SOFTWARE.
           value="${request.getParameter('filter')}"
           placeholder="${%Search}"/>
         <div class="jenkins-search__icon">
-          <l:symbol name="search"/>
+          <l:icon src="symbol-search"/>
         </div>
       </div>
     </l:app-bar>

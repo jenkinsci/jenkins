@@ -285,7 +285,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
-        public String iconXml;
+        private String iconXml;
 
         /**
          * True to make a POST request rather than GET.
@@ -318,6 +318,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported(inline = true)
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
+
+        public String getIconXml() {
+            return iconXml;
+        }
 
         public MenuItem(String url, String icon, String displayName) {
             withUrl(url).withIcon(icon).withDisplayName(displayName);
