@@ -49,28 +49,29 @@ THE SOFTWARE.
     <st:attribute name="alt">alt</st:attribute>
   </st:documentation>
 
+  <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
+  <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
+  <j:set var="imgStyle" value="${attrs.style}"/>
+
+  <j:if test="${iconSrc == null}">
+    <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
+    <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
+  </j:if>
+
+  <j:if test="${iconMetadata != null}">
+    <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
+  </j:if>
+
   <j:choose>
-    <j:when test="${attrs.src.startsWith('symbol-')}">
+    <j:when test="${iconSrc.startsWith('symbol-')}">
       <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
-        <j:arg value="${attrs.src.substring(7)}" />
-        <j:arg value="${attrs.alt ?: ''}" />
+        <j:arg value="${iconSrc.substring(7)}" />
+        <j:arg value="${alt ?: ''}" />
+        <j:arg value="${iconMetadata.classSpec ?: ''}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>
     <j:otherwise>
-      <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
-      <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
-      <j:set var="imgStyle" value="${attrs.style}"/>
-
-      <j:if test="${iconSrc == null}">
-        <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
-        <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
-      </j:if>
-
-      <j:if test="${iconMetadata != null}">
-        <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
-      </j:if>
-
       <j:choose>
         <j:when test="${iconMetadata.buildStatus}">
           <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />

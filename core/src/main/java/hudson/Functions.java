@@ -2337,6 +2337,12 @@ public class Functions {
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + getResourcePath() + iconGuess;
         }
 
+        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
+            if (IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec()) != null) {
+                return IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
+            }
+        }
+
         return iconSource;
     }
 }

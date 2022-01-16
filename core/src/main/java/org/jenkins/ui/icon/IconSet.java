@@ -77,9 +77,11 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title) {
+    public static String getSymbol(String name, String title, String classes) {
         if (SYMBOLS.containsKey(name)) {
             String symbol = SYMBOLS.get(name);
+            symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
@@ -99,7 +101,9 @@ public class IconSet {
         }
 
         symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
         SYMBOLS.put(name, symbol);
@@ -527,5 +531,27 @@ public class IconSet {
                         "svgs/" + image + ".svg", size.getValue()));
             }
         }
+    }
+
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @return a Jenkins Symbol (if one exists) otherwise null
+     */
+    public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+        if (tangoIcon != null) {
+            tangoIcon = tangoIcon.split(" ")[0];
+        }
+
+        Map<String, String> translations = new HashMap<>();
+        translations.put("icon-clock", "symbol-play");
+        translations.put("icon-edit-delete", "symbol-trash");
+        translations.put("icon-gear", "symbol-settings");
+        translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-plugin", "symbol-plugins");
+
+        return translations.getOrDefault(tangoIcon, null);
     }
 }
