@@ -53,8 +53,9 @@
   }
 
   &:hover {
-    color: var(--text-color);
-    text-decoration: none;
+    &::before {
+      opacity: 0.05;
+    }
   }
 
   // Target only icons withink task link in order to keep backwards compatibility
