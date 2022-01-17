@@ -86,7 +86,9 @@ THE SOFTWARE.
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
                       <j:if test="${m.getUpdateCount() != null and m.getUpdateCount() != 0}">
-                        <div class="jenkins-section__item__icon__badge">${m.getUpdateCount()}</div>
+                        <div tooltip="${m.getUpdateCount() == 1 ? '%updateAvailable(m.getUpdateCount())' : '%updatesAvailable(m.getUpdateCount())'}" class="jenkins-section__item__icon__badge">
+                          ${m.getUpdateCount()}
+                        </div>
                       </j:if>
                     </div>
                     <dl>
