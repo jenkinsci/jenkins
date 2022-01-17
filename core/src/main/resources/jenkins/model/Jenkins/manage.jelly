@@ -32,15 +32,13 @@ THE SOFTWARE.
        <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
     </l:header>
 
+    <l:app-bar title="${%Manage Jenkins}" />
+
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" />
     </j:if>
 
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <h1>${%Manage Jenkins}</h1>
-      </div>
-
       <section class="manage-messages">
         <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
           <st:include page="message.jelly" it="${am}" />
@@ -65,7 +63,9 @@ THE SOFTWARE.
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <l:icon src="${m.iconFileName}" class="icon" />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -75,7 +75,9 @@ THE SOFTWARE.
                 </j:when>
                 <j:when test="${m.requiresPOST}">
                   <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <l:icon src="${m.iconFileName}" class="icon" />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -85,7 +87,12 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <a href="${m.urlName}">
-                    <l:icon src="${m.iconFileName}" class="icon" />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                      <j:if test="${m.getUpdateCount() != null and m.getUpdateCount() != 0}">
+                        <div class="jenkins-section__item__icon__badge">${m.getUpdateCount()}</div>
+                      </j:if>
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
