@@ -37,6 +37,7 @@ import hudson.model.Messages;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -286,14 +287,15 @@ public abstract class LabelExpression extends Label {
         }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
-        if (l.isEmpty()) {
+        if (l == null || l.isEmpty()) {
             final LabelAtom masterLabel = LabelAtom.get("master");
-            if (!masterLabel.equals(Jenkins.get().getSelfLabel()) && l.listAtoms().contains(masterLabel) && masterLabel.isEmpty()) {
+            final Set<LabelAtom> labelAtoms = (l == null ? Collections.emptySet() : l.listAtoms());
+            if (!masterLabel.equals(Jenkins.get().getSelfLabel()) && labelAtoms.contains(masterLabel) && masterLabel.isEmpty()) {
                 // Show a warning if this expression's lack of nodes and clouds is likely caused by the built-in node name migration.
                 // This can probably be done better (e.g. also when `!l.isEmpty()`), but it's a start.
                 return FormValidation.warningWithMarkup(Messages.LabelExpression_ObsoleteMasterLabel());
             }
-            for (LabelAtom a : l.listAtoms()) {
+            for (LabelAtom a : labelAtoms) {
                 if (a.isEmpty()) {
                     LabelAtom nearest = LabelAtom.findNearest(a.getName());
                     return FormValidation.warning(Messages.LabelExpression_NoMatch_DidYouMean(a.getName(), nearest.getDisplayName()));
