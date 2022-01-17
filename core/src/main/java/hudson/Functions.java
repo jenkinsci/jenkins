@@ -2291,6 +2291,7 @@ public class Functions {
         }
     }
 
+    @Restricted(NoExternalUse.class)
     public static Icon tryGetIcon(String iconGuess) {
         // Jenkins Symbols don't have metadata so return null
         if (iconGuess == null || iconGuess.startsWith("symbol-")) {
@@ -2314,6 +2315,7 @@ public class Functions {
         return iconMetadata;
     }
 
+	@Restricted(NoExternalUse.class)
     public static String tryGetIconPath(String iconGuess, JellyContext context) {
         if (iconGuess == null) {
             return null;
@@ -2338,8 +2340,9 @@ public class Functions {
         }
 
         if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
-            if (IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec()) != null) {
-                return IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
+            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
+            if (translatedIcon != null) {
+                return translatedIcon;
             }
         }
 
