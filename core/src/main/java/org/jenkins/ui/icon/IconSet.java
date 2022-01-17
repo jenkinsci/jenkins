@@ -551,6 +551,13 @@ public class IconSet {
         translations.put("icon-gear", "symbol-settings");
         translations.put("icon-gear2", "symbol-settings");
         translations.put("icon-plugin", "symbol-plugins");
+        translations.put("icon-folder", "symbol-folder");
+        translations.put("icon-user", "symbol-people");
+        translations.put("icon-search", "symbol-search");
+        translations.put("icon-terminal", "symbol-terminal");
+        translations.put("icon-up", "symbol-arrow-up");
+        translations.put("icon-previous", "symbol-arrow-left");
+        translations.put("icon-next", "symbol-arrow-right");
 
         return translations.getOrDefault(tangoIcon, null);
     }
