@@ -59,7 +59,8 @@
     margin: 0;
   }
 
-  &::before {
+  &::before,
+  &::after {
     position: absolute;
     content: "";
     top: -10px;
@@ -68,12 +69,22 @@
     right: -10px;
     z-index: -1;
     border-radius: 6px;
+    transition: var(--standard-transition);
+    opacity: 0;
+  }
+
+  &::before {
+    background-color: var(--text-color);
+  }
+
+  &::after {
+    box-shadow: 0 0 0 10px transparent;
   }
 
   &:hover,
   &:focus {
     &::before {
-      background-color: var(--btn-link-bg--hover);
+      opacity: 0.1;
     }
   }
 
@@ -83,8 +94,12 @@
     z-index: 1;
 
     &::before {
-      background: var(--btn-link-bg--active);
-      box-shadow: 0 0 0 2px var(--focus-btn-primary);
+      opacity: 0.15;
+    }
+
+    &::after {
+      opacity: 0.075;
+      box-shadow: 0 0 0 5px var(--text-color);
     }
   }
 
