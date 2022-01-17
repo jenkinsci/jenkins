@@ -55,10 +55,32 @@
   &:hover {
     color: var(--text-color);
     text-decoration: none;
+  }
 
-    &::before {
-      opacity: 0.05;
+  // Target only icons withink task link in order to keep backwards compatibility
+  .task .task-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    margin-right: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      color: var(--primary);
     }
+  }
+
+  // Reset the margin for the icon links
+  .task .task-icon-link img,
+  .task img.task-icon-link {
+    margin: 0;
+    // Dimensions have !important to override inline styles set by <l:icon>
+    height: 1.5rem !important;
+    width: 1.5rem !important;
   }
 
   &:active,

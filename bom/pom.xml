@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.2</asm.version>
     <slf4jVersion>1.7.32</slf4jVersion>
-    <stapler.version>1627.v5c244c19f85f</stapler.version>
+    <stapler.version>1638.v229a_24fa_b_17c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -221,7 +221,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.14</version>
+        <version>3.1.15</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>

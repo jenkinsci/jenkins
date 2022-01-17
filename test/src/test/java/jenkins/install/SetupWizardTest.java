@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -89,7 +90,7 @@ public class SetupWizardTest {
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
-        final String password = ostream.toString();
+        final String password = ostream.toString(StandardCharsets.UTF_8.name());
     }
 
     @Test
@@ -351,7 +352,7 @@ public class SetupWizardTest {
                 baseRequest.setHandled(true);
                 response.setContentType("text/plain; charset=utf-8");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getOutputStream().write(responseBody.getBytes());
+                response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
             } else {
                 response.sendError(404);
             }
@@ -456,7 +457,7 @@ public class SetupWizardTest {
         protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
             Set<TrustAnchor> trustAnchors = new HashSet<>();
             try {
-                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8)));
                 trustAnchors.add(new TrustAnchor((X509Certificate) certificate, null));
             } catch (CertificateException ex) {
                 throw new IOException(ex);
