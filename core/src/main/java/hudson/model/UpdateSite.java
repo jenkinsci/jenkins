@@ -28,9 +28,7 @@ package hudson.model;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static jenkins.util.MemoryReductionUtil.EMPTY_STRING_ARRAY;
 import static jenkins.util.MemoryReductionUtil.getPresizedMutableMap;
-import static jenkins.util.MemoryReductionUtil.internInPlace;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -80,6 +78,7 @@ import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.JSONSignatureValidator;
+import jenkins.util.PluginLabelUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
@@ -1238,7 +1237,7 @@ public class UpdateSite {
             }
             this.popularity = popularity;
             this.releaseTimestamp = date;
-            this.categories = o.has("labels") ? internInPlace((String[]) o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            this.categories = o.has("labels") ? PluginLabelUtil.canonicalLabels(o.getJSONArray("labels")) : null;
             this.issueTrackers = o.has("issueTrackers") ? o.getJSONArray("issueTrackers").stream().map(IssueTracker::createFromJSONObject).filter(Objects::nonNull).toArray(IssueTracker[]::new) : null;
 
             JSONArray ja = o.getJSONArray("dependencies");

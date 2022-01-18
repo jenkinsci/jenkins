@@ -37,7 +37,7 @@ THE SOFTWARE.
     <l:main-panel>
     <div class="container">
       <div class="row">
-        <div class="col-md-offset-2 col-md-20">
+        <div class="jenkins-config-container">
 
           <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 

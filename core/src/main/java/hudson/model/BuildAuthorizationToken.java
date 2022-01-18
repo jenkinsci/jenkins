@@ -29,7 +29,6 @@ import hudson.Util;
 import hudson.security.ACL;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -68,9 +67,6 @@ public final class BuildAuthorizationToken {
     }
 
     public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (!Jenkins.get().isUseSecurity())
-            return;    // everyone is authorized
-
         if (token != null && token.token != null) {
             //check the provided token
             String providedToken = req.getParameter("token");
