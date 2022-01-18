@@ -2336,7 +2336,7 @@ public class Functions {
         }
 
         if (iconMetadata == null) {
-            iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + getResourcePath() + iconGuess;
+            iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
 
         if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
