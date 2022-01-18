@@ -540,6 +540,7 @@ public class IconSet {
      * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
      * @return a Jenkins Symbol (if one exists) otherwise null
      */
+    @Restricted(NoExternalUse.class)
     public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
         if (tangoIcon != null) {
             tangoIcon = tangoIcon.split(" ")[0];

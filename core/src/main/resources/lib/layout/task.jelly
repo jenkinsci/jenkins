@@ -31,13 +31,13 @@ THE SOFTWARE.
     <st:attribute name="href" use="required">
       Link target. Relative to the current page.
     </st:attribute>
-    <st:attribute name="icon">
+    <st:attribute name="icon" use="required">
       URL to an icon image, or the icon class specification.  If using an image URL,
       the image should be 24x24 in size and relative to the context path of Hudson.
 
       Common values include:
 
-      # "symbol-search" "symbol-terminal" "symbol-settings" - use a Jenkins Symbol as the icon for your task
+      # "symbol-search" / "symbol-terminal" / "symbol-settings" - use a Jenkins Symbol as the icon for your task
       # "icon-folder icon-md" is an example of using a class spec for a medium folder icon
       # "images/24x24/..." then points to the stock icon resources
       # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources

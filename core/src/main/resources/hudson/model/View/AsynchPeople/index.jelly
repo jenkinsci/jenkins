@@ -47,7 +47,7 @@ THE SOFTWARE.
         <l:icon src="symbol-person-circle" />
       </span>
 
-      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people">
+      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people" style="display: none;">
         <thead>
           <tr>
             <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>
