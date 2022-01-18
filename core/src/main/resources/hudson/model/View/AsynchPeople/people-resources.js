@@ -1,5 +1,6 @@
 function display(data) {
     var p = document.getElementById('people');
+    p.show();
     var rootURL = document.head.getAttribute('data-rooturl');
     for (var x = 0; data.length > x; x++) {
         var e = data[x];
@@ -19,7 +20,7 @@ function display(data) {
         var wrapper = document.createElement('div');
         wrapper.className = 'jenkins-table__cell__button-wrapper';
         d.className = 'jenkins-table__cell--tight jenkins-table__icon';
-        var icon = document.getElementById('person-circle-outline')
+        var icon = document.getElementById('person-circle')
         wrapper.innerHTML = icon.children[0].outerHTML;
         d.appendChild(wrapper);
         r.appendChild(d);
