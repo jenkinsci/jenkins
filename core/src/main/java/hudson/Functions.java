@@ -2315,7 +2315,7 @@ public class Functions {
         return iconMetadata;
     }
 
-	@Restricted(NoExternalUse.class)
+    @Restricted(NoExternalUse.class)
     public static String tryGetIconPath(String iconGuess, JellyContext context) {
         if (iconGuess == null) {
             return null;
