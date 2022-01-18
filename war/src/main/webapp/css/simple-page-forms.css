@@ -26,7 +26,7 @@
   border: 1px solid;
   border-color: rgba(73, 73, 73, 0.5);
   border-color: var(--checkbox-border);
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
 }
 .Checkbox .Checkbox-text {
@@ -90,4 +90,61 @@ fieldset[disabled] .Checkbox input ~ .Checkbox-text {
 .Checkbox-large .svg-icon {
   width: 24px;
   height: 24px;
+}
+.jenkins-button {
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 1rem;
+  font-size: 1rem;
+  z-index: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  background: transparent;
+  color: white !important;
+  font-weight: 500;
+}
+.jenkins-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transition: 0.2s ease;
+  background: var(--link-color);
+}
+.jenkins-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transition: 0.2s ease;
+  opacity: 0;
+  box-shadow: 0 0 0 10px transparent;
+}
+.jenkins-button:hover::before {
+  opacity: 0.9;
+}
+.jenkins-button:active::before,
+.jenkins-button:focus::before {
+  opacity: 0.8;
+}
+.jenkins-button:active::after,
+.jenkins-button:focus::after {
+  opacity: 0.25;
+  box-shadow: 0 0 0 5px var(--link-color);
 }

@@ -79,10 +79,9 @@ a {
   text-align: left;
   text-decoration: none;
   font-size: 18px;
-  border-radius: 3px;
-  border-width: 1px;
-  border-color: rgba(74, 74, 74, 0.25);
-  border-color: var(--input-form-border);
+  border-radius: 6px;
+  border: 2px solid rgba(74, 74, 74, 0.25);
+  border: 2px solid var(--input-form-border);
   background-color: #fff;
   background-color: var(--background-medium);
   color: #4a4a4a;

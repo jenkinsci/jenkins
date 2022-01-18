@@ -51,21 +51,21 @@ html {
 .simple-page form .submit input {
   background-color: #0b6aa2;
   background-color: var(--btn-primary-bg);
-  border: solid 1px;
+  border: solid 2px;
   border-color: #0b6aa2;
   border-color: var(--btn-primary-bg);
 }
 
 .simple-page form .submit input:focus,
 .simple-page input.normal:focus {
-    border: solid 1px;
+    border: solid 2px;
     border-color: #3fb3f7;
     border-color: var(--focus);
     outline: 0;
 }
 
  .simple-page .danger {
-  border: 1px solid;
+  border: 2px solid;
   border-color: #c4000a;
   border-color: var(--danger-color);
   box-shadow: 0 0 1px #c4000a;
