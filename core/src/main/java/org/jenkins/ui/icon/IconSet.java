@@ -559,6 +559,7 @@ public class IconSet {
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-previous", "symbol-arrow-left");
         translations.put("icon-next", "symbol-arrow-right");
+        translations.put("icon-clipboard", "symbol-logs");
 
         return translations.getOrDefault(tangoIcon, null);
     }

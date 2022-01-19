@@ -46,7 +46,7 @@ THE SOFTWARE.
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
         permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
 
-    <t:summary icon="notepad.png" href="changes">
+    <t:summary icon="symbol-list" href="changes">
       ${%Recent Changes}
     </t:summary>
 
