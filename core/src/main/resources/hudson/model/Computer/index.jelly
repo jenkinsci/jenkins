@@ -52,7 +52,9 @@ THE SOFTWARE.
       </div>
 
       <h1>
-        <l:icon class="${it.iconClassName} icon-xlg" />
+        <span class="icon-lg">
+          <l:icon src="${it.iconClassName}" />
+        </span>
         ${it.caption}
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>

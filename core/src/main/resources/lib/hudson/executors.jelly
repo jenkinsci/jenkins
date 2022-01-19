@@ -34,7 +34,7 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="computerCaption">
 
-      <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="${c.iconClassName} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
+      <a href="${rootURL}/${c.url}" class="jenkins-link--with-icon model-link inside"><l:icon src="${c.iconClassName}" alt="${altText}"/><st:nbsp/>${title}</a>
       <j:if test="${c.offline}">
         <st:nbsp/>
         <j:choose>
