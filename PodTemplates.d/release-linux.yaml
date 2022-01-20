@@ -1,0 +1,56 @@
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  labels:
+    jenkins: "agent"
+    job: "release"
+spec:
+  containers:
+    - name: jnlp
+      image: jenkinsciinfra/packaging:2.1.0
+      imagePullPolicy: "IfNotPresent"
+      env:
+        - name: "HOME"
+          value: "/home/jenkins/agent/workspace"
+        - name: "MAVEN_OPTS"
+          value: "-Xmx8g -Xms8g"
+        - name: "JENKINS_JAVA_BIN"
+          value: "/opt/jdk-11/bin/java"
+      resources:
+        limits:
+          memory: "16Gi"
+          cpu: "4"
+        requests:
+          memory: "16Gi"
+          cpu: "4"
+      securityContext:
+        privileged: false
+        runAsUser: 1000
+        runAsGroup: 1000
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                  - linux
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: agentpool
+                operator: In
+                values:
+                  - highmemlinux
+  tolerations:
+    - key: "os"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    - key: "profile"
+      operator: "Equal"
+      value: "highmem"
+      effect: "NoSchedule"
+  restartPolicy: "Never"
