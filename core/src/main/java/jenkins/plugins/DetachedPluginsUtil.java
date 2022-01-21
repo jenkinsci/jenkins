@@ -144,7 +144,7 @@ public class DetachedPluginsUtil {
         return false;
     }
 
-    private static Stream<String> configLines(InputStream is) throws IOException {
+    public static Stream<String> configLines(InputStream is) throws IOException {
         return IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*"));
     }
 
