@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,7 +100,7 @@ public class UpdateSiteTest {
                     baseRequest.setHandled(true);
                     response.setContentType("text/plain; charset=utf-8");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getOutputStream().write(responseBody.getBytes());
+                    response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
                 }
             }
         });

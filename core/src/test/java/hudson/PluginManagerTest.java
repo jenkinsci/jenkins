@@ -63,7 +63,7 @@ public class PluginManagerTest {
                 tmp.resolve("output.txt")
         );
         assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.getParent().toFile())
-                .parseRequestedPlugins(new ByteArrayInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>".getBytes())).toString());
+                .parseRequestedPlugins(new ByteArrayInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>".getBytes(StandardCharsets.UTF_8))).toString());
     }
 
     @Issue("SECURITY-167")
@@ -82,7 +82,7 @@ public class PluginManagerTest {
 
         PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
         final IOException ex = assertThrows(IOException.class,
-                () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes())),
+                () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes(StandardCharsets.UTF_8))),
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
         assertThat(ex.getCause().getMessage(), containsString("DOCTYPE is disallowed"));
@@ -156,7 +156,7 @@ public class PluginManagerTest {
         try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
             ZipEntry e = new ZipEntry(manifestPath);
             out.putNextEntry(e);
-            byte[] data = SAMPLE_MANIFEST_FILE.getBytes();
+            byte[] data = SAMPLE_MANIFEST_FILE.getBytes(StandardCharsets.UTF_8);
             out.write(data, 0, data.length);
             out.closeEntry();
         }

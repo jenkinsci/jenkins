@@ -64,7 +64,7 @@ public class ProcTest {
         for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             launcher.launch().cmds("echo", str).stdout(baos).join();
-            assertEquals(str, baos.toString().trim());
+            assertEquals(str, baos.toString(Charset.defaultCharset().name()).trim());
         }
 
         ch.close();
@@ -115,21 +115,21 @@ public class ProcTest {
         String[] ECHO_BACK_CMD = {"cat"};   // TODO: what is the echo back command for Windows? "cmd /C copy CON CON"?
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).stdout(out).join();
-        assertEquals("Hello", out.toString());
+        l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).stdout(out).join();
+        assertEquals("Hello", out.toString(Charset.defaultCharset().name()));
 
-        Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).readStdout().start();
+        Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).readStdout().start();
         p.join();
-        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout()));
+        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout(), Charset.defaultCharset()));
         assertNull(p.getStderr());
         assertNull(p.getStdin());
 
 
         p = l.launch().cmds(ECHO_BACK_CMD).writeStdin().readStdout().start();
-        p.getStdin().write("Hello".getBytes());
+        p.getStdin().write("Hello".getBytes(Charset.defaultCharset()));
         p.getStdin().close();
         p.join();
-        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout()));
+        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout(), Charset.defaultCharset()));
         assertNull(p.getStderr());
     }
 }

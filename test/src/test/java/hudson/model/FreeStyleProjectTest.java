@@ -48,6 +48,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
@@ -129,7 +130,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-15817")
     public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
-        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
         Shell shell = new Shell("echo hello");
@@ -253,7 +254,7 @@ public class FreeStyleProjectTest {
     public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -269,7 +270,7 @@ public class FreeStyleProjectTest {
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -285,7 +286,7 @@ public class FreeStyleProjectTest {
         System.setProperty(propName, "false");
         try {
             assertThat(j.jenkins.getItems(), hasSize(0));
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         }
         finally {
             if (initialValue == null) {

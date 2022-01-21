@@ -39,6 +39,7 @@ import hudson.model.Slave;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import jenkins.util.SystemProperties;
 import org.apache.tools.ant.util.JavaEnvUtils;
@@ -135,7 +136,7 @@ public class ArgumentListBuilder2Test {
                 .toWindowsCommand();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final StreamTaskListener listener = new StreamTaskListener(out);
+        final StreamTaskListener listener = new StreamTaskListener(out, Charset.defaultCharset());
         Proc p = new LocalLauncher(listener)
                 .launch()
                 .stderr(System.err)
@@ -147,6 +148,6 @@ public class ArgumentListBuilder2Test {
         listener.close();
 
         assumeThat("Failed to run " + args, code, equalTo(0));
-        return out.toString();
+        return out.toString(Charset.defaultCharset().name());
     }
 }
