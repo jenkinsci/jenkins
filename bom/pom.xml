@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.2</asm.version>
-    <slf4jVersion>1.7.32</slf4jVersion>
+    <slf4jVersion>1.7.33</slf4jVersion>
     <stapler.version>1638.v229a_24fa_b_17c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
@@ -318,11 +318,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci</groupId>
         <artifactId>symbol-annotation</artifactId>
         <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>jakarta.mail</artifactId>
-        <version>1.6.5</version>
       </dependency>
 
       <!--XStream-->
