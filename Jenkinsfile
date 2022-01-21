@@ -17,7 +17,7 @@ pipeline {
       steps {
         // Maven Release requires gpg key with password password and a certificate key with password
         sh '''
-          mvn -B --no-transfer-progress -Darguments=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn release:prepare
+          mvn -B --no-transfer-progress clean install
         '''
       }
     }
