@@ -54,6 +54,7 @@ import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Buildable software project.
@@ -106,6 +107,11 @@ public abstract class Project<P extends Project<P, B>, B extends Build<P, B>>
 
     @Override public Item asItem() {
         return this;
+    }
+    
+    @Exported
+    public String getName() {
+        return Item.getName();
     }
 
     @Override public SCMTrigger getSCMTrigger() {
