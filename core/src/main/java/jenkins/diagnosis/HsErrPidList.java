@@ -7,12 +7,13 @@ import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -123,7 +124,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     private void scanFile(File log) {
         LOGGER.fine("Scanning " + log);
 
-        try (Reader rawReader = new FileReader(log);
+        try (Reader rawReader = Files.newBufferedReader(log.toPath(), Charset.defaultCharset());
              BufferedReader r = new BufferedReader(rawReader)) {
 
             if (!findHeader(r))
@@ -140,7 +141,7 @@ public class HsErrPidList extends AdministrativeMonitor {
                     return;
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             // not a big enough deal.
             LOGGER.log(Level.FINE, "Failed to parse hs_err_pid file: " + log, e);
         }

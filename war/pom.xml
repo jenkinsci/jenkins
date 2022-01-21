@@ -367,6 +367,18 @@ THE SOFTWARE.
                   <version>1.0.4</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>javax-activation-api</artifactId>
+                  <version>1.2.0-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>javax-mail-api</artifactId>
+                  <version>1.6.2-5</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>

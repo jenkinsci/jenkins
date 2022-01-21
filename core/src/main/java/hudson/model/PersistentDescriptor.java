@@ -1,6 +1,6 @@
 package hudson.model;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Marker interface for Descriptors which use xml persistent data, and as such need to load from disk when instantiated.
