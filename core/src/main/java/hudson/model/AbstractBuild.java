@@ -176,6 +176,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         super(project, buildDir);
     }
 
+    @Exported
     public final P getProject() {
         return getParent();
     }
@@ -895,7 +896,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      *
      * @return never null.
      */
-    @Exported
+        @Exported
     @NonNull public ChangeLogSet<? extends ChangeLogSet.Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm == null) {
