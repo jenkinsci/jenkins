@@ -528,6 +528,18 @@ public class UpdateSite {
     }
 
     /**
+     * Is this the legacy default update center site?
+     * @deprecated
+     *      Will be removed, currently returns always false.
+     * @since TODO
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public boolean isLegacyDefault() {
+        return false;
+    }
+
+    /**
      * In-memory representation of the update center data.
      */
     public final class Data {
