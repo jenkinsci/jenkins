@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
@@ -87,7 +88,7 @@ public class LabelAtom extends Label implements Saveable {
 
     private String description;
 
-    public LabelAtom(String name) {
+    public LabelAtom(@NonNull String name) {
         super(name);
     }
 
@@ -111,6 +112,7 @@ public class LabelAtom extends Label implements Saveable {
      * should do so by implementing {@link LabelAtomProperty#getActions(LabelAtom)}.
      */
     @SuppressWarnings("deprecation")
+    @NonNull
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
