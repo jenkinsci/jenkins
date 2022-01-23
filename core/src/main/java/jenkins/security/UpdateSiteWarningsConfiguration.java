@@ -39,6 +39,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -62,6 +63,11 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
     @NonNull
     public Set<String> getIgnoredWarnings() {
         return Collections.unmodifiableSet(ignoredWarnings);
+    }
+
+    @DataBoundSetter
+    public void setIgnoredWarnings(HashSet<String> ignoredWarnings) {
+        this.ignoredWarnings = ignoredWarnings;
     }
 
     public boolean isIgnored(@NonNull UpdateSite.Warning warning) {
