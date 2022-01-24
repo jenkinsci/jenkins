@@ -83,7 +83,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1690.vfcb_959006c07</version>
+      <version>1682.v4a_71b_f124ca_3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -118,7 +118,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>391.ve4a_38c1b_cf4b_</version>
+      <version>408.vd726a_1130320</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-mail-api</artifactId>
+      <version>1.6.2-5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -136,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.19</version>
+      <version>1.20</version>
       <scope>test</scope>
     </dependency>
     <dependency>
