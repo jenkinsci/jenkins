@@ -32,6 +32,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.labels.LabelAtom;
@@ -134,6 +135,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Alias for {@link #getDisplayName()}.
      */
+    @NonNull
     @Exported(visibility = 2)
     public final String getName() {
         return getDisplayName();
@@ -584,7 +586,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      *      so that the caller can add more to the set.
      * @since 1.308
      */
-    public static Set<LabelAtom> parse(String labels) {
+    @NonNull
+    public static Set<LabelAtom> parse(@CheckForNull String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
         if (labels.length() > 0) {
@@ -598,6 +601,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Obtains a label by its {@linkplain #getName() name}.
      */
+    @CheckForNull
     public static Label get(String l) {
         return Jenkins.get().getLabel(l);
     }
@@ -607,7 +611,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      *
      * TODO: replace this with a real parser later
      */
-    public static Label parseExpression(String labelExpression) throws ANTLRException {
+    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
         LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
         return new LabelExpressionParser(lexer).expr();
     }
