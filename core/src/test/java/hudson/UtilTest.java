@@ -46,7 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -676,7 +676,7 @@ public class UtilTest {
             assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
             Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
             assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
-        } catch (AccessDeniedException e) {
+        } catch (FileSystemException e) {
             // Not running as root
             assumeNoException(e);
         }

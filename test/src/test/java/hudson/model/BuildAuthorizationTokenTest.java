@@ -15,9 +15,11 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
+// TODO : Using the @Nested class might be cleaner for SECURITY-2558 tests
 public class BuildAuthorizationTokenTest {
 
     @Rule
@@ -31,6 +33,47 @@ public class BuildAuthorizationTokenTest {
         jr.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                     .grant(Jenkins.READ).everywhere().toEveryone()
                                                     .grant(Item.READ).everywhere().toEveryone());
+    }
+
+    @Test
+    @Issue("SECURITY-2558")
+    public void triggerJobWithoutSecurityRealm_ShouldSucceed_WithPost() throws Exception {
+        jr.jenkins.setSecurityRealm(null);
+        jr.jenkins.setAuthorizationStrategy(null);
+        FreeStyleProject project = createFreestyleProjectWithToken();
+        JenkinsRule.WebClient wc = jr.createWebClient();
+        wc.getPage(wc.addCrumb(new WebRequest(new URL(jr.getURL(), project.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST)));
+        jr.waitUntilNoActivity();
+        assertThat("the project should have been built", project.getBuilds(), hasSize(1));
+    }
+
+    @Test
+    @Issue("SECURITY-2558")
+    public void triggerJobWithoutSecurityRealm_ShouldFail_WithGet() throws Exception {
+        jr.jenkins.setSecurityRealm(null);
+        jr.jenkins.setAuthorizationStrategy(null);
+        FreeStyleProject project = jr.createFreeStyleProject();
+        JenkinsRule.WebClient wc = jr.createWebClient();
+        FailingHttpStatusCodeException fex = assertThrows(
+                "should not reach here since only POST request can",
+                FailingHttpStatusCodeException.class,
+                () -> wc.getPage(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.GET)));
+        assertThat("Should fail with method not allowed", fex.getStatusCode(), is(405));
+    }
+
+    @Test
+    @Issue("SECURITY-2558")
+    public void triggerJobWithoutSecurityRealm_ButWithToken_ShouldSucceed_WithGet() throws Exception {
+        jr.jenkins.setSecurityRealm(null);
+        jr.jenkins.setAuthorizationStrategy(null);
+        FreeStyleProject project = createFreestyleProjectWithToken();
+        JenkinsRule.WebClient wc = jr.createWebClient();
+        wc.getPage(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+                HttpMethod.GET));
+        jr.waitUntilNoActivity();
+        assertThat("the project should have been built", project.getBuilds(), hasSize(1));
     }
 
     @Test
