@@ -65,9 +65,9 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
         return Collections.unmodifiableSet(ignoredWarnings);
     }
 
-    @DataBoundSetter
-    public void setIgnoredWarnings(HashSet<String> ignoredWarnings) {
-        this.ignoredWarnings = ignoredWarnings;
+    @DataBoundSetter // unused; for CasC support only
+    public void setIgnoredWarnings(Set<String> ignoredWarnings) {
+        this.ignoredWarnings = new HashSet<>(ignoredWarnings);
     }
 
     public boolean isIgnored(@NonNull UpdateSite.Warning warning) {
