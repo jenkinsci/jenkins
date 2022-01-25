@@ -34,7 +34,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.332</version>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -60,7 +60,7 @@ THE SOFTWARE.
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
-    <tag>jenkins-2.332</tag>
+    <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
 
@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.332</revision>
+    <revision>2.333</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
