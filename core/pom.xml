@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <xmlunit.version>2.8.4</xmlunit.version>
+    <xmlunit.version>2.9.0</xmlunit.version>
   </properties>
 
   <dependencyManagement>
