@@ -56,7 +56,8 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  *
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener implements TaskListener, Closeable {
+@SuppressWarnings("deprecation") // to preserve serial form
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     @NonNull
     private PrintStream out;
     @CheckForNull
