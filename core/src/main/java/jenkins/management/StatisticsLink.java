@@ -39,7 +39,7 @@ public class StatisticsLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "monitor.png";
+        return "monitor.svg";
     }
 
     @Override
