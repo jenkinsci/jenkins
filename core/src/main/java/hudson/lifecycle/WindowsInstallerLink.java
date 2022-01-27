@@ -80,7 +80,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "installer.gif";
+        return "installer.svg";
     }
 
     @Override
