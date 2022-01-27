@@ -83,7 +83,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1682.v4a_71b_f124ca_3</version>
+      <version>1697.v6b_1e34cb_4ee6</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.0</version>
+      <version>3.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
