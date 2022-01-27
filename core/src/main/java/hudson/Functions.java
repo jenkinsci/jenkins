@@ -2289,4 +2289,9 @@ public class Functions {
             return true;
         }
     }
+
+    @Restricted(NoExternalUse.class)
+    public static String generateItemId(String id) {
+        return Math.floor(Math.random() * 3000) + "-" + id;
+    }
 }
