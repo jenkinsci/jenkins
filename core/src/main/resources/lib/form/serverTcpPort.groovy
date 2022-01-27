@@ -14,15 +14,14 @@ int port = instance ? instance[field] : 0
 def f = namespace(lib.FormTagLib)
 
 def type = "${field}.type"
-def id = "${field}Id" // TODO: get rid of this
 
 div(name: field) {
-    f.radio(name: type, value: "fixed", title: _("Fixed"), id: "radio-tcp-fixed", checked: port > 0) {
-        input(type: "number", class: "jenkins-input", name: "value", id: id, placeholder: _("Port"),
+    f.radio(name: type, value: "fixed", title: _("Fixed"), id: "radio-${field}-fixed", checked: port > 0) {
+        input(type: "number", class: "jenkins-input", name: "value", id: "${field}Id", placeholder: _("Port"),
                 value: port > 0 ? port : null, min: 0, max: 65535, step: 1)
     }
 
-    f.radio(name: type, value: "random", title: _("Random"), id: "radio-tcp-random", checked: port == 0)
+    f.radio(name: type, value: "random", title: _("Random"), id: "radio-${field}-random", checked: port == 0)
 
-    f.radio(name: type, value: "disable", title: _("Disable"), id: "radio-tcp-disable", checked: port == -1)
+    f.radio(name: type, value: "disable", title: _("Disable"), id: "radio-${field}-disable", checked: port == -1)
 }
