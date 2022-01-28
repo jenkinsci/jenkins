@@ -40,7 +40,8 @@ import java.util.logging.Logger;
 /**
  * {@link TaskListener} which sends messages to a {@link Logger}.
  */
-public class LogTaskListener implements TaskListener, Closeable {
+@SuppressWarnings("deprecation") // to preserve serial form
+public class LogTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
 
     // would be simpler to delegate to the LogOutputStream but this would incompatibly change the serial form
     private final TaskListener delegate;
