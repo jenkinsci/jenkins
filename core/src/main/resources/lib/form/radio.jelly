@@ -43,7 +43,7 @@ THE SOFTWARE.
       toggles the radio.
     </st:attribute>
   </st:documentation>
-  <j:set var="itemId" value="${h.generateItemId(id)}" />
+  <j:set var="itemId" value="${attrs.id ?: h.generateItemId()}" />
     <div class="jenkins-radio">
         <input class="jenkins-radio__input" type="radio" name="${attrs.name}" onclick="${attrs.onclick}"
                id="${itemId}" value="${attrs.value}" checked="${attrs.checked?'true':null}"
