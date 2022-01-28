@@ -2052,6 +2052,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return null if name is null.
      * @see Label#parseExpression(String) (String)
      */
+    @CheckForNull
     public Label getLabel(String expr) {
         if (expr == null)  return null;
         expr = QuotedStringTokenizer.unquote(expr);
