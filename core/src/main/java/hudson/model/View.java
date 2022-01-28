@@ -921,7 +921,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 JSONObject entry = new JSONObject().
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
-                        accumulate("url", u.getUrl()).
+                        accumulate("url", u.getUrl() + "/").
                         accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/svgs/person.svg").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());

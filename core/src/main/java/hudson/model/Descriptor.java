@@ -79,6 +79,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.BindInterceptor;
@@ -91,7 +92,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
-import org.springframework.util.StringUtils;
 
 /**
  * Metadata about a configurable instance.
