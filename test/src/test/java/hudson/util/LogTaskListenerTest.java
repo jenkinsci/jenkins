@@ -63,17 +63,22 @@ public class LogTaskListenerTest {
         r.createOnlineSlave().getChannel().call(new Log(l));
         assertEquals("[from agent]", logging.getMessages().toString());
     }
+
     private static final class Log extends MasterToSlaveCallable<Void, RuntimeException> {
+
         private final TaskListener l;
+
         Log(TaskListener l) {
             this.l = l;
         }
+
         @Override
         public Void call() throws RuntimeException {
             l.getLogger().println("from agent");
             l.getLogger().flush();
             return null;
         }
+
     }
 
 }
