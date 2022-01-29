@@ -3564,7 +3564,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cleanUpStarted = true;
         }
         try {
-            LOGGER.log(Level.INFO, "Stopping Jenkins");
+            getLifecycle().onStatusUpdate("Stopping Jenkins");
 
             final List<Throwable> errors = new ArrayList<>();
 
@@ -3596,7 +3596,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpReleaseAllLoggers(errors);
 
-            LOGGER.log(Level.INFO, "Jenkins stopped");
+            getLifecycle().onStatusUpdate("Jenkins stopped");
 
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
@@ -4306,7 +4306,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(MANAGE);
-        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication2().getName());
+        getLifecycle().onReload(getAuthentication2().getName(), null);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         WebApp.get(servletContext).setApp(new HudsonIsLoading());
@@ -4316,6 +4316,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     reload();
+                    getLifecycle().onReady();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE, "Failed to reload Jenkins config", e);
                     new JenkinsReloadFailed(e).publish(servletContext, root);
@@ -4503,8 +4504,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     // give some time for the browser to load the "reloading" page
+                    lifecycle.onStatusUpdate("Restart in 5 seconds");
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                    LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                    lifecycle.onStop(exitUser, null);
                     Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                     lifecycle.restart();
                 } catch (InterruptedException | InterruptedIOException e) {
@@ -4539,13 +4541,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if (isQuietingDown()) {
                         servletContext.setAttribute("app", new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 10 seconds");
+                        lifecycle.onStatusUpdate("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                        LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                        lifecycle.onStop(exitUser, null);
                         Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                         lifecycle.restart();
                     } else {
-                        LOGGER.info("Safe-restart mode cancelled");
+                        lifecycle.onStatusUpdate("Safe-restart mode cancelled");
                     }
                 } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins", e);
@@ -4585,6 +4587,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(ADMINISTER);
+        final String exitUser = getAuthentication2().getName();
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         if (rsp != null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
@@ -4598,8 +4602,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                            getAuthentication2().getName(), req != null ? req.getRemoteAddr() : "???"));
+                    getLifecycle().onStop(exitUser, exitAddr);
 
                     cleanUp();
                     System.exit(0);
@@ -4620,14 +4623,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         checkPermission(ADMINISTER);
         quietDownInfo = new QuietDownInfo();
         final String exitUser = getAuthentication2().getName();
-        final String exitAddr = req != null ? req.getRemoteAddr() : "unknown";
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         new Thread("safe-exit thread") {
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                                                exitUser, exitAddr));
+                    getLifecycle().onStop(exitUser, exitAddr);
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0, null);
                     // Make sure isQuietingDown is still true.
