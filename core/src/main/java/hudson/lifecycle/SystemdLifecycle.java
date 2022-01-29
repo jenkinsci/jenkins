@@ -3,6 +3,7 @@ package hudson.lifecycle;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.logging.Level;
@@ -34,13 +35,13 @@ public class SystemdLifecycle extends ExitLifecycle {
     }
 
     @Override
-    public void onReload(@NonNull String user, String remoteAddr) {
+    public void onReload(@NonNull String user, @CheckForNull String remoteAddr) {
         super.onReload(user, remoteAddr);
         notify("RELOADING=1");
     }
 
     @Override
-    public void onStop(@NonNull String user, String remoteAddr) {
+    public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
         super.onStop(user, remoteAddr);
         notify("STOPPING=1");
     }
