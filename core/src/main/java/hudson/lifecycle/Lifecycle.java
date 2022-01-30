@@ -283,7 +283,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      *     general state feedback, completion percentages, human-readable error message, etc.
      */
     public void onStatusUpdate(String status) {
-        LOGGER.info(status);
+        LOGGER.log(Level.INFO, status);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());
