@@ -58,8 +58,8 @@ public abstract class Lifecycle implements ExtensionPoint {
             if (jenkins != null) {
                 try {
                     jenkins.cleanUp();
-                } catch (Throwable e) {
-                    LOGGER.log(Level.SEVERE, "Failed to clean up. Shutdown will continue.", e);
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "Failed to clean up. Shutdown will continue.", t);
                 }
             }
         }));
