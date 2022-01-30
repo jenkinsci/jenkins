@@ -110,7 +110,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                     // when we are run by Solaris SMF, these environment variables are set.
                     instance = new SolarisSMFLifecycle();
                 } else if (System.getenv("NOTIFY_SOCKET") != null) {
-                    // When we are running under systemd, this environment variable is set.
+                    // When we are running under systemd with Type=notify, this environment variable is set.
                     instance = new SystemdLifecycle();
                 } else {
                     // if run on Unix, we can do restart
