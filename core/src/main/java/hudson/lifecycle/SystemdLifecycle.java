@@ -17,7 +17,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Basil Crow
  */
 @Restricted(NoExternalUse.class)
-@Extension
+@Extension(optional = true)
 public class SystemdLifecycle extends ExitLifecycle {
 
     private static final Logger LOGGER = Logger.getLogger(SystemdLifecycle.class.getName());
