@@ -84,7 +84,8 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <animal.sniffer.skip>true</animal.sniffer.skip> <!-- TODO https://github.com/jenkinsci/pom/pull/209 remove this -->
+    <!-- TODO https://github.com/jenkinsci/pom/pull/209 remove this -->
+    <animal.sniffer.skip>true</animal.sniffer.skip>
     <java.level>11</java.level>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
