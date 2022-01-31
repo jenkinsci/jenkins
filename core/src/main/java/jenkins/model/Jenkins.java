@@ -2051,6 +2051,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return null if name is null.
      * @see Label#parseExpression(String) (String)
      */
+    @CheckForNull
     public Label getLabel(String expr) {
         if (expr == null)  return null;
         expr = QuotedStringTokenizer.unquote(expr);
@@ -2267,7 +2268,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (includedLabels == null || includedLabels.contains(l)) {
+            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
                 if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls

@@ -55,6 +55,8 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.GroupDetails;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
+import hudson.security.SecurityRealm;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.security.UserMayOrMayNotExistException2;
 import hudson.tasks.MailAddressResolver;
 import java.io.File;
@@ -775,4 +777,26 @@ public class UserTest {
         assertThat(failingResources, empty());
     }
 
+    @Test
+    public void legacyCallerGetsUserMayOrMayNotExistException() {
+        final SecurityRealm realm = new NonEnumeratingAcegiSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm.loadUserByUsername("unknown"));
+
+        final SecurityRealm realm2 = new NonEnumeratingSpringSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm2.loadUserByUsername("unknown"));
+    }
+
+    private static class NonEnumeratingAcegiSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException(username + " not found");
+        }
+    }
+
+    private static class NonEnumeratingSpringSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException2(username + " not found");
+        }
+    }
 }
