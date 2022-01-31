@@ -30,7 +30,6 @@ import org.jvnet.hudson.test.NoListenerConfiguration;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.WebApp;
-import org.springframework.util.Assert;
 
 /**
  *
@@ -71,7 +70,7 @@ public class BootFailureTest {
             ServletContext ws = createWebServer((context, server) -> {
                 NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
                 // future-proof
-                Assert.notNull(noListenerConfiguration, "Value must not be null");
+                assertNotNull(noListenerConfiguration);
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
                     context.addBean(new AbstractLifeCycle() {

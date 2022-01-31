@@ -258,13 +258,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.3.1</version>
+                  <version>2.3.4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.32.1</version>
+                  <version>408.vd726a_1130320</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -288,7 +288,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>1.18</version>
+                  <version>1.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -300,7 +300,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.29</version>
+                  <version>1.47</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -310,6 +310,82 @@ THE SOFTWARE.
                   <version>2.42</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>plugin-util-api</artifactId>
+                  <version>1.5.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>bootstrap4-api</artifactId>
+                  <version>4.5.3-1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>checks-api</artifactId>
+                  <version>1.1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jackson2-api</artifactId>
+                  <version>2.12.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>echarts-api</artifactId>
+                  <version>4.9.0-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>snakeyaml-api</artifactId>
+                  <version>1.27.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of echarts-api and bootstrap4-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jquery3-api</artifactId>
+                  <version>3.5.1-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of echarts-api -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jackson2-api</artifactId>
+                  <version>2.12.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of bootstrap4-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>popper-api</artifactId>
+                  <version>1.16.0-7</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of bootstrap4-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>font-awesome-api</artifactId>
+                  <version>5.15.1-1</version>
+                  <type>hpi</type>
+                </artifactItem>
+
                 <artifactItem>
                   <!-- dependency of junit and workflow-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>

@@ -23,6 +23,9 @@ updates:
       - dependency-name: "javax.servlet.servlet-api"
       # needs a jakarta upgrade project, imports changed
       - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
+      # Starting with version 2.0.2, this library requires Java 11
+      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
+        versions: [">=2.0.2"]
       # see https://github.com/jenkinsci/jenkins/pull/4224 can't be updated without breaking api
       - dependency-name: "org.jfree:jfreechart"
       # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211

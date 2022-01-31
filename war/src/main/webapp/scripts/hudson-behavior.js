@@ -1783,7 +1783,7 @@ function expandTextArea(button,id) {
     parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
     var textArea = parent.childNodes[0];
     textArea.name = field.name;
-    textArea.innerText = value;
+    textArea.value = value;
 
     layoutUpdateCallback.call();
 }

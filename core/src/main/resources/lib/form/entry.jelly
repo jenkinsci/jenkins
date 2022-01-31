@@ -77,7 +77,7 @@ THE SOFTWARE.
       <j:when test="${possiblyEscapedTitle!=null}">
         <div class="jenkins-form-label help-sibling">
           <j:out value="${possiblyEscapedTitle}" />
-          <f:helpLink url="${attrs.help}" featureName="${title}"/>
+          <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
         </div>
         <!-- Needs to have a .tr class otherwise custom uses of findFollowing
              findFollowingTR(listBox, "validation-error-area") will break -->
@@ -98,7 +98,7 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="setting-main help-sibling">
           <d:invokeBody />
-          <f:helpLink url="${attrs.help}" featureName="${title}"/>
+          <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
         </div>
         <!-- used to display the form validation error -->
         <div class="validation-error-area tr"><div colspan="2"></div><div></div><div></div></div>
