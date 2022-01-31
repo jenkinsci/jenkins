@@ -282,7 +282,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.28</version>
+        <version>1.29-JENKINS_67681-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
