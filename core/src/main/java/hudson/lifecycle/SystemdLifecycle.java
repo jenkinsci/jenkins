@@ -6,6 +6,7 @@ import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
@@ -44,6 +45,12 @@ public class SystemdLifecycle extends ExitLifecycle {
     public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
         super.onStop(user, remoteAddr);
         notify("STOPPING=1");
+    }
+
+    @Override
+    public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {
+        super.onExtendTimeout(timeout, unit);
+        notify(String.format("EXTEND_TIMEOUT_USEC=%d", unit.toMicros(timeout)));
     }
 
     @Override
