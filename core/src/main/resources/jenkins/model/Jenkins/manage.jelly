@@ -66,7 +66,7 @@ THE SOFTWARE.
 
             <j:if test="${icon!=null}">
               <div class="jenkins-section__item">
-              <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
+              <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/svgs/' + icon}" />
               <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
               ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
               <j:choose>

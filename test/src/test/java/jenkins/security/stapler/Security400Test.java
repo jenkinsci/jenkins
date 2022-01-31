@@ -251,7 +251,10 @@ public class Security400Test {
             atomicResult.set(0);
             assertEquals(0, atomicResult.get());
             QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-            futureBuild.waitForStart();
+            FreeStyleBuild build = futureBuild.waitForStart();
+
+            // we need to wait until the SemaphoreBuilder is running (blocked) otherwise the job is ABORTED not FAILURE
+            j.waitForMessage(SemaphoredBuilder.START_MESSAGE, build);
 
             WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stop"), HttpMethod.POST);
             Page page = wc.getPage(request);

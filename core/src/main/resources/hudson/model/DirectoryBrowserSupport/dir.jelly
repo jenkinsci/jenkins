@@ -47,7 +47,7 @@ THE SOFTWARE.
             ${%No files in directory}
            <j:if test="${showSymlinkWarning}">
              <p>
-                <img id="symlinkalert" src="${imagesURL}/16x16/warning.png"/>
+                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Symlinks are hidden}
              </p>
             </j:if>
@@ -114,7 +114,7 @@ THE SOFTWARE.
            </table>
            <j:if test="${showSymlinkWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/16x16/warning.png"/>
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Symlinks are hidden}
              </p>
             </j:if>

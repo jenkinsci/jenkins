@@ -28,6 +28,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<h1 class="build-caption page-headline">
+    <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
+    <span class="jenkins-icon-adjacent">
+      <d:invokeBody trim="true"/>
+    </span>
 	  <j:if test="${it.building}">
 	    <div class="build-caption-progress-container" style="float:right">
 	      <table class="middle-align"><tr>
@@ -43,8 +47,6 @@ THE SOFTWARE.
 	      </tr></table>
 	    </div>
 	  </j:if>
-
-	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
         <script>
           (function(){
             function updateBuildCaptionIcon(){
@@ -71,8 +73,5 @@ THE SOFTWARE.
 
           })();
         </script>
-        <span class="jenkins-icon-adjacent">
-          <d:invokeBody trim="true"/>
-        </span>
     </h1>
 </j:jelly>
