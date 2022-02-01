@@ -44,7 +44,6 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -1345,9 +1344,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Extension
     @Restricted(NoExternalUse.class)
     public static class EnforceSlaveAgentPortAdministrativeMonitor extends AdministrativeMonitor {
-        @Inject
-        Jenkins j;
-
         @Override
         public String getDisplayName() {
             return jenkins.model.Messages.EnforceSlaveAgentPortAdministrativeMonitor_displayName();
@@ -1358,13 +1354,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         public int getExpectedPort() {
-            int slaveAgentPort = j.slaveAgentPort;
+            int slaveAgentPort = Jenkins.get().slaveAgentPort;
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
 
         @RequirePOST
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            j.forceSetSlaveAgentPort(getExpectedPort());
+            Jenkins.get().forceSetSlaveAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
         }
 
