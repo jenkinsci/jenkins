@@ -112,7 +112,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.17</version>
+      <!-- TODO https://github.com/jenkinsci/cloudbees-folder-plugin/pull/208 -->
+      <version>6.18-rc678.f7663b_90b_1fe</version>
       <scope>test</scope>
     </dependency>
     <dependency>
