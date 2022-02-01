@@ -117,6 +117,12 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1074.v60e6c29b_b_44b_</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
       <version>408.vd726a_1130320</version>
       <scope>test</scope>
@@ -154,7 +160,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.24</version>
+      <version>308.v852b473a2b8c</version>
       <scope>test</scope>
     </dependency>
     <dependency>
