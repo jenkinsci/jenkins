@@ -160,7 +160,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>308.v852b473a2b8c</version>
+      <!-- TODO https://github.com/jenkinsci/structs-plugin/pull/122 -->
+      <version>315.v1cf0d78d9e85</version>
       <scope>test</scope>
     </dependency>
     <dependency>
