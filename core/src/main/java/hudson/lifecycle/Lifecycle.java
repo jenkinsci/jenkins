@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -275,6 +276,16 @@ public abstract class Lifecycle implements ExtensionPoint {
             LOGGER.log(Level.INFO, "Stopping Jenkins as requested by {0}", user);
         }
     }
+
+    /**
+     * Tell the service manager to extend the startup or shutdown timeout. The value specified is a
+     * time during which either {@link #onExtendTimeout(long, TimeUnit)} must be called again or
+     * startup/shutdown must complete.
+     *
+     * @param timeout The amount by which to extend the timeout.
+     * @param unit The time unit of the timeout argument.
+     */
+    public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
 
     /**
      * Called when Jenkins service state has changed.
