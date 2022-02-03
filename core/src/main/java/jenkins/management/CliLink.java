@@ -39,7 +39,7 @@ public class CliLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "terminal.png";
+        return "terminal.svg";
     }
 
     @Override
