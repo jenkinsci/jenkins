@@ -86,9 +86,6 @@ THE SOFTWARE.
               <tr>
                 <th initialSortDir="down">${%Name}</th>
                 <th class="jenkins-table__cell--tight">${%Enabled}</th>
-                <l:isAdmin>
-                  <th data-sort-disable="true"/>
-                </l:isAdmin>
               </tr>
             </thead>
             <tbody>
