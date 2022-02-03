@@ -39,7 +39,7 @@ public class NodesLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "network.png";
+        return "network.svg";
     }
 
     @Override

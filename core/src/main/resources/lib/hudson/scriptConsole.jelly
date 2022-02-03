@@ -33,13 +33,13 @@ THE SOFTWARE.
     <l:main-panel>
       <j:choose>
         <j:when test="${it.icon == null}">
-          <j:set var="icon" value="notepad.png"/>
+          <j:set var="icon" value="notepad.svg"/>
         </j:when>
         <j:otherwise>
           <j:set var="icon" value="${it.icon}"/>
         </j:otherwise>
       </j:choose>
-      <h1><img src="${imagesURL}/48x48/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
+      <h1><img src="${imagesURL}/svgs/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
       <j:choose>
         <j:when test="${it.channel != null}">

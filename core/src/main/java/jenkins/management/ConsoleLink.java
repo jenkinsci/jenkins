@@ -39,7 +39,7 @@ public class ConsoleLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "notepad.png";
+        return "notepad.svg";
     }
 
     @Override

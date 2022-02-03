@@ -48,9 +48,6 @@ import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
-// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
-// The change needs API deprecation policy or external usages cleanup.
-
 /**
  * {@link TaskListener} that generates output into a single stream.
  *
@@ -59,6 +56,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("deprecation") // to preserve serial form
 public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     @NonNull
     private PrintStream out;
