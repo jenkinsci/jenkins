@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Project Relationship}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1><l:icon class="icon-search icon-xlg"/>${%Project Relationship}</h1>
+      <h1>${%Project Relationship}</h1>
       <form action="projectRelationship" method="get">
         <table width="100%">
           <tr>
