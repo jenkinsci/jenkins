@@ -63,7 +63,7 @@ THE SOFTWARE.
           <local:row name="${lr.name}" href="${lr.searchUrl}/">
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
+                <a href="${lr.searchUrl}/configure" class="jenkins-table__button">
                   <l:ionicon name="settings-outline" />
                 </a>
               </div>
