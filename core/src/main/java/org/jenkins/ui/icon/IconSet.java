@@ -560,6 +560,7 @@ public class IconSet {
         translations.put("icon-previous", "symbol-arrow-left");
         translations.put("icon-next", "symbol-arrow-right");
         translations.put("icon-clipboard", "symbol-logs");
+        translations.put("icon-fingerprint", "symbol-fingerprint");
 
         return translations.getOrDefault(tangoIcon, null);
     }
