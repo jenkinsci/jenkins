@@ -48,7 +48,7 @@ THE SOFTWARE.
           <j:set var="f" value="${e.value}" />
           <tr>
             <td>
-              <a href="${rootURL}/fingerprint/${f.hashString}/">
+              <a class="jenkins-table__link" href="${rootURL}/fingerprint/${f.hashString}/">
                 ${e.key}
               </a>
             </td>
