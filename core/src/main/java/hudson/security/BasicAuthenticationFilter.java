@@ -67,7 +67,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) {@code /secured/...} page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) /secured/... page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,
