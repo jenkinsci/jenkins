@@ -2983,12 +2983,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the item by its path name from the given context
      *
      * <h2>Path Names</h2>
-     * <p>
-     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     *
+     * <p>If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
+     *
      * <p>For compatibility, as a fallback when nothing else matches, a simple path
      * like {@code foo/bar} can also be treated with {@link #getItemByFullName}.
+     *
      * @param context
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
