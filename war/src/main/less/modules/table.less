@@ -1,11 +1,12 @@
 .jenkins-table {
+  --table-padding: 0.55rem;
+
   width: calc(100% - 10px);
   background: var(--table-background);
-  border-collapse: collapse;
-  border-radius: var(--table-border-radius);
-  box-shadow: 0 0 0 5px var(--table-background);
-  margin: 5px;
-  --table-padding: 0.55rem;
+  border-radius: calc(var(--table-border-radius) + 2px);
+  border: 5px solid var(--table-background);
+  border-bottom-width: 3px;
+  border-spacing: 0 2px;
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -51,7 +52,6 @@
     & > tr {
       background: var(--table-body-background);
       color: var(--table-body-foreground);
-      border-bottom: 2px solid var(--table-background);
 
       & > td {
         vertical-align: middle;
@@ -66,10 +66,6 @@
         &:last-of-type {
           padding-right: var(--table-padding);
         }
-      }
-
-      &:last-of-type {
-        border-bottom: none;
       }
 
       // Style the rows so that the first and last have a larger border radius
