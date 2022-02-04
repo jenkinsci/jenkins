@@ -1181,6 +1181,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                getLifecycle().onExtendTimeout(EXTEND_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 if (milestone == PLUGINS_PREPARED) {
                     // set up Guice to enable injection as early as possible
                     // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
@@ -2268,7 +2269,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (includedLabels == null || includedLabels.contains(l)) {
+            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
                 if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
@@ -2982,12 +2983,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the item by its path name from the given context
      *
      * <h2>Path Names</h2>
-     * <p>
-     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     *
+     * <p>If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
+     *
      * <p>For compatibility, as a fallback when nothing else matches, a simple path
      * like {@code foo/bar} can also be treated with {@link #getItemByFullName}.
+     *
      * @param context
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
@@ -3564,7 +3567,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cleanUpStarted = true;
         }
         try {
-            LOGGER.log(Level.INFO, "Stopping Jenkins");
+            getLifecycle().onStatusUpdate("Stopping Jenkins");
 
             final List<Throwable> errors = new ArrayList<>();
 
@@ -3596,7 +3599,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpReleaseAllLoggers(errors);
 
-            LOGGER.log(Level.INFO, "Jenkins stopped");
+            getLifecycle().onStatusUpdate("Jenkins stopped");
 
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
@@ -4306,7 +4309,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(MANAGE);
-        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication2().getName());
+        getLifecycle().onReload(getAuthentication2().getName(), null);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         WebApp.get(servletContext).setApp(new HudsonIsLoading());
@@ -4316,6 +4319,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     reload();
+                    getLifecycle().onReady();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE, "Failed to reload Jenkins config", e);
                     new JenkinsReloadFailed(e).publish(servletContext, root);
@@ -4503,8 +4507,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     // give some time for the browser to load the "reloading" page
+                    lifecycle.onStatusUpdate("Restart in 5 seconds");
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                    LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                    lifecycle.onStop(exitUser, null);
                     Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                     lifecycle.restart();
                 } catch (InterruptedException | InterruptedIOException e) {
@@ -4539,13 +4544,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if (isQuietingDown()) {
                         servletContext.setAttribute("app", new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 10 seconds");
+                        lifecycle.onStatusUpdate("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                        LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                        lifecycle.onStop(exitUser, null);
                         Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                         lifecycle.restart();
                     } else {
-                        LOGGER.info("Safe-restart mode cancelled");
+                        lifecycle.onStatusUpdate("Safe-restart mode cancelled");
                     }
                 } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins", e);
@@ -4585,6 +4590,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(ADMINISTER);
+        final String exitUser = getAuthentication2().getName();
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         if (rsp != null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
@@ -4598,8 +4605,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                            getAuthentication2().getName(), req != null ? req.getRemoteAddr() : "???"));
+                    getLifecycle().onStop(exitUser, exitAddr);
 
                     cleanUp();
                     System.exit(0);
@@ -4620,14 +4626,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         checkPermission(ADMINISTER);
         quietDownInfo = new QuietDownInfo();
         final String exitUser = getAuthentication2().getName();
-        final String exitAddr = req != null ? req.getRemoteAddr() : "unknown";
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         new Thread("safe-exit thread") {
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                                                exitUser, exitAddr));
+                    getLifecycle().onStop(exitUser, exitAddr);
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0, null);
                     // Make sure isQuietingDown is still true.
@@ -5516,6 +5521,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean AUTOMATIC_AGENT_LAUNCH = SystemProperties.getBoolean(Jenkins.class.getName() + ".automaticAgentLaunch", true);
+
+    /**
+     * The amount of time by which to extend the startup notification timeout as each initialization milestone is attained.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final */ int EXTEND_TIMEOUT_SECONDS = SystemProperties.getInteger(Jenkins.class.getName() + ".extendTimeoutSeconds", 15);
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
