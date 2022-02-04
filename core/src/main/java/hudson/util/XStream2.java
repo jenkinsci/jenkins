@@ -81,7 +81,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.util.xstream.SafeURLConverter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link XStream} customized in various ways for Jenkins’ needs.
@@ -90,6 +93,17 @@ import jenkins.util.xstream.SafeURLConverter;
 public class XStream2 extends XStream {
 
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
+    /**
+     * Determine what is the value (in seconds) of the "collectionUpdateLimit" added by XStream
+     * to protect against http://x-stream.github.io/CVE-2021-43859.html.
+     * It corresponds to the accumulated timeout when adding an item to a collection.
+     *
+     * Default: 5 seconds (in contrary to XStream default to 20 which is a bit too tolerant)
+     * If negative: disable the DoS protection
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String COLLECTION_UPDATE_LIMIT_PROPERTY_NAME = XStream2.class.getName() + ".collectionUpdateLimit";
+    private static final int COLLECTION_UPDATE_LIMIT_DEFAULT_VALUE = 5;
 
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
@@ -248,6 +262,9 @@ public class XStream2 extends XStream {
     }
 
     private void init() {
+        int updateLimit = SystemProperties.getInteger(COLLECTION_UPDATE_LIMIT_PROPERTY_NAME, COLLECTION_UPDATE_LIMIT_DEFAULT_VALUE);
+        this.setCollectionUpdateLimit(updateLimit);
+
         // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class, false);
 
