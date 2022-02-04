@@ -75,7 +75,7 @@ public class RobustReflectionConverterSEC2602Test {
     }
 
     @Test(timeout = 30 * 1000)
-    public void customConverterUseDefaultXStreamException() {
+    public void customConverter_useDefaultXStreamException() {
         XStream2 xstream2 = new XStream2();
         xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper()));
 
@@ -94,8 +94,9 @@ public class RobustReflectionConverterSEC2602Test {
 
     @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    public void wrappedCustomSetUseCriticalXStreamException() {
+    public void customConverter_wrapped_useCriticalXStreamException() {
         XStream2 xstream2 = new XStream2();
+        xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper()));
 
         CustomSet customSet = preparePayloadUsingCustomSet();
         // enforce the use of RobustReflectionConverter
