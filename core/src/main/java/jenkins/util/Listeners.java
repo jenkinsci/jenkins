@@ -71,14 +71,6 @@ public class Listeners {
         }
     }
 
-    /**
-     * @deprecated call {@link #notify(Class, boolean, Consumer)}
-     */
-    @Deprecated
-    public static <L> void notify(Class<L> listenerType, Consumer<L> notification) {
-        notify(listenerType, true, notification);
-    }
-
     private Listeners() {}
 
 }

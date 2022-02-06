@@ -33,21 +33,28 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
+import hudson.model.Node;
 import hudson.model.Result;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
@@ -179,6 +186,84 @@ public class NodeProvisionerTest {
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
                 assertFalse(bb.isDone());
+        }
+    }
+
+    @Issue("JENKINS-67635")
+    @Test
+    public void testJobWithCloudLabelExpressionProvisionsOnlyOneAgent() throws Exception {
+        DummyCloudImpl3 cloud1 = new DummyCloudImpl3(r);
+        DummyCloudImpl3 cloud2 = new DummyCloudImpl3(r);
+
+        cloud1.label = Label.get("cloud-1-label");
+        cloud2.label = Label.get("cloud-2-label");
+
+        r.jenkins.clouds.add(cloud1);
+        r.jenkins.clouds.add(cloud2);
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setAssignedLabel(Label.parseExpression("cloud-1-label || cloud-2-label"));
+
+        QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
+        futureBuild.waitForStart();
+        r.assertBuildStatus(Result.SUCCESS, futureBuild);
+
+        assertEquals(1, cloud1.numProvisioned);
+        assertEquals(0, cloud2.numProvisioned);
+    }
+
+    private static class DummyCloudImpl3 extends Cloud {
+        private final transient JenkinsRule caller;
+        public int numProvisioned;
+        private Label label;
+
+        DummyCloudImpl3() {
+            super("DummyCloudImpl3");
+            this.caller = null;
+        }
+
+        DummyCloudImpl3(JenkinsRule caller) {
+            super("DummyCloudImpl3");
+            this.caller = caller;
+        }
+
+        @Override
+        public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
+            if (! this.canProvision(label))
+                return r;
+
+            while (excessWorkload > 0) {
+                numProvisioned++;
+                Future<Node> f = Computer.threadPoolForRemoting.submit(new DummyCloudImpl3.Launcher());
+                r.add(new NodeProvisioner.PlannedNode(name + " #" + numProvisioned, f, 1));
+                excessWorkload -= 1;
+            }
+            return r;
+        }
+
+        @Override
+        public boolean canProvision(Label label) {
+            return label.matches(this.label.listAtoms());
+        }
+
+        private final class Launcher implements Callable<Node> {
+            private volatile Computer computer;
+
+            private Launcher() {}
+
+            @Override
+            public Node call() throws Exception {
+                DumbSlave slave = caller.createSlave(label);
+                computer = slave.toComputer();
+                computer.connect(false).get();
+                return slave;
+            }
+        }
+
+        @Override
+        public Descriptor<Cloud> getDescriptor() {
+            throw new UnsupportedOperationException();
         }
     }
 
