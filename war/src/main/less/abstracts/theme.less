@@ -21,9 +21,9 @@
   // branding
   --primary: #024cb6;
   --secondary: #4d545d;
-  --success: #138347;
-  --danger: #cc0003;
-  --warning: #ea6b19;
+  --success: var(--green);
+  --danger: var(--red);
+  --warning: var(--orange);
   --focus: #3fb3f7;
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
@@ -174,7 +174,7 @@
   --table-body-background: white;
   --table-body-foreground: black;
   --table-border-radius: 10px;
-  --table-body-radius: 6px;
+  --table-row-border-radius: 4px;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
@@ -267,6 +267,7 @@
   --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
+  --section-padding: 1.85rem;
   --input-color: var(--white);
   --input-border: #C3CCD1;
   --input-border-hover: #5C7889;
@@ -274,8 +275,8 @@
   --form-item-max-width: ~"min(65vw, 1600px)";
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
   --form-item-max-width--small: ~"min(35vw, 1200px)";
-  --form-label-font-weight: bold;
-  --form-input-padding: 8px;
+  --form-label-font-weight: 500;
+  --form-input-padding: 0.5rem;
   --form-input-border-radius: 6px;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);

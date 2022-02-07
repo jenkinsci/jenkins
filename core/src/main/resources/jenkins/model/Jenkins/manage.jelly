@@ -49,7 +49,7 @@ THE SOFTWARE.
       </section>
 
       <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
-        <section class="jenkins-section">
+        <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
           <div class="jenkins-section__items">
