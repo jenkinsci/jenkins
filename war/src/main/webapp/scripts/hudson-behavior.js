@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -154,7 +154,7 @@ var crumb = {
     // else, the instance is starting, restarting, etc.
 })();
 
-var isRunAsTest = undefined; 
+var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
 var rootURL = 'not-defined-yet';
@@ -429,7 +429,7 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ 
+    return directionF(src,function(e){
         if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
             var r = 0;
             while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
@@ -779,7 +779,7 @@ function renderOnDemand(e,callback,noBehaviour) {
 }
 
 /**
- * Finds all the script tags 
+ * Finds all the script tags
  */
 function evalInnerHtmlScripts(text,callback) {
     var q = [];
@@ -835,11 +835,14 @@ function expandButton(e) {
 function labelAttachPreviousOnClick() {
     var e = $(this).previous();
     while (e!=null) {
-        if (e.tagName=="INPUT") {
-            e.click();
-            break;
-        }
-        e = e.previous();
+      if (e.classList.contains("jenkins-radio")) {
+        e = e.querySelector("input");
+      }
+      if (e.tagName=="INPUT") {
+        e.click();
+        break;
+      }
+      e = e.previous();
     }
 }
 
@@ -931,13 +934,20 @@ function makeInnerVisible(b) {
 }
 
 function updateVisibility() {
-    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    var display = (this.outerVisible && this.innerVisible);
     for (var e=this.start; e!=this.end; e=$(e).next()) {
         if (e.rowVisibilityGroup && e!=this.start) {
             e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
             e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
         } else {
-            e.style.display = display;
+            if (display) {
+                e.style.display = ""
+                e.classList.remove("form-container--hidden")
+            } else {
+                // TODO remove display once tab bar (ConfigTableMetaData) is able to handle hidden tabs via class and not just display
+                e.style.display = "none"
+                e.classList.add("form-container--hidden")
+            }
         }
     }
     layoutUpdateCallback.call();
@@ -1015,7 +1025,7 @@ function rowvgStartEachRow(recursive,f) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
-    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -1027,7 +1037,7 @@ function rowvgStartEachRow(recursive,f) {
             resultsList: "suggestions",
             fields: ["name"]
         };
-        
+
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
         ac.generateRequest = function(query) {
@@ -1068,7 +1078,7 @@ function rowvgStartEachRow(recursive,f) {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
-            
+
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
               lineNumbers: true,
@@ -1219,8 +1229,10 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
-        // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
+
+        // Set start.ref to checkbox in preparation of row-set-end processing
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     });
 
@@ -1293,7 +1305,8 @@ function rowvgStartEachRow(recursive,f) {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
         updateOptionalBlock(checkbox,false);
     });
 
@@ -1498,7 +1511,7 @@ function rowvgStartEachRow(recursive,f) {
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
      * When a checkbox is generated by setting the title on the f:entry like
-     *     <f:entry field="rebaseBeforePush"title="${%Rebase Before Push}">
+     *     <f:entry field="rebaseBeforePush" title="${%Rebase Before Push}">
      *         <f:checkbox />
      *     </f:entry>
      * This function will copy the title from the .setting-name field to the checkbox label.
@@ -1507,7 +1520,7 @@ function rowvgStartEachRow(recursive,f) {
      * @param {HTMLLabelElement} label
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
-        var labelParent = label.parentElement;
+        var labelParent = label.parentElement.parentElement;
 
         if (!labelParent.classList.contains('setting-main')) return;
 
@@ -1525,6 +1538,7 @@ function rowvgStartEachRow(recursive,f) {
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
+            labelParent.classList.add('jenkins-checkbox-help-wrapper');
             labelParent.appendChild(helpLink);
         }
 
@@ -1772,8 +1786,8 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    
-    var n = button; 
+
+    var n = button;
     while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
@@ -2202,7 +2216,7 @@ function buildFormTree(form) {
                 addProperty(findParent(e),e.name,values);
                 continue;
             }
-                
+
             var p;
             var r;
             var type = e.getAttribute("type");
@@ -2327,7 +2341,7 @@ var hoverNotification = (function() {
         document.body.appendChild(div);
         div.innerHTML = "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
         body = $('hoverNotification');
-        
+
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
           zIndex:1000,
@@ -2352,6 +2366,15 @@ var hoverNotification = (function() {
         msgBox.show();
     };
 })();
+
+// Decrease vertical padding for checkboxes
+window.addEventListener('load', function () {
+    document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
+        if (element.querySelector(".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox") != null) {
+            element.classList.add("jenkins-form-item--tight")
+        }
+    });
+})
 
 /**
  * Loads the script specified by the URL.
@@ -2401,7 +2424,7 @@ function safeValidateButton(yuiButton) {
 
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
-    
+
     validateButton(checkUrl, paramList, yuiButton);
 }
 

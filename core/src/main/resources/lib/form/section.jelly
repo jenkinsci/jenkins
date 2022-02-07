@@ -37,14 +37,15 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.section_" />
+
   <f:rowSet name="${attrs.name}">
-    <j:if test="${attrs.title!=null}">
-      <f:block>
-        <div class="jenkins-section__header">
+    <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
+      <j:if test="${attrs.title!=null}">
+        <div class="jenkins-section__title">
           ${title}
         </div>
-      </f:block>
-    </j:if>
-    <d:invokeBody />
+      </j:if>
+      <d:invokeBody />
+    </div>
   </f:rowSet>
 </j:jelly>

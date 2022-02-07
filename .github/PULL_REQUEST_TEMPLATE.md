@@ -31,6 +31,7 @@ N/A
 - [ ] Changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
   * Fill-in the `Proposed changelog entries` section only if there are breaking changes or other changes which may require extra steps from users during the upgrade
 - [ ] Appropriate autotests or explanation to why this change has no tests
+- [ ] New public classes, fields, and methods are annotated with `@Restricted` or have `@since TODO` Javadoc, as appropriate. 
 - [ ] For dependency updates: links to external changelogs and, if possible, full diffs
 
 <!-- For new API and extension points: Link to the reference implementation in open-source (or example in Javadoc) -->
