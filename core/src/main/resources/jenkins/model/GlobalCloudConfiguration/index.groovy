@@ -16,12 +16,8 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
             l.task(icon:"icon-gear icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
         }
     }
+    l.app_bar(title: my.displayName)
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-health-40to59 icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
-        }
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()

@@ -258,10 +258,6 @@ pre.console {
   font-weight: 500;
 }
 
-.setting-main {
-  width: 100%; /* try to make this column as big as possible. */
-}
-
 .setting-help {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -322,10 +318,6 @@ pre.console {
 /* div that looks like a hyperlink */
 .pseudoLink {
   cursor: pointer;
-}
-
-.advancedLink {
-  text-align: right;
 }
 
 .advancedBody {
@@ -449,18 +441,27 @@ div.behavior-loading {
   }
 }
 
-label.attach-previous {
-    margin-left: 0.5em;
-}
-
 .bottom-sticker,
 #bottom-sticker {
     width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    z-index: 999;
 }
 
 .bottom-sticker-inner {
+  position: relative;
+  padding: 1em 0;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(-2rem - 2px);
+    bottom: 0;
+    right: 0;
     background: var(--background);
-    padding: 1em 0;
+    z-index: -1;
+  }
 }
 
 .top-sticker,
@@ -717,6 +718,12 @@ table.parameters > tbody:hover {
   table {
     border-radius: 0;
     min-width: 450px;
+    box-sizing: content-box;
+    padding-bottom: 2px;
+
+    * {
+      box-sizing: border-box;
+    }
   }
 }
 
@@ -917,21 +924,55 @@ table.parameters > tbody:hover {
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
-  border: 1px solid #000;
-  overflow: visible;
-  background-color: white;
-  color: black;
+  overflow-y: scroll;
+  color: var(--text-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(black, 0.15);
+  margin-top: 8px;
+  margin-left: 3px;
+  max-height: 300px;
+  z-index: 1000;
+  background: var(--background);
+  padding: 0.3rem;
 }
 
-.comboBoxSelectedItem {
-  background-color: Highlight;
-  color: HighlightText;
+.comboBoxItem {
+  position: relative;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    border-radius: 10px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    z-index: -1;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.1;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+  }
 }
 
 .combobox-values {
   display: none;
 }
-
 
 /* ========================= directory tree ========================= */
 .parentPath {
@@ -1008,65 +1049,50 @@ table.fingerprint-in-build td {
   padding-right: 1em;
 }
 
-/* ========================= repeatable elements ========================= */
+.radioBlock-container {
+  margin-bottom: calc(var(--section-padding) / 3);
 
-.repeated-chunk {
-    border: 2px dashed transparent;
-    padding-left: 1.5rem;
-}
-
-.repeated-chunk.hover {
-    border-color: var(--medium-grey);
-}
-
-.repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/*
-    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
-    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
-    when the user does "Add".
-*/
-div.to-be-removed { display: none; }
-
-/* ========================= Other form related CSS ========================= */
-
-.form-container {
-  max-width: 100%;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .optionalBlock-container > .form-container,
 .radioBlock-container > .form-container,
 .dropdownList-container {
-  margin-left: 0.25rem;
-  border-left: 2px dashed rgba(0, 0, 0, 0.33);
-  padding-left: 1rem;
+  position: relative;
+  padding-left: 32px;
+  transition: var(--standard-transition);
+  margin-top: 0.66rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    bottom: 0;
+    width: 2px;
+    background: var(--input-border);
+    border-radius: 2px;
+    transition: var(--standard-transition);
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.dropdownList-container {
+  margin-bottom: var(--section-padding);
+}
+
+.form-container--hidden {
+  visibility: hidden !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
+  overflow: hidden;
 }
 
 .row-set-end { display: none; }
@@ -1095,50 +1121,6 @@ div.textarea-handle {
 
 textarea.rich-editor {
   visibility: hidden;
-}
-
-/* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container .has-help .dd-handle {
-    flex: 1;
-}
-
-.hetero-list-container .dd-handle,
-.repeated-container .dd-handle {
-    cursor: move;
-    background-image: url(../../images/grip.png);
-    background-repeat: repeat-y;
-    padding-left: 20px;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk,
-.repeated-container.with-drag-drop .repeated-chunk {
-    padding: 0.5em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    padding-left: 1.5rem;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
-.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
-  margin-left: -1.25rem;
-}
-
-// SortableJS drag & drop classes
-.repeated-chunk--sortable-ghost {
-  height: 100px;
-  width: 100%;
-  overflow: hidden;
-}
-.repeated-chunk--sortable-chosen {
-  height: 100px;
-  width: 100%;
-  background-color: transparent;
-  border: 2px solid var(--primary);
-
-  & > * {
-    display: none;
-  }
 }
 
 /*

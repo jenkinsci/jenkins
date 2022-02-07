@@ -28,7 +28,7 @@
 		<f:repeatable var="location" name="locations" items="${instance.locations}">
 			<table width="100%">
 				<f:entry title="${%Name}">
-                  <select class="setting-input" name="locations.key">
+                  <select class="jenkins-input" name="locations.key">
                     <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
                         <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
                             <f:option selected="${descriptor.getKey(toolInstallation)==location.key}" value="${descriptor.getKey(toolInstallation)}">(${toolDescriptor.displayName}) ${toolInstallation.name}</f:option>

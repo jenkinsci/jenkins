@@ -1,6 +1,6 @@
 .jenkins-section {
   border-top: 2px solid var(--panel-border-color);
-  padding: calc(2rem) 0;
+  padding: var(--section-padding) 0 0 0;
   max-width: 1800px;
 
   &:first-of-type {
@@ -11,28 +11,26 @@
   &:last-child {
     padding-bottom: 0;
   }
-}
 
-.jenkins-section__header {
-  font-weight: 600;
-  font-size: 1.25rem;
-  line-height: 1.2;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 0.75rem;
-  margin-top: 1.5rem;
-  padding-bottom: 3px;
-  max-width: var(--form-item-max-width);
+  &:empty {
+    display: none;
+  }
+
+  &--bottom-padding {
+    padding-bottom: var(--section-padding);
+  }
 }
 
 .jenkins-section__title {
-  margin: 0 0 calc(2rem) 0;
-  font-size: 1rem;
+  margin: 0 0 var(--section-padding) 0;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .jenkins-section__items {
   display: grid;
   grid-template-columns: 1fr;
-  grid-gap: 2rem;
+  grid-gap: var(--section-padding);
 
   @media screen and (min-width: 800px) {
     grid-template-columns: 1fr 1fr;
@@ -54,7 +52,7 @@
   text-decoration: none;
 
   // IE11 doesn't support grid-gap, so apply margin, remove it for modern browsers
-  margin: 0 2rem 2rem 0;
+  margin: 0 var(--section-padding) var(--section-padding) 0;
   @supports (grid-gap: 2rem) {
     margin: 0;
   }

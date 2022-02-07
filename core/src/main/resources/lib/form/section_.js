@@ -52,8 +52,9 @@ var section = (function (){
 
                 for (var e=dom.firstChild; e!=null; e=e.nextSibling) {
                     if (e.nodeType==1) {
-                        if (e.className=="jenkins-section__header" && isVisible(e)) {
+                        if (e.className == "jenkins-section__title" && isVisible(e)) {
                             var child = new SectionNode(e);
+
                             parent.children.push(child);
                             // The next line seems to be unnecessary, as there are no children inside the section header itself.
                             // So this code will always returns a flat list of section headers.
