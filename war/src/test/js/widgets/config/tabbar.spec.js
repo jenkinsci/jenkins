@@ -92,12 +92,12 @@ describe("tabbar-spec tests", function () {
             // We could just call configTabBar.showSections(), but ...
             setTimeout(function() {
                 expect($('.tab.hidden', tabBar).length).toBe(3);
-                expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
+                expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
                 var activeSection = configTabBar.activeSection();
-                expect(textCleanup(activeSection.title)).toBe('#Build Triggers');
+                expect(textCleanup(activeSection.title)).toBe('General');
 
-                expect($('.highlight-split .highlight').text()).toBe('Trigger');
+                expect($('.highlight-split .highlight').text()).toBe('TriggerTrigger');
 
                 done();
             }, 600);
@@ -114,10 +114,10 @@ describe("tabbar-spec tests", function () {
 
             configTabBar.showSections('quiet period');
             expect($('.tab.hidden', tabBar).length).toBe(3);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Build Triggers|#Build');
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
-            expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
+            expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
         }, htmlConfigTabbedContent);
@@ -133,7 +133,7 @@ describe("tabbar-spec tests", function () {
 
             configTabBar.showSections('Strategy');
             expect($('.tab.hidden', tabBar).length).toBe(3);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Advanced Project Options|#Build Triggers|#Build');
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
             expect(textCleanup(activeSection.title)).toBe('General');
@@ -156,15 +156,13 @@ describe("tabbar-spec tests", function () {
 
             // Only 3 tabs should be visible
             // (used to be 4 before the merge/adopt)...
-            expect($('.tab', tabBar).length).toBe(3);
-            expect(textCleanup($('.tab', tabBar).text())).toBe('General|#Build Triggers|#Build');
+            expect(textCleanup($('.tab', tabBar).text())).toBe('GeneralAdvanced Project OptionsBuild TriggersBuild');
 
             // And if we try to use the finder now to find something
             // that was in the advanced section, it should now appear in the
             // General section ...
             configTabBar.showSections('quiet period');
-            expect($('.tab.hidden', tabBar).length).toBe(2);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Build Triggers|#Build');
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
             expect(textCleanup(activeSection.title)).toBe('General');
@@ -180,13 +178,12 @@ describe("tabbar-spec tests", function () {
             var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
 
-            // console.log('**** ' + configTabBar.sectionIds());
             // config_general,config__advanced_project_options,config__build_triggers,config__build
 
             var config_general = configTabBar.getSection('config_general');
-            var config__advanced_project_options = configTabBar.getSection('config__advanced_project_options');
-            var config__build_triggers = configTabBar.getSection('config__build_triggers');
-            var config__build = configTabBar.getSection('config__build');
+            var config__advanced_project_options = configTabBar.getSection('config_advanced_project_options');
+            var config__build_triggers = configTabBar.getSection('config_build_triggers');
+            var config__build = configTabBar.getSection('config_build');
 
             expect(config_general.getSibling(-1)).toBeUndefined();
             expect(config_general.getSibling(0)).toBe(config_general);

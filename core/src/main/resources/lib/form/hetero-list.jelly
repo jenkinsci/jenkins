@@ -80,33 +80,28 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div style="width:100%">
+      <div class="help-sibling" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
-        <j:if test="${hasHeader}">
-          <div class="tr help-sibling">
-            <div colspan="3">
-              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
-                <b>${descriptor.displayName}</b>
-              </div>
-              <f:helpLink url="${help}"/>
-            </div>
-          </div>
-          <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
-          <j:if test="${help!=null}">
-            <f:helpArea />
-          </j:if>
-        </j:if>
 
-        <d:invokeBody/>
+        <div class="repeated-chunk__header">
+          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
+
+          ${descriptor.displayName}
+
+          <f:helpLink url="${help}"/>
+
+          <j:if test="${!readOnlyMode}">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </j:if>
+        </div>
+
+        <j:if test="${help!=null}">
+          <f:helpArea />
+        </j:if>
 
         <f:class-entry descriptor="${descriptor}" />
-        <j:if test="${!readOnlyMode}">
-          <f:block>
-            <div align="right">
-              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-            </div>
-          </f:block>
-        </j:if>
+
+        <d:invokeBody/>
       </div>
     </d:tag>
   </d:taglib>

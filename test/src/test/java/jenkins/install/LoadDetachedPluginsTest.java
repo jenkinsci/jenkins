@@ -36,6 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ClassicPluginStrategy;
+import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
@@ -47,6 +48,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
+import jenkins.security.UpdateSiteWarningsMonitor;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -75,6 +78,17 @@ public class LoadDetachedPluginsTest {
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
                     getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
             assertNoFailedPlugins(r);
+        });
+    }
+
+    @Test
+    @Ignore("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
+    @LocalData
+    public void noUpdateSiteWarnings() {
+        rr.then(r -> {
+            r.jenkins.getUpdateCenter().updateAllSites();
+            final UpdateSiteWarningsMonitor monitor = ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class);
+            assertThat("There should be no active plugin security warnings", monitor.getActivePluginWarningsByPlugin().keySet(), empty());
         });
     }
 

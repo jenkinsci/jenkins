@@ -34,7 +34,7 @@ THE SOFTWARE.
           </h1>
         </div>
       </div>
-      <p>${%blurb}</p>
+      <p class="jenkins-description">${%blurb}</p>
 
       <table class="jenkins-table sortable" id="people">
         <thead>
@@ -49,18 +49,16 @@ THE SOFTWARE.
         <tbody>
           <j:forEach var="user" items="${it.allUsers}">
             <tr>
-              <td>
+              <td class="jenkins-table__cell--tight jenkins-table__icon">
                 <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/" class="jenkins-table__button model-link inside">
-                    <img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/>
-                  </a>
+                  <img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/>
                 </div>
               </td>
               <td>
-                <a href="${user.url}/" class="jenkins-table__link">${user.id}</a>
+                <a href="${user.url}/" class="jenkins-table__link model-link inside">${user.id}</a>
               </td>
               <td>
-                <a href="${user.url}/" class="jenkins-table__link">${user.fullName}</a>
+                ${user.fullName}
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">

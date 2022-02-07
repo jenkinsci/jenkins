@@ -36,9 +36,8 @@ THE SOFTWARE.
 
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
-
   <j:set var="hideButtonClass" value="${attrs.hideIfOnly == 'true' ? ' show-if-not-only' : ''}" />
-  <button type="button" class="jenkins-button jenkins-button--destructive repeatable-delete${hideButtonClass}">
-    ${attrs.value ?: '%Delete'}
+  <button tooltip="${h.xmlEscape(attrs.value ?: '%Delete')}" class="repeatable-delete danger ${hideButtonClass}" type="button">
+    <l:ionicon name="close-outline" />
   </button>
 </j:jelly>

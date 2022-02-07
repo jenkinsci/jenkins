@@ -26,13 +26,13 @@ function closestTR(node) {
 
 function fromConfigTable(configTable) {
     var $ = getJQuery();
-    var sectionHeaders = $('.jenkins-section__header', configTable);
+    var sectionHeaders = $('.jenkins-section__title', configTable);
     var configForm = markConfigTableParentForm(configTable);
 
     // Mark the ancestor <tr>s of the section headers and add a title
     sectionHeaders.each(function () {
         var sectionHeader = $(this);
-        var sectionRow = closestTR(sectionHeader);
+        var sectionRow = sectionHeader;
         var sectionTitle = sectionRow.text();
 
         // Remove leading hash from accumulated text in title (from <a> element).
@@ -54,14 +54,13 @@ function fromConfigTable(configTable) {
     // See the next block of code.
     
     if(!firstRow.hasClass('section-header-row')){
-      var td, tr;
+      var tr;
       if (configTable[0].nodeName === 'TR') {
         tr = 'tr';
-        td = 'td';
       } else {
-        tr = td = 'div';
+        tr = 'div';
       }
-      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><'+td+' colspan="4"><div class="jenkins-section__header"><a class="section-anchor">#</a>General</div></+'+td+'></'+tr+'>');
+      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><div class="jenkins-section__title"><a class="section-anchor">#</a>General</div></'+tr+'>');
       firstRow.before(generalRow);
       firstRow = configTableMetadata.getFirstRow();
       var newArray = $.makeArray(topRows);
@@ -111,8 +110,7 @@ function ConfigTableMetaData(configForm, configTable) {
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
-    var topRows = this.configTableBody.find('tr, .tr');
-    topRows.addClass('config-table-top-row');
+    var topRows = this.configTableBody.find('tr, .tr, .jenkins-section > .jenkins-section__title');
     return topRows;
 };
 

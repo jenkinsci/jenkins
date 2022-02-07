@@ -61,13 +61,13 @@ THE SOFTWARE.
   </div>
 
   <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
-    <s:entry title="${attrs.nameTitle}">
+    <s:entry title="${attrs.nameTitle}" class="jenkins-form-item--medium">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
-    <div class="jenkins-form-item">
+    <div class="jenkins-form-item jenkins-form-item--medium">
       <fieldset class="jenkins-fieldset">
         <legend class="jenkins-form-label">
           ${%View type}
