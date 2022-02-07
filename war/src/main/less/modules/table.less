@@ -1,12 +1,12 @@
 .jenkins-table {
+  --table-padding: 0.55rem;
+
   width: calc(100% - 10px);
   background: var(--table-background);
-  border-collapse: collapse;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 0 0 5px var(--table-background);
-  margin: 5px;
-  --table-padding: 0.55rem;
+  border-radius: calc(var(--table-border-radius) + 2px);
+  border: 5px solid var(--table-background);
+  border-bottom-width: 3px;
+  border-spacing: 0 2px;
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -52,7 +52,6 @@
     & > tr {
       background: var(--table-body-background);
       color: var(--table-body-foreground);
-      border-bottom: 2px solid var(--table-background);
 
       & > td {
         vertical-align: middle;
@@ -61,36 +60,43 @@
         height: 50px;
 
         &:first-of-type {
-          border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
           padding-left: calc(var(--table-padding) * 2);
         }
 
         &:last-of-type {
-          border-radius: 0 var(--table-body-radius) var(--table-body-radius) 0;
           padding-right: var(--table-padding);
         }
       }
 
+      // Style the rows so that the first and last have a larger border radius
+      & > td:first-of-type {
+        border-top-left-radius: var(--table-row-border-radius);
+        border-bottom-left-radius: var(--table-row-border-radius);
+      }
+
+      & > td:last-of-type {
+        border-top-right-radius: var(--table-row-border-radius);
+        border-bottom-right-radius: var(--table-row-border-radius);
+      }
+
+      // First row
+      &:first-of-type {
+        & > td:first-of-type {
+          border-top-left-radius: var(--table-border-radius);
+        }
+        & > td:last-of-type {
+          border-top-right-radius: var(--table-border-radius);
+        }
+      }
+
+      // Last row
       &:last-of-type {
-        border-bottom: none;
-      }
-    }
-
-    & > tr:first-of-type {
-      & > td:first-of-type {
-        border-radius: var(--table-border-radius) 0 0 var(--table-body-radius);
-      }
-      & > td:last-of-type {
-        border-radius: 0 var(--table-border-radius) var(--table-body-radius) 0;
-      }
-    }
-
-    & > tr:last-of-type {
-      & > td:first-of-type {
-        border-radius: var(--table-body-radius) 0 0 var(--table-border-radius);
-      }
-      & > td:last-of-type {
-        border-radius: 0 var(--table-body-radius) var(--table-border-radius) 0;
+        & > td:first-of-type {
+          border-bottom-left-radius: var(--table-border-radius);
+        }
+        & > td:last-of-type {
+          border-bottom-right-radius: var(--table-border-radius);
+        }
       }
     }
   }
@@ -102,10 +108,10 @@
   }
 
   &__cell--tight {
-    padding-left: 0!important;
-    text-align: center!important;
+    padding-left: 0 !important;
+    text-align: center !important;
     white-space: nowrap;
-    width: 60px;
+    width: 3.5rem;
   }
 
   &__cell--no-wrap {
@@ -120,15 +126,15 @@
     display: inline-flex;
   }
 
-  &__button, &__link, &__icon {
+  &__button, &__icon {
     svg, .build-status-icon__wrapper, img {
-      width: 24px!important;
-      height: 24px!important;
+      width: 24px !important;
+      height: 24px !important;
     }
   }
 
   &--medium {
-    --table-padding: 0.4rem!important;
+    --table-padding: 0.4rem !important;
 
     tbody > tr > td {
       height: 40px;
@@ -136,8 +142,8 @@
 
     .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
       svg, .build-status-icon__wrapper, img {
-        width: 20px!important;
-        height: 20px!important;
+        width: 20px !important;
+        height: 20px !important;
       }
     }
   }
@@ -151,14 +157,14 @@
 
     .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
       svg, .build-status-icon__wrapper, img {
-        width: 16px!important;
-        height: 16px!important;
+        width: 16px !important;
+        height: 16px !important;
       }
     }
   }
 
   &__button, &__link {
-    color: var(--link-color)!important;
+    color: var(--link-color) !important;
   }
 
   &__button, .sortheader, &__link {
@@ -176,54 +182,68 @@
     font-weight: inherit;
     font-size: inherit;
     background: transparent;
-    text-decoration: none!important;
-    line-height: 1!important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    transition: var(--standard-transition);
 
-    &::before {
+    &::before,
+    &::after {
       content: "";
       position: absolute;
       top: -7px;
       left: -10px;
       bottom: -7px;
       right: -10px;
-      border-radius: 5px;
-      background: var(--text-color);
+      border-radius: 6px;
       z-index: -1;
+      transition: var(--standard-transition);
+    }
+
+    &::before {
+      background: var(--text-color);
       opacity: 0;
-      transition: 0.2s ease;
+    }
+
+    &::after {
+      opacity: 0.05;
+      box-shadow: 0 0 0 10px transparent;
     }
 
     &:hover {
       &::before {
-        opacity: 0.05!important;
-        border-radius: 5px;
+        opacity: 0.05 !important;
+        border-radius: 6px;
         background: var(--text-color);
       }
     }
 
     &:focus, &:active {
       &::before {
-        opacity: 0.1!important;
+        opacity: 0.1 !important;
         border-radius: 5px;
         background: var(--text-color);
+      }
+
+      &::after {
+        box-shadow: 0 0 0 5px var(--text-color);
       }
     }
 
     &--green {
-      color: var(--green)!important;
+      color: var(--green) !important;
     }
 
     &--orange {
-      color: var(--orange)!important;
+      color: var(--orange) !important;
     }
 
     &--red {
-      color: var(--red)!important;
+      color: var(--red) !important;
     }
   }
 
   &__badge {
-    margin-left: 1rem!important;
+    margin-left: 1rem !important;
 
     &::before {
       top: -5px;
@@ -233,6 +253,13 @@
       border-radius: 13px;
       background: var(--link-color);
       opacity: 0.05;
+    }
+
+    &::after {
+      top: -5px;
+      left: -8px;
+      bottom: -5px;
+      right: -8px;
     }
   }
 }
