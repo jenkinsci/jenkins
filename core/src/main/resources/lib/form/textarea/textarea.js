@@ -27,7 +27,6 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
             };
         }
         var scroller = codemirror.getScrollerElement();
-        scroller.setAttribute("style","border:1px solid black;");
         scroller.style.height = h+"px";
 
         // the form needs to be populated before the "Apply" button

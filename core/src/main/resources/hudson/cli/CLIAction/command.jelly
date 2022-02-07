@@ -24,13 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout permission="${app.READ}">
+  <l:layout permission="${app.READ}" title="Command ${command.name}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-terminal icon-xlg"/>
-        Command ${command.name}
-      </h1>
+      <h1>Command ${command.name}</h1>
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>
       <st:include page="example.jelly"/>
       <pre>

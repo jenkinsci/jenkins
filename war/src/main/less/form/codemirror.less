@@ -1,0 +1,33 @@
+.CodeMirror-scroll {
+  // CodeMirror text boxes may be resized both horizontally and vertically to ensure
+  // users have enough space to write scripts
+  resize: both;
+}
+
+.CodeMirror {
+  display: block;
+  background: var(--input-color);
+  border: 2px solid var(--input-border);
+  border-radius: var(--form-input-border-radius);
+  width: 100%;
+  box-shadow: var(--form-input-glow);
+  transition: var(--standard-transition);
+  cursor: text;
+
+  &:hover {
+    border-color: var(--input-border-hover);
+  }
+
+  &:active,
+  &:focus-within {
+    outline: none;
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+
+  textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+}

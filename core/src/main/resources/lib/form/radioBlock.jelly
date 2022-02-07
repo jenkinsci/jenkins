@@ -40,6 +40,9 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       Human readable label text to be rendered next to the radio button.
     </st:attribute>
+    <st:attribute name="description">
+      Description text for the radiobutton, visible below the title.
+    </st:attribute>
     <st:attribute name="checked" use="required" type="boolean">
       Should this control be initially checked or not?
     </st:attribute>
@@ -69,6 +72,11 @@ THE SOFTWARE.
           <label class="jenkins-radio__label" for="${name}-${value}">
             ${title}
           </label>
+          <j:if test="${description != null}">
+            <div class="jenkins-radio__description">
+              ${description}
+            </div>
+          </j:if>
         </div>
         <f:helpLink url="${help}" featureName="${title}" />
       </div>
