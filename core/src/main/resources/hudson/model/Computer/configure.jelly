@@ -36,9 +36,11 @@ THE SOFTWARE.
         <j:set var="instance" value="${it.node}" />
         <j:set var="descriptor" value="${instance.descriptor}" />
 
-        <f:entry title="${%Name}" field="name">
-          <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. -->
-        </f:entry>
+        <div class="jenkins-section">
+          <f:entry title="${%Name}" field="name">
+            <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. -->
+          </f:entry>
+        </div>
 
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="configure-entries.jelly" />
