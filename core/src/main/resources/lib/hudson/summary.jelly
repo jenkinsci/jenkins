@@ -28,11 +28,9 @@ THE SOFTWARE.
     Displays a link with a large icon. Used in the project top page.
 
     <st:attribute name="icon" use="required">
-      The icon class name e.g. 'icon-folder'.
-
-      On older versions of Jenkins, this attribute value used to be a link to the raw icon image, where relative
-      paths were resolved against images/48x48 and absolute paths (that start with '/') were resolved against
-      the context root of Hudson.
+      Supports Jenkins Symbols (e.g. 'symbol-search')
+      Supports path to bitmap image (e.g. '/plugin/foo/abc.gif')
+      Supports icon class specification (e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg')
     </st:attribute>
     <st:attribute name="href">
       where the summary icon links to.
@@ -109,4 +107,4 @@ THE SOFTWARE.
       </tr>
     </j:if>
   </j:if>
-</j:jelly>
+</j:jelly></j:jelly>
