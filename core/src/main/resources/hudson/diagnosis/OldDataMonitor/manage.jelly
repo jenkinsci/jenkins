@@ -28,9 +28,8 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" it="${app}"/>
   <l:main-panel>
     <h1>${%Manage Old Data}</h1>
-    <p class="jenkins-description">${%blurb.1}</p>
-    <p class="jenkins-description">${%blurb.2}</p>
-
+    <p>${%blurb.1}</p>
+    <p>${%blurb.2}</p>
     <table class="sortable pane bigtable width-auto">
       <tr>
          <th initialSortDir="down">${%Type}</th>
