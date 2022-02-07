@@ -39,7 +39,7 @@ public class ConfigureLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "gear2.png";
+        return "gear.svg";
     }
 
     @Override

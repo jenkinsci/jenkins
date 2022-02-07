@@ -42,7 +42,7 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "plugin.png";
+        return "plugin.svg";
     }
 
     @Override

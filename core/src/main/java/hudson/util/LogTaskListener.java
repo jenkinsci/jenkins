@@ -37,12 +37,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
-// The change needs API deprecation policy or external usages cleanup.
-
 /**
  * {@link TaskListener} which sends messages to a {@link Logger}.
  */
+@SuppressWarnings("deprecation") // to preserve serial form
 public class LogTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
 
     // would be simpler to delegate to the LogOutputStream but this would incompatibly change the serial form
