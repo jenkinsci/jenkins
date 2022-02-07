@@ -27,15 +27,13 @@ function display(data) {
         d = document.createElement('td');
         var a = document.createElement('a');
         a.href = rootURL + "/" + e.url;
+        a.className = "jenkins-table__link"
         a.appendChild(document.createTextNode(e.id));
         d.appendChild(a);
         r.appendChild(d);
 
         d = document.createElement('td');
-        var a = document.createElement('a');
-        a.href = rootURL + "/" + e.url;
-        a.appendChild(document.createTextNode(e.fullName));
-        d.appendChild(a);
+        d.appendChild(document.createTextNode(e.fullName));
         r.appendChild(d);
 
         d = document.createElement('td');
