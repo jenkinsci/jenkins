@@ -67,7 +67,7 @@ THE SOFTWARE.
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
   <j:if test="${retentionStrategies.size() gt 1}">
     <f:dropdownList name="slave.retentionStrategy" title="${%Availability}"
-                    help="/help/system-config/master-slave/availability.html">
+                    help="${descriptor.getHelpFile('retentionStrategy')}">
       <j:forEach var="d" items="${retentionStrategies}">
         <j:if test="${d != null}">
           <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
