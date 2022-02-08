@@ -58,6 +58,10 @@ dt {
   font-weight: bold;
 }
 
+::selection {
+  background: var(--selection-color);
+}
+
 .fixed-width {
   font-family: monospace;
 }
@@ -221,16 +225,20 @@ td.tab {
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
-  margin: 0 0 2rem;
-  padding: 1rem;
+  margin: 0 0 var(--section-padding);
+  padding: 0.8rem 1rem;
   border-radius: 10px;
-  color: white;
-  background-color: black;
-  font-weight: bold;
-}
+  background-color: var(--pre-background);
+  color: var(--pre-color) !important;
+  font-family: var(--font-family-mono) !important;
+  font-weight: 600 !important;
+  line-height: 1.66 !important;
 
-pre a {
+  a {
+    color: inherit !important;
+    font-weight: inherit;
     word-wrap: break-word;
+  }
 }
 
 pre.console {

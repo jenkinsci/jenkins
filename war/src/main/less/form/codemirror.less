@@ -13,6 +13,7 @@
   box-shadow: var(--form-input-glow);
   transition: var(--standard-transition);
   cursor: text;
+  margin-bottom: var(--section-padding);
 
   &:hover {
     border-color: var(--input-border-hover);
@@ -29,5 +30,13 @@
     background: transparent;
     border: none;
     outline: none;
+  }
+
+  .cm-variable {
+    color: var(--text-color) !important;
+  }
+
+  .CodeMirror-selected {
+    background-color: var(--selection-color) !important;
   }
 }
