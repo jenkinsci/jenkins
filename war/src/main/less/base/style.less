@@ -1334,6 +1334,26 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= logRecords.jelly ================== */
 
+.logrecord-container {
+  border-radius: 10px;
+  overflow: hidden;
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+}
+
 .logrecord-metadata {
     font-size: var(--font-size-xs);
 }
