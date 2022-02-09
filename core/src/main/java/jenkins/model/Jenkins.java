@@ -1181,6 +1181,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                getLifecycle().onExtendTimeout(EXTEND_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 if (milestone == PLUGINS_PREPARED) {
                     // set up Guice to enable injection as early as possible
                     // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
@@ -2982,12 +2983,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the item by its path name from the given context
      *
      * <h2>Path Names</h2>
-     * <p>
-     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     *
+     * <p>If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
+     *
      * <p>For compatibility, as a fallback when nothing else matches, a simple path
      * like {@code foo/bar} can also be treated with {@link #getItemByFullName}.
+     *
      * @param context
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
@@ -5518,6 +5521,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean AUTOMATIC_AGENT_LAUNCH = SystemProperties.getBoolean(Jenkins.class.getName() + ".automaticAgentLaunch", true);
+
+    /**
+     * The amount of time by which to extend the startup notification timeout as each initialization milestone is attained.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final */ int EXTEND_TIMEOUT_SECONDS = SystemProperties.getInteger(Jenkins.class.getName() + ".extendTimeoutSeconds", 15);
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();

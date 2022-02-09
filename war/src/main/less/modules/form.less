@@ -1,9 +1,10 @@
 .jenkins-form {
+  max-width: var(--form-item-max-width);
 }
 
 .jenkins-form-item {
   max-width: var(--form-item-max-width);
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--section-padding);
 
   // Workaround for float:right button controls
   // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
@@ -15,16 +16,16 @@
     clear: both;
   }
 
+  &--tight + .jenkins-form-item--tight {
+    margin-top: -0.9rem;
+  }
+
   &--small {
     max-width: var(--form-item-max-width--small);
   }
 
   &--medium {
     max-width: var(--form-item-max-width--medium);
-  }
-
-  &--full-width {
-    max-width: none;
   }
 }
 
@@ -50,9 +51,29 @@
 
 .jenkins-form-description {
   display: block;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
+  margin: -0.2rem 0 0.8rem 0;
   color: var(--text-color-secondary);
+  line-height: 1.66;
+}
+
+.jenkins-quote {
+  position: relative;
+  display: flex;
+  line-height: 38px;
+
+  &::before {
+    content: "";
+    position: relative;
+    width: 2px;
+    background: var(--input-border);
+    margin-right: 1rem;
+    border-radius: 2px;
+  }
+
+  &--monospace {
+    font-family: monospace;
+  }
 }
 
 .jenkins-input {
@@ -196,11 +217,84 @@
   }
 }
 
+.jenkins-select {
+  position: relative;
+  width: 100%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 13px;
+    bottom: 0;
+    width: 12px;
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml;charset=UTF-8,%3c?xml version='1.0' encoding='UTF-8'?%3e%3csvg width='336px' height='192px' viewBox='0 0 336 192' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3e%3ctitle%3ePath%3c/title%3e%3cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3e%3cg id='arrow' transform='translate(0.000000, 0.000000)' fill='%23FF0000' fill-rule='nonzero'%3e%3cpath d='M7.02943725,7.02943725 C16.3053957,-2.24652118 31.2852799,-2.34214962 40.6788451,6.74255194 L40.9705627,7.02943725 L168,134.059 L295.029437,7.02943725 C304.305396,-2.24652118 319.28528,-2.34214962 328.678845,6.74255194 L328.970563,7.02943725 C338.246521,16.3053957 338.34215,31.2852799 329.257448,40.6788451 L328.970563,40.9705627 L184.970563,184.970563 C175.694604,194.246521 160.71472,194.34215 151.321155,185.257448 L151.029437,184.970563 L7.02943725,40.9705627 C-2.34314575,31.5979797 -2.34314575,16.4020203 7.02943725,7.02943725 Z' id='Path'%3e%3c/path%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    pointer-events: none;
+  }
+
+  &__input {
+    appearance: none;
+    display: block;
+    border: 2px solid var(--input-border);
+    padding: 8px;
+    width: 100% !important; // TODO remove important after https://github.com/jenkinsci/credentials-plugin/pull/255
+    max-width: 100% !important; // TODO remove important after https://github.com/jenkinsci/credentials-plugin/pull/255
+    border-radius: 6px;
+    box-shadow: 0 0 0 10px transparent;
+    transition: var(--standard-transition);
+    min-height: 38px;
+
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: 0 0 0 5px var(--focus-input-glow);
+    }
+
+    &:disabled {
+      pointer-events: none;
+    }
+  }
+}
+
+.jenkins-multi-select {
+  position: relative;
+  width: 100%;
+  border: 2px solid var(--input-border);
+  border-radius: var(--form-input-border-radius);
+  box-shadow: 0 0 0 10px transparent;
+  transition: var(--standard-transition);
+  outline: none;
+
+  &:focus {
+    border-color: var(--focus-input-border);
+    box-shadow: 0 0 0 5px var(--focus-input-glow);
+  }
+
+  &:disabled {
+    pointer-events: none;
+  }
+}
+
+.jenkins-radio-help-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .jenkins-radio {
-  margin-top: 2px;
+  margin-top: 3px;
 
   &:not(:last-of-type) {
-    margin-bottom: 20px;
+    margin-bottom: calc(var(--section-padding) / 2);
   }
 
   &__input {
@@ -212,9 +306,9 @@
     position: relative;
     display: inline-block;
     margin-bottom: 0;
-    padding: 0 32px 5px;
+    padding: 0 0 5px 32px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--form-label-font-weight);
     // remove 300ms pause on mobile
     touch-action: manipulation;
 
@@ -295,22 +389,258 @@
   }
 }
 
+// Align help buttons correctly with checkboxes
+
+.jenkins-checkbox-help-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.jenkins-checkbox + a.jenkins-help-button {
+  vertical-align: top;
+}
+
+.jenkins-checkbox {
+  position: relative;
+  display: inline-flex;
+}
+
+.jenkins-checkbox input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  &:checked {
+    & + label {
+      &:active,
+      &:focus {
+        &::before {
+          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+        }
+      }
+    }
+
+    & + label {
+      &::before {
+        box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border);
+      }
+
+      &::after {
+        transform: scale(1);
+      }
+    }
+  }
+
+  &:disabled {
+    & + label {
+      cursor: not-allowed;
+
+      &::before {
+        opacity: 0.35 !important;
+        box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border) !important;
+      }
+    }
+
+    &:checked {
+      & + label {
+        &::before {
+          box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border) !important;
+        }
+        
+        &::after {
+          transform: scale(1) !important;
+        }
+      }
+    }
+  }
+}
+
+.jenkins-checkbox label {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  cursor: pointer;
+  line-height: 22px;
+  font-weight: var(--form-label-font-weight);
+
+  &::before {
+    content: "";
+    display: inline-block;
+    position: relative;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 6px;
+    transition: var(--standard-transition);
+    margin-right: 11px;
+    box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border);
+  }
+
+  &::after {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    background: var(--background);
+    mask-image: url("data:image/svg+xml;charset=UTF-8,%3c?xml version='1.0' encoding='UTF-8'?%3e%3csvg width='384px' height='320px' viewBox='0 0 384 320' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3e%3ctitle%3ePath%3c/title%3e%3cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3e%3cpath d='M327.917546,10.9278525 C339.555371,-2.37251966 359.771775,-3.72027991 373.072147,7.91754577 C386.239516,19.4389932 387.692129,39.368305 376.427694,52.671077 L376.082454,53.0721475 L152.082454,309.072147 C140.014868,322.863675 118.889432,323.700972 105.767743,311.015951 L105.372583,310.627417 L9.372583,214.627417 C-3.12419433,202.13064 -3.12419433,181.86936 9.372583,169.372583 C21.7443926,157.000773 41.7261905,156.877055 54.2501999,169.001429 L54.627417,169.372583 L126.441,241.186 L327.917546,10.9278525 Z' id='Path' fill='%23FF0000' fill-rule='nonzero'%3e%3c/path%3e%3c/g%3e%3c/svg%3e");
+    mask-size: 10px 10px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
+    transform: scale(0);
+  }
+
+  &:empty {
+    &::before {
+      margin-right: 0;
+    }
+  }
+
+  &:hover {
+    &::before {
+      box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
+    }
+  }
+}
+
+.jenkins-checkbox__description {
+  margin-top: 0.3rem;
+  margin-left: 34px;
+  margin-bottom: 1rem;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
+}
+
+.jenkins-toggle-switch {
+  position: relative;
+  display: inline-block;
+}
+
+.jenkins-toggle-switch input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  &:checked + label:before {
+    background-color: var(--focus-input-border);
+  }
+
+  &:checked + label:after {
+    left: 25px;
+    color: var(--focus-input-border);
+    transform: rotate(0deg);
+  }
+
+  &:active + label:before, &:focus + label:before {
+    box-shadow: 0 0 0 5px var(--focus-input-glow);
+  }
+}
+
+.jenkins-toggle-switch label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  cursor: pointer;
+  line-height: 30px;
+  font-weight: bold;
+
+  &::before {
+    display: inline-block;
+    content: "";
+    position: relative;
+    min-width: 50px;
+    min-height: 30px;
+    background: var(--input-border);
+    border-radius: 19px;
+    transition: 0.2s ease;
+    margin-right: 15px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 10px transparent;
+  }
+
+  &::after {
+    content: "✓";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--background);
+    border-radius: 19px;
+    color: transparent;
+    transition: 0.2s ease;
+    transform: rotate(-90deg);
+    font-size: 12px;
+    font-weight: bold;
+    padding-top: 2px;
+    box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover::before {
+    background-color: var(--input-border-hover);
+  }
+
+  &:active, &:focus {
+    &::before {
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 5px var(--focus-input-glow);
+    }
+  }
+}
+
 .jenkins-help-button {
   position: relative;
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  min-height: 18px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   margin-left: 1ch;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  line-height: 20px;
   color: var(--text-color)!important;
-  line-height: 18px;
   border-radius: 100%;
 
   &::before {
-    content: "?";
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -329,6 +659,7 @@
     left: 0;
     bottom: 0;
     right: 0;
+    border: 1px solid rgba(125, 125, 125, 0.35);
     box-shadow: var(--form-input-glow);
     border-radius: inherit;
     opacity: 0.1;
@@ -460,4 +791,8 @@
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 5px var(--focus-input-glow);
     }
   }
+}
+
+.CodeMirror-scroll {
+  resize: both;
 }

@@ -322,14 +322,11 @@ public class WebAppMain implements ServletContextListener {
     /**
      * Determines the home directory for Jenkins.
      *
-     * <p>
-     * We look for a setting that affects the smallest scope first, then bigger ones later.
+     * <p>We look for a setting that affects the smallest scope first, then bigger ones later.
      *
-     * <p>
-     * People makes configuration mistakes, so we are trying to be nice
+     * <p>People make configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
      *
-     * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */
     public FileAndDescription getHomeDir(ServletContextEvent event) {
