@@ -634,9 +634,10 @@ public class RepeatableTest {
      * @return list of buttons
      */
     private List<?> getButtonsList(HtmlForm form, String buttonCaption) {
-        return form.getElementsByTagName("button").stream()
-                .filter(button -> button.getTextContent().trim().equals(buttonCaption))
-                .collect(Collectors.toList());
+        return form.getByXPath(
+                String.format("//button[text() = '%s'] | //button[@title = '%s']", buttonCaption, buttonCaption
+                )
+        );
     }
 
     @TestExtension
