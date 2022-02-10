@@ -71,7 +71,5 @@ Behaviour.specify('.secret', 'secret-button', 0, function (e) {
         clearSecretValue();
         replaceUpdateButton();
         removeSecretLegendLabel();
-        // fix UI bug when DOM changes
-        Event.fire(window, 'jenkins:bottom-sticker-adjust');
     };
 });
