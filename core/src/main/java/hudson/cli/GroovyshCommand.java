@@ -30,6 +30,7 @@ import groovy.lang.Closure;
 import hudson.Extension;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class GroovyshCommand extends CLICommand {
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
-        binding.setProperty("out", new PrintWriter(stdout, true));
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 

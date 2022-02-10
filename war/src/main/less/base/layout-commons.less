@@ -125,10 +125,15 @@ body.full-screen #main-panel {
 /* -------------------------------------- */
 
 h1.build-caption.page-headline {
-    max-width: 1200px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+}
+
+h1.build-caption.page-headline > span {
+  max-width: 1200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 // Clearfixes extracted from responsive-grid.css as they essential

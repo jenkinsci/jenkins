@@ -57,14 +57,14 @@ public class AnnotatedLargeTextTest {
     @Test
     public void smokes() throws Exception {
         ByteBuffer buf = new ByteBuffer();
-        PrintStream ps = new PrintStream(buf, true);
+        PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8.name());
         ps.print("Some text.\n");
         ps.print("Go back to " + TestNote.encodeTo("/root", "your home") + ".\n");
         ps.print("More text.\n");
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
-        assertEquals("Some text.\nGo back to your home.\nMore text.\n", baos.toString());
+        assertEquals("Some text.\nGo back to your home.\nMore text.\n", baos.toString(StandardCharsets.UTF_8.name()));
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("Some text.\nGo back to <a href='/root'>your home</a>.\nMore text.\n", w.toString());
@@ -83,11 +83,11 @@ public class AnnotatedLargeTextTest {
                         + "v3+utadQyH8B+aJxVM4AAAA="
                         + ConsoleNote.POSTAMBLE_STR
                         + "there\n")
-                .getBytes());
+                .getBytes(StandardCharsets.UTF_8));
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
-        assertEquals("hellothere\n", baos.toString());
+        assertEquals("hellothere\n", baos.toString(StandardCharsets.UTF_8.name()));
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
@@ -121,11 +121,11 @@ public class AnnotatedLargeTextTest {
                         + "ABmN28qcAAAA"
                         + ConsoleNote.POSTAMBLE_STR
                         + "your home.\n")
-                .getBytes());
+                .getBytes(StandardCharsets.UTF_8));
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
-        assertEquals("Go back to your home.\n", baos.toString());
+        assertEquals("Go back to your home.\n", baos.toString(StandardCharsets.UTF_8.name()));
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("Go back to your home.\n", w.toString());

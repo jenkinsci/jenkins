@@ -18,8 +18,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
@@ -210,11 +208,11 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     public FormValidation doCheckAdminAddress(@QueryParameter String value) {
-        try {
-            new InternetAddress(value);
+        // TODO if equal to Messages.Mailer_Address_Not_Configured(), suggest configuring it with FormValidation.warning?
+        if (Util.fixNull(value).contains("@")) {
             return FormValidation.ok();
-        } catch (AddressException e) {
-            return FormValidation.error(e.getMessage());
+        } else {
+            return FormValidation.error(Messages.JenkinsLocationConfiguration_does_not_look_like_an_email_address());
         }
     }
 

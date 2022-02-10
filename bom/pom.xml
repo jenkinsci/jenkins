@@ -39,8 +39,8 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.2</asm.version>
-    <slf4jVersion>1.7.32</slf4jVersion>
-    <stapler.version>1627.v5c244c19f85f</stapler.version>
+    <slf4jVersion>1.7.36</slf4jVersion>
+    <stapler.version>1642.ve454c4518974</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -221,7 +221,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.14</version>
+        <version>3.1.15</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -319,17 +319,12 @@ THE SOFTWARE.
         <artifactId>symbol-annotation</artifactId>
         <version>1.1</version>
       </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>jakarta.mail</artifactId>
-        <version>1.6.5</version>
-      </dependency>
 
       <!--XStream-->
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.18</version>
+        <version>1.4.19</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kxml</groupId>

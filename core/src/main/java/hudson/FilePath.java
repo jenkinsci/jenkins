@@ -70,7 +70,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -1656,7 +1655,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 throw new IOException("Failed to create a temporary directory in " + dir, e);
             }
 
-            try (Writer w = new FileWriter(f)) {
+            try (Writer w = Files.newBufferedWriter(Util.fileToPath(f), Charset.defaultCharset())) {
                 w.write(contents);
             }
 

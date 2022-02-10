@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Locale;
 import org.junit.Assume;
@@ -291,7 +292,7 @@ public class SimpleBuildWrapperTest {
             @Override public OutputStream decorateLogger(AbstractBuild _ignore, OutputStream logger) throws IOException, InterruptedException {
                 return new LineTransformationOutputStream.Delegating(logger) {
                     @Override protected void eol(byte[] b, int len) throws IOException {
-                        out.write(new String(b, 0, len).toUpperCase(Locale.ROOT).getBytes());
+                        out.write(new String(b, 0, len, Charset.defaultCharset()).toUpperCase(Locale.ROOT).getBytes(Charset.defaultCharset()));
                     }
                 };
             }

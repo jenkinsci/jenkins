@@ -48,6 +48,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
@@ -129,7 +130,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-15817")
     public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
-        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
         Shell shell = new Shell("echo hello");
@@ -149,7 +150,7 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     public void buildStabilityReports() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        assumeFalse("TODO: https://issues.jenkins.io/browse/JENKINS-67681 LocalLauncher.kill() is excessivly slow on windows, mostly just about works outside CI", Functions.isWindows() && System.getenv("CI") != null);
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;
@@ -253,7 +254,7 @@ public class FreeStyleProjectTest {
     public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -269,7 +270,7 @@ public class FreeStyleProjectTest {
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
         try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
             fail("Adding the job should have thrown an exception during checkGoodName");
         }
         catch (Failure e) {
@@ -285,7 +286,7 @@ public class FreeStyleProjectTest {
         System.setProperty(propName, "false");
         try {
             assertThat(j.jenkins.getItems(), hasSize(0));
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes()));
+            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         }
         finally {
             if (initialValue == null) {

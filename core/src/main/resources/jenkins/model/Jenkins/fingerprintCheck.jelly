@@ -41,7 +41,7 @@ THE SOFTWARE.
           </div>
         </f:block>
         <f:entry title="${%File to check}">
-          <input type="file" name="name" class="setting-input" />
+          <input type="file" name="name" class="jenkins-input" />
         </f:entry>
         <f:block>
           <f:submit value="${%Check}" />

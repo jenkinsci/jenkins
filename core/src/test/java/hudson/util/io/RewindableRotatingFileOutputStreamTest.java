@@ -8,7 +8,9 @@ import hudson.FilePath;
 import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +26,7 @@ public class RewindableRotatingFileOutputStreamTest {
     public void rotation() throws IOException, InterruptedException {
         File base = tmp.newFile("test.log");
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
-        PrintWriter w = new PrintWriter(os, true);
+        PrintWriter w = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         for (int i = 0; i <= 4; i++) {
             w.println("Content" + i);
             os.rewind();
