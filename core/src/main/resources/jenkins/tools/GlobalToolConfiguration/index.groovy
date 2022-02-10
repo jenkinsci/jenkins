@@ -21,7 +21,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
             l.spinner(text: _("LOADING"))
         }
 
-        f.form(method:"post",name:"config",action:"configure") {
+        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)

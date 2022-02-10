@@ -25,7 +25,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
                 l.spinner(text: _("LOADING"))
             }
 
-            f.form(method:"post",name:"config",action:"configure") {
+            f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
                 f.block {
                     if (app.clouds.size() == 0 && !h.hasPermission(app.ADMINISTER)) {
                         p(_("No clouds have been configured."))
