@@ -1429,6 +1429,7 @@ function rowvgStartEachRow(recursive,f) {
     });
 
   window.addEventListener('load', function () {
+    // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker")
     if (el) {
       const observer = new IntersectionObserver(
