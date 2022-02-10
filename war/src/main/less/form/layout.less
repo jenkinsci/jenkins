@@ -1,0 +1,140 @@
+.jenkins-form {
+  max-width: var(--form-item-max-width);
+}
+
+.jenkins-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+
+  .jenkins-form-item:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.jenkins-form-item {
+  max-width: var(--form-item-max-width);
+  margin-bottom: var(--section-padding);
+
+  // Workaround for float:right button controls
+  // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
+  &::after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+  }
+
+  &--tight + .jenkins-form-item--tight {
+    margin-top: -0.9rem;
+  }
+
+  &--small {
+    max-width: var(--form-item-max-width--small);
+  }
+
+  &--medium {
+    max-width: var(--form-item-max-width--medium);
+  }
+}
+
+.jenkins-form-label {
+  display: flex;
+  align-items: center;
+  font-weight: var(--form-label-font-weight);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+}
+
+.jenkins-form-description {
+  display: block;
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
+  margin: -0.2rem 0 0.8rem 0;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
+}
+
+.jenkins-quote {
+  position: relative;
+  display: flex;
+  line-height: 38px;
+
+  &::before {
+    content: "";
+    position: relative;
+    width: 2px;
+    background: var(--input-border);
+    margin-right: 1rem;
+    border-radius: 2px;
+  }
+
+  &--monospace {
+    font-family: monospace;
+  }
+}
+
+.jenkins-help-button {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin-left: 1ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 20px;
+  color: var(--text-color)!important;
+  border-radius: 100%;
+
+  &::before {
+    content: "?";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.1;
+    border-radius: inherit;
+    transition: var(--standard-transition);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    border: 1px solid rgba(125, 125, 125, 0.35);
+    box-shadow: var(--form-input-glow);
+    border-radius: inherit;
+    opacity: 0.1;
+    transition: var(--standard-transition);
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    &::before {
+      opacity: 0.2;
+    }
+  }
+
+  &:active, &:focus {
+    outline: none;
+    text-decoration: none;
+
+    &::before {
+      opacity: 0.3;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 5px var(--text-color);
+    }
+  }
+}
