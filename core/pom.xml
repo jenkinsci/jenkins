@@ -273,6 +273,11 @@ THE SOFTWARE.
       <artifactId>commons-lang</artifactId>
     </dependency>
     <dependency>
+      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
     </dependency>
