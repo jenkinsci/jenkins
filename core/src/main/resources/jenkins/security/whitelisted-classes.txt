@@ -135,33 +135,9 @@ org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
 org.apache.tools.ant.Location
 
-# TODO see main ruby-runtime section below
-org.jenkinsci.jruby.JRubyMapper$DynamicProxy
-
 # TODO remove when https://github.com/jenkinsci/xtrigger-lib/pull/9 is widely adopted in fstrigger-plugin, urltrigger-plugin, etc.
 org.jenkinsci.lib.xtrigger.XTriggerCause
 org.jenkinsci.lib.xtrigger.XTriggerCauseAction
-
-# TODO remove (also XStream2.BlacklistedTypesConverter.JRUBY_PROXY) when Ruby Runtime is fixed
-# Related PRs:
-#   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/5,
-#   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/6
-#
-# oleg-nenashev in PR#6 we are trying to get help from last maintainers due to the plugin codebase splitbrain.
-#               It is required to fix JENKINS-50616 in a proper way for 2.107.x
-org.jruby.RubyArray
-org.jruby.RubyBignum
-org.jruby.RubyBoolean
-org.jruby.RubyBoolean$False
-org.jruby.RubyBoolean$True
-org.jruby.RubyFixnum
-org.jruby.RubyHash
-org.jruby.RubyNil
-org.jruby.RubyObject
-org.jruby.RubyString
-org.jruby.RubySymbol
-org.jruby.java.proxies.ConcreteJavaProxy
-org.jruby.runtime.builtin.IRubyObject
 
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable

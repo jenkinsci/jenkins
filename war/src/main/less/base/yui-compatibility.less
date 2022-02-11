@@ -102,6 +102,8 @@
   }
 
   .yuimenu {
+    z-index: 1000 !important;
+
     .bd {
       border-color: var(--input-border);
       background-color: var(--menu-bg-color);
@@ -167,6 +169,7 @@ div.yahooTree td {
     width: 1.2rem !important;
     height: 1.2rem !important;
     margin: 0.25rem 0.5rem 0.25rem 0;
+    color: var(--primary) !important;
   }
 }
 
@@ -222,4 +225,9 @@ div.yahooTree td {
     right: 0.75em;
     display: inline-block;
   }
+}
+
+.yui-panel,
+.yui-panel .bd {
+  background-color: var(--background) !important;
 }

@@ -39,7 +39,7 @@ THE SOFTWARE.
         <st:nbsp/>
         <j:choose>
           <j:when test="${c.offlineCause!=null and !c.connecting}">
-            (<l:icon class="icon-error icon-sm" title="${c.offlineCause}"/> ${%offline})
+            (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
           </j:when>
           <j:when test="${c.connecting}">
             (<l:icon class="icon-hourglass icon-sm"/>${%launching})

@@ -24,6 +24,8 @@
 
 package hudson.lifecycle;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Util;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -51,6 +54,19 @@ import org.apache.commons.io.FileUtils;
  */
 public abstract class Lifecycle implements ExtensionPoint {
     private static Lifecycle INSTANCE = null;
+
+    public Lifecycle() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+            if (jenkins != null) {
+                try {
+                    jenkins.cleanUp();
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "Failed to clean up. Shutdown will continue.", t);
+                }
+            }
+        }));
+    }
 
     /**
      * Gets the singleton instance.
@@ -107,6 +123,9 @@ public abstract class Lifecycle implements ExtensionPoint {
                 } else if (System.getenv("SMF_FMRI") != null && System.getenv("SMF_RESTARTER") != null) {
                     // when we are run by Solaris SMF, these environment variables are set.
                     instance = new SolarisSMFLifecycle();
+                } else if (System.getenv("NOTIFY_SOCKET") != null) {
+                    // When we are running under systemd with Type=notify, this environment variable is set.
+                    instance = new SystemdLifecycle();
                 } else {
                     // if run on Unix, we can do restart
                     try {
@@ -230,6 +249,75 @@ public abstract class Lifecycle implements ExtensionPoint {
         } catch (RestartNotSupportedException e) {
             return false;
         }
+    }
+
+    /**
+     * Called when Jenkins startup is finished or when Jenkins has finished reloading its
+     * configuration.
+     *
+     * @since 2.333
+     */
+    public void onReady() {
+        LOGGER.log(Level.INFO, "Jenkins is fully up and running");
+    }
+
+    /**
+     * Called when Jenkins is reloading its configuration.
+     *
+     * <p>Callers must also send an {@link #onReady()} notification when Jenkins has finished
+     * reloading its configuration.
+     *
+     * @since 2.333
+     */
+    public void onReload(@NonNull String user, @CheckForNull String remoteAddr) {
+        if (remoteAddr != null) {
+            LOGGER.log(
+                    Level.INFO,
+                    "Reloading Jenkins as requested by {0} from {1}",
+                    new Object[] {user, remoteAddr});
+        } else {
+            LOGGER.log(Level.INFO, "Reloading Jenkins as requested by {0}", user);
+        }
+    }
+
+    /**
+     * Called when Jenkins is beginning its shutdown.
+     *
+     * @since 2.333
+     */
+    public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
+        if (remoteAddr != null) {
+            LOGGER.log(
+                    Level.INFO,
+                    "Stopping Jenkins as requested by {0} from {1}",
+                    new Object[] {user, remoteAddr});
+        } else {
+            LOGGER.log(Level.INFO, "Stopping Jenkins as requested by {0}", user);
+        }
+    }
+
+    /**
+     * Tell the service manager to extend the startup or shutdown timeout. The value specified is a
+     * time during which either {@link #onExtendTimeout(long, TimeUnit)} must be called again or
+     * startup/shutdown must complete.
+     *
+     * @param timeout The amount by which to extend the timeout.
+     * @param unit The time unit of the timeout argument.
+     *
+     * @since TODO
+     */
+    public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
+
+    /**
+     * Called when Jenkins service state has changed.
+     *
+     * @param status The status string. This is free-form and can be used for various purposes:
+     *     general state feedback, completion percentages, human-readable error message, etc.
+     *
+     * @since 2.333
+     */
+    public void onStatusUpdate(String status) {
+        LOGGER.log(Level.INFO, status);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

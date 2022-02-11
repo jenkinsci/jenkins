@@ -460,9 +460,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     /**
      * Finds the build #M where M is nearby the given 'n'.
      *
-     * <p>
-     *
-     *
      * @param n
      *      the index to start the search from
      * @param d

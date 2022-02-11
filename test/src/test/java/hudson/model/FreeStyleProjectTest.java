@@ -150,7 +150,7 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     public void buildStabilityReports() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        assumeFalse("TODO: https://issues.jenkins.io/browse/JENKINS-67681 LocalLauncher.kill() is excessivly slow on windows, mostly just about works outside CI", Functions.isWindows() && System.getenv("CI") != null);
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;

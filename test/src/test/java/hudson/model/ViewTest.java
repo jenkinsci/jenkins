@@ -237,7 +237,7 @@ public class ViewTest {
         // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
         if (!folderPluginActive && folderPluginClassesLoaded) {
             // reset the icon added by Folder because the plugin resources are not reachable
-            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "svgs/folder.svg", "width: 24px; height: 24px;"));
         }
 
         WebClient webClient = j.createWebClient()

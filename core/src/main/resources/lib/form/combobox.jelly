@@ -81,7 +81,7 @@ THE SOFTWARE.
   <f:possibleReadOnlyField>
     <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
              autocomplete="off"
-             class="combobox2 setting-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
+             class="combobox2 jenkins-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
              name="${name}"
              value="${value}"
              ATTRIBUTES="${attrs}" EXCEPT="field items clazz" />
