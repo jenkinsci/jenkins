@@ -1,6 +1,7 @@
 :root {
   // Font related properties
   --font-family-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, JetBrainsMono, Consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -280,9 +281,13 @@
   --form-input-border-radius: 6px;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
+  --pre-background: rgba(0, 0, 0, 0.05);
+  --pre-color: var(--text-color);
+  --selection-color: rgba(2, 76, 182, 0.3);
 
   // Animations
   --standard-transition: 0.2s ease;
+  --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Pop out menus
   --menu-text-color: black;
