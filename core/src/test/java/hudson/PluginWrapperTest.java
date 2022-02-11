@@ -26,7 +26,7 @@ import java.util.jar.Manifest;
 import jenkins.model.Jenkins;
 import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

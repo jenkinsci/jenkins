@@ -41,7 +41,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

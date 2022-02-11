@@ -37,7 +37,7 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.Timer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Jenkins install state.

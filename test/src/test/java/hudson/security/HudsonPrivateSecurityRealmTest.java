@@ -62,7 +62,7 @@ import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.seed.UserSeedProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

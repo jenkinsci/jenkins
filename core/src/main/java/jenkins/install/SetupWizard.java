@@ -1,7 +1,7 @@
 package jenkins.install;
 
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;

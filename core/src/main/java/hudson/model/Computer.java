@@ -109,7 +109,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;

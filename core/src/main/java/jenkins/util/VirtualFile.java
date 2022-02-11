@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;

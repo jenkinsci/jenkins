@@ -27,7 +27,7 @@ package hudson.search;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Set of {@link SearchItem}s that are statically known upfront.
