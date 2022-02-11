@@ -228,7 +228,7 @@ public class RobustReflectionConverterTest {
     @Issue("SECURITY-2602")
     public void customConverter_wrapped_useCriticalXStreamException() {
         XStream2 xstream2 = new XStream2();
-        xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper()));
+        xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper())); // TODO Fix test so it does not pass without this
 
         CustomSet customSet = preparePayloadUsingCustomSet();
         // enforce the use of RobustReflectionConverter
