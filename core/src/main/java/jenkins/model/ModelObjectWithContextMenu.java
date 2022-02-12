@@ -133,6 +133,18 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
             return this;
         }
 
+        /** @since TODO */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
@@ -280,6 +292,11 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
         public String icon;
 
         /**
+         * Optional icon XML, if set it's used instead of @icon for the menu item
+         */
+        private String iconXml;
+
+        /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
@@ -310,6 +327,11 @@ public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWith
         @Exported(inline = true)
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
+
+        @Exported
+        public String getIconXml() {
+            return iconXml;
+        }
 
         public MenuItem(String url, String icon, String displayName) {
             withUrl(url).withIcon(icon).withDisplayName(displayName);

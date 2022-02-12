@@ -31,14 +31,14 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      <l:task href="${rootURL}/manage" icon="icon-gear icon-md" title="${%Manage Jenkins}"/>
+      <l:task href="${rootURL}/manage" icon="symbol-settings" title="${%Manage Jenkins}"/>
       <l:task href="." icon="icon-clipboard icon-md" title="${%Log Recorders}">
         <l:isAdmin>
           <l:task href="new" icon="icon-new-package icon-md" title="${%New Log Recorder}"/>
         </l:isAdmin>
       </l:task>
       <l:task href="all" icon="icon-notepad icon-md" title="${%All Log Messages}"/>
-      <l:task href="levels" icon="icon-gear icon-md" title="${%Log Levels}"/>
+      <l:task href="levels" icon="symbol-settings" title="${%Log Levels}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

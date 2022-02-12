@@ -87,9 +87,19 @@
 
 // Target only icons withink task link in order to keep backwards compatibility
 .task .task-icon-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   margin-right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--primary);
+  }
 }
 // Reset the margin for the icon links
 .task .task-icon-link img,

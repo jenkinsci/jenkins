@@ -28,11 +28,9 @@ THE SOFTWARE.
     Displays a link with a large icon. Used in the project top page.
 
     <st:attribute name="icon" use="required">
-      The icon class name e.g. 'icon-folder'.
-
-      On older versions of Jenkins, this attribute value used to be a link to the raw icon image, where relative
-      paths were resolved against images/48x48 and absolute paths (that start with '/') were resolved against
-      the context root of Hudson.
+      Supports Jenkins Symbols (e.g. 'symbol-search')
+      Supports path to bitmap image (e.g. '/plugin/foo/abc.gif')
+      Supports icon class specification (e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg')
     </st:attribute>
     <st:attribute name="href">
       where the summary icon links to.
@@ -48,49 +46,16 @@ THE SOFTWARE.
     <j:if test="${attrs.icon!=null}">
       <tr>
         <td>
-          <!--
-            Backward compatibility.  Ugly but needed for now.
-
-            'icon' can be an icon class name (e.g. 'icon-folder'), but can also be an icon file name
-            (without path e.g. 'folder.png'), or can be a full path and name (e.g. to an icon in a
-            plugin - '/plugin/images/48x48/xxxx.png').  So, first we see can we derive an icon
-            from the 'icon' value, which will work if it's just something like 'folder.png'.  Failing
-            that, we try deriving it by URL (assuming it's a full icon path).  If all that fails,
-            we just fall back to the old method by passing a 'src' attribute to the <icon> tag.
-          -->
-          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icon + ' icon-xlg')}"/>
-          <j:if test="${iconMetadata == null}">
-            <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
-            <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
-          </j:if>
-          <j:if test="${iconMetadata == null}">
-            <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
-          </j:if>
-
           <j:choose>
             <j:when test="${attrs.href!=null}">
               <a href="${attrs.href}">
-                <j:choose>
-                  <j:when test="${iconMetadata != null}">
-                    <l:icon class="${iconMetadata.classSpec}"/>
-                  </j:when>
-                  <j:otherwise>
-                    <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                            alt="" style="width: 48px; height: 48px; margin-right:1em;" />
-                  </j:otherwise>
-                </j:choose>
+                <l:icon src="${icon}"
+                        alt="" style="width: 48px; height: 48px; margin-right:1em;" />
               </a>
             </j:when>
             <j:otherwise>
-              <j:choose>
-                <j:when test="${iconMetadata != null}">
-                  <l:icon class="${iconMetadata.classSpec}"/>
-                </j:when>
-                <j:otherwise>
-                  <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                          alt="" style="width: 48px; height: 48px; margin-right:1em;" />
-                </j:otherwise>
-              </j:choose>
+              <l:icon src="${icon}"
+                      alt="" style="width: 48px; height: 48px; margin-right:1em;" />
             </j:otherwise>
           </j:choose>
         </td>
