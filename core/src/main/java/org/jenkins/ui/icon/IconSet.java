@@ -321,7 +321,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-sm", "16x16/clock_anime.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-sm", "16x16/computer-flash.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-document-add icon-sm", "16x16/document_add.gif", Icon.ICON_SMALL_STYLE));
@@ -369,7 +368,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-md", "24x24/clock_anime.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-md", "24x24/computer-flash.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.gif", Icon.ICON_MEDIUM_STYLE));
@@ -397,7 +395,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-lg", "32x32/clock_anime.gif", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-lg", "32x32/computer-flash.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.gif", Icon.ICON_LARGE_STYLE));
@@ -424,7 +421,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-aborted-anime icon-xlg", "build-status/build-status-sprite.svg#last-aborted", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-blue icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE, true));
-        icons.addIcon(new Icon("icon-computer-flash icon-xlg", "48x48/computer-flash.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new Icon("icon-green icon-xlg", "48x48/green.gif", Icon.ICON_XLARGE_STYLE));
