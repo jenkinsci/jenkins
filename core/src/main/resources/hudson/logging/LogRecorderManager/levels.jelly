@@ -34,11 +34,13 @@ THE SOFTWARE.
       ${%Logger Configuration}
       <t:help iconSize="large" tooltip="${%Additional information on log levels}" href="${%url}" />
     </h1>
-    <table class="sortable pane bigtable width-auto" id="logLevels">
-      <tr>
-        <th>${%Name}</th>
-        <th>${%Level}</th>
-      </tr>
+    <table class="sortable pane jenkins-table" id="logLevels">
+      <thead>
+        <tr>
+          <th>${%Name}</th>
+          <th>${%Level}</th>
+        </tr>
+      </thead>
       <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
       <j:forEach var="name" items="${h.loggerNames}">
         <j:set var="logger" value="${lm.getLogger(name)}"/>
