@@ -161,6 +161,7 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
@@ -2288,6 +2289,68 @@ public class Functions {
         } else {
             return true;
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Icon tryGetIcon(String iconGuess) {
+        // Jenkins Symbols don't have metadata so return null
+        if (iconGuess == null || iconGuess.startsWith("symbol-")) {
+            return null;
+        }
+
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
+
+        if (iconMetadata == null) {
+            // Icon could be provided as a simple iconFileName e.g. "settings.png"
+            iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
+        }
+
+        if (iconMetadata == null) {
+            // Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png"
+            iconMetadata = IconSet.icons.getIconByUrl(iconGuess);
+        }
+
+        return iconMetadata;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String tryGetIconPath(String iconGuess, JellyContext context) {
+        if (iconGuess == null) {
+            return null;
+        }
+
+        if (iconGuess.startsWith("symbol-")) {
+            return iconGuess;
+        }
+
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        String rootURL = currentRequest.getContextPath();
+        Icon iconMetadata = tryGetIcon(iconGuess);
+        String iconSource = null;
+
+        if (iconMetadata != null) {
+            iconSource = iconMetadata.getQualifiedUrl(context);
+        }
+
+        if (iconMetadata == null) {
+            if (!iconGuess.startsWith("/")) {
+                iconGuess = "/" + iconGuess;
+            }
+
+            iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
+        }
+
+        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
+            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
+            if (translatedIcon != null) {
+                return translatedIcon;
+            }
+        }
+
+        return iconSource;
     }
 
     @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "True randomness isn't necessary for form item IDs")

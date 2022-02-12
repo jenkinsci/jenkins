@@ -26,7 +26,15 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     @since 1.576
-    <st:attribute name="class">
+
+    <st:attribute name="src" use="optional">
+      Icon source
+      Supports Jenkins Symbols (e.g. 'symbol-search')
+      Supports path to bitmap image
+      Only relevant if the 'class' attribute is NOT specified.
+    </st:attribute>
+
+    <st:attribute name="class" use="optional">
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
     </st:attribute>
 
@@ -34,56 +42,57 @@ THE SOFTWARE.
       ID of the icon element. Since TODO.
     </st:attribute>
 
-    <st:attribute name="src">
-      Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
-    </st:attribute>
-
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
-    <st:attribute name="title">title</st:attribute>
+    <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
     <st:attribute name="alt">alt</st:attribute>
   </st:documentation>
 
-  <j:set var="iconSrc" value="${attrs.src}"/>
+  <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
+  <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
   <j:set var="imgStyle" value="${attrs.style}"/>
 
-  <j:choose>
-    <j:when test="${attrs.class != null}">
-      <!-- Derive the icon url and style from the class spec -->
-      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
-    </j:when>
-    <j:otherwise>
-      <!-- Attempt to work back from the image url (backward compatibility)... -->
-      <j:set var="iconMetadata" value="${icons.getIconByUrl(iconSrc)}"/>
-    </j:otherwise>
-  </j:choose>
+  <j:if test="${iconSrc == null}">
+    <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
+    <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
+  </j:if>
 
   <j:if test="${iconMetadata != null}">
-    <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
     <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
   </j:if>
 
   <j:choose>
-    <j:when test="${iconMetadata.buildStatus}">
-      <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
-
-      <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
-          <span class="build-status-icon__outer">
-            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
-          </span>
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
-      </span>
+    <j:when test="${iconSrc.startsWith('symbol-')}">
+      <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
+        <j:arg value="${iconSrc.substring(7)}" />
+        <j:arg value="${alt ?: ''}" />
+        <j:arg value="${iconMetadata.classSpec ?: ''}" />
+      </j:invokeStatic>
+      <j:out value="${icon}" />
     </j:when>
-
-    <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
-      <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
-    </j:when>
-
     <j:otherwise>
-      <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
+      <j:choose>
+        <j:when test="${iconMetadata.buildStatus}">
+          <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
+
+          <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
+            <span class="build-status-icon__outer">
+              <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+            </span>
+            <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+          </span>
+        </j:when>
+
+        <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+        </j:when>
+
+        <j:otherwise>
+          <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
+        </j:otherwise>
+      </j:choose>
     </j:otherwise>
   </j:choose>
-  
 </j:jelly>
