@@ -18,9 +18,6 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     }
     l.app_bar(title: my.displayName)
     l.main_panel {
-        h1 {
-            text(my.displayName)
-        }
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()
