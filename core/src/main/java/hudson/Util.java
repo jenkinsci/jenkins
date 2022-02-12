@@ -1077,6 +1077,7 @@ public class Util {
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
         cp.setProject(new Project());
