@@ -49,7 +49,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Kohsuke Kawaguchi
  * @see ModelObjectWithChildren
  */
-public interface ModelObjectWithContextMenu extends ModelObject, ModelObjectWithPageMenu {
+public interface ModelObjectWithContextMenu extends ModelObject {
     /**
      * Generates the context menu.
      *

@@ -111,8 +111,12 @@ var breadcrumbs = (function() {
      *
      * @param {HTMLElement} e
      *      anchor tag
+     * @param {String} contextMenuUrl
+     *      The URL that renders JSON for context menu. Optional.
      */
-    function invokeContextMenu(e) {
+    function invokeContextMenu(e, contextMenuUrl) {
+      contextMenuUrl = contextMenuUrl || "contextMenu";
+
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
@@ -132,8 +136,11 @@ var breadcrumbs = (function() {
             showMenu(e.items());
         } else {
 
+          console.log("Calling")
+          console.log(combinePath(e.getAttribute("href"), contextMenuUrl))
+
           // fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), "pageMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), contextMenuUrl), {
                 onComplete:function (x) {
                   var items = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
@@ -180,7 +187,7 @@ var breadcrumbs = (function() {
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
         a.observe("click", function() {
-            invokeContextMenu(this);
+            invokeContextMenu(this, "childrenContextMenu");
         })
     });
 
