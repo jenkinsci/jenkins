@@ -315,7 +315,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * The type of menu item
-         * @since TODO - Provide version
+         * @since TODO
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
