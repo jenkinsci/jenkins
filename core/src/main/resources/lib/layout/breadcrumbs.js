@@ -135,10 +135,6 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {
-
-          console.log("Calling")
-          console.log(combinePath(e.getAttribute("href"), contextMenuUrl))
-
           // fetch menu on demand
             xhr = new Ajax.Request(combinePath(e.getAttribute("href"), contextMenuUrl), {
                 onComplete:function (x) {
