@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Logo Rss</title><path fill="transparent" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M108.56 342.78a60.34 60.34 0 1060.56 60.44 60.63 60.63 0 00-60.56-60.44z"/><path fill="transparent" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M48 186.67v86.55c52 0 101.94 15.39 138.67 52.11s52 86.56 52 138.67h86.66c0-151.56-125.66-277.33-277.33-277.33z"/><path fill="transparent" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M48 48v86.56c185.25 0 329.22 144.08 329.22 329.44H464C464 234.66 277.67 48 48 48z"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g transform="translate(81.000000, 81.323000)" fill-rule="nonzero" stroke="currentColor" stroke-width="32">
+            <path d="M28.552,293.458 L28.2086637,293.462282 C12.7932399,293.768174 0.411027957,306.374012 0.439973838,321.849687 C0.469416663,337.481891 13.1509336,350.138264 28.7831021,350.136598 C44.2589396,350.13495 56.8401627,337.727807 57.1154778,322.311817 L57.119,321.927 L57.1149621,321.530547 C56.8237248,306.313721 44.6521378,293.97949 29.47116,293.473221 L29.045,293.462 L28.552,293.458 Z" fill="currentColor"></path>
+            <path d="M0,139.487 L0,161.688 L1.55387385,161.869759 C50.7338923,167.794352 94.40167,187.091899 128.052594,220.145986 L129.294336,221.376503 C163.102336,255.175298 182.734213,299.220115 188.706309,349.062743 L188.894,350.677 L211.19,350.677 L210.688365,347.128905 C194.839459,241.223809 109.476548,155.842095 3.55489242,139.989307 L0,139.487 Z"></path>
+            <path d="M0,0 L0,22.575 L4.01967608,22.9232197 C177.519513,39.2905486 311.178925,173.04159 327.534949,346.637611 L327.883,350.677 L350.676,350.677 L350.169684,345.011744 C332.413039,163.239913 187.516049,18.27398 5.68025403,0.508273037 L0,0 Z"></path>
+        </g>
+    </g>
+</svg>
