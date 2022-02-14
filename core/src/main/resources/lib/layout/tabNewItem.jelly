@@ -11,7 +11,7 @@
 
     <div class="tab">
         <a href="${href}" class="addTab" aria-label="${attrs.title}">
-            <l:icon src="symbol-new" />
+            <l:icon src="symbol-add" />
         </a>
     </div>
 </j:jelly>
