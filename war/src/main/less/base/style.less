@@ -58,6 +58,10 @@ dt {
   font-weight: bold;
 }
 
+::selection {
+  background: var(--selection-color);
+}
+
 .fixed-width {
   font-family: monospace;
 }
@@ -219,13 +223,21 @@ td.tab {
 }
 
 pre {
-    white-space: pre-wrap;       /* css-3 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
-    margin: 0;
-}
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0 0 var(--section-padding);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+  color: var(--pre-color) !important;
+  font-family: var(--font-family-mono) !important;
+  font-weight: 600 !important;
+  line-height: 1.66 !important;
 
-pre a {
+  a {
+    font-weight: inherit;
     word-wrap: break-word;
+  }
 }
 
 pre.console {
@@ -715,6 +727,7 @@ table.parameters > tbody:hover {
   table {
     border-radius: 0;
     min-width: 450px;
+    margin-bottom: 0;
     box-sizing: content-box;
     padding-bottom: 2px;
 
@@ -1060,7 +1073,7 @@ table.fingerprint-in-build td {
   position: relative;
   padding-left: 32px;
   transition: var(--standard-transition);
-  margin-top: 0.66rem;
+  margin-top: calc(var(--section-padding) / 3);
 
   &::after {
     content: "";
@@ -1316,6 +1329,26 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 /* ========================= logRecords.jelly ================== */
+
+.logrecord-container {
+  border-radius: 10px;
+  overflow: hidden;
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+}
 
 .logrecord-metadata {
     font-size: var(--font-size-xs);

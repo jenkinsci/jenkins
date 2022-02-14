@@ -38,6 +38,6 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <j:set var="hideButtonClass" value="${attrs.hideIfOnly == 'true' ? ' show-if-not-only' : ''}" />
   <button tooltip="${h.xmlEscape(attrs.value ?: '%Delete')}" class="repeatable-delete danger ${hideButtonClass}" type="button">
-    <l:ionicon name="close-outline" />
+    <l:icon src="symbol-close" />
   </button>
 </j:jelly>

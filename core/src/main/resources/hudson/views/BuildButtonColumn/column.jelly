@@ -39,7 +39,7 @@ THE SOFTWARE.
                           <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
                       </j:otherwise>
                   </j:choose>
-                  <l:ionicon name="play-outline" title="${title}" />
+                  <l:icon src="symbol-play" alt="${title}" />
                   <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
             </div>

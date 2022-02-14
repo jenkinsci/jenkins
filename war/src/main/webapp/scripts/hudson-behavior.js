@@ -1070,7 +1070,6 @@ function rowvgStartEachRow(recursive,f) {
                 }
               }
             }).getWrapperElement();
-            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
     });
 
