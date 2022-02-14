@@ -33,7 +33,7 @@ THE SOFTWARE.
       <d:invokeBody trim="true"/>
     </span>
 	  <j:if test="${it.building}">
-	    <div class="build-caption-progress-container" style="float:right">
+	    <div class="build-caption-progress-container">
 	      <table class="middle-align"><tr>
 	        <td>
 	          ${%Progress}:

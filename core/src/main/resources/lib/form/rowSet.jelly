@@ -35,21 +35,25 @@ THE SOFTWARE.
     <st:attribute name="ref">
       id of the thing that serves as the group head, if that's available separately
     </st:attribute>
+    <st:attribute name="isFormItem">
+      Removes the "jenkins-form-item" class if false
+    </st:attribute>
+    <st:attribute name="class">
+      Classes to apply to the container (this will be the form item if 'isFormItem' is true)
+    </st:attribute>
   </st:documentation>
 
-  <div class="rowSet-container">
-    <j:choose>
-      <j:when test="${attrs.ref==null and attrs.name==null}">
-        <!-- noop -->
-        <d:invokeBody />
-      </j:when>
-      <j:otherwise>
+  <j:choose>
+    <j:when test="${attrs.ref==null and attrs.name==null}">
+      <!-- noop -->
+      <d:invokeBody />
+    </j:when>
+    <j:otherwise>
+      <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${class}">
         <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
-        <div class="form-container tr">
-          <d:invokeBody />
-        </div>
+        <d:invokeBody />
         <div class="row-set-end row-group-end tr"></div>
-      </j:otherwise>
-    </j:choose>
-  </div>
+      </div>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

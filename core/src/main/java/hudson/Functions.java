@@ -2352,4 +2352,10 @@ public class Functions {
 
         return iconSource;
     }
+
+    @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "True randomness isn't necessary for form item IDs")
+    @Restricted(NoExternalUse.class)
+    public static String generateItemId() {
+        return String.valueOf(Math.floor(Math.random() * 3000));
+    }
 }

@@ -141,7 +141,7 @@ public class IconTest  {
         DomElement tasksDiv = p.getElementById("tasks");
         List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/svgs/up.svg");
+        assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").get(0));
         // this is loading the png from cloudbees-folder plugin
         // when this is swapped to an SVG and the dep updated this test will need to change
         assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/svgs/folder.svg");
