@@ -164,9 +164,8 @@ public class ExpandableTextboxTest {
 
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
-        HtmlInput xssInput = configurePage.getElementByName("_.xss");
-        HtmlElement expandButton = (HtmlElement) xssInput.getParentNode().getNextSibling().getFirstChild();
-
+        HtmlInput xssInput = configurePage.getElementByName("_.theField");
+        HtmlButton expandButton = (HtmlButton) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted
@@ -186,7 +185,7 @@ public class ExpandableTextboxTest {
         HtmlPage configurePage = wc.getPage(p, "configure");
 
         HtmlInput input = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) input.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
         final DomElement textArea = configurePage.getElementByName("_.theField");
         assertTrue(textArea instanceof HtmlTextArea);
