@@ -49,7 +49,7 @@ THE SOFTWARE.
             <!-- advancedButton is legacy -->
             <button type="button" class="jenkins-button advanced-button advancedButton">
                 <span id="${id}" tooltip="${%customizedFields}">
-                    <l:ionicon name="asterisk-outline" />
+                    <l:icon src="symbol-asterisk" />
                 </span>
                 ${attrs.title?:'%Advanced'}...
             </button>

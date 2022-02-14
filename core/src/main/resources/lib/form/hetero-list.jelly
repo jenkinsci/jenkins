@@ -156,7 +156,7 @@ THE SOFTWARE.
     <j:if test="${!readOnlyMode}">
       <div>
         <button class="jenkins-button hetero-list-add" type="button" menualign="${attrs.menuAlign}" suffix="${attrs.name}">
-          <l:ionicon name="add-outline" />
+          <l:icon src="symbol-add" />
           ${attrs.addCaption?:'%Add'}
         </button>
       </div>

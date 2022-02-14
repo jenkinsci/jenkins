@@ -77,7 +77,7 @@ THE SOFTWARE.
           </div>
           <div class="expanding-input__button">
             <button class="jenkins-button" type="button" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')" tooltip="${%tooltip}">
-              <l:ionicon name="chevron-down-outline" />
+              <l:icon src="chevron-down" />
             </button>
           </div>
         </div>
