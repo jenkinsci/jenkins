@@ -87,8 +87,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      */
     public static String resolve(User u, String avatarSize) {
         String avatar = resolveOrNull(u, avatarSize);
-        return avatar != null ? avatar : Jenkins.get().getRootUrl() + Functions.getResourcePath() +
-            "/images/svgs/person.svg";
+        return avatar != null ? avatar : "symbol-person-circle";
     }
 
     /**
