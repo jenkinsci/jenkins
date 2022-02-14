@@ -68,6 +68,7 @@ import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 
 /**
  * CLI entry point to Jenkins.
+ * @since TODO
  */
 public class CLI {
 
@@ -500,6 +501,7 @@ public class CLI {
 
     /**
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     * @since TODO
      */
     public static KeyPair loadKey(File f, String passwd) throws IOException, GeneralSecurityException {
         return PrivateKeyProvider.loadKey(f, passwd);
@@ -511,6 +513,7 @@ public class CLI {
 
     /**
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     * @since TODO
      */
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
         return PrivateKeyProvider.loadKey(pemString, passwd);

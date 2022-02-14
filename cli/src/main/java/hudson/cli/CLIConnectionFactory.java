@@ -7,6 +7,7 @@ import java.util.Base64;
  * Fluent-API to instantiate {@link CLI}.
  *
  * @author Kohsuke Kawaguchi
+ * @since TODO
  */
 public class CLIConnectionFactory {
     String authorization;
@@ -15,6 +16,7 @@ public class CLIConnectionFactory {
      * For CLI connection that goes through HTTP, sometimes you need
      * to pass in the custom authentication header (before Jenkins even get to authenticate
      * the CLI channel.) This method lets you specify the value of this header.
+     * @since TODO
      */
     public CLIConnectionFactory authorization(String value) {
         this.authorization = value;
@@ -24,6 +26,7 @@ public class CLIConnectionFactory {
     /**
      * Convenience method to call {@link #authorization} with the HTTP basic authentication.
      * Currently unused.
+     * @since TODO
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
         return basicAuth(username + ':' + password);
@@ -32,6 +35,7 @@ public class CLIConnectionFactory {
     /**
      * Convenience method to call {@link #authorization} with the HTTP basic authentication.
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     * @since TODO
      */
     public CLIConnectionFactory basicAuth(String userInfo) {
         return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes(StandardCharsets.UTF_8)));
@@ -40,6 +44,7 @@ public class CLIConnectionFactory {
     /**
      * Convenience method to call {@link #authorization} with the HTTP bearer authentication.
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     * @since TODO
      */
     public CLIConnectionFactory bearerAuth(String bearerToken) {
         return authorization("Bearer " + bearerToken);

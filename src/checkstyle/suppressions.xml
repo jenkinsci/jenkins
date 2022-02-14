@@ -1,0 +1,951 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.0//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+  <suppress checks="JenkinsJavadoc"
+            files=".*Test\.java"/>
+
+  <!-- Needs triage -->
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/hudson/cli/FlightRecorderInputStream.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/widgets/HistoryPageFilter.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/widgets/RunListProgressiveRendering.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/widgets/HistoryPageEntry.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/AgentProtocol.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/views/Header.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/views/FullHeader.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/views/PartialHeader.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/views/JenkinsHeader.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/MetaLocaleDrivenResourceProvider.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/scm/RunWithSCM.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/scm/DefaultSCMCheckoutStrategyImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/DNSMultiCast.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/scm/SCMDecisionHandler.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/scm/SCMCheckoutStrategy.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/scm/SCMCheckoutStrategyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/telemetry/Telemetry.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/telemetry/Correlator.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/telemetry/impl/StaplerDispatches.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/telemetry/impl/SecuritySystemProperties.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/PluginLocaleDrivenResourceProvider.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/EnvVarsSlaveInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/ClassLoaderStatisticsSlaveInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/SlaveSystemInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/SystemPropertySlaveInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/SlaveSystemInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/SystemPropertySlaveInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/systemInfo/ThreadDumpSlaveInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/StandardOutputSwapper.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/PingFailureAnalyzer.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/RemotingVersionInfo.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/restarter/JnlpSlaveRestarterInstaller.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/restarter/WinswSlaveRestarter.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/restarter/UnixSlaveRestarter.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/restarter/SlaveRestarter.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/JnlpSlaveAgentProtocol.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/RemotingWorkDirSettings.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/WorkspaceLocator.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/slaves/NioChannelSelector.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/slaves/JnlpSlaveAgentProtocol4.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/ExtensionComponentSet.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/mvn/SettingsProvider.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/mvn/GlobalSettingsProvider.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/diagnostics/SecurityIsOffMonitor.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/model/RunAction2.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/model/IdStrategy.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/model/FingerprintFacet.java"/>
+
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/AbortException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/AboutJenkins.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/AbstractMarkupText.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/BulkChange.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ClassicPluginStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/CloseProofOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/CopyOnWrite.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/DependencyRunner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/DescriptorExtensionList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/EnvVars.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionComponent.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionFinder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionListListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionListView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ExtensionPoint.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/FeedAdapter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/FilePath.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/FileSystemProvisioner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Functions.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Indenter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Launcher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/LauncherDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/LocalPluginManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Lookup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Main.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/MarkupText.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PermalinkList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Platform.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Plugin.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginFirstClassLoader.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginFirstClassLoader2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginManagerStaplerOverride.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/PluginWrapper.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Proc.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ProxyConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/ResponseHeaderFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/StructuredForm.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/TcpSlaveAgentListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/URLConnectionDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/Util.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/WebAppMain.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/WorkspaceSnapshot.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/XmlFile.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/AbstractBuildRangeCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/BuildCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CLIAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CLICommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CliCrumbExclusion.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CliTransportAuthenticator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CloneableCLICommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/Connection.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/ConsoleCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CopyJobCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/CreateJobCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/DeleteBuildsCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/GetJobCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/GroovyCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/GroovyshCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/HelpCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/ListChangesCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/ListJobsCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/ListPluginsCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/SessionIdCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/UpdateJobCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/VersionCommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/WhoAmICommand.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/declarative/CLIRegisterer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/declarative/OptionHandlerExtension.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/handlers/AbstractProjectOptionHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/handlers/JobOptionHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/handlers/ParameterizedJobOptionHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/cli/handlers/TopLevelItemOptionHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/AnnotatedLargeText.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleAnnotationDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleAnnotationOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleAnnotator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleAnnotatorFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleLogFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/ConsoleNote.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/LineTransformationOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/PlainTextConsoleOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/console/UrlAnnotator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/HudsonHomeDiskUsageChecker.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/HudsonHomeDiskUsageMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/MemoryUsageMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/OldDataMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/ReverseProxySetupMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/diagnosis/TooManyJobsButNoView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/InitMilestone.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/InitReactorListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/InitStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/Initializer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/InitializerFinder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/TaskMethodFinder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/TermMilestone.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/Terminator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/TerminatorFinder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/impl/GroovyInitScript.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/impl/InitialUserContent.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/init/impl/InstallUncaughtExceptionHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/ExitLifecycle.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/Lifecycle.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/RestartNotSupportedException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/SolarisSMFLifecycle.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/SystemdLifecycle.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/WindowsInstallerLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/lifecycle/WindowsServiceLifecycle.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/logging/LogRecorder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/logging/LogRecorderManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/logging/WeakLogHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/markup/MarkupFormatter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/markup/MarkupFormatterDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractBuild.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractCIBase.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractDescribableImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractModelObject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AbstractProject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Action.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Actionable.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AdministrativeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AperiodicWork.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Api.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AsyncAperiodicWork.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AsyncPeriodicWork.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/AutoCompletionCandidates.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BallColor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BooleanParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BooleanParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Build.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildAuthorizationToken.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildStepListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildVariableContributor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildableItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/BuildableItemWithBuildWrappers.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Cause.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/CauseAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/CheckPoint.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ChoiceParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Computer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ComputerPanelBox.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ComputerPinger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ComputerSet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DependencyGraph.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Describable.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Descriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DescriptorByNameOwner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DescriptorVisibilityFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DirectlyModifiableView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DirectoryBrowserSupport.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DisplayNameListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/DownloadService.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Environment.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/EnvironmentContributingAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/EnvironmentContributor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/EnvironmentSpecific.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Executor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ExecutorListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FileParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FileParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Fingerprint.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FingerprintCleanupThread.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FingerprintMap.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FreeStyleBuild.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FreeStyleProject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/FullDuplexHttpChannel.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/HealthReport.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/HealthReportingAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Hudson.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Item.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ItemGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ItemGroupMixIn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ItemVisitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Items.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/JDK.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Job.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/JobProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/JobPropertyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Jobs.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Label.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/LabelFinder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ListView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/LoadBalancer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/LoadStatistics.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ManageJenkinsAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ManagementLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ModelObject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ModifiableItemGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ModifiableViewGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/MultiStageTimeSeries.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/MyView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/MyViewsProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/NoFingerprintMatch.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Node.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/OneOffExecutor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/OverallLoadStatistics.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PageDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PaneStatusProperties.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ParametersAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ParametersDefinitionProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PasswordParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PeriodicWork.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PermalinkProjectAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/PersistenceRoot.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Project.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ProminentProjectAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ProxyView.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Queue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RSS.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ReconfigurableDescribable.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Resource.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ResourceActivity.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ResourceController.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ResourceList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RestartListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Result.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ResultTrend.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Run.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RunAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RunMap.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RunParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/RunnerStack.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/SCMedItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Saveable.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/SimpleParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/Slave.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/StatusIcon.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/StreamBuildListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/StringParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/StringParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TaskAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TaskListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TaskThread.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TextParameterDefinition.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TextParameterValue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TimeSeries.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TimeZoneProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TopLevelItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TopLevelItemDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TransientBuildActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TransientComputerActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TransientProjectActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TransientUserActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/TransientViewActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UpdateCenter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UpdateSite.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UsageStatistics.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/User.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UserProperties.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UserProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/UserPropertyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/View.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ViewDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ViewGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ViewGroupMixIn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ViewJob.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/ViewPropertyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/WorkspaceBrowser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/WorkspaceCleanupThread.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/WorkspaceListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/labels/LabelAssignmentAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/labels/LabelAtom.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/labels/LabelAtomProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/labels/LabelExpression.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/listeners/ItemListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/listeners/RunListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/listeners/SCMListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/listeners/SCMPollListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/listeners/SaveableListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/AbstractQueueSorterImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/AbstractQueueTask.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/AbstractSubTask.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/CauseOfBlockage.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/Executables.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/FoldableAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/FutureImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/FutureLoad.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/Latch.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/LoadPredictor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/MappingWorksheet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/QueueListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/QueueSorter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/QueueTaskDispatcher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/QueueTaskFuture.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/ScheduleResult.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/SubTask.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/SubTaskContributor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/Tasks.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/WorkUnit.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/model/queue/WorkUnitContext.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/AbstractAsyncNodeMonitorDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/AbstractDiskSpaceMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/AbstractNodeMonitorDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/ArchitectureMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/DiskSpaceMonitorDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/MonitorOfflineCause.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/NodeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/NodeMonitorUpdater.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/ResponseTimeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/SwapSpaceMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/node_monitors/TemporarySpaceMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/os/PosixAPI.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/os/PosixException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/os/SU.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/os/WindowsUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scheduler/BaseParser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scheduler/CronTab.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scheduler/CronTabList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scheduler/Hash.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/AbstractScmTagAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/ChangeLogAnnotator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/ChangeLogParser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/ChangeLogSet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/EditType.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/NullChangeLogParser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/NullSCM.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/PollingResult.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/RepositoryBrowser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/RepositoryBrowsers.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/SCM.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/SCMDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/SCMS.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/scm/browsers/QueryBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/CollectionSearchIndex.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/FixedSet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/QuickSilver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/Search.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchIndex.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchIndexBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchItems.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchResult.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SearchableModelObject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/SuggestedItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/search/UnionSearchIndex.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/ACL.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/ACLContext.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AbstractPasswordBasedSecurityRealm.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AccessControlled.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AccessDeniedException2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AccessDeniedException3.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AccessDeniedHandlerImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AccountCreationFailedException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AuthenticationManagerProxy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AuthenticationProcessingFilter2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/AuthorizationStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/BasicAuthenticationFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/ChainedServletFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/CliAuthenticator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/ContainerAuthentication.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/FederatedLoginService.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/hudson/security/FullControlOnceLoggedInAuthorizationStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/GlobalSecurityConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/GroupDetails.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/HudsonAuthenticationEntryPoint.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/HudsonFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/HudsonPrivateSecurityRealm.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/LegacyAuthorizationStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/LegacySecurityRealm.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/NoopFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/Permission.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/PermissionAdder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/PermissionGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/PermissionScope.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/RememberMeServicesProxy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/SecurityMode.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/SecurityRealm.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/SidACL.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/SparseACL.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/TokenBasedRememberMeServices2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/UnwrapSecurityExceptionFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/UserDetailsServiceProxy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/WhoAmI.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/captcha/CaptchaSupport.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/CrumbExclusion.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/CrumbFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/CrumbIssuer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/CrumbIssuerDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/DefaultCrumbIssuer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/security/csrf/GlobalCrumbIssuerConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/AbstractCloudComputer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/AbstractCloudImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/AbstractCloudSlave.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/Channels.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/Cloud.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/CloudProvisioningListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/CloudRetentionStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/CloudSlaveRetentionStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/ComputerConnector.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/ComputerLauncher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/ComputerLauncherFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/ComputerListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/ComputerRetentionWork.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/DelegatingComputerLauncher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/DumbSlave.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/EphemeralNode.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/JNLPLauncher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/NodeDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/NodeList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/NodeProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/NodeProvisioner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/NodeSpecific.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/OfflineCause.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/RetentionStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/SimpleScheduledRetentionStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/SlaveComputer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/slaves/WorkspaceList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/ArtifactArchiver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BatchFile.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildStep.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildStepCompatibilityLayer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildStepDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildStepMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildTrigger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildWrapper.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildWrapperDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/BuildWrappers.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/Builder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/CommandInterpreter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/Fingerprinter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/LogRotator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/Maven.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/Publisher.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/Shell.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/UserAvatarResolver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/UserNameResolver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/_maven/Maven3MojoNote.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/_maven/MavenConsoleAnnotator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/_maven/MavenErrorNote.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/_maven/MavenMojoNote.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tasks/_maven/MavenWarningNote.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/AbstractCommandInstaller.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/DownloadFromUrlInstaller.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/PropertyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolInstallation.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolInstaller.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolInstallerDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolLocationNodeProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolLocationTranslator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/tools/ToolProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/triggers/SCMTrigger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/triggers/TimerTrigger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/triggers/Trigger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/triggers/TriggerDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/triggers/Triggers.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/AWTProblem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/AbstractTaskListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/AdministrativeError.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/AlternativeUiTextProvider.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Area.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ArgumentListBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/AtomicFileWriter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/BootFailure.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ByteArrayOutputStream2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CaseInsensitiveComparator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CharacterEncodingFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ChartUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ChunkedInputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ChunkedOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ClasspathBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ClockDifference.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ColorPalette.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ComboBoxModel.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CompoundEnumeration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CompressedFile.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ConsistentHash.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CopyOnWriteList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CopyOnWriteMap.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/CyclicGraphDetector.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DaemonThreadFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DataSetBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DecodingStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DelegatingOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DescribableList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DescriptorList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DirScanner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DoubleLaunchChecker.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/DualOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/EditDistance.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/EncodingStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/EnumConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ErrorObject.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FileChannelWriter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FileVisitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ForkOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FormApply.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FormFieldValidator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FormFillFailure.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/FormValidation.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Function1.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Futures.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Graph.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HeadBufferingStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HeapSpaceStringConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HexBinaryConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HistoricalSecrets.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HttpResponses.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HudsonFailedToLoad.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HudsonIsLoading.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/HudsonIsRestarting.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/IOException2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/IOUtils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/IncompatibleAntVersionDetected.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/IncompatibleServletVersionDetected.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/IncompatibleVMDetected.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/InsufficientPermissionDetected.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/InterceptingProxy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/InvocationInterceptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Iterators.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/JVMBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/JenkinsReloadFailed.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/KeyedDataStorage.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/LineEndingConversion.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ListBoxModel.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/LogTaskListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/MaskingClassLoader.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/MultipartFormDataParser.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NoClientBindProtocolSocketFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NoClientBindSSLProtocolSocketFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NoHomeDir.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NoOverlapCategoryAxis.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NoTempDir.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/NullStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/OneShotEvent.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/PackedMap.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/PersistedList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/PluginServletFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ProcessKiller.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ProcessKillingVeto.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ProcessTree.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ProcessTreeRemoting.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Protector.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ReflectionUtils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/RemotingDiagnostics.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Retrier.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/RingBufferLogHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/RobustCollectionConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/RobustReflectionConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/RunList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Scrambler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Secret.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/SecretRewriter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/SequentialExecutionQueue.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/Service.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/ShiftedCategoryAxis.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/StackedAreaRenderer2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/StreamCopyThread.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/StreamResource.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/StreamTaskListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/TableNestChecker.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/TextFile.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/TimeUnit2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/VariableResolver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/XStream2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/Archiver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/ArchiverFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/ParserConfigurator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/ReopenableFileOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/ReopenableRotatingFileOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/RewindableFileOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/io/RewindableRotatingFileOutputStream.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jelly/MorphTagLibrary.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/Advapi32.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/DotNet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/GNUCLibrary.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/JnaException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/Kernel32.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/Kernel32Utils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/Options.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/RegistryKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/SHELLEXECUTEINFO.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/Shell32.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/WINBASE.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/WINERROR.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/WINNT.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/jna/WinIOException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/xstream/ImmutableListConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/xstream/ImmutableMapConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/xstream/ImmutableSetConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/xstream/ImmutableSortedSetConverter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/util/xstream/MapperDelegate.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/GlobalDefaultViewConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/JobColumn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/ListViewColumn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/MyViewsTabBar.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/StatusColumn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/StatusFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/ViewJobFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/views/ViewsTabBar.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/widgets/BuildHistoryWidget.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/widgets/HistoryWidget.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/widgets/RenderOnDemandClosure.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/hudson/widgets/Widget.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/ClassLoaderReflectionToolkit.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/DailyCheck.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/ExtensionFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/ExtensionRefreshException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/I18n.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/InitReactorRunner.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/JenkinsHttpSessionListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/ProxyInjector.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/RestartRequiredException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/YesNoMaybe.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/fingerprints/FileFingerprintStorage.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/fingerprints/FingerprintStorage.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/fingerprints/FingerprintStorageDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/fingerprints/GlobalFingerprintConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/install/InstallState.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/install/InstallStateFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/install/InstallUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/install/SetupWizard.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/AdministrativeMonitorsDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/AsynchronousAdministrativeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/CliLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/ConfigureLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/ConsoleLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/NodesLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/PluginsLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/ReloadLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/StatisticsLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/SystemInfoLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/management/SystemLogLink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/AbstractTopLevelItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ArtifactManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ArtifactManagerFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/AssetManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/BackgroundGlobalBuildDiscarder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/BuildDiscarder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/BuildDiscarderDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/BuiltInNodeMigration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/CauseOfInterruption.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/Configuration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/CoreEnvironmentContributor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/DefaultSimplePageDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/DefaultUserCanonicalIdResolver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/DependencyDeclarer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/DirectlyModifiableTopLevelItemGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalBuildDiscarderConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalBuildDiscarderListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalBuildDiscarderStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalBuildDiscarderStrategyDescriptor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalCloudConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalConfigurationCategory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalNodePropertiesConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalPluginConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalProjectNamingStrategyConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalQuietPeriodConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/GlobalSCMRetryCountConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/Jenkins.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/JenkinsLocationConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/JobGlobalBuildDiscarderStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/MasterBuildConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ModelObjectWithChildren.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ModelObjectWithContextMenu.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ModifiableTopLevelItemGroup.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/NodeListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/Nodes.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ParameterizedJobMixIn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/PeepholePermalink.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/ProjectNamingStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/RunIdMigrator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/SimpleGlobalBuildDiscarderStrategy.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/SimplePageDecorator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/TransientActionFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/TransientFingerprintFacetFactory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/UnlabeledLoadStatistics.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/Uptime.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/identity/IdentityRootAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/identity/InstanceIdentityProvider.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/item_category/Category.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/item_category/ItemCategory.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/labels/LabelAutoCompleteSeeder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/labels/LabelValidator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/AbstractLazyLoadRunMap.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/Boundary.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/BuildReference.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/LazyBuildMixIn.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/SortedIntList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/lazy/SortedList.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/queue/AsynchronousExecution.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/queue/CompositeCauseOfBlockage.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/model/queue/ItemDeletion.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/monitor/JavaVersionRecommendationAdminMonitor.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/org/apache/commons/validator/routines/DomainValidator.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/org/apache/commons/validator/routines/InetAddressValidator.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/org/apache/commons/validator/routines/RegexValidator.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/org/apache/commons/validator/routines/UrlValidator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/plugins/DetachedPluginsUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/AcegiSecurityExceptionFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ApiCrumbExclusion.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ApiTokenFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ApiTokenProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/AuthenticationSuccessHandler.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/BasicHeaderApiTokenAuthenticator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/BasicHeaderAuthenticator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/BasicHeaderProcessor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ChannelConfigurator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ClassFilterImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ConfidentialStore.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/CryptoConfidentialKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/CustomClassFilter.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/DefaultConfidentialStore.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/HMACConfidentialKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/HexStringConfidentialKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ImpersonatingUserDetailsService.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ImpersonatingUserDetailsService2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/LastGrantedAuthoritiesProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/QueueItemAuthenticator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/QueueItemAuthenticatorConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/QueueItemAuthenticatorMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/RSAConfidentialKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/RSADigitalSignatureConfidentialKey.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/RekeySecretAdminMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ResourceDomainConfiguration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/ResourceDomainRootAction.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/SecureRequester.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/SecurityListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/UpdateSiteWarningsMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/UserDetailsCache.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/security/apitoken/ApiTokenPropertyDisabledDefaultAdministrativeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/security/apitoken/ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/apitoken/ApiTokenStats.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/apitoken/ApiTokenStore.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/jenkins/security/apitoken/LegacyApiTokenAdministrativeMonitor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/s2m/AdminWhitelistRule.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/s2m/CallableDirectionChecker.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/seed/UserSeedChangeListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/seed/UserSeedProperty.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/seed/UserSeedSecurityListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/stapler/StaplerFilteredActionListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/security/stapler/StaticRoutingDecisionProvider.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/SimpleBuildStep.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/SimpleBuildWrapper.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/filters/EnvVarsFilterGlobalRule.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/filters/EnvVarsFilterRule.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/filters/EnvVarsFilterableBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/tasks/filters/impl/RetainVariablesLocalRule.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/triggers/ReverseBuildTrigger.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/triggers/SCMTriggerItem.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/AntClassLoader.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/AtmostOneTaskExecutor.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/ContextResettingExecutorService.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/DirectedGraph.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/FullDuplexHttpService.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/HttpSessionListener.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/JSONSignatureValidator.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/JavaVMArguments.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/JenkinsClassLoader.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/JenkinsJVM.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/MemoryReductionUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/NonLocalizable.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/PluginLabelUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/ProgressiveRendering.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/ResourceBundleUtil.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/ServerTcpPort.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/SystemProperties.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/TimeDuration.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/Timer.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/TreeString.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/TreeStringBuilder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/URLClassLoader2.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/UrlHelper.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/VirtualFile.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/groovy/AbstractGroovyViewModule.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/groovy/GroovyHookScript.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/io/FileBoolean.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/java/JavaUtils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/xml/FilteredFunctionContext.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/xml/RestrictiveEntityResolver.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/xml/XMLUtils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/jenkins/util/xstream/XStreamDOM.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AccessDeniedException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AccountExpiredException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AcegiSecurityException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/Authentication.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AuthenticationException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AuthenticationManager.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/AuthenticationServiceException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/BadCredentialsException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/CredentialsExpiredException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/DisabledException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/GrantedAuthority.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/GrantedAuthorityImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/InsufficientAuthenticationException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/LockedException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/context/SecurityContext.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/context/SecurityContextHolder.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/context/SecurityContextImpl.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/providers/AbstractAuthenticationToken.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/providers/AuthenticationProvider.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/providers/ProviderNotFoundException.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/org/acegisecurity/providers/UsernamePasswordAuthenticationToken.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/org/acegisecurity/providers/anonymous/AnonymousAuthenticationToken.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/org/acegisecurity/providers/dao/AbstractUserDetailsAuthenticationProvider.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/ui/WebAuthenticationDetails.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/ui/rememberme/RememberMeServices.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/org/acegisecurity/ui/rememberme/TokenBasedRememberMeServices.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/userdetails/User.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/userdetails/UserDetails.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/userdetails/UserDetailsService.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/userdetails/UsernameNotFoundException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/acegisecurity/util/FieldUtils.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/BuildStatusIcon.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/Icon.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/IconSet.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/IconSpec.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/IconType.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/jenkins/ui/icon/WeatherIcon.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/springframework/dao/DataAccessException.java"/>
+  <suppress checks="JenkinsJavadoc"
+            files="src/main/java/org/springframework/dao/DataAccessResourceFailureException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/main/java/org/springframework/dao/DataRetrievalFailureException.java"/>
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/util/Point.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/model/StubJob.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/model/MockItem.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/model/MockItem.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/ChannelRule.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/os/DCOMSandbox.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/hudson/os/SUTester.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/util/io/FileLockerRule.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/security/ConfidentialStoreRule.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/org/apache/commons/validator/ResultPair.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/model/lazy/FakeMap.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/model/lazy/FakeMapBuilder.java" />
+  <suppress checks="JenkinsJavadoc" files="src/test/java/jenkins/model/lazy/FakeMapBuilder.java" />
+</suppressions>

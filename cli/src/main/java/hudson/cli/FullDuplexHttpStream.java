@@ -15,6 +15,7 @@ import java.util.logging.Logger;
  * HTTP, which is a request/response protocol.
  * {@code FullDuplexHttpService} is the counterpart on the server side.
  * @author Kohsuke Kawaguchi
+ * @since TODO
  */
 public class FullDuplexHttpStream {
     private final URL base;
@@ -25,6 +26,7 @@ public class FullDuplexHttpStream {
     /**
      * A way to get data from the server.
      * There will be an initial zero byte used as a handshake which you should expect and ignore.
+     * @since TODO
      */
     public InputStream getInputStream() {
         return input;
@@ -33,6 +35,7 @@ public class FullDuplexHttpStream {
     /**
      * A way to upload data to the server.
      * You will need to write to this and {@link OutputStream#flush} it to finish establishing a connection.
+     * @since TODO
      */
     public OutputStream getOutputStream() {
         return output;
@@ -44,6 +47,7 @@ public class FullDuplexHttpStream {
      *      The endpoint that we are making requests to.
      * @param authorization
      *      The value of the authorization header, if non-null.
+     * @since TODO
      */
     public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
         if (!base.toString().endsWith("/")) {

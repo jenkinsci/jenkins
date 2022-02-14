@@ -63,6 +63,7 @@ public class PrivateKeyProvider {
      * Get keys read so far.
      *
      * @return Possibly empty list. Never null.
+     * @since TODO
      */
     public List<KeyPair> getKeys() {
         return Collections.unmodifiableList(privateKeys);
@@ -78,6 +79,7 @@ public class PrivateKeyProvider {
      * {@code .ssh/id_rsa}, {@code .ssh/id_dsa} and {@code .ssh/identity}.
      *
      * @return true if some key was read successfully.
+     * @since TODO
      */
     public boolean readFromDefaultLocations() {
         final File home = new File(System.getProperty("user.home"));
@@ -102,6 +104,7 @@ public class PrivateKeyProvider {
 
     /**
      * Read key from keyFile.
+     * @since TODO
      */
     public void readFrom(File keyFile) throws IOException, GeneralSecurityException {
         final String password = isPemEncrypted(keyFile)
