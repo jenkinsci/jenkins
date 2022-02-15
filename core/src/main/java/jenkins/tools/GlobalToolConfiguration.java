@@ -51,7 +51,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.svg";
+        return "symbol-hammer";
     }
 
     @Override
