@@ -82,6 +82,10 @@
       width: 100%;
       height: 100%;
       color: var(--text-color);
+
+      * {
+        transition: stroke-width var(--standard-transition);
+      }
     }
   }
 
@@ -96,6 +100,12 @@
   }
 
   &--active {
+    font-weight: 600 !important;
+
+    svg * {
+      stroke-width: 42px;
+    }
+
     &::before {
       opacity: 0.1 !important;
     }
