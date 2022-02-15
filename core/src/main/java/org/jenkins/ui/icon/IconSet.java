@@ -548,6 +548,7 @@ public class IconSet {
         translations.put("icon-gear", "symbol-settings");
         translations.put("icon-gear2", "symbol-settings");
         translations.put("icon-plugin", "symbol-plugins");
+        translations.put("icon-up", "symbol-arrow-up");
 
         return translations.getOrDefault(tangoIcon, null);
     }

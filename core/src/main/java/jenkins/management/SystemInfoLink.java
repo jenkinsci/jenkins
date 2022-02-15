@@ -39,7 +39,7 @@ public class SystemInfoLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "computer.svg";
+        return "symbol-server";
     }
 
     @Override
