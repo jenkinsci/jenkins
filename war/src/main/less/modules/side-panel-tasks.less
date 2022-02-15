@@ -1,13 +1,22 @@
-@import '../abstracts/theme.less';
-
-#tasks {
+#tasks,
+.subtasks {
   display: flex;
   flex-direction: column;
   margin: 1.6rem 0 1.2rem 2rem;
+  gap: 5px;
+}
+
+.subtasks {
+  margin-top: 5px;
+  margin-bottom: 0;
+
+  &:empty {
+    display: none;
+  }
 }
 
 #tasks .task {
-  margin: 0 0 0.4rem -0.8rem;
+  margin: 0 0 0 -0.8rem;
 }
 
 #tasks .task .task-link {
@@ -15,10 +24,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0.8rem;
+  padding: 0.6rem 0.8rem;
+  gap: 0.7rem;
   cursor: pointer;
   z-index: 0;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   font-size: 0.9rem;
   color: var(--text-color) !important;
   background: transparent;
@@ -59,30 +69,20 @@
     }
   }
 
-  // Target only icons withink task link in order to keep backwards compatibility
-  .task .task-icon-link {
+  .task-icon-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin: 0;
-    margin-right: 0.5rem;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 20px;
+    height: 20px;
 
-    svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--primary);
+    svg,
+    img {
+      width: 100%;
+      height: 100%;
+      color: var(--text-color);
     }
-  }
-
-  // Reset the margin for the icon links
-  .task .task-icon-link img,
-  .task img.task-icon-link {
-    margin: 0;
-    // Dimensions have !important to override inline styles set by <l:icon>
-    height: 1.5rem !important;
-    width: 1.5rem !important;
   }
 
   &:active,
@@ -92,20 +92,6 @@
     }
     &::after {
       box-shadow: 0 0 0 5px var(--text-color);
-    }
-  }
-
-  .task-icon-link {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 20px;
-    height: 20px;
-    margin-right: 1.5ch;
-
-    svg, img {
-      width: 20px !important;
-      height: 20px !important;
     }
   }
 
