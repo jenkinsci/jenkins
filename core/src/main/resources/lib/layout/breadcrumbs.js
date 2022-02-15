@@ -23,8 +23,13 @@ var breadcrumbs = (function() {
     var logger = function() {};
     // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
-    function makeMenuHtml(icon,displayName) {
+    function makeMenuHtml(icon, iconXml, displayName) {
         var displaynameSpan = '<span>' + displayName + '</span>';
+
+        if (iconXml != null) {
+          return iconXml + displaynameSpan;
+        }
+
         if (icon === null) return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
 
         // TODO: move this to the API response in a clean way
@@ -213,9 +218,9 @@ var breadcrumbs = (function() {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
                         if (e.header) {
-                            e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                            e.text = makeMenuHtml(e.icon, e.iconXml, "<span class='header'>" + e.displayName + "</span>");
                         } else {
-                            e.text = makeMenuHtml(e.icon, e.displayName);
+                            e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
                         }
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
@@ -287,7 +292,7 @@ var breadcrumbs = (function() {
          * @return {breadcrumbs.MenuItem}
          */
         "add" : function (url,icon,displayName) {
-            this.items.push({ url:url, text:makeMenuHtml(icon,displayName) });
+            this.items.push({ url:url, text:makeMenuHtml(icon, null, displayName) });
             return this;
         }
     };

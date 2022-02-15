@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * An icon set.
@@ -45,7 +47,7 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> IONICONS = new ConcurrentHashMap<>();
+    private static final Map<String, String> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -73,34 +75,40 @@ public class IconSet {
         return icon;
     }
 
-    public static String getIonicon(String name, String title) {
-        if (IONICONS.containsKey(name)) {
-            String icon = IONICONS.get(name);
-            return prependTitleIfRequired(icon, title);
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public static String getSymbol(String name, String title, String classes) {
+        if (SYMBOLS.containsKey(name)) {
+            String symbol = SYMBOLS.get(name);
+            symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            return prependTitleIfRequired(symbol, title);
         }
 
-        // Load icon if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
-        String ionicon = null;
+        // Load symbol if it exists
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + name + ".svg");
+        String symbol = null;
 
         try {
             if (inputStream != null) {
-                ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                symbol = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             // ignored
         }
-        if (ionicon == null) {
-            ionicon = PLACEHOLDER_SVG;
+        if (symbol == null) {
+            symbol = PLACEHOLDER_SVG;
         }
 
-        ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+        symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+        symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+        symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        IONICONS.put(name, ionicon);
+        SYMBOLS.put(name, symbol);
 
-        return prependTitleIfRequired(ionicon, title);
+        return prependTitleIfRequired(symbol, title);
     }
 
     public IconSet addIcon(Icon icon) {
@@ -313,7 +321,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-sm", "16x16/clock_anime.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-sm", "16x16/computer-flash.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-document-add icon-sm", "16x16/document_add.gif", Icon.ICON_SMALL_STYLE));
@@ -357,7 +364,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-md", "24x24/clock_anime.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-md", "24x24/computer-flash.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.gif", Icon.ICON_MEDIUM_STYLE));
@@ -385,7 +391,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-lg", "32x32/clock_anime.gif", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-lg", "32x32/computer-flash.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.gif", Icon.ICON_LARGE_STYLE));
@@ -412,7 +417,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-aborted-anime icon-xlg", "build-status/build-status-sprite.svg#last-aborted", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-blue icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE, true));
-        icons.addIcon(new Icon("icon-computer-flash icon-xlg", "48x48/computer-flash.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new Icon("icon-green icon-xlg", "48x48/green.gif", Icon.ICON_XLARGE_STYLE));
@@ -513,24 +517,34 @@ public class IconSet {
         images.add("warning");
         images.add("document-properties");
 
-        Map<String, String> materialIcons = new HashMap<>();
-        materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");
-
         for (Map.Entry<String, String> size : sizes.entrySet()) {
             for (String image : images) {
                 icons.addIcon(new Icon("icon-" + image + " " + size.getKey(),
                         "svgs/" + image + ".svg", size.getValue()));
             }
-
-            for (Map.Entry<String, String> imageEntry : materialIcons.entrySet()) {
-                icons.addIcon(new Icon(
-                        "icon-" + imageEntry.getKey() + " " + size.getKey(),
-                                "material-icons/" + imageEntry.getValue(),
-                                size.getValue(),
-                                IconFormat.EXTERNAL_SVG_SPRITE
-                        )
-                );
-            }
         }
+    }
+
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @return a Jenkins Symbol (if one exists) otherwise null
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+        if (tangoIcon != null) {
+            tangoIcon = tangoIcon.split(" ")[0];
+        }
+
+        Map<String, String> translations = new HashMap<>();
+        translations.put("icon-clock", "symbol-play");
+        translations.put("icon-edit-delete", "symbol-trash");
+        translations.put("icon-gear", "symbol-settings");
+        translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-plugin", "symbol-plugins");
+
+        return translations.getOrDefault(tangoIcon, null);
     }
 }

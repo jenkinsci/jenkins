@@ -64,7 +64,7 @@ THE SOFTWARE.
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="${lr.searchUrl}/configure" class="jenkins-table__button">
-                  <l:ionicon name="settings-outline" />
+                  <l:icon src="symbol-settings" />
                 </a>
               </div>
             </l:isAdmin>
