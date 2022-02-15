@@ -37,7 +37,6 @@ import java.text.MessageFormat;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -81,7 +80,7 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
-            if (!StringUtils.isEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
+            if (req.getQueryString() != null && !req.getQueryString().isEmpty()) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath() + loginFormUrl;
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom, "UTF-8"));
             req.setAttribute("loginForm", loginForm);

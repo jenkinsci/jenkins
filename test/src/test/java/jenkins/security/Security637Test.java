@@ -45,7 +45,6 @@ import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -193,7 +192,7 @@ public class Security637Test {
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
                 for (URL url : urlJobProperty.urlSet) {
                     URLStreamHandler handler = (URLStreamHandler) handlerField.get(url);
-                    if (StringUtils.isEmpty(url.getHost())) {
+                    if (url.getHost() == null || url.getHost().isEmpty()) {
                         assertThat(handler.getClass().getName(), not(containsString("SafeURLStreamHandler")));
                     } else {
                         assertThat(handler.getClass().getName(), containsString("SafeURLStreamHandler"));
