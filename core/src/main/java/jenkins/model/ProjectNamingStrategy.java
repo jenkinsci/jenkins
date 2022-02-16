@@ -154,7 +154,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
         public void checkName(String name) {
             if (StringUtils.isNotBlank(namePattern) && StringUtils.isNotBlank(name)) {
                 if (!Pattern.matches(namePattern, name)) {
-                    throw new Failure(StringUtils.isEmpty(description) ?
+                    throw new Failure(description == null || description.isEmpty() ?
                         Messages.Hudson_JobNameConventionNotApplyed(name, namePattern) :
                         description);
                 }

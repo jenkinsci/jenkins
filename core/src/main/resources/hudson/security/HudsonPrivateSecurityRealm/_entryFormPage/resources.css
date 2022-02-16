@@ -1,4 +1,4 @@
-input {
+.form-content input {
 	/* match width with captcha image */
 	width:200px;
 }

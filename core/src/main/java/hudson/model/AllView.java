@@ -31,11 +31,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -146,7 +146,7 @@ public class AllView extends View {
                     // name conflict, we cannot rename the all view anyway
                     return primaryView;
                 }
-                if (StringUtils.equals(v.getViewName(), primaryView)) {
+                if (Objects.equals(v.getViewName(), primaryView)) {
                     if (v instanceof AllView) {
                         allView = (AllView) v;
                     } else {
