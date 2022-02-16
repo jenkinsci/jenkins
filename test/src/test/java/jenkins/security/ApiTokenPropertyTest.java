@@ -69,6 +69,7 @@ public class ApiTokenPropertyTest {
     public void basics() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.getById("foo", true);
+        j.createWebClient().withBasicApiToken(u);
         final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         final String token = t.getApiToken();
 

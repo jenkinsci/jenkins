@@ -65,9 +65,9 @@ THE SOFTWARE.
 
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
-          <td data="${c.icon}" class="jenkins-table__cell--tight">
+          <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
             <div class="jenkins-table__cell__button-wrapper">
-              <l:icon class="${c.iconClassName} icon-lg" alt="${c.iconAltText}"/>
+              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
             </div>
           </td>
 

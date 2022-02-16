@@ -133,7 +133,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -1283,7 +1282,7 @@ public class QueueTest {
         DomElement buildQueue = page.getElementById("buildQueue");
         DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
         HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
-                .filter(a -> StringUtils.isNotEmpty(a.getAttribute("tooltip")))
+                .filter(a -> a.getAttribute("tooltip") != null && !a.getAttribute("tooltip").isEmpty())
                 .findFirst().orElseThrow(IllegalStateException::new);
 
         String tooltip = anchorWithTooltip.getAttribute("tooltip");

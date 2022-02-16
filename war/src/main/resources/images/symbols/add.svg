@@ -1,6 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <path d="M10,2 C10.4365679,2 10.7914602,2.34969505 10.7998482,2.78425647 L10.8,2.8 L10.8,9.2 L17.2,9.2 C17.6418278,9.2 18,9.5581722 18,10 C18,10.4365679 17.6503049,10.7914602 17.2157435,10.7998482 L17.2,10.8 L10.8,10.8 L10.8,17.2 C10.8,17.6418278 10.4418278,18 10,18 C9.56343205,18 9.20853977,17.6503049 9.20015182,17.2157435 L9.2,17.2 L9.2,10.8 L2.8,10.8 C2.3581722,10.8 2,10.4418278 2,10 C2,9.56343205 2.34969505,9.20853977 2.78425647,9.20015182 L2.8,9.2 L9.2,9.2 L9.2,2.8 C9.2,2.3581722 9.5581722,2 10,2 Z" id="Shape" fill="currentColor" fill-rule="nonzero"></path>
-    </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Add</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M256 112v288M400 256H112"/></svg>
