@@ -151,7 +151,7 @@ public class IconTest  {
         assertIconToSymbolOkay(taskDivs.get(5).getElementsByTagName("svg").get(0));
 
         assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
-        assertIconToImageOkay(taskDivs.get(7).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
+        assertIconToImageOkay(taskDivs.get(7).getElementsByTagName("img").get(0), "plugin/xxx/icon.png");
     }
 
     @TestExtension("testTasks")
