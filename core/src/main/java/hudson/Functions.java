@@ -2336,6 +2336,10 @@ public class Functions {
         }
 
         if (iconMetadata == null) {
+            if (!iconGuess.startsWith("/") && !iconGuess.startsWith("http")) {
+                iconGuess = "/" + iconGuess;
+            }
+
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
 
