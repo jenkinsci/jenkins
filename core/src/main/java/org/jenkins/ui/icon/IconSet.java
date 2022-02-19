@@ -516,6 +516,7 @@ public class IconSet {
         images.add("video");
         images.add("warning");
         images.add("document-properties");
+        images.add("help");
 
         for (Map.Entry<String, String> size : sizes.entrySet()) {
             for (String image : images) {
@@ -545,6 +546,7 @@ public class IconSet {
         translations.put("icon-gear2", "symbol-settings");
         translations.put("icon-plugin", "symbol-plugins");
         translations.put("icon-up", "symbol-arrow-up");
+        translations.put("icon-help", "symbol-help-circle");
 
         return translations.getOrDefault(tangoIcon, null);
     }
