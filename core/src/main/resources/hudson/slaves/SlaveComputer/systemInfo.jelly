@@ -35,7 +35,9 @@ THE SOFTWARE.
     <l:main-panel>
 
       <h1>
-        <img src="${imagesURL}/svgs/${it.icon}" width="48" height="48" alt=""/>
+        <span class="icon-lg">
+          <l:icon src="${it.icon}"/>
+        </span>
         ${it.caption} ${%System Information}
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>
