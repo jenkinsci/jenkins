@@ -288,8 +288,6 @@ public class QueueTest {
         assertTrue("Got "+items[0], items[0] instanceof BlockedItem);
 
         q.save();
-        //For testing purposes we join with the dependency graph thread
-        r.jenkins.getFutureDependencyGraph().get();
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {

@@ -3569,6 +3569,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
 
+            _cleanUpCancelDependencyGraphCalculation();
+
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3916,6 +3918,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to release all loggers", e);
             // save for later
             errors.add(e);
+        }
+    }
+
+    private void _cleanUpCancelDependencyGraphCalculation() {
+        LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+        if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
+            synchronized (dependencyGraphLock) {
+                scheduledFutureDependencyGraph.cancel(true);
+            }
+        }
+        if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
+            synchronized (dependencyGraphLock) {
+                calculatingFutureDependencyGraph.cancel(true);
+            }
         }
     }
 
