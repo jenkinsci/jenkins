@@ -520,6 +520,7 @@ public class IconSet {
         images.add("video");
         images.add("warning");
         images.add("document-properties");
+        images.add("help");
 
         for (Map.Entry<String, String> size : sizes.entrySet()) {
             for (String image : images) {
@@ -543,21 +544,22 @@ public class IconSet {
         }
 
         Map<String, String> translations = new HashMap<>();
+        translations.put("icon-clipboard", "symbol-logs");
         translations.put("icon-clock", "symbol-play");
         translations.put("icon-edit-delete", "symbol-trash");
+        translations.put("icon-fingerprint", "symbol-fingerprint");
+        translations.put("icon-folder", "symbol-folder");
         translations.put("icon-gear", "symbol-settings");
         translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-help", "symbol-help-circle");
+        translations.put("icon-monitor", "symbol-terminal");
+        translations.put("icon-next", "symbol-arrow-right");
         translations.put("icon-plugin", "symbol-plugins");
-        translations.put("icon-folder", "symbol-folder");
-        translations.put("icon-user", "symbol-people");
+        translations.put("icon-previous", "symbol-arrow-left");
         translations.put("icon-search", "symbol-search");
         translations.put("icon-terminal", "symbol-terminal");
-        translations.put("icon-monitor", "symbol-terminal");
         translations.put("icon-up", "symbol-arrow-up");
-        translations.put("icon-previous", "symbol-arrow-left");
-        translations.put("icon-next", "symbol-arrow-right");
-        translations.put("icon-clipboard", "symbol-logs");
-        translations.put("icon-fingerprint", "symbol-fingerprint");
+        translations.put("icon-user", "symbol-people");
 
         return translations.getOrDefault(tangoIcon, null);
     }
