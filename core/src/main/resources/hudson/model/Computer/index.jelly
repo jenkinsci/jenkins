@@ -53,10 +53,10 @@ THE SOFTWARE.
       </div>
 
       <h1>
-        <span class="icon-lg">
+        <span class="icon-lg1">
           <l:icon src="${it.iconClassName}" />
         </span>
-        ${it.caption}
+        <span class="jenkins-icon-header-adjacent">${it.caption}</span>
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>
         </j:if>

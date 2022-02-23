@@ -40,9 +40,10 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
       <h1>
-        <span class="icon-lg">
-          <l:icon src="${icon}"/> ${%Script Console}
+        <span class="icon-lg1">
+          <l:icon src="${icon}"/>
         </span>
+        <span class="jenkins-icon-header-adjacent">${%Script Console}</span>
       </h1>
 
       <j:choose>
