@@ -1428,44 +1428,18 @@ function rowvgStartEachRow(recursive,f) {
         });
     });
 
-    /*
-        Use on div tag to make it sticky visible on the bottom of the page.
-        When page scrolls it remains in the bottom of the page
-        Convenient on "OK" button and etc for a long form page
-     */
-    Behaviour.specify("#bottom-sticker", "-bottom-sticker", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
+  window.addEventListener('load', function () {
+    // Add a class to the bottom bar when it's stuck to the bottom of the screen
+    const el = document.querySelector("#bottom-sticker")
+    if (el) {
+      const observer = new IntersectionObserver(
+        ([e]) => e.target.classList.toggle("bottom-sticker-inner--stuck", e.intersectionRatio < 1),
+        {threshold: [1]}
+      );
 
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "bottom-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-
-            var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
-
-            sticker.style.bottom = bottomPos + "px"
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
-        adjustSticker();
-        layoutUpdateCallback.add(adjustSticker);
-    });
+      observer.observe(el);
+    }
+  })
 
     Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
         this[".top-sticker"](sticker);
