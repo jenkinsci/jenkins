@@ -58,10 +58,6 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <l:hasPermission permission="${app.SYSTEM_READ}">
-        <st:include page="_cloud-note.jelly"/>
-      </l:hasPermission>
-
       <l:hasAdministerOrManage>
         <f:bottomButtonBar>
           <f:submit value="${%Save}" />
