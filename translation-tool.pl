@@ -322,20 +322,33 @@ sub loadJellyFile {
 sub loadPropertiesFile {
     my $file = shift;
     my %ret;
-    if ( open( F, "$file" ) ) {
-        my ( $cont, $key, $val ) = ( 0, undef, undef );
-        while (<F>) {
-            s/[\r\n]+//;
-            $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
-            if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
-                ( $key, $val ) = ( trim($1), trim($2) );
-                $ret{$key} = $val;
-            }
-            $cont = (/\\\s*$/) ? 1 : 0;
-        }
-        close(F);
-        $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
+    print "Trying to load $file... ";
+
+    unless ( -f $file ) {
+        print "file does not exist, skipping.\n";
+        return %ret;
     }
+
+    print "done.\n";
+    my $skip_comment = qr/^#/;
+    open( my $in, '<', $file ) or die "Cannot read $file: $!\n";
+    my ( $cont, $key, $val ) = ( 0, undef, undef );
+
+    while (<$in>) {
+        chomp;
+        next if $_ =~ $skip_comment;
+        print 'Line: ', $_, "\n";
+        s/[\r\n]+//;
+        $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
+        if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
+            ( $key, $val ) = ( trim($1), trim($2) );
+            $ret{$key} = $val;
+        }
+        $cont = (/\\\s*$/) ? 1 : 0;
+    }
+
+    close($in);
+    $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
     return %ret;
 }
 
