@@ -49,8 +49,8 @@ use File::Path;
 use Getopt::Long;
 
 my ($lang,   $editor, $dir,     $toiso,  $toascii, $add,
-    $remove, $reuse,  $counter, $target, $help
-) = ( undef, undef, "./", 0, 0, 0, 0, 0, 0, "./", 0 );
+    $remove, $reuse,  $counter, $target, $help,    $debug
+) = ( undef, undef, "./", 0, 0, 0, 0, 0, 0, "./", 0, 0 );
 
 GetOptions(
     'help'     => \$help,
@@ -63,7 +63,8 @@ GetOptions(
     'remove'   => \$remove,
     'reuse'    => \$reuse,
     'counter'  => \$counter,
-    'target=s' => \$target
+    'target=s' => \$target,
+    'debug'    => \$debug
 ) or die("Error in command line arguments\n");
 
 if ($help) {
@@ -314,22 +315,23 @@ sub loadJellyFile {
 sub loadPropertiesFile {
     my $file = shift;
     my %ret;
-    print "Trying to load $file... ";
+    print "Trying to load $file... " if ($debug);
 
     unless ( -f $file ) {
-        print "file does not exist, skipping.\n";
+        print "file does not exist, skipping.\n" if ($debug);
         return %ret;
     }
 
-    print "done.\n";
+    print "done.\n" if ($debug);
     my $skip_comment = qr/^#/;
     open( my $in, '<', $file ) or die "Cannot read $file: $!\n";
     my ( $cont, $key, $val ) = ( 0, undef, undef );
 
     while (<$in>) {
         chomp;
+        next if $_ eq '';
         next if $_ =~ $skip_comment;
-        print 'Line: ', $_, "\n";
+        print 'Line: ', $_, "\n" if ($debug);
         s/[\r\n]+//;
         $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
         if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
@@ -466,6 +468,7 @@ Usage: $0 --lang=xx [options] [dir]
 
    dir:               -> source folder for searching files (default is the current directory)
    options:
+     --help           -> print this help message and terminates the program with exit code 0.
      --lang=xx        -> language code to use (it is mandatory and it has to be different to English)
      --to-iso         -> optional, enables files in UTF-8 convertion to ISO-8859 if present
      --to-ascii       -> optional, convert files in UTF-8 to ASCII using the native2ascii command if present
@@ -477,6 +480,7 @@ Usage: $0 --lang=xx [options] [dir]
      --counter        -> optional, to each translated key, unique value is added to easily identify match missing translation
                          with value in source code if present
      --target=folder  -> optional, target folder for writing files
+     --debug          -> optional, print debugging messages to STDOUT when they are available
 
    Examples:
      - Look for Spanish files with incomplete keys in the 'main' folder,
