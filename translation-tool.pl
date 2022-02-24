@@ -46,61 +46,53 @@ use strict;
 use File::Basename;
 use File::Find;
 use File::Path;
+use Getopt::Long;
 
-my ($lang, $editor, $dir,   $toiso,   $toascii,
-    $add,  $remove, $reuse, $counter, $target
-    )
-    = ( undef, undef, "./", undef, undef, undef, undef, undef, undef, "./" );
+my ($lang,   $editor, $dir,     $toiso,  $toascii, $add,
+    $remove, $reuse,  $counter, $target, $help
+) = ( undef, undef, "./", 0, 0, 0, 0, 0, 0, "./", 0 );
+
+GetOptions(
+    'help'     => \$help,
+    'lang=s'   => \$lang,
+    'editor'   => \$editor,
+    'dir=s'    => \$dir,
+    'to-iso'   => \$toiso,
+    'to-ascii' => \$toascii,
+    'add'      => \$add,
+    'remove'   => \$remove,
+    'reuse'    => \$reuse,
+    'counter'  => \$counter,
+    'target=s' => \$target
+) or die("Error in command line arguments\n");
+
+if ($help) {
+    usage();
+    exit(0);
+}
+
+$add = 1 if ($editor);
+
+if ( $toiso && $toascii ) {
+    warn "You can't have --to-iso and --to-ascii options at the same time\n";
+    usage();
+    exit(1);
+}
+
 my ( $tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins,
     $countervalue )
     = ( 0, 0, 0, 0, 0, 0, 0, 1 );
-## read arguments
-foreach (@ARGV) {
-    if (/^--lang=(.*)$/) {
-        $lang = $1;
-    }
-    elsif (/^--editor=(.*)$/) {
-        $editor = $1;
-        $add    = 1;
-    }
-    elsif ( /^--toiso$/ || /^--toiso=true$/ ) {
-        $toiso   = 1;
-        $toascii = 0;
-    }
-    elsif ( /^--toascii$/ || /^--toascii=true$/ ) {
-        $toascii = 1;
-        $toiso   = 0;
-    }
-    elsif ( /^--add$/ || /^--add=true$/ ) {
-        $add = 1;
-    }
-    elsif ( /^--remove$/ || /^--remove=true$/ ) {
-        $remove = 1;
-    }
-    elsif (/^--reuse=(.*)$/) {
-        $reuse = $1;
-    }
-    elsif ( /^--counter$/ || /^--counter=true$/ ) {
-        $counter = 1;
-    }
-    elsif (/^--target=(.*)$/) {
-        $target = $1;
-    }
-    else {
-        $dir = $_;
-    }
-}
 
-## language parameter is mandatory and shouldn't be 'en'
-if ( !$lang || $lang eq "en" ) {
+# language parameter is mandatory and shouldn't be 'en'
+unless ( ($lang) and ( $lang ne 'en' ) ) {
     usage();
-    exit();
+    exit(1);
 }
 
-print STDERR "Finding files ...\n";
+print "Searching for files ...\n";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
-print STDERR "Found " . ( scalar keys @files ) . " files\n";
+print 'Found ', scalar(@files), ' files', "\n";
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys( $reuse, $lang ) if ( $reuse && -e $reuse );
@@ -472,30 +464,29 @@ Translation Tool for Jenkins
 
 Usage: $0 --lang=xx [options] [dir]
 
-   dir:                   -> source folder for searching files (default current)
+   dir:               -> source folder for searching files (default is the current directory)
    options:
-     --lang=xx            -> language code to use (it is mandatory and it has to be different to English)
-     --toiso=true|false   -> convert files in UTF-8 to ISO-8859 (default false)
-     --toascii=true|false -> convert files in UTF-8 to ASCII using the native2ascii command (default false)
-     --add=true|false     -> generate new files and add new keys to existing files (default false)
-     --remove=true|false  -> remove unused key/value pair for existing files (default false)
-     --editor=command     -> command to run over each updated file, implies add=true (default none)
-     --reuse=folder       -> load a cache with keys already translated in the folder provided in
-                             order to utilize them when the same key appears
-     --counter=true       -> to each translated key, unique value is added to easily identify match missing translation
-                             with value in source code (default false)
-     --target=folder      -> target folder for writing files
+     --lang=xx        -> language code to use (it is mandatory and it has to be different to English)
+     --to-iso         -> optional, enables files in UTF-8 convertion to ISO-8859 if present
+     --to-ascii       -> optional, convert files in UTF-8 to ASCII using the native2ascii command if present
+     --add            -> optional, generate new files and add new keys to existing files if present
+     --remove         -> optional, remove unused key/value pair for existing files if present
+     --editor=command -> command to run over each updated file, implies --add if present
+     --reuse=folder   -> optional, load a cache with keys already translated in the folder provided in
+                         order to utilize them when the same key appears if present
+     --counter        -> optional, to each translated key, unique value is added to easily identify match missing translation
+                         with value in source code if present
+     --target=folder  -> optional, target folder for writing files
 
    Examples:
      - Look for Spanish files with incomplete keys in the 'main' folder,
        edit them with gedit, and finally convert them to ISO-8859
-        $0 --lang=es --editor=gedit --toiso main
+        $0 --lang=es --editor=gedit --to-iso main
      - Convert all Japanese files in the current folder encoded with UTF-8 to ASCII
-        $0 --lang=ja --toascii .
+        $0 --lang=ja --to-ascii .
      - Remove all orphaned keys from German files which are in the current file
         $0 --lang=de --remove .
 
 ";
-    exit();
 }
 
