@@ -342,6 +342,7 @@ sub loadPropertiesFile {
     }
 
     close($in);
+    # TODO: Use of uninitialized value $_ in pattern match (m//) at ./translation-tool.pl line 345.
     $ret{$key} .= "\n$1" if ( $cont && /\s*(.*)[\\\s]*$/ );
     return %ret;
 }
