@@ -558,6 +558,7 @@ public class IconSet {
         translations.put("icon-previous", "symbol-arrow-left");
         translations.put("icon-search", "symbol-search");
         translations.put("icon-terminal", "symbol-terminal");
+        translations.put("icon-text", "symbol-details");
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
 

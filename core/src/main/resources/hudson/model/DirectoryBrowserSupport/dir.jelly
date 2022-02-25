@@ -33,13 +33,15 @@ THE SOFTWARE.
       <!-- parent path -->
         <div class="parentPath">
           <form action="${backPath}" method="get">
-            <a href="${topPath}"><l:icon class="${icons.toNormalizedIconNameClass(icon)} icon-md" /></a>
+            <a href="${topPath}">${it.owner.name}</a> /
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
-            <input type="text" name="pattern" value="${pattern}" />
-            <l:icon class="icon-go-next icon-sm" onclick="this.parentNode.submit()" style="vertical-align:middle; cursor:pointer"/>
+            <input type="text" name="pattern" value="${pattern}" class="jenkins-input" />
+            <button class="jenkins-button">
+              <l:icon src="symbol-arrow-right" />
+            </button>
           </form>
         </div>
         <j:choose>
@@ -87,15 +89,16 @@ THE SOFTWARE.
                     <td class="fileSize">
                       ${h.humanReadableByteSize(x.getSize())}
                     </td>
-                    <td>
+                    <td style="display: flex; gap: 1rem;">
                       <j:if test="${x.readable}">
                         <j:if test="${app.fingerprintMap.ready}">
-                          <a href="${x.href}/*fingerprint*/">
-                            <l:icon class="icon-fingerprint icon-sm"/>
+                          <a class="jenkins-link--with-icon" href="${x.href}/*fingerprint*/" tooltip="${%View fingerprint}">
+                            <l:icon class="symbol-fingerprint" />
                           </a>
-                          <st:nbsp/>
                         </j:if>
-                        <a href="${x.href}/*view*/">${%view}</a>
+                        <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="${%View}">
+                          <l:icon src="symbol-download" />
+                        </a>
                       </j:if>
                     </td>
                   </j:if>
@@ -104,8 +107,8 @@ THE SOFTWARE.
               <tr>
                 <td style="text-align:right;" colspan="3">
                   <div style="margin-top: 1em;">
-                    <a href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                      <l:icon class="icon-package icon-sm"/>
+                    <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
+                      <l:icon src="symbol-download"/>
                       (${%all files in zip})
                     </a>
                   </div>

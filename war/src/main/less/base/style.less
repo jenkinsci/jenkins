@@ -1005,9 +1005,16 @@ table.parameters > tbody:hover {
 }
 
 /* ========================= directory tree ========================= */
-.parentPath {
-  font-size: var(--font-size-base);
-  font-weight: bold;
+.parentPath form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .jenkins-input {
+    display: inline-flex;
+    width: 300px;
+  }
 }
 
 .dirTree li {
@@ -1019,18 +1026,20 @@ table.parameters > tbody:hover {
 }
 
 table.fileList {
-  margin-left: 2em;
   padding: 0;
 }
 
-table.fileList td {
-  padding: 0;
+table.fileList td:not(:first-of-type) {
+  padding: 0 1rem 0 0;
+  color: var(--text-color-secondary);
+
+  svg {
+    color: var(--link-color) !important;
+  }
 }
 
 table.fileList td.fileSize {
-  padding-left: 2em;
   text-align: right;
-  color: #888;
 }
 
 
