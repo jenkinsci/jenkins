@@ -39,7 +39,7 @@ THE SOFTWARE.
   </st:documentation>
   <f:prepareDatabinding />
 
-  <f:radioBlock name="_.${attrs.field}" value="true" title="${attrs['true']?:'%Yes'}" checked="${instance[field]}" />
-  <f:radioBlock name="_.${attrs.field}" value="false" title="${attrs['false']?:'%No'}" checked="${!instance[field]}" />
+  <f:radio name="_.${attrs.field}" title="${attrs['true']?:'%Yes'}" value="true" checked="${instance[field]}" />
+  <f:radio name="_.${attrs.field}" title="${attrs['false']?:'%No'}" value="false" checked="${!instance[field]}" />
   <!-- TODO consider customizedFields -->
 </j:jelly>
