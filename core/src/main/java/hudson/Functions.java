@@ -130,6 +130,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -574,7 +575,7 @@ public class Functions {
     private static String[] logRecordPreformat(LogRecord r) {
         String source;
         if (r.getSourceClassName() == null) {
-            source = r.getLoggerName();
+            source = r.getLoggerName() == null ? "" : r.getLoggerName();
         } else {
             if (r.getSourceMethodName() == null) {
                 source = r.getSourceClassName();
