@@ -13,7 +13,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-gear icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
+            l.task(icon:"symbol-settings", href:"${rootURL}/computer/", title:_("Manage Nodes"))
         }
     }
     l.app_bar(title: my.displayName)
@@ -25,7 +25,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
                 l.spinner(text: _("LOADING"))
             }
 
-            f.form(method:"post",name:"config",action:"configure") {
+            f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
                 f.block {
                     if (app.clouds.size() == 0 && !h.hasPermission(app.ADMINISTER)) {
                         p(_("No clouds have been configured."))

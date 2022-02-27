@@ -57,7 +57,8 @@
     margin: 0;
   }
 
-  &::before {
+  &::before,
+  &::after {
     position: absolute;
     content: "";
     top: -10px;
@@ -66,12 +67,23 @@
     right: -10px;
     z-index: -1;
     border-radius: 6px;
+    transition: var(--standard-transition);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &::before {
+    background-color: var(--text-color);
+  }
+
+  &::after {
+    box-shadow: 0 0 0 10px transparent;
   }
 
   &:hover,
   &:focus {
     &::before {
-      background-color: var(--btn-link-bg--hover);
+      opacity: 0.1;
     }
   }
 
@@ -81,8 +93,12 @@
     z-index: 1;
 
     &::before {
-      background: var(--btn-link-bg--active);
-      box-shadow: 0 0 0 2px var(--focus-btn-primary);
+      opacity: 0.15;
+    }
+
+    &::after {
+      opacity: 0.075;
+      box-shadow: 0 0 0 5px var(--text-color);
     }
   }
 
@@ -92,26 +108,81 @@
     min-height: 48px;
   }
 
-  .icon, .icon-xlg {
+  .jenkins-section__item__icon {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 1rem 0 0;
     width: 48px;
     height: 48px;
-    pointer-events: none;
     margin: 0 1rem 0 0;
+    flex-shrink: 0;
+    color: var(--text-color);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      border-radius: 100%;
+      background: currentColor;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+
+    img,
+    svg {
+      position: relative;
+      width: 24px !important;
+      height: 24px !important;
+      color: currentColor;
+    }
+
+    &__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ff0b27;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      min-height: 20px;
+      min-width: 20px;
+      padding: 0 0.4rem;
+      box-shadow: 0 1px 1px rgba(black, 0.1);
+      color: white;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(white, black);
+        border-radius: 100px;
+        mix-blend-mode: overlay;
+        opacity: 0.35;
+      }
+    }
   }
 
   dt {
-    font-size: var(--font-size-base);
+    font-size: 0.95rem;
     font-weight: 600;
     margin: 0 0 2px 0;
     color: var(--text-color);
   }
 
   dd {
-    color: var(--text-color);
-    opacity: 0.75;
+    color: var(--text-color-secondary);
     font-weight: 500;
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.66;
   }
 }

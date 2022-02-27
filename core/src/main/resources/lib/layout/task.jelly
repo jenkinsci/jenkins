@@ -37,6 +37,7 @@ THE SOFTWARE.
 
       Common values include:
 
+      # "symbol-search" / "symbol-terminal" / "symbol-settings" - use a Jenkins Symbol as the icon for your task
       # "icon-folder icon-md" is an example of using a class spec for a medium folder icon
       # "images/24x24/..." then points to the stock icon resources
       # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
@@ -56,7 +57,7 @@ THE SOFTWARE.
 
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
-      
+
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
     <st:attribute name="permissions">
@@ -113,6 +114,10 @@ THE SOFTWARE.
       </j:when>
       <j:set var="match" value="${isCurrent or hasMatchingChild}" />
 
+      <j:if test="${attrs.permission != null}">
+        <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
+      </j:if>
+
       <!--
       The icon attribute can be an icon class spec, or can be the url of an icon image.
       Within core Jenkins, we've updated all usages of the task element to use icon class specs,
@@ -123,26 +128,12 @@ THE SOFTWARE.
       icon class spec from the icon metadata, otherwise we create an icon element instance using
       icon attribute value as an icon "src" (Vs class spec).
       -->
-      <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.icon)}"/>
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(attrs.icon) + ' icon-md')}"/>
-      </j:if>
-      <j:if test="${iconMetadata == null}">
-        <!-- Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png" -->
-        <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.icon)}"/>
-      </j:if>
-
-      <j:if test="${!icon.startsWith('/')}">
-        <j:set var="icon" value="/${icon}"/>
-      </j:if>
-      <j:set var="icon" value="${rootURL}${icon.startsWith('/images/') || icon.startsWith('/plugin/') ? h.resourcePath : ''}${icon}"/>
       <j:when test="${enabled==false}">
         <div class="task disabled">
           <span class="task-link-wrapper">
             <span class="task-disabled-link">
               <span class="task-icon-link">
-                <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
             </span>
@@ -153,15 +144,11 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="task ">
           <span class="task-link-wrapper ${watch ? 'task--active' : ''}">
-            <j:choose>
-              <j:when test="${iconMetadata != null}">
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:when>
-              <j:otherwise>
-                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
-              </j:otherwise>
-            </j:choose>
-
+            <j:set var="iconSrc" value="${h.tryGetIconPath(icon, context)}"/>
+            <j:set var="iconXml">
+              <l:icon src="${icon}" />
+            </j:set>
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
             <j:set var="id" value="${h.generateId()}"/>
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
@@ -177,7 +164,7 @@ THE SOFTWARE.
               <j:when test="${requiresConfirmation and not attrs.onClick}">
                 <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                   <span class="task-icon-link">
-                    <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
                 </l:confirmationLink>
@@ -186,7 +173,7 @@ THE SOFTWARE.
               <j:otherwise>
                 <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
                   <span class="task-icon-link">
-                    <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                    <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>

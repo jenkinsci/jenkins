@@ -39,7 +39,7 @@ THE SOFTWARE.
           value="${request.getParameter('filter')}"
           placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
         <div class="jenkins-search__icon">
-          <l:ionicon name="search-outline"/>
+          <l:icon src="symbol-search"/>
         </div>
       </div>
     </l:app-bar>
@@ -180,7 +180,7 @@ THE SOFTWARE.
                           <form class="jenkins-buttons-row" method="post"
                                 action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
                             <button class="jenkins-table__button  jenkins-table__button--orange" tooltip="${%downgradeTo(p.backupVersion)}">
-                              <l:ionicon name="downgrade-circle-outline"/>
+                              <l:icon src="symbol-downgrade-circle"/>
                               <span class="jenkins-!-margin-left-1"
                                     style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
                                 ${p.backupVersion}
@@ -226,7 +226,7 @@ THE SOFTWARE.
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
                               <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:ionicon name="close-circle-outline"/>
+                                <l:icon src="symbol-close-circle"/>
                               </button>
                             </form>
                           </j:otherwise>

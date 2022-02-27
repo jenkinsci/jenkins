@@ -21,10 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-.legacy-token-usage table.align-th-left th {
-    text-align: left;
-}
-
 .legacy-token-usage table .no-token {
     padding: 8px 12px;
     font-style: italic;

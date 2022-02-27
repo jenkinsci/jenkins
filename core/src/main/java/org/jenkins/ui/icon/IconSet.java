@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * An icon set.
@@ -45,7 +47,7 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> IONICONS = new ConcurrentHashMap<>();
+    private static final Map<String, String> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -73,34 +75,40 @@ public class IconSet {
         return icon;
     }
 
-    public static String getIonicon(String name, String title) {
-        if (IONICONS.containsKey(name)) {
-            String icon = IONICONS.get(name);
-            return prependTitleIfRequired(icon, title);
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public static String getSymbol(String name, String title, String classes) {
+        if (SYMBOLS.containsKey(name)) {
+            String symbol = SYMBOLS.get(name);
+            symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            return prependTitleIfRequired(symbol, title);
         }
 
-        // Load icon if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/ionicons/" + name + ".svg");
-        String ionicon = null;
+        // Load symbol if it exists
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + name + ".svg");
+        String symbol = null;
 
         try {
             if (inputStream != null) {
-                ionicon = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                symbol = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             // ignored
         }
-        if (ionicon == null) {
-            ionicon = PLACEHOLDER_SVG;
+        if (symbol == null) {
+            symbol = PLACEHOLDER_SVG;
         }
 
-        ionicon = ionicon.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        ionicon = ionicon.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        ionicon = ionicon.replace("stroke:#000", "stroke:currentColor");
+        symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
+        symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+        symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+        symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        IONICONS.put(name, ionicon);
+        SYMBOLS.put(name, symbol);
 
-        return prependTitleIfRequired(ionicon, title);
+        return prependTitleIfRequired(symbol, title);
     }
 
     public IconSet addIcon(Icon icon) {
@@ -313,7 +321,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-sm", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-sm", "16x16/clock_anime.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-sm", "16x16/computer-flash.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-sm", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-document-add icon-sm", "16x16/document_add.gif", Icon.ICON_SMALL_STYLE));
@@ -326,8 +333,8 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green icon-sm", "16x16/green.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-sm", "16x16/green_anime.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-sm", "16x16/grey.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-grey-anime icon-sm", "16x16/grey_anime.gif", Icon.ICON_SMALL_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey-anime icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new WeatherIcon("icon-health-00to19 icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.POURING));
         icons.addIcon(new WeatherIcon("icon-health-20to39 icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.RAINY));
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.CLOUDY));
@@ -351,7 +358,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-sm", "16x16/grey.png", Icon.ICON_SMALL_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-text-error icon-sm", "16x16/text-error.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-text icon-sm", "16x16/text.png", Icon.ICON_SMALL_STYLE));
 
@@ -361,14 +368,13 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-md", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-md", "24x24/clock_anime.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-md", "24x24/computer-flash.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-md", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green icon-md", "24x24/green.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-md", "24x24/green_anime.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-grey-anime icon-md", "24x24/grey_anime.gif", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-md", "build-status/build-status-sprite.svg#never-built", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey-anime icon-md", "build-status/build-status-sprite.svg#never-built", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new WeatherIcon("icon-health-00to19 icon-md", Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.POURING));
         icons.addIcon(new WeatherIcon("icon-health-20to39 icon-md", Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.RAINY));
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-md", Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.CLOUDY));
@@ -381,7 +387,7 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-md", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_MEDIUM_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-md", "24x24/empty.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.png", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-md", "build-status/build-status-sprite.svg#never-built", Icon.ICON_MEDIUM_STYLE));
 
         // Large icons
         icons.addIcon(new BuildStatusIcon("icon-aborted icon-lg", "build-status/build-status-sprite.svg#last-aborted", Icon.ICON_LARGE_STYLE));
@@ -389,14 +395,13 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-blue icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-lg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-clock-anime icon-lg", "32x32/clock_anime.gif", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-computer-flash icon-lg", "32x32/computer-flash.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-lg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-green icon-lg", "32x32/green.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-lg", "32x32/green_anime.gif", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-lg", "32x32/grey.gif", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-grey-anime icon-lg", "32x32/grey_anime.gif", Icon.ICON_LARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-lg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_LARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey-anime icon-lg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new WeatherIcon("icon-health-00to19 icon-lg", Icon.ICON_LARGE_STYLE, WeatherIcon.Status.POURING));
         icons.addIcon(new WeatherIcon("icon-health-20to39 icon-lg", Icon.ICON_LARGE_STYLE, WeatherIcon.Status.RAINY));
@@ -409,20 +414,19 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-lg", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_LARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-lg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-lg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_LARGE_STYLE, true));
-        icons.addIcon(new Icon("icon-grey icon-lg", "32x32/grey.png", Icon.ICON_LARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-lg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_LARGE_STYLE));
 
         // Extra-large icons
         icons.addIcon(new BuildStatusIcon("icon-aborted icon-xlg", "build-status/build-status-sprite.svg#last-aborted", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-aborted-anime icon-xlg", "build-status/build-status-sprite.svg#last-aborted", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-blue icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-blue-anime icon-xlg", "build-status/build-status-sprite.svg#last-successful", Icon.ICON_XLARGE_STYLE, true));
-        icons.addIcon(new Icon("icon-computer-flash icon-xlg", "48x48/computer-flash.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-disabled-anime icon-xlg", "build-status/build-status-sprite.svg#last-disabled", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new Icon("icon-green icon-xlg", "48x48/green.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-xlg", "48x48/green_anime.gif", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-xlg", "48x48/grey.gif", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-grey-anime icon-xlg", "48x48/grey_anime.gif", Icon.ICON_XLARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey-anime icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new WeatherIcon("icon-health-00to19 icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.POURING));
         icons.addIcon(new WeatherIcon("icon-health-20to39 icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.RAINY));
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.CLOUDY));
@@ -435,7 +439,7 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new Icon("icon-empty icon-xlg", "48x48/empty.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-grey icon-xlg", "48x48/grey.png", Icon.ICON_XLARGE_STYLE));
+        icons.addIcon(new BuildStatusIcon("icon-grey icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE));
 
         initializeSVGs();
 
@@ -516,25 +520,38 @@ public class IconSet {
         images.add("video");
         images.add("warning");
         images.add("document-properties");
-
-        Map<String, String> materialIcons = new HashMap<>();
-        materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");
+        images.add("help");
 
         for (Map.Entry<String, String> size : sizes.entrySet()) {
             for (String image : images) {
                 icons.addIcon(new Icon("icon-" + image + " " + size.getKey(),
                         "svgs/" + image + ".svg", size.getValue()));
             }
-
-            for (Map.Entry<String, String> imageEntry : materialIcons.entrySet()) {
-                icons.addIcon(new Icon(
-                        "icon-" + imageEntry.getKey() + " " + size.getKey(),
-                                "material-icons/" + imageEntry.getValue(),
-                                size.getValue(),
-                                IconFormat.EXTERNAL_SVG_SPRITE
-                        )
-                );
-            }
         }
+    }
+
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @return a Jenkins Symbol (if one exists) otherwise null
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+        if (tangoIcon != null) {
+            tangoIcon = tangoIcon.split(" ")[0];
+        }
+
+        Map<String, String> translations = new HashMap<>();
+        translations.put("icon-clock", "symbol-play");
+        translations.put("icon-edit-delete", "symbol-trash");
+        translations.put("icon-gear", "symbol-settings");
+        translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-plugin", "symbol-plugins");
+        translations.put("icon-up", "symbol-arrow-up");
+        translations.put("icon-help", "symbol-help-circle");
+
+        return translations.getOrDefault(tangoIcon, null);
     }
 }

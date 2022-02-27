@@ -28,19 +28,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <l:header>
-       <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
-    </l:header>
+    <l:app-bar title="${%Manage Jenkins}" />
 
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" />
     </j:if>
 
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <h1>${%Manage Jenkins}</h1>
-      </div>
-
       <section class="manage-messages">
         <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
           <st:include page="message.jelly" it="${am}" />
@@ -54,34 +48,20 @@ THE SOFTWARE.
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
           <div class="jenkins-section__items">
           <j:forEach var="m" items="${category.value}">
-            <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
-            <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icon + ' icon-xlg')}"/>
-            <j:if test="${iconMetadata == null}">
-              <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
-              <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
-            </j:if>
-            <j:if test="${iconMetadata == null}">
-              <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
-            </j:if>
-
-            <j:if test="${icon!=null}">
+            <j:if test="${m.iconFileName != null}">
               <div class="jenkins-section__item">
-              <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/svgs/' + icon}" />
               <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+              <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
+              <j:set var="iconXml">
+                <l:icon src="${m.iconFileName}" />
+              </j:set>
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <j:choose>
-                      <j:when test="${iconMetadata != null}">
-                        <l:icon class="${iconMetadata.classSpec}"/>
-                      </j:when>
-                      <j:otherwise>
-                        <l:icon src="${iconUrl}"
-                                class="icon"
-                                alt="[${%alt}]" />
-                      </j:otherwise>
-                    </j:choose>
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -91,17 +71,9 @@ THE SOFTWARE.
                 </j:when>
                 <j:when test="${m.requiresPOST}">
                   <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <j:choose>
-                      <j:when test="${iconMetadata != null}">
-                        <l:icon class="${iconMetadata.classSpec}"
-                                alt="[${%alt}]"/>
-                      </j:when>
-                      <j:otherwise>
-                        <l:icon src="${iconUrl}"
-                                class="icon"
-                                alt="[${%alt}]" />
-                      </j:otherwise>
-                    </j:choose>
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>
@@ -111,17 +83,14 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <a href="${m.urlName}">
-                    <j:choose>
-                      <j:when test="${iconMetadata != null}">
-                        <l:icon class="${iconMetadata.classSpec}"
-                                alt="[${%alt}]"/>
-                      </j:when>
-                      <j:otherwise>
-                        <l:icon src="${iconUrl}"
-                                class="icon"
-                                alt="[${%alt}]" />
-                      </j:otherwise>
-                    </j:choose>
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                      <j:if test="${m.getUpdateCount() != null and m.getUpdateCount() != 0}">
+                        <div tooltip="${m.getUpdateCount() == 1 ? '%updateAvailable(m.getUpdateCount())' : '%updatesAvailable(m.getUpdateCount())'}" class="jenkins-section__item__icon__badge">
+                          ${m.getUpdateCount()}
+                        </div>
+                      </j:if>
+                    </div>
                     <dl>
                       <dt>${m.displayName}</dt>
                       <dd><j:out value="${m.description}"/></dd>

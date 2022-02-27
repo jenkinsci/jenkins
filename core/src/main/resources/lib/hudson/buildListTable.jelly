@@ -56,7 +56,7 @@ THE SOFTWARE.
               tr.insert(new Element('td', {class: 'jenkins-table__cell--tight'}).
                     insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
                         insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url + 'console'}).
-                            insert(`<l:ionicon name="terminal-outline" title="${%Console output}" />`))));
+                            insert(`<l:icon src="symbol-terminal" alt="${%Console output}" />`))));
               p.insert(tr);
               Behaviour.applySubtree(tr);
           }

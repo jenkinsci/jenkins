@@ -51,7 +51,7 @@ THE SOFTWARE.
             <tr>
               <td class="jenkins-table__cell--tight jenkins-table__icon">
                 <div class="jenkins-table__cell__button-wrapper">
-                  <img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/>
+                  <l:icon src="${h.getUserAvatar(user,'32x32')}" />
                 </div>
               </td>
               <td>
@@ -63,7 +63,7 @@ THE SOFTWARE.
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
                   <a href="${user.url}/configure" class="jenkins-table__button">
-                    <l:ionicon name="settings-outline" />
+                    <l:icon src="symbol-settings" />
                   </a>
                 </div>
               </td>
@@ -71,7 +71,7 @@ THE SOFTWARE.
                 <j:if test="${user.canDelete()}">
                   <div class="jenkins-table__cell__button-wrapper">
                     <a href="${user.url}/delete" class="jenkins-table__button jenkins-table__button--red">
-                      <l:ionicon name="trash-outline" />
+                      <l:icon src="symbol-trash" />
                     </a>
                   </div>
                 </j:if>

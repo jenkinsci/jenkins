@@ -33,10 +33,10 @@ import hudson.model.AbstractDescribableImpl;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -253,7 +253,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return StringUtils.equals(id1, id2);
+            return Objects.equals(id1, id2);
         }
 
         @Override
@@ -289,7 +289,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return StringUtils.equals(keyFor(id1), keyFor(id2));
+            return Objects.equals(keyFor(id1), keyFor(id2));
         }
 
         @Override

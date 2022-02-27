@@ -33,6 +33,6 @@ THE SOFTWARE.
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <button tooltip="${h.xmlEscape(attrs.value ?: '%Delete')}" class="repeatable-delete danger" type="button">
-    <l:ionicon name="close-outline" />
+    <l:icon src="symbol-close" />
   </button>
 </j:jelly>
