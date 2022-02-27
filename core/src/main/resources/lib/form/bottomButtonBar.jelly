@@ -27,14 +27,12 @@ THE SOFTWARE.
   <st:documentation>
     Creates a button bar at the bottom of the page for things like "Submit".
     The actual buttons should be specified as the body of this tag.
-    This area will always be visible in the bottom of the screen.
+    This area will always be visible at the bottom of the screen.
   </st:documentation>
 
-  <f:block>
-    <div id="bottom-sticker" >
-      <div class="bottom-sticker-inner">
-        <d:invokeBody />
-      </div>
+  <div id="bottom-sticker">
+    <div class="bottom-sticker-inner">
+      <d:invokeBody />
     </div>
-  </f:block>
+  </div>
 </j:jelly>

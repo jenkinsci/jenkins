@@ -46,6 +46,11 @@ public class TimeZoneProperty extends UserProperty {
         this.timeZoneName = timeZoneName;
     }
 
+    @CheckForNull
+    public String getTimeZoneName() {
+        return timeZoneName;
+    }
+
     @Extension
     @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {

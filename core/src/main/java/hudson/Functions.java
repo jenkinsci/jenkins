@@ -2336,7 +2336,7 @@ public class Functions {
         }
 
         if (iconMetadata == null) {
-            if (!iconGuess.startsWith("/")) {
+            if (!iconGuess.startsWith("/") && !iconGuess.startsWith("http")) {
                 iconGuess = "/" + iconGuess;
             }
 
