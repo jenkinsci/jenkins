@@ -223,16 +223,35 @@
 
     // For links with badges next to them, eg build monitor page, we need to shrink the margins of
     // the badge so that it doesn't cause a table column resize, yet doesn't change in appearance
+    @media (hover: hover) {
+      & + a.model-link {
+        transform: translateX(10px);
+        margin-right: calc((14px + 1ch) * -1) !important;
+      }
+    }
+  }
+
+  @media (hover: none) {
     & + a.model-link {
       transform: translateX(10px);
       margin-right: calc((14px + 1ch) * -1) !important;
     }
+
+    .jenkins-menu-dropdown-chevron {
+      margin-left: 1ch;
+
+      &::after {
+        opacity: 0.5;
+      }
+    }
   }
 }
 
-.inside {
-  &:hover {
-    margin-right: calc((14px + 1ch) * -1) !important;
+@media (hover: hover) {
+  .inside {
+    &:hover {
+      margin-right: calc((14px + 1ch) * -1) !important;
+    }
   }
 }
 
@@ -262,19 +281,23 @@
     background: var(--text-color);
   }
 
-  .jenkins-menu-dropdown-chevron {
-    position: absolute;
-    top: 1px;
-    right: 0;
-    margin-left: 0 !important;
+  @media (hover: hover) {
+    .jenkins-menu-dropdown-chevron {
+      position: absolute;
+      top: 1px;
+      right: 0;
+      margin-left: 0 !important;
+    }
   }
 
   &:hover {
     z-index: 10;
 
-    &::before,
-    &::after {
-      right: calc((2ch + 14px) * -1);
+    @media (hover: hover) {
+      &::before,
+      &::after {
+        right: calc((2ch + 14px) * -1);
+      }
     }
 
     &::before {
@@ -282,11 +305,13 @@
     }
 
     &::after {
-      opacity: 0.05;
+      opacity: 0.15;
     }
 
     .jenkins-menu-dropdown-chevron {
-      right: calc((1ch + 14px) * -1);
+      @media (hover: hover) {
+        right: calc((1ch + 14px) * -1);
+      }
 
       &::after {
         opacity: 0.5;
