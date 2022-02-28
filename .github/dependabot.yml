@@ -41,3 +41,6 @@ updates:
       - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
       # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
       - dependency-name: "org.jenkins-ci:winstone"
+      # Starting with version 10.0, this library requires Java 11
+      - dependency-name: "com.puppycrawl.tools:checkstyle"
+        versions: [">=10.0"]
