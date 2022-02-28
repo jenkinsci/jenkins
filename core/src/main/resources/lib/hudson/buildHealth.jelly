@@ -57,7 +57,7 @@ THE SOFTWARE.
                     </a>
                 </j:when>
                     <j:otherwise>
-                        <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" tooltip="${buildHealth.score}%" />
+                        <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}"/>
                     </j:otherwise>
                 </j:choose>
             </div>

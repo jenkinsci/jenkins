@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.336</revision>
+    <revision>2.337</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -102,7 +102,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.3.1</mockito.version>
-    <spotless.version>2.20.2</spotless.version>
+    <spotless.version>2.21.0</spotless.version>
   </properties>
 
   <dependencyManagement>
