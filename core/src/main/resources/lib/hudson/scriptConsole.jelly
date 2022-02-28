@@ -39,11 +39,11 @@ THE SOFTWARE.
           <j:set var="icon" value="${it.icon}"/>
         </j:otherwise>
       </j:choose>
-      <h1>
-        <span class="icon-lg1">
+      <h1 style="display:flex; align-items:center;">
+        <span class="icon-lg" style="margin-right:5px;">
           <l:icon src="${icon}"/>
         </span>
-        <span class="jenkins-icon-header-adjacent">${%Script Console}</span>
+        ${%Script Console}
       </h1>
 
       <j:choose>

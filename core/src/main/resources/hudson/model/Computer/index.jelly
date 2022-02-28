@@ -52,11 +52,11 @@ THE SOFTWARE.
         </j:choose>
       </div>
 
-      <h1>
-        <span class="icon-lg1">
-          <l:icon src="${it.iconClassName}" />
+      <h1 style="display:flex; align-items:center;">
+        <span class="icon-lg" style="margin-right:5px;">
+          <l:icon src="${it.iconClassName}"/>
         </span>
-        <span class="jenkins-icon-header-adjacent">${it.caption}</span>
+        ${it.caption}
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>
         </j:if>
