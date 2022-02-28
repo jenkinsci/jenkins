@@ -176,7 +176,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Override
     public String getIconFileName() {
-        return "secure.svg";
+        return "symbol-lock-closed";
     }
 
     @Override

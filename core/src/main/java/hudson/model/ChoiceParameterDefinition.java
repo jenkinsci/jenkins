@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -39,7 +38,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public static boolean areValidChoices(@NonNull String choices) {
         String strippedChoices = choices.trim();
-        return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
+        return strippedChoices != null && !strippedChoices.isEmpty() && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
     public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, @CheckForNull String description) {

@@ -39,7 +39,11 @@ THE SOFTWARE.
           <j:set var="icon" value="${it.icon}"/>
         </j:otherwise>
       </j:choose>
-      <h1><img src="${imagesURL}/svgs/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
+      <h1>
+        <span class="icon-lg">
+          <l:icon src="${icon}"/> ${%Script Console}
+        </span>
+      </h1>
 
       <j:choose>
         <j:when test="${it.channel != null}">

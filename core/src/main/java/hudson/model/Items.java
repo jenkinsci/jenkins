@@ -54,7 +54,6 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -236,7 +235,7 @@ public class Items {
         StringTokenizer tokens = new StringTokenizer(list, ",");
         while (tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            if (StringUtils.isNotEmpty(fullName)) {
+            if (fullName != null && !fullName.isEmpty()) {
                 T item = jenkins.getItem(fullName, context, type);
                 if (item != null)
                     r.add(item);
