@@ -63,6 +63,16 @@ THE SOFTWARE.
         lazy="descriptor,it,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
+          <j:set var="help" value="${descriptor.helpFile}"/>
+          <j:if test="${help != null}">
+            <div class="tr help-sibling radio-block-start row-group-start" hasHelp="true">
+              <div colspan="3">
+                  <label><st:nbsp/></label>
+                <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
+              </div>
+            </div>
+            <f:helpArea/>
+          </j:if>
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </l:ajax>
       </f:dropdownListBlock>
