@@ -27,7 +27,7 @@ THE SOFTWARE.
     <st:documentation>
         Displays a list of log records.
         <st:attribute name="logRecords" type="java.util.Collection&lt;java.util.logging.LogRecord>" use="required">
-            Records to be displayed (assumed to be in reverse chronologic order).
+            Records to be displayed (assumed to be in reverse chronological order).
         </st:attribute>
     </st:documentation>
     <j:set var="prior" value="${null}"/>
