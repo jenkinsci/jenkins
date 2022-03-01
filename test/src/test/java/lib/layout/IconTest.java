@@ -94,12 +94,12 @@ public class IconTest  {
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
         List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToSvgOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-lg");
+        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-lg");
 
         DomElement statusIcons = p.getElementById("statusIcons");
         List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(statusIconsList.get(0).getFirstElementChild(), "/images/svgs/user.svg", "icon-user icon-xlg");
+        assertIconToSvgOkay(statusIconsList.get(0).getFirstElementChild().getNextElementSibling(), "icon-user icon-xlg");
 
         assertIconToImageOkay(statusIconsList.get(1).getFirstElementChild(), "/plugin/12345/icons/s2.png");
     }
@@ -144,7 +144,7 @@ public class IconTest  {
         assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").get(0));
         // this is loading the png from cloudbees-folder plugin
         // when this is swapped to an SVG and the dep updated this test will need to change
-        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/svgs/folder.svg");
+        assertIconToSvgOkay(taskDivs.get(1).getElementsByTagName("svg").get(0), "icon-folder icon-md");
         assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
         assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
         assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
@@ -175,7 +175,15 @@ public class IconTest  {
     }
 
     private void assertIconToSvgOkay(DomElement icon, String classSpec) {
-        assertThat("span", is(icon.getTagName()));
+        assertThat(icon.getTagName(), is("svg"));
+
+        if (classSpec != null) {
+            assertThat(icon.getAttribute("class"), endsWith(classSpec));
+        }
+    }
+
+    private void assertIconToSvgIconOkay(DomElement icon, String classSpec) {
+        assertThat(icon.getTagName(), is("span"));
         if (classSpec != null) {
             assertThat(icon.getAttribute("class"), endsWith(classSpec));
         }
