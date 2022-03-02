@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 # The MIT License
 #
-# Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of other of contributors
+# Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number
+# of other of contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,19 +28,22 @@
 # Perl script to generate missing translation keys and missing properties files,
 # to remove unused keys, and to convert utf8 properties files to iso or ascii.
 #
-# 1.- It recursively looks for files in a folder, and analyzes them to extract the
-#     keys being used in the application.
-# 2.- If --add=true, it generates the appropriate file for the desired language and adds
-#     these keys to it, adding the english text as a reference.
-#     If the properties file already exists the script update it with the new keys.
-# 3.- When --remove=true and there are unused keys in our file, the script removes them.
-# 4.- If an editor is passed as argument, the script edits each modified file after adding new keys.
-# 5.- Finally, when --toiso=true or --toascii=true, the script is able to convert utf-8
-#     properties files to iso or unicode hex representation is ascii.
+# 1.- It recursively looks for files in a folder, and analyzes them to extract
+#     the keys being used in the application.
+# 2.- If --add=true, it generates the appropriate file for the desired language
+#     and adds these keys to it, adding the english text as a reference. If the
+#     properties file already exists the script update it with the new keys.
+# 3.- When --remove=true and there are unused keys in our file, the script
+#     removes them.
+# 4.- If an editor is passed as argument, the script edits each modified file
+#     after adding new keys.
+# 5.- Finally, when --toiso=true or --toascii=true, the script is able to
+#     convert utf-8 properties files to iso or unicode hex representation is
+#     ascii.
 #
 
-# Note, while the migration to Jenkins this file will report the keys which should point
-# to Jenkins instead of the old name.
+# Note, while the migration to Jenkins this file will report the keys which
+# should point to Jenkins instead of the old name.
 
 use warnings;
 use strict;
@@ -93,7 +97,8 @@ print STDERR "Finding files ...\n";
 my @files = findTranslatableFiles($dir);
 print STDERR "Found " . (scalar keys @files) . " files\n";
 
-## load a cache with keys already translated to utilize in the case the same key is used
+## load a cache with keys already translated to utilize in the case the same key
+## is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
 
 ## process each file
@@ -145,10 +150,12 @@ sub processFile {
 
     # keys  -> Hash of keys used in jelly or Message.properties files
     # ekeys -> Hash of key/values in English
-    # okeys -> Hash of key/values in the desired language which are already present in the file
+    # okeys -> Hash of key/values in the desired language which are already
+    #          present in the file
     my (%keys, %okeys, %ekeys);
 
-    # Read .jelly or Message.properties files, and fill a hash with the keys found
+    # Read .jelly or Message.properties files, and fill a hash with the keys
+    # found
     if ($file =~ m/.jelly$/) {
         %keys = loadJellyFile($file);
         %ekeys = loadPropertiesFile($efile);
@@ -229,7 +236,8 @@ sub processFile {
         close(F);
     }
 
-    # open the editor if the user has specified it and there are changes to manage
+    # open the editor if the user has specified it and there are changes to
+    # manage
     system("$editor $ofile")
         if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
 
@@ -460,4 +468,3 @@ Usage: $0 --lang=xx [options] [dir]
 ";
     exit();
 }
-

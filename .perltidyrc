@@ -32,10 +32,12 @@
 # If a line continues, it should be indented 2 spaces.
 --continuation-indentation=4
 
-# If a line is longer than the maximum, do not break it up for readability.
---no-outdent-long-comments
+# If a comment is longer than the maximum line length, break it up for
+# readability.
+--outdent-long-comments
 
-# If a quoted string is longer than the maximum, do not break it up for readability.
+# If a quoted string is longer than the maximum line length, do not break it up
+# for readability.
 --no-outdent-long-quotes
 
 ###################################
