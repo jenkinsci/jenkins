@@ -47,18 +47,26 @@ use File::Basename;
 use File::Find;
 use File::Path;
 
-my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter, $target) = (undef, undef, "./", undef, undef, undef, undef, undef, undef, "./");
-my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
+my (
+    $lang, $editor, $dir, $toiso, $toascii,
+    $add, $remove, $reuse, $counter, $target
+) = (undef, undef, "./", undef, undef, undef, undef, undef, undef, "./");
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins,
+    $countervalue)
+    = (0, 0, 0, 0, 0, 0, 0, 1);
 ## read arguments
 foreach (@ARGV) {
     if (/^--lang=(.*)$/) {
         $lang = $1;
     } elsif (/^--editor=(.*)$/) {
-        $editor = $1; $add = 1;
+        $editor = $1;
+        $add = 1;
     } elsif (/^--toiso$/ || /^--toiso=true$/) {
-        $toiso = 1; $toascii = 0;
+        $toiso = 1;
+        $toascii = 0;
     } elsif (/^--toascii$/ || /^--toascii=true$/) {
-        $toascii = 1; $toiso = 0;
+        $toascii = 1;
+        $toiso = 0;
     } elsif (/^--add$/ || /^--add=true$/) {
         $add = 1;
     } elsif (/^--remove$/ || /^--remove=true$/) {
@@ -70,7 +78,7 @@ foreach (@ARGV) {
     } elsif (/^--target=(.*)$/) {
         $target = $1;
     } else {
-        $dir=$_;
+        $dir = $_;
     }
 }
 
@@ -83,14 +91,14 @@ if (!$lang || $lang eq "en") {
 print STDERR "Finding files ...\n";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
-print STDERR "Found ".(scalar keys @files)." files\n";
+print STDERR "Found " . (scalar keys @files) . " files\n";
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
 
 ## process each file
 foreach (@files) {
-    $tfiles ++;
+    $tfiles++;
     processFile($_);
 }
 
@@ -105,16 +113,22 @@ my $psame = 0;
 my $pnojenkins = 0;
 
 if ($tkeys != 0) {
-    $pdone = $tdone/$tkeys*100;
-    $pmissing = $tmissing/$tkeys*100;
-    $punused = $tunused/$tkeys*100;
-    $pempty = $tempty/$tkeys*100;
-    $psame = $tsame/$tkeys*100;
-    $pnojenkins = $tnojenkins/$tkeys*100;
+    $pdone = $tdone / $tkeys * 100;
+    $pmissing = $tmissing / $tkeys * 100;
+    $punused = $tunused / $tkeys * 100;
+    $pempty = $tempty / $tkeys * 100;
+    $psame = $tsame / $tkeys * 100;
+    $pnojenkins = $tnojenkins / $tkeys * 100;
 }
 
-my @formatParameters = ($tfiles, $tkeys, $tdone, $pdone, $tmissing, $pmissing, $tunused, $punused, $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
-printf "\nTOTAL: Files: %d Keys: %d Done: %d(%.2f%%)\n       Missing: %d(%.2f%%) Orphan: %d(%.2f%%) Empty: %d(%.2f%%) Same: %d(%.2f%%) NoJenkins: %d(%.2f%%)\n\n", (@formatParameters);
+my @formatParameters = (
+    $tfiles, $tkeys, $tdone, $pdone, $tmissing,
+    $pmissing, $tunused, $punused, $tempty, $pempty,
+    $tsame, $psame, $tnojenkins, $pnojenkins
+);
+printf
+    "\nTOTAL: Files: %d Keys: %d Done: %d(%.2f%%)\n       Missing: %d(%.2f%%) Orphan: %d(%.2f%%) Empty: %d(%.2f%%) Same: %d(%.2f%%) NoJenkins: %d(%.2f%%)\n\n",
+    (@formatParameters);
 ## end
 exit();
 
@@ -129,33 +143,33 @@ sub processFile {
     $ofile =~ s/(\.jelly)|(\.properties)/_$lang.properties/;
     $efile =~ s/(\.jelly)/.properties/;
 
-# keys  -> Hash of keys used in jelly or Message.properties files
-# ekeys -> Hash of key/values in English
-# okeys -> Hash of key/values in the desired language which are already present in the file
+    # keys  -> Hash of keys used in jelly or Message.properties files
+    # ekeys -> Hash of key/values in English
+    # okeys -> Hash of key/values in the desired language which are already present in the file
     my (%keys, %okeys, %ekeys);
 
-# Read .jelly or Message.properties files, and fill a hash with the keys found
+    # Read .jelly or Message.properties files, and fill a hash with the keys found
     if ($file =~ m/.jelly$/) {
-        %keys  = loadJellyFile($file);
+        %keys = loadJellyFile($file);
         %ekeys = loadPropertiesFile($efile);
     } else {
-        %keys = %ekeys = loadPropertiesFile($file)
+        %keys = %ekeys = loadPropertiesFile($file);
     }
 
     # load keys already present in the desired locale
-    %okeys  = loadPropertiesFile($ofile);
+    %okeys = loadPropertiesFile($ofile);
 
     # calculate missing keys in the file
     my $missing = "";
     foreach (keys %keys) {
-        $tkeys ++;
+        $tkeys++;
         if (!defined($okeys{$_})) {
-            $_ .=  "=" . $cache{$_} if (defined($cache{$_}));
+            $_ .= "=" . $cache{$_} if (defined($cache{$_}));
             $missing .= ($add ? "  Adding " : "  Missing") . " -> $_\n";
-            $tmissing ++;
-        } elsif ($okeys{$_} eq ''){
+            $tmissing++;
+        } elsif ($okeys{$_} eq '') {
             $missing .= "  Empty   -> $_\n";
-            $tempty ++;
+            $tempty++;
         }
     }
 
@@ -164,7 +178,7 @@ sub processFile {
     foreach (keys %okeys) {
         if (!defined $keys{$_}) {
             $unused .= "  Unused  -> $_\n";
-            $tunused ++;
+            $tunused++;
         }
     }
 
@@ -172,37 +186,38 @@ sub processFile {
     my $same = "";
     foreach (keys %okeys) {
         if ($okeys{$_} && $ekeys{$_} && $okeys{$_} eq $ekeys{$_}) {
-            $same .= "  Same    -> $_\n" ;
-            $tsame ++;
+            $same .= "  Same    -> $_\n";
+            $tsame++;
         }
     }
 
     my $nj = "";
     foreach (keys %okeys) {
-        if ($okeys{$_} && $okeys{$_} =~ /Hudson/ ) {
-            $nj .= "  Non Jenkins    -> $_ -> $okeys{$_}\n" ;
-            $tnojenkins ++;
+        if ($okeys{$_} && $okeys{$_} =~ /Hudson/) {
+            $nj .= "  Non Jenkins    -> $_ -> $okeys{$_}\n";
+            $tnojenkins++;
         }
     }
 
     # Show Alerts
-    print "\nFile: $ofile\n$missing$unused$same$nj" if ($missing ne "" || $unused ne '' || $same ne '' || $nj ne '');
+    print "\nFile: $ofile\n$missing$unused$same$nj"
+        if ($missing ne "" || $unused ne '' || $same ne '' || $nj ne '');
 
     # write new keys in our file adding the English translation as a reference
     if ($add && $missing ne "") {
-        printLicense($ofile) unless(-f $ofile);
+        printLicense($ofile) unless (-f $ofile);
         open(F, ">>$ofile");
         foreach (keys %keys) {
             if (!$okeys{$_}) {
                 if (!defined($okeys{$_})) {
                     print F "$_=";
                     if (defined($cache{$_})) {
-                        print F $cache{$_}."\n";
+                        print F $cache{$_} . "\n";
                     } else {
                         if ($counter) {
-
                             # add unique value for each added translation
-                            print F "---TranslateMe ".$countervalue."--- ".($ekeys{$_} ? $ekeys{$_} : $_)."\n";
+                            print F "---TranslateMe " . $countervalue . "--- " .
+                                ($ekeys{$_} ? $ekeys{$_} : $_) . "\n";
                         } else {
                             print F "\n";
                         }
@@ -214,15 +229,16 @@ sub processFile {
         close(F);
     }
 
-# open the editor if the user has specified it and there are changes to manage
-    system("$editor $ofile") if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
+    # open the editor if the user has specified it and there are changes to manage
+    system("$editor $ofile")
+        if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
 
     # write new keys in our file adding the English translation as a reference
     removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
 
     # convert the language file to ISO or ASCII which are
     # the charsets which Jenkins supports right now
-    convert($ofile, $toiso, $toascii) if ( -f $ofile );
+    convert($ofile, $toiso, $toascii) if (-f $ofile);
 }
 
 # Create a hash with all keys which exist and have an unique value
@@ -233,7 +249,7 @@ sub loadAllTranslatedKeys {
         s/(\.jelly)|(\.properties)/_$lang.properties/;
         next unless (-f $_);
         my (%h, $k, $v) = loadPropertiesFile($_);
-        while (($k,$v) = each(%h)) {
+        while (($k, $v) = each(%h)) {
             $ret{$k} = "" if (defined($ret{$k}) && $v ne $ret{$k});
             $ret{$k} = $v unless defined($ret{$k});
         }
@@ -246,10 +262,15 @@ sub findTranslatableFiles {
     my $dir = shift;
     die "Folder doesn't exist: $dir\n" unless (-e $dir);
     my @ret;
-    find(sub {
+    find(
+        sub {
             my $file = $File::Find::name;
-            push(@ret, $file) if ($file !~ m#(/src/test/)|(/target/)|(\.svn)# && $file =~ /(Messages.properties)$|(.*\.jelly)$/);
-            }, $dir);
+            push(@ret, $file)
+                if ($file !~ m#(/src/test/)|(/target/)|(\.svn)#
+                && $file =~ /(Messages.properties)$|(.*\.jelly)$/);
+        },
+        $dir
+    );
     return @ret;
 }
 
@@ -258,10 +279,12 @@ sub loadJellyFile {
     my $file = shift;
     my %ret;
     open(F, $file) || die $! . " " . $file;
-    while(<F>){
-        next if (! /\$\{.*?\%([^\(]+?).*\}/);
+    while (<F>) {
+        next if (!/\$\{.*?\%([^\(]+?).*\}/);
         my $line = $_;
-        while ($line =~ /^.*?\$\{\%([^\(\}]+)(.*)$/ || $line=~ /^.*?\$\{.*?['"]\%([^\(\}\"\']+)(.*)$/ ) {
+        while ($line =~ /^.*?\$\{\%([^\(\}]+)(.*)$/
+            || $line =~ /^.*?\$\{.*?['"]\%([^\(\}\"\']+)(.*)$/)
+        {
             $line = $2;
             my $word = $1;
             $word =~ s/\(.+$//g;
@@ -271,7 +294,7 @@ sub loadJellyFile {
             $word =~ s/\&lt;/</g;
             $word =~ s/\&amp;/&/g;
             $word =~ s/([#:=])/\\$1/g;
-            $ret{$word}=1;
+            $ret{$word} = 1;
         }
     }
     close(F);
@@ -289,7 +312,7 @@ sub loadPropertiesFile {
             $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
             if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
                 ($key, $val) = (trim($1), trim($2));
-                $ret{$key}=$val;
+                $ret{$key} = $val;
             }
             $cont = (/\\\s*$/) ? 1 : 0;
         }
@@ -306,7 +329,7 @@ sub removeUnusedKeys {
     my $back = $ofile . "~~";
     if (rename($ofile, $back) && open(FI, $back) && open(FO, ">$ofile")) {
         my $cont = 0;
-        while(<FI>){
+        while (<FI>) {
             if (!$cont) {
                 if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
                     if (!$keys{$1}) {
@@ -316,7 +339,7 @@ sub removeUnusedKeys {
                 }
                 print FO $_;
             } elsif ($cont && !/\\\s*$/) {
-                $cont = 0 ;
+                $cont = 0;
             }
         }
         close(FI);
@@ -329,10 +352,11 @@ sub removeUnusedKeys {
 sub convert {
     my ($ofile, $toiso, $toascii) = @_;
     if (isUtf8($ofile) && ($toiso || $toascii)) {
-        print "\nConverting file $ofile to " . ($toiso ? "ISO-8859" : "ASCII") . "\n";
+        print "\nConverting file $ofile to " .
+            ($toiso ? "ISO-8859" : "ASCII") . "\n";
         my $back = $ofile . "~~";
         if (rename($ofile, $back) && open(FI, $back) && open(FO, ">$ofile")) {
-            while(<FI>) {
+            while (<FI>) {
                 if ($toiso) {
                     s/([\xC2\xC3])([\x80-\xBF])/chr(ord($1)<<6&0xC0|ord($2)&0x3F)/eg;
                 } else {
@@ -357,7 +381,7 @@ sub convert {
 sub isUtf8 {
     my $file = shift;
     if (open(F, $file)) {
-        while(<F>) {
+        while (<F>) {
             if (/([\xC2\xC3])([\x80-\xBF])/) {
                 close(F);
                 return 1;
@@ -371,13 +395,14 @@ sub isUtf8 {
 # print MIT license in new files
 # Note: the license is read from the head of this file
 my $license;
+
 sub printLicense {
     my $file = shift;
     if (!$license && open(F, $0)) {
         $license = "";
         my $on = 0;
-        while(<F>) {
-            $on=1 if (!$on && /The MIT/);
+        while (<F>) {
+            $on = 1 if (!$on && /The MIT/);
             last if ($on && (/^$/ || /^[^#]/));
             $license .= $_ if ($on);
         }
@@ -395,8 +420,7 @@ sub printLicense {
 }
 
 # trim function to remove whitespace from the start and end of the string
-sub trim($)
-{
+sub trim($) {
     my $string = shift;
     $string =~ s/^\s+//;
     $string =~ s/\s+$//;
