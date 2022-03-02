@@ -467,24 +467,69 @@ div.behavior-loading {
 
 .bottom-sticker,
 #bottom-sticker {
-    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
-    z-index: 999;
+  position: sticky;
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: -2rem;
+  width: calc(100% + 4rem);   /* it needs to occupy the entire width or else the underlying content will see through */
+  z-index: 999;
 }
 
 .bottom-sticker-inner {
   position: relative;
-  padding: 1em 0;
+  padding: 1em 2rem;
   z-index: 0;
 
   &::before {
     content: "";
     position: absolute;
     top: 0;
-    left: calc(-2rem - 2px);
+    left: 0;
     bottom: 0;
     right: 0;
     background: var(--background);
+    opacity: 0;
     z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(to right, transparent, white 2rem, white calc(100% - 2rem), transparent);
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  .yui-button {
+    margin-left: 0;
+    margin-right: 0.5rem;
   }
 }
 
@@ -741,7 +786,7 @@ table.parameters > tbody:hover {
 
   table {
     border-radius: 0;
-    min-width: 450px;
+    width: 450px;
     margin-bottom: 0;
     box-sizing: content-box;
     padding-bottom: 2px;
