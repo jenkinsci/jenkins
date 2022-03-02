@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.0.1</version>
+      <version>3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -101,10 +101,6 @@ THE SOFTWARE.
       <artifactId>jbcrypt</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.jnr</groupId>
-      <artifactId>jnr-posix</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
     </dependency>
