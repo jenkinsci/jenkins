@@ -24,6 +24,8 @@
 
 package jenkins.slaves.restarter;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Proc;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
@@ -35,9 +37,8 @@ import java.util.logging.Level;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsSessionRule;
@@ -102,6 +103,7 @@ public class JnlpSlaveRestarterInstallerTest {
 
     private static final class LaunchCount extends MasterToSlaveCallable<Integer, RuntimeException> {
         private static final String KEY = "launch-count";
+
         @Override
         public Integer call() throws RuntimeException {
             int count = Integer.getInteger(KEY, 0) + 1;
