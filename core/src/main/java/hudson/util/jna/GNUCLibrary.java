@@ -33,8 +33,6 @@ import com.sun.jna.Pointer;
 import com.sun.jna.StringArray;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
-import hudson.os.PosixAPI;
-import jnr.posix.POSIX;
 
 /**
  * GNU C library.
@@ -42,7 +40,6 @@ import jnr.posix.POSIX;
  * <p>
  * Not available on all platforms (such as Linux/PPC, IBM mainframe, etc.), so the caller should recover gracefully
  * in case of {@link LinkageError}. See JENKINS-4820.
- * <p>Consider deprecating all methods present also in {@link POSIX} (as obtained by {@link PosixAPI#jnr}).
  * @author Kohsuke Kawaguchi
  */
 public interface GNUCLibrary extends Library {
