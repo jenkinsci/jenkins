@@ -36,7 +36,7 @@ THE SOFTWARE.
       <j:if test="${it.atom}">
         <l:task href="${url}/configure" icon="symbol-settings" title="${%Configure}" permission="${app.ADMINISTER}" />
       </j:if>
-      <l:task href="${url}/load-statistics" icon="symbol-terminal" title="${%Load Statistics}"/>
+      <l:task href="${url}/load-statistics" icon="symbol-analytics" title="${%Load Statistics}"/>
       <st:include page="actions.jelly" />
     </l:tasks>
   </l:side-panel>
