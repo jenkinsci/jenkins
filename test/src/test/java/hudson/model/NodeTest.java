@@ -37,6 +37,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
@@ -429,8 +430,9 @@ public class NodeTest {
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder {
 
+        @NonNull
         @Override
-        public Collection<LabelAtom> findLabels(Node node) {
+        public Collection<LabelAtom> findLabels(@NonNull Node node) {
             List<LabelAtom> atoms = new ArrayList<>();
             if (addDynamicLabel) {
                 atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
