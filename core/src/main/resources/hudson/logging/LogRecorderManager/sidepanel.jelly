@@ -37,7 +37,7 @@ THE SOFTWARE.
           <l:task href="new" icon="symbol-add" title="${%New Log Recorder}"/>
         </l:isAdmin>
       </l:task>
-      <l:task href="all" icon="icon-clipboard icon-md" title="${%All Log Messages}"/>
+      <l:task href="all" icon="symbol-file-tray" title="${%All Log Messages}"/>
       <l:task href="levels" icon="symbol-settings" title="${%Log Levels}"/>
     </l:tasks>
   </l:side-panel>
