@@ -83,7 +83,7 @@ public class JnlpSlaveRestarterInstallerTest {
                     "-secret", secret
                 ).stdout(System.out).start());
                 r.waitOnline(s);
-                assertEquals(1, s.getChannel().call(new LaunchCount()).intValue());
+                assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
                 while (!logging.getMessages().stream().anyMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
                 }
@@ -91,7 +91,7 @@ public class JnlpSlaveRestarterInstallerTest {
             rr.then(r -> {
                 DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
                 r.waitOnline(s);
-                assertEquals(1, s.getChannel().call(new LaunchCount()).intValue());
+                assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
             });
         } finally {
             if (proc.get() != null) {
@@ -100,7 +100,7 @@ public class JnlpSlaveRestarterInstallerTest {
         }
     }
 
-    private static final class LaunchCount extends MasterToSlaveCallable<Integer, RuntimeException> {
+    private static final class JVMCount extends MasterToSlaveCallable<Integer, RuntimeException> {
         private static final String KEY = "launch-count";
         @Override
         public Integer call() throws RuntimeException {
