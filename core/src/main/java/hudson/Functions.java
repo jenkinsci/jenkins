@@ -574,7 +574,7 @@ public class Functions {
     private static String[] logRecordPreformat(LogRecord r) {
         String source;
         if (r.getSourceClassName() == null) {
-            source = r.getLoggerName();
+            source = r.getLoggerName() == null ? "" : r.getLoggerName();
         } else {
             if (r.getSourceMethodName() == null) {
                 source = r.getSourceClassName();

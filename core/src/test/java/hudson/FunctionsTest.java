@@ -364,6 +364,11 @@ public class FunctionsTest {
         assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
+    @Test public void printLogRecordHtmlNoLogger() {
+        LogRecord lr = new LogRecord(Level.INFO, "<discarded/>");
+        assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
     @Issue("JDK-6507809")
     @Test public void printThrowable() {
         // Basics: a single exception. No change.
