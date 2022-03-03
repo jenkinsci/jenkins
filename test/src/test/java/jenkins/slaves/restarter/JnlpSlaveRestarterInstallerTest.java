@@ -30,6 +30,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import jenkins.security.MasterToSlaveCallable;
@@ -68,6 +69,7 @@ public class JnlpSlaveRestarterInstallerTest {
 
     private void reconnection(boolean webSocket) throws Throwable {
         AtomicReference<Proc> proc = new AtomicReference<>();
+        AtomicBoolean canWork = new AtomicBoolean();
         try {
             rr.then(r -> {
                 JNLPLauncher launcher = new JNLPLauncher(true);
@@ -87,11 +89,13 @@ public class JnlpSlaveRestarterInstallerTest {
                 while (!logging.getMessages().stream().anyMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
                 }
+                // Likely true on Unix, likely false on Windows (not under winsw):
+                canWork.set(logging.getMessages().stream().anyMatch(msg -> msg.contains("Effective SlaveRestarter on remote: [jenkins.slaves.restarter.")));
             });
             rr.then(r -> {
                 DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
                 r.waitOnline(s);
-                assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
+                assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
             });
         } finally {
             if (proc.get() != null) {
