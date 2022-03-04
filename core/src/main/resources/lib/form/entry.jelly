@@ -89,8 +89,9 @@ THE SOFTWARE.
         <div class="setting-main">
           <d:invokeBody />
         </div>
-        <!-- used to display the form validation error -->
-        <div class="validation-error-area tr"></div>
+        <div class="validation-error-area">
+          <!-- Used to display the form validation status -->
+        </div>
         <j:if test="${attrs.help!=null}">
           <f:helpArea />
         </j:if>
