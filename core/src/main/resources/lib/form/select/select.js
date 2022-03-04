@@ -11,7 +11,7 @@ function updateListBox(listBox,url,config) {
     // form entry using tables-to-divs markup.
     function getStatusElement() {
         function getStatusForTabularForms() {
-            return findFollowingTR(listBox, "validation-error-area").firstElementChild.nextSibling;
+            return findFollowingTR(listBox, "validation-error-area");
         }
         function getStatusForDivBasedForms() {
             var settingMain = listBox.closest('.setting-main')

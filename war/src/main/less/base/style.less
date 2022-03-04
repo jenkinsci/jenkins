@@ -559,14 +559,19 @@ div.behavior-loading {
 
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
+.ok,
+.error,
+.warning {
+  margin-top: 0.75rem;
+  animation: animate-status var(--standard-transition);
+  transform-origin: left;
+}
+
 .error,
 .warning {
   position: relative;
   padding-left: calc(20px + 0.4rem);
   font-weight: 500;
-  margin-top: 0.75rem;
-  animation: animate-status var(--standard-transition);
-  transform-origin: left;
 
   &::before {
     content: "";
@@ -580,6 +585,10 @@ div.behavior-loading {
     mask-repeat: no-repeat;
     mask-size: contain;
   }
+}
+
+.ok {
+  color: var(--text-color-secondary);
 }
 
 @keyframes animate-status {

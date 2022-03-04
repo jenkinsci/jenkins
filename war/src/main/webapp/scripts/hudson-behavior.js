@@ -509,7 +509,7 @@ function registerValidator(e) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
 
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");

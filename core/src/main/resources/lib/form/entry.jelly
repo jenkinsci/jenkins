@@ -90,7 +90,7 @@ THE SOFTWARE.
           <d:invokeBody />
         </div>
         <!-- used to display the form validation error -->
-        <div class="validation-error-area tr"><div colspan="2"></div><div></div><div></div></div>
+        <div class="validation-error-area tr"></div>
         <j:if test="${attrs.help!=null}">
           <f:helpArea />
         </j:if>
@@ -101,7 +101,7 @@ THE SOFTWARE.
           <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
         </div>
         <!-- used to display the form validation error -->
-        <div class="validation-error-area tr"><div colspan="2"></div><div></div><div></div></div>
+        <div class="validation-error-area tr"></div>
         <f:helpArea />
         <j:if test="${!empty(attrs.description)}">
           <f:description>
