@@ -25,6 +25,8 @@
 package hudson.model;
 
 import com.google.common.collect.Maps;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
@@ -71,14 +73,16 @@ public abstract class LoadBalancer implements ExtensionPoint {
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
      */
-    public abstract Mapping map(Task task, MappingWorksheet worksheet);
+    @CheckForNull
+    public abstract Mapping map(@NonNull Task task, MappingWorksheet worksheet);
 
     /**
      * Uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
+        @CheckForNull
         @Override
-        public Mapping map(Task task, MappingWorksheet ws) {
+        public Mapping map(@NonNull Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<>(ws.works.size());
             for (int i = 0; i < ws.works.size(); i++) {
@@ -152,8 +156,9 @@ public abstract class LoadBalancer implements ExtensionPoint {
     protected LoadBalancer sanitize() {
         final LoadBalancer base = this;
         return new LoadBalancer() {
+            @CheckForNull
             @Override
-            public Mapping map(Task task, MappingWorksheet worksheet) {
+            public Mapping map(@NonNull Task task, MappingWorksheet worksheet) {
                 if (Queue.isBlockedByShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
