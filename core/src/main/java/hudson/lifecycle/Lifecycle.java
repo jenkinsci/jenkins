@@ -255,7 +255,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * Called when Jenkins startup is finished or when Jenkins has finished reloading its
      * configuration.
      *
-     * @since 2.333
+     * @since 2.333 and 2.332.1
      */
     public void onReady() {
         LOGGER.log(Level.INFO, "Jenkins is fully up and running");
@@ -267,7 +267,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * <p>Callers must also send an {@link #onReady()} notification when Jenkins has finished
      * reloading its configuration.
      *
-     * @since 2.333
+     * @since 2.333 and 2.332.1
      */
     public void onReload(@NonNull String user, @CheckForNull String remoteAddr) {
         if (remoteAddr != null) {
@@ -283,7 +283,7 @@ public abstract class Lifecycle implements ExtensionPoint {
     /**
      * Called when Jenkins is beginning its shutdown.
      *
-     * @since 2.333
+     * @since 2.333 and 2.332.1
      */
     public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
         if (remoteAddr != null) {
@@ -304,7 +304,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * @param timeout The amount by which to extend the timeout.
      * @param unit The time unit of the timeout argument.
      *
-     * @since TODO
+     * @since 2.335 and 2.332.1
      */
     public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
 
@@ -314,7 +314,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * @param status The status string. This is free-form and can be used for various purposes:
      *     general state feedback, completion percentages, human-readable error message, etc.
      *
-     * @since 2.333
+     * @since 2.333 and 2.332.1
      */
     public void onStatusUpdate(String status) {
         LOGGER.log(Level.INFO, status);
