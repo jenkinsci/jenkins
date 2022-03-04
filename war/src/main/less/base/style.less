@@ -559,38 +559,60 @@ div.behavior-loading {
 
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
+.error,
+.warning {
+  position: relative;
+  padding-left: calc(20px + 0.4rem);
+  font-weight: 500;
+  margin-top: 0.75rem;
+  animation: animate-status var(--standard-transition);
+  transform-origin: left;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background-color: currentColor;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+  }
+}
+
+@keyframes animate-status {
+  from {
+    opacity: 0.5;
+    transform: scale(0.975);
+  }
+}
+
 .error {
-    color: #c00;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    line-height: 16px;
-    background-image: url("../../images/svgs/error.svg");
-    background-position: left top;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
+  color: var(--red);
+
+  &::before {
+    mask-image: url("../../images/svgs/error.svg");
+  }
 }
 
 .error-inline {
-    color: #c00;
-    font-weight: bold;
+  color: var(--red);
+  font-weight: 500;
 }
 
 .warning {
-    color: #c4a000;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    line-height: 16px;
-    background-image: url("../../images/svgs/warning.svg");
-    background-position: left top;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
+  color: var(--yellow);
+
+  &::before {
+    mask-image: url("../../images/svgs/warning.svg");
+  }
 }
 
 .warning-inline {
-    color: #c4a000;
-    font-weight: bold;
+  color: var(--yellow);
+  font-weight: 500;
 }
 
 .info {
