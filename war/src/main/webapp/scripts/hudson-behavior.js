@@ -503,9 +503,10 @@ var tooltip;
 function registerValidator(e) {
 
     // Retrieve the validation error area
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.parentNode.parentNode.querySelector(".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected validation element (.validation-error-area) for element",
+          e.parentNode.parentNode)
         return;
     }
     // find the validation-error-area
@@ -584,13 +585,13 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.parentNode.parentNode.querySelector( ".validation-error-area");
     if (!tr) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -613,13 +614,13 @@ function registerRegexpValidator(e,regexp,message) {
  * @param e Input element
  */
 function registerMinMaxValidator(e) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.parentNode.parentNode.querySelector( ".validation-error-area");
     if (!tr) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;

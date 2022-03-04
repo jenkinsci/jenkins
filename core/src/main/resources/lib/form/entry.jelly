@@ -100,8 +100,9 @@ THE SOFTWARE.
           <d:invokeBody />
           <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
         </div>
-        <!-- used to display the form validation error -->
-        <div class="validation-error-area tr"></div>
+        <div class="validation-error-area">
+          <!-- Used to display the form validation status -->
+        </div>
         <f:helpArea />
         <j:if test="${!empty(attrs.description)}">
           <f:description>
