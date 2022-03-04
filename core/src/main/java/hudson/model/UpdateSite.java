@@ -801,7 +801,7 @@ public class UpdateSite {
          * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
          * @return size of the file if known, {@code null} otherwise.
          *
-         * @since TODO
+         * @since 2.325
          */
         // @Exported -- TODO unsure
         @Restricted(NoExternalUse.class)
