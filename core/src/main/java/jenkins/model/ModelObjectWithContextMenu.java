@@ -99,11 +99,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             String text = a.getDisplayName();
             String base = Functions.getIconFilePath(a);
             if (base == null)     return this;
-            String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-
             String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
 
-            return add(url, icon, text);
+            if (base.startsWith("symbol-")) {
+                Icon icon = Functions.tryGetIcon(base);
+                return add(url, icon.getClassSpec(), text);
+            } else {
+                String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
+                return add(url, icon, text);
+            }
         }
 
         public ContextMenu add(String url, String icon, String text) {
