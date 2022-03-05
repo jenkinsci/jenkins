@@ -47,14 +47,14 @@ THE SOFTWARE.
 
       <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
-      <div class="logrecord-container">
+      <div>
         <j:choose>
           <!-- Do progressive console output -->
           <j:when test="${it.isLogUpdated()}">
-            <pre id="out" class="console-output" />
+            <div id="out" class="logrecord-container" />
               <div id="spinner">
-                <l:progressAnimation/>
-              </div>
+              <l:progressAnimation/>
+            </div>
             <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner"
                  startOffset="${offset}" onFinishEvent="jenkins:consoleFinished"/>
           </j:when>
