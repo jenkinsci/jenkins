@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.0.1</version>
+      <version>3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -179,7 +179,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.1.1</version>
+      <version>4.2.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

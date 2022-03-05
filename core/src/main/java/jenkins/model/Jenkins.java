@@ -2657,7 +2657,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Set the LogRecorderManager.
      *
      * @param log the LogRecorderManager to set
-     * @since TODO
+     * @since 2.323
      */
     public void setLog(LogRecorderManager log) {
         checkPermission(ADMINISTER);

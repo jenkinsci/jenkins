@@ -2,7 +2,6 @@ package hudson.os;
 
 /**
  * Indicates an error during POSIX API call.
- * @see PosixAPI
  * @author Kohsuke Kawaguchi
  */
 public class PosixException extends RuntimeException {
