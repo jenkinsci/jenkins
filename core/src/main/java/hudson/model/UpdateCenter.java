@@ -1911,7 +1911,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * metadata.
          *
          * @return the expected size, or -1 if unknown.
-         * @since TODO
+         * @since 2.325
          */
         public long getContentLength() {
             return -1;
