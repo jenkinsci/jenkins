@@ -314,7 +314,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         public Encoder getEncoderCustomChild() {
             return new Encoder() {
                 @Override
-                public Object encode(Object source) throws EncoderException {
+                public Object encode(Object source) {
                     // it's not about implementation...
                     return null;
                 }

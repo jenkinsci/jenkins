@@ -44,7 +44,7 @@ public class UserSeedChangeListenerTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void onProgrammaticUserSeedChange_listenerTriggered() throws Exception {
+    public void onProgrammaticUserSeedChange_listenerTriggered() {
         TestUserSeedChangeListener testListener = j.jenkins.getExtensionList(UserSeedChangeListener.class).get(TestUserSeedChangeListener.class);
 
         String userId = "alice";
