@@ -78,15 +78,20 @@ public class IconSet {
     // for Jelly
     @Restricted(NoExternalUse.class)
     public static String getSymbol(String name, String title, String classes) {
-        if (SYMBOLS.containsKey(name)) {
-            String symbol = SYMBOLS.get(name);
+        String translatedName = name.replace(" icon-sm", "")
+                .replace(" icon-md", "")
+                .replace(" icon-lg", "")
+                .replace(" icon-xlg", "");
+
+        if (SYMBOLS.containsKey(translatedName)) {
+            String symbol = SYMBOLS.get(translatedName);
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
         // Load symbol if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + name + ".svg");
+        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + translatedName + ".svg");
         String symbol = null;
 
         try {
@@ -106,7 +111,7 @@ public class IconSet {
         symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        SYMBOLS.put(name, symbol);
+        SYMBOLS.put(translatedName, symbol);
 
         return prependTitleIfRequired(symbol, title);
     }
