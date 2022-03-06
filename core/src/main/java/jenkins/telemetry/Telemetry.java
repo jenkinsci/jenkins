@@ -160,7 +160,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * Produces a list of Jenkins core and plugin version numbers
      * to include in telemetry implementations for which this would be relevant.
      * @return a map in a format suitable for a value of {@link #createContent}
-     * @since TODO
+     * @since 2.325
      */
     protected final Map<String, String> buildComponentInformation() {
         Map<String, String> components = new TreeMap<>();

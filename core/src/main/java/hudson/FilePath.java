@@ -3042,7 +3042,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Same as {@link #validateAntFileMask(String, int, boolean)} with the default number of operations.
      * @see #VALIDATE_ANT_FILE_MASK_BOUND
-     * @since TODO
+     * @since 2.325
      */
     public String validateAntFileMask(final String fileMasks, final boolean caseSensitive) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
