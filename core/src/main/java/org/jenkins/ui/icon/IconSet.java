@@ -77,7 +77,7 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String classes) {
+    public static String getSymbol(String name, String title, String tooltip, String classes) {
         String translatedName = name.replace(" icon-sm", "")
                 .replace(" icon-md", "")
                 .replace(" icon-lg", "")
@@ -86,6 +86,10 @@ public class IconSet {
         if (SYMBOLS.containsKey(translatedName)) {
             String symbol = SYMBOLS.get(translatedName);
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+            symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
+            if (!tooltip.isEmpty()) {
+                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            }
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
             return prependTitleIfRequired(symbol, title);
         }
@@ -107,6 +111,9 @@ public class IconSet {
 
         symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
         symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+        if (!tooltip.isEmpty()) {
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+        }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
         symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
