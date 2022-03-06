@@ -5,7 +5,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
