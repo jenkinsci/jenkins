@@ -255,7 +255,7 @@ public class WebAppMain implements ServletContextListener {
                         Files.deleteIfExists(BootFailure.getBootFailureFile(_home).toPath());
 
                         // at this point we are open for business and serving requests normally
-                        LOGGER.info("Jenkins is fully up and running");
+                        Jenkins.get().getLifecycle().onReady();
                         success = true;
                     } catch (Error e) {
                         new HudsonFailedToLoad(e).publish(context, _home);
