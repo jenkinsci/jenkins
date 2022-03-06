@@ -34,7 +34,7 @@ import org.springframework.security.core.Authentication;
 
 /**
  * Utilities for working with listener interfaces.
- * @since TODO
+ * @since 2.324
  */
 public class Listeners {
 
@@ -50,7 +50,7 @@ public class Listeners {
      *                 because they were sometimes triggered by user actions such as configuration changes;
      *                 this is an antipattern (better to pass an explicit {@link Authentication} argument if relevant).
      * @param notification a listener method, perhaps with arguments
-     * @since TODO
+     * @since 2.325
      */
     public static <L> void notify(Class<L> listenerType, boolean asSystem, Consumer<L> notification) {
         Runnable r = () -> {
