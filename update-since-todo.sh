@@ -11,7 +11,7 @@ set -o pipefail
 declare -A commitsAndTags
 
 IFS=$'\n'
-for todo in $( git grep --line-number '@since TODO' -- *.java )
+for todo in $( git grep --line-number '@since TODO' -- *.java *.jelly *.js)
 do
     #echo "TODO: $todo"
     file=$( echo "$todo" | cut -d : -f 1 )
