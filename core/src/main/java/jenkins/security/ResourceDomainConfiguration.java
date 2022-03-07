@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
@@ -66,7 +67,7 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @since 2.200, unrestricted since 2.203
  */
-@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
+@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL - 1) // sort just below the regular location config
 @Restricted(Beta.class)
 @Symbol("resourceRoot")
 public final class ResourceDomainConfiguration extends GlobalConfiguration {

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.Extension;
@@ -62,7 +63,7 @@ public class ComputerRetentionWork extends PeriodicWork {
                 @Override
                 public void run() {
                     Node n = c.getNode();
-                    if (n!=null && n.isHoldOffLaunchUntilSave())
+                    if (n != null && n.isHoldOffLaunchUntilSave())
                         return;
                     if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                         // at the moment I don't trust strategies to wait more than 60 minutes

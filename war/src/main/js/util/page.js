@@ -48,10 +48,6 @@ function breadcrumbBarHeight() {
     return elementHeight('#breadcrumbBar');
 }
 
-function fireBottomStickerAdjustEvent() {
-    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
-}
-
 function removeTextHighlighting(selector) {
     $('span.highlight-split', selector).each(function() {
         var highlightSplit = $(this);
@@ -70,6 +66,5 @@ export default {
     onWinScroll,
     pageHeaderHeight,
     breadcrumbBarHeight,
-    fireBottomStickerAdjustEvent,
     removeTextHighlighting
 }

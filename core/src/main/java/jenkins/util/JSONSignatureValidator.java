@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -52,18 +53,19 @@ public class JSONSignatureValidator {
     /**
      * Verifies the signature in the update center data file.
      */
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-512 is not available")
     public FormValidation verifySignature(JSONObject o) throws IOException {
         try {
             FormValidation warning = null;
 
             JSONObject signature = o.getJSONObject("signature");
             if (signature.isNullObject()) {
-                return FormValidation.error("No signature block found in "+name);
+                return FormValidation.error("No signature block found in " + name);
             }
             o.remove("signature");
 
             List<X509Certificate> certs = new ArrayList<>();
-            {// load and verify certificates
+            { // load and verify certificates
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
                 for (Object cert : signature.getJSONArray("certificates")) {
                     try {
@@ -105,7 +107,9 @@ public class JSONSignatureValidator {
                         LOGGER.log(Level.INFO, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
                         break;
                     case OK:
-                        // fall through
+                        break;
+                    default:
+                        throw new AssertionError("Unknown form validation kind: " + resultSha512.kind);
                 }
             } catch (NoSuchAlgorithmException nsa) {
                 LOGGER.log(Level.WARNING, "Failed to verify potential SHA-512 digest/signature, falling back to SHA-1", nsa);
@@ -127,13 +131,15 @@ public class JSONSignatureValidator {
                         return FormValidation.error("No correct_signature or correct_signature512 entry found in '" + name + "'.");
                     }
                 case OK:
-                    // fall through
+                    break;
+                default:
+                    throw new AssertionError("Unknown form validation kind: " + resultSha1.kind);
             }
 
-            if (warning!=null)  return warning;
+            if (warning != null)  return warning;
             return FormValidation.ok();
         } catch (GeneralSecurityException e) {
-            return FormValidation.error(e, "Signature verification failed in "+name);
+            return FormValidation.error(e, "Signature verification failed in " + name);
         }
     }
 
@@ -181,7 +187,7 @@ public class JSONSignatureValidator {
         //
         // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
         // the attacker to inject a fragment at the end of the json.
-        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), StandardCharsets.UTF_8)).close();
+        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos, sos), StandardCharsets.UTF_8)).close();
 
         // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
         // (which is more likely than someone tampering with update center), we can tell
@@ -196,7 +202,7 @@ public class JSONSignatureValidator {
         }
 
         if (!verifySignature(signature, providedSignature)) {
-            return FormValidation.error(digestName + " based signature in the update center doesn't match with the certificate in '"+name + "'");
+            return FormValidation.error(digestName + " based signature in the update center doesn't match with the certificate in '" + name + "'");
         }
 
         return FormValidation.ok();
@@ -217,7 +223,7 @@ public class JSONSignatureValidator {
             if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
                 return true;
             }
-        } catch (SignatureException|DecoderException ignore) {
+        } catch (SignatureException | DecoderException ignore) {
             // ignore
         }
 
@@ -225,7 +231,7 @@ public class JSONSignatureValidator {
             if (signature.verify(Base64.getDecoder().decode(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException|IllegalArgumentException ignore) {
+        } catch (SignatureException | IllegalArgumentException ignore) {
             // ignore
         }
         return false;
@@ -235,10 +241,11 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.getEncoder().encode(digest)));
+        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
     }
 
 
+    @SuppressFBWarnings(value = {"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"}, justification = "https://github.com/spotbugs/spotbugs/issues/756")
     protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all
@@ -277,7 +284,7 @@ public class JSONSignatureValidator {
             }
         }
         File[] cas = new File(j.root, "update-center-rootCAs").listFiles();
-        if (cas!=null) {
+        if (cas != null) {
             for (File cert : cas) {
                 if (cert.isDirectory() || cert.getName().endsWith(".txt"))  {
                     continue;       // skip directories also any text files that are meant to be documentation

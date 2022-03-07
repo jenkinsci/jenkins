@@ -1,5 +1,6 @@
 function display(data) {
     var p = document.getElementById('people');
+    p.show();
     var rootURL = document.head.getAttribute('data-rooturl');
     for (var x = 0; data.length > x; x++) {
         var e = data[x];
@@ -19,7 +20,7 @@ function display(data) {
         var wrapper = document.createElement('div');
         wrapper.className = 'jenkins-table__cell__button-wrapper';
         d.className = 'jenkins-table__cell--tight jenkins-table__icon';
-        var icon = document.getElementById('person-circle-outline')
+        var icon = document.getElementById('person-circle')
         wrapper.innerHTML = icon.children[0].outerHTML;
         d.appendChild(wrapper);
         r.appendChild(d);
@@ -27,15 +28,13 @@ function display(data) {
         d = document.createElement('td');
         var a = document.createElement('a');
         a.href = rootURL + "/" + e.url;
+        a.className = "jenkins-table__link"
         a.appendChild(document.createTextNode(e.id));
         d.appendChild(a);
         r.appendChild(d);
 
         d = document.createElement('td');
-        var a = document.createElement('a');
-        a.href = rootURL + "/" + e.url;
-        a.appendChild(document.createTextNode(e.fullName));
-        d.appendChild(a);
+        d.appendChild(document.createTextNode(e.fullName));
         r.appendChild(d);
 
         d = document.createElement('td');

@@ -2,7 +2,6 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
@@ -45,6 +44,11 @@ public class TimeZoneProperty extends UserProperty {
 
     public void setTimeZoneName(@CheckForNull String timeZoneName) {
         this.timeZoneName = timeZoneName;
+    }
+
+    @CheckForNull
+    public String getTimeZoneName() {
+        return timeZoneName;
     }
 
     @Extension

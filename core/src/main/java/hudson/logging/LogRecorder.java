@@ -21,21 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.util.CopyOnWriteList;
-import hudson.util.HttpResponses;
-import java.util.Objects;
-import jenkins.util.MemoryReductionUtil;
-import jenkins.model.Jenkins;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
@@ -45,6 +42,8 @@ import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
+import hudson.util.CopyOnWriteList;
+import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import java.io.File;
@@ -61,6 +60,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -70,9 +70,10 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -99,14 +100,14 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     /**
      * No longer used.
      *
      * @deprecated use {@link #getLoggers()}
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
@@ -116,7 +117,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         this.name = name;
         // register it only once when constructed, and when this object dies
         // WeakLogHandler will remove it
-        new WeakLogHandler(handler,Logger.getLogger(""));
+        new WeakLogHandler(handler, Logger.getLogger(""));
     }
 
     private Object readResolve() {
@@ -169,7 +170,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
             String longerPrefix = null;
             for (int i = loggerNameParts.length; i > 0; i--) {
-                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i), ".");
+                String loggerNamePrefix = String.join(".", Arrays.copyOf(loggerNameParts, i));
                 seenPrefixes.put(loggerNamePrefix, seenPrefixes.getOrDefault(loggerNamePrefix, 0) + 1);
                 if (longerPrefix == null) {
                     relevantPrefixes.add(loggerNamePrefix); // actual logger name
@@ -242,7 +243,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         private transient /* almost final*/ Logger logger;
 
         public Target(String name, Level level) {
-            this(name,level.intValue());
+            this(name, level.intValue());
         }
 
         public Target(String name, int level) {
@@ -252,7 +253,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         @DataBoundConstructor
         public Target(String name, String level) {
-            this(name,Level.parse(level));
+            this(name, Level.parse(level));
         }
 
         public Level getLevel() {
@@ -282,28 +283,29 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         @Deprecated
         public boolean includes(LogRecord r) {
-            if(r.getLevel().intValue() < level)
+            if (r.getLevel().intValue() < level)
                 return false;   // below the threshold
             if (name.length() == 0) {
                 return true; // like root logger, includes everything
             }
             String logName = r.getLoggerName();
-            if(logName==null || !logName.startsWith(name))
+            if (logName == null || !logName.startsWith(name))
                 return false;   // not within this logger
             String rest = logName.substring(name.length());
-            return rest.startsWith(".") || rest.length()==0;
+            return rest.startsWith(".") || rest.length() == 0;
         }
 
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
             if (name.length() == 0) {
                 return levelSufficient; // include if level matches
             }
             String logName = r.getLoggerName();
-            if(logName==null || !logName.startsWith(name))
+            if (logName == null || !logName.startsWith(name))
                 return null; // not in the domain of this logger
             String rest = logName.substring(name.length());
-            if (rest.startsWith(".") || rest.length()==0) {
+            if (rest.startsWith(".") || rest.length() == 0) {
                 return levelSufficient; // include if level matches
             }
             return null;
@@ -321,7 +323,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
          */
         public void enable() {
             Logger l = getLogger();
-            if(!l.isLoggable(getLevel()))
+            if (!l.isLoggable(getLevel()))
                 l.setLevel(getLevel());
             new SetLevel(name, getLevel()).broadcast();
         }
@@ -343,21 +345,24 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
     }
 
-    private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
+    private static final class SetLevel extends MasterToSlaveCallable<Void, Error> {
         /** known loggers (kept per agent), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
         private final String name;
         private final Level level;
+
         SetLevel(String name, Level level) {
             this.name = name;
             this.level = level;
         }
+
         @Override public Void call() throws Error {
             Logger logger = Logger.getLogger(name);
             loggers.add(logger);
             logger.setLevel(level);
             return null;
         }
+
         void broadcast() {
             for (Computer c : Jenkins.get().getComputers()) {
                 if (c.getName().length() > 0) { // i.e. not master
@@ -406,14 +411,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
-        if(!name.equals(newName)) {
+        if (!name.equals(newName)) {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
@@ -429,7 +434,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         setLoggers(newTargets);
 
         save();
-        if (oldFile!=null) oldFile.delete();
+        if (oldFile != null) oldFile.delete();
         rsp.sendRedirect2(redirect);
     }
 
@@ -454,7 +459,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @Override
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
 
         handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
@@ -518,8 +523,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * RSS feed for log entries.
      */
-    public void doRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        LogRecorderManager.doRss(req,rsp,getLogRecords());
+    public void doRss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        LogRecorderManager.doRss(req, rsp, getLogRecords());
     }
 
     /**
@@ -541,8 +546,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * @return a map (sorted by display name) from computer to (nonempty) list of log records
      * @since 1.519
      */
-    public Map<Computer,List<LogRecord>> getSlaveLogRecords() {
-        Map<Computer,List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
+    public Map<Computer, List<LogRecord>> getSlaveLogRecords() {
+        Map<Computer, List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
             final Collator COLL = Collator.getInstance();
 
             @Override
@@ -580,8 +585,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public static final XStream XSTREAM = new XStream2();
 
     static {
-        XSTREAM.alias("log",LogRecorder.class);
-        XSTREAM.alias("target",Target.class);
+        XSTREAM.alias("log", LogRecorder.class);
+        XSTREAM.alias("target", Target.class);
     }
 
     /**

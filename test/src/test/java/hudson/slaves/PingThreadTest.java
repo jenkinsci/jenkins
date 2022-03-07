@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
@@ -61,7 +62,7 @@ public class PingThreadTest {
         String pid = channel.call(new GetPid());
 
         PingThread pingThread = null;
-        for (Thread it: Thread.getAllStackTraces().keySet()) {
+        for (Thread it : Thread.getAllStackTraces().keySet()) {
             if (it instanceof PingThread && it.getName().endsWith(channel.toString())) {
                 pingThread = (PingThread) it;
             }

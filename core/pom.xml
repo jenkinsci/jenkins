@@ -41,9 +41,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <xmlunit.version>2.8.3</xmlunit.version>
-    <!-- TODO: JENKINS-36716 - Switch to Medium once SpotBugs is cleaned up, 929 issues on September 26, 2021 -->
-    <spotbugs.threshold>High</spotbugs.threshold>
+    <xmlunit.version>2.9.0</xmlunit.version>
   </properties>
 
   <dependencyManagement>
@@ -57,7 +55,6 @@ THE SOFTWARE.
       </dependency>
     </dependencies>
   </dependencyManagement>
-
 
   <dependencies>
     <dependency>
@@ -78,7 +75,8 @@ THE SOFTWARE.
       <artifactId>crypto-util</artifactId>
     </dependency>
 
-    <dependency><!-- working around MCOMPILER-97 -->
+    <dependency>
+      <!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
       <version>1.0</version>
@@ -103,18 +101,28 @@ THE SOFTWARE.
       <artifactId>jbcrypt</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.jnr</groupId>
-      <artifactId>jnr-posix</artifactId>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-analysis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-tree</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-util</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <exclusions>
-        <exclusion> <!-- pick up from SpotBugs Annotations -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -151,7 +159,8 @@ THE SOFTWARE.
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-codemirror</artifactId>
     </dependency>
-    <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
+    <dependency>
+      <!-- this helps us see the source code of the control while we edit Jenkins -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
       <version>1.5</version>
@@ -178,10 +187,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.21</version>
+      <version>${bridge-method-injector.version}</version>
     </dependency>
 
-    <dependency><!-- until we get this version through Stapler -->
+    <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
     </dependency>
@@ -254,7 +263,8 @@ THE SOFTWARE.
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-    <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
+    <dependency>
+      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
@@ -265,10 +275,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>jakarta.mail</artifactId>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
@@ -370,15 +376,22 @@ THE SOFTWARE.
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
     </dependency>
-    <dependency><!-- groovy shell uses this but uses an optional dependency. Not included into BOM -->
+    <dependency>
+      <!-- Groovy shell uses this, but it uses an optional dependency. Not included into BOM. -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
       <version>2.14.6</version>
       <scope>compile</scope>
     </dependency>
-    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+    <dependency>
+      <!-- Groovy shell uses this, but it doesn't declare the dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -407,9 +420,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency><!-- needed by Jelly -->
+    <dependency>
+      <!-- needed by Jelly -->
       <groupId>jakarta.servlet.jsp.jstl</groupId>
       <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
     </dependency>
@@ -454,10 +469,6 @@ THE SOFTWARE.
       <artifactId>jna</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
     </dependency>
@@ -469,7 +480,8 @@ THE SOFTWARE.
       <groupId>org.kohsuke.jinterop</groupId>
       <artifactId>j-interop</artifactId>
     </dependency>
-    <dependency> <!-- Not in BOM, optional -->
+    <dependency>
+      <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
       <version>1.8</version>
@@ -497,12 +509,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -565,10 +581,10 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/antlr</source>
@@ -621,7 +637,8 @@ THE SOFTWARE.
         <artifactId>maven-stapler-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
+          <!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
+          <fork>${staplerFork}</fork>
           <maxmem>128m</maxmem>
         </configuration>
       </plugin>
@@ -686,11 +703,11 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>winsw</id>
-            <phase>generate-resources</phase>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -715,7 +732,8 @@ THE SOFTWARE.
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
-      <plugin><!-- set main class -->
+      <plugin>
+        <!-- set main class -->
         <artifactId>maven-jar-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
@@ -733,7 +751,8 @@ THE SOFTWARE.
 
   <reporting>
     <plugins>
-      <plugin><!-- generate Jelly tag lib documentation -->
+      <plugin>
+        <!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
@@ -743,7 +762,8 @@ THE SOFTWARE.
           </patterns>
         </configuration>
       </plugin>
-      <plugin><!-- skip slow dependency analysis -->
+      <plugin>
+        <!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
@@ -816,7 +836,8 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.siom79.japicmp</groupId>
             <artifactId>japicmp-maven-plugin</artifactId>
-            <version>0.14.4-20200728.214757-1</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <version>0.14.4-20200728.214757-1</version>
             <configuration>
               <parameter>
                 <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
@@ -825,7 +846,8 @@ THE SOFTWARE.
                 <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
               </parameter>
               <oldClassPathDependencies>
-                <dependency> <!-- provided, so not visible in flattened artifact -->
+                <dependency>
+                  <!-- provided, so not visible in flattened artifact -->
                   <groupId>javax.servlet</groupId>
                   <artifactId>javax.servlet-api</artifactId>
                   <version>3.1.0</version>
@@ -835,10 +857,10 @@ THE SOFTWARE.
             </configuration>
             <executions>
               <execution>
-                <phase>verify</phase>
                 <goals>
                   <goal>cmp</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>

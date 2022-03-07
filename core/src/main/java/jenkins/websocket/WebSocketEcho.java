@@ -49,6 +49,7 @@ public class WebSocketEcho  extends InvisibleAction implements RootAction {
                 protected void text(String message) {
                     sendText("hello " + message);
                 }
+
                 @Override
                 protected void binary(byte[] payload, int offset, int len) {
                     ByteBuffer data = ByteBuffer.allocate(len);

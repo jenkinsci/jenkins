@@ -36,7 +36,7 @@ public class NodeMonitorUpdater extends ComputerListener {
      */
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-        synchronized(this) {
+        synchronized (this) {
             future.cancel(false);
             future = Timer.get().schedule(MONITOR_UPDATER, 5, TimeUnit.SECONDS);
         }

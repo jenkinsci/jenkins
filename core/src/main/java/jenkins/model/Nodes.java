@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -32,7 +33,6 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;
-import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;

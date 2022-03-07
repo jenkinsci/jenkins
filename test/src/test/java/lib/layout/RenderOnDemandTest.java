@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
 
 import static org.junit.Assert.assertEquals;
@@ -61,7 +62,7 @@ public class RenderOnDemandTest {
 
         ScriptResult r = p.executeJavaScript("var r=document.getElementsBySelector('DIV.a'); r[0].innerHTML+r[1].innerHTML+r[2].innerHTML");
         WebClientUtil.waitForJSExec(p.getWebClient());
-        assertEquals("AlphaBravoCharlie",r.getJavaScriptResult().toString());
+        assertEquals("AlphaBravoCharlie", r.getJavaScriptResult().toString());
     }
 
     /*
@@ -94,18 +95,18 @@ public class RenderOnDemandTest {
         HtmlPage p = j.createWebClient().goTo("self/testScript");
         assertNull(p.getElementById("loaded"));
 
-        ((HtmlElement)p.getElementById("button")).click();
+        ((HtmlElement) p.getElementById("button")).click();
         WebClientUtil.waitForJSExec(p.getWebClient());
         // all AJAX calls complete before the above method returns
         assertNotNull(p.getElementById("loaded"));
         ScriptResult r = p.executeJavaScript("x");
         WebClientUtil.waitForJSExec(p.getWebClient());
 
-        assertEquals("xxx",r.getJavaScriptResult().toString());
+        assertEquals("xxx", r.getJavaScriptResult().toString());
 
         r = p.executeJavaScript("y");
         WebClientUtil.waitForJSExec(p.getWebClient());
-        assertEquals("yyy",r.getJavaScriptResult().toString());
+        assertEquals("yyy", r.getJavaScriptResult().toString());
 
         // if you want to test this in the browser
         /*

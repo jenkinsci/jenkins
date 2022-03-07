@@ -35,6 +35,7 @@ public interface SecureRequester extends ExtensionPoint {
 
         private static final String PROP = "hudson.model.Api.INSECURE";
         private static final boolean INSECURE = SystemProperties.getBoolean(PROP);
+
         static {
             if (INSECURE) {
                 Logger.getLogger(SecureRequester.class.getName()).warning(PROP + " system property is deprecated; implement SecureRequester instead");

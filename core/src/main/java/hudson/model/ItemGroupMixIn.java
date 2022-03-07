@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Util;
@@ -33,6 +34,7 @@ import hudson.util.Secret;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
@@ -96,11 +98,15 @@ public abstract class ItemGroupMixIn {
      * @param modulesDir
      *      Directory that contains sub-directories for each child item.
      */
-    public static <K,V extends Item> Map<K,V> loadChildren(ItemGroup parent, File modulesDir, Function1<? extends K,? super V> key) {
-        modulesDir.mkdirs(); // make sure it exists
+    public static <K, V extends Item> Map<K, V> loadChildren(ItemGroup parent, File modulesDir, Function1<? extends K, ? super V> key) {
+        try {
+            Util.createDirectories(modulesDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
         File[] subdirs = modulesDir.listFiles(File::isDirectory);
-        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
+        CopyOnWriteMap.Tree<K, V> configurations = new CopyOnWriteMap.Tree<>();
         for (File subdir : subdirs) {
             try {
                 // Try to retain the identity of an existing child object if we can.
@@ -128,13 +134,13 @@ public abstract class ItemGroupMixIn {
     /**
      * {@link Item} → name function.
      */
-    public static final Function1<String,Item> KEYED_BY_NAME = Item::getName;
+    public static final Function1<String, Item> KEYED_BY_NAME = Item::getName;
 
     /**
      * Creates a {@link TopLevelItem} for example from the submission of the {@code /lib/hudson/newFromList/form} tag
      * or throws an exception if it fails.
      */
-    public synchronized TopLevelItem createTopLevelItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized TopLevelItem createTopLevelItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         acl.checkPermission(Item.CREATE);
 
         TopLevelItem result;
@@ -150,38 +156,38 @@ public abstract class ItemGroupMixIn {
                     || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
-        if(name==null)
+        if (name == null)
             throw new Failure("Query parameter 'name' is required");
 
-        {// check if the name looks good
+        { // check if the name looks good
             Jenkins.checkGoodName(name);
             name = name.trim();
-            if(parent.getItem(name)!=null)
+            if (parent.getItem(name) != null)
                 throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         }
 
-        if(mode!=null && mode.equals("copy")) {
+        if (mode != null && mode.equals("copy")) {
             String from = req.getParameter("from");
 
             // resolve a name to Item
             Item src = Jenkins.get().getItem(from, parent);
-            if(src==null) {
-                if(Util.fixEmpty(from)==null)
+            if (src == null) {
+                if (Util.fixEmpty(from) == null)
                     throw new Failure("Specify which job to copy");
                 else
-                    throw new Failure("No such job: "+from);
+                    throw new Failure("No such job: " + from);
             }
             if (!(src instanceof TopLevelItem))
-                throw new Failure(from+" cannot be copied");
+                throw new Failure(from + " cannot be copied");
 
-            result = copy((TopLevelItem) src,name);
+            result = copy((TopLevelItem) src, name);
         } else {
-            if(isXmlSubmission) {
+            if (isXmlSubmission) {
                 result = createProjectFromXML(name, req.getInputStream());
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return result;
             } else {
-                if(mode==null)
+                if (mode == null)
                     throw new Failure("No mode given");
                 TopLevelItemDescriptor descriptor = Items.all().findByName(mode);
                 if (descriptor == null) {
@@ -203,7 +209,7 @@ public abstract class ItemGroupMixIn {
      * Computes the redirection target URL for the newly created {@link TopLevelItem}.
      */
     protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
-        return req.getContextPath()+'/'+result.getUrl()+"configure";
+        return req.getContextPath() + '/' + result.getUrl() + "configure";
     }
 
     /**
@@ -219,7 +225,13 @@ public abstract class ItemGroupMixIn {
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication2().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
+                    throw new AccessDeniedException(
+                            Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(
+                                    src.getFullName(),
+                                    Jenkins.getAuthentication2().getName(),
+                                    Item.PERMISSIONS.title,
+                                    Item.EXTENDED_READ.name,
+                                    Item.CONFIGURE.name));
                 }
             }
         }
@@ -228,7 +240,7 @@ public abstract class ItemGroupMixIn {
         Jenkins.checkGoodName(name);
         ItemListener.checkBeforeCopy(src, parent);
 
-        T result = (T)createProject(src.getDescriptor(),name,false);
+        T result = (T) createProject(src.getDescriptor(), name, false);
 
         // copy config
         Files.copy(Util.fileToPath(srcConfigFile.getFile()), Util.fileToPath(Items.getConfigFile(result).getFile()),
@@ -236,7 +248,7 @@ public abstract class ItemGroupMixIn {
 
         // reload from the new config
         final File rootDir = result.getRootDir();
-        result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<T,IOException>() {
+        result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<T, IOException>() {
             @Override public T call() throws IOException {
                 return (T) Items.load(parent, rootDir);
             }
@@ -244,7 +256,7 @@ public abstract class ItemGroupMixIn {
         result.onCopiedFrom(src);
 
         add(result);
-        ItemListener.fireOnCopied(src,result);
+        ItemListener.fireOnCopied(src, result);
         Jenkins.get().rebuildDependencyGraphAsync();
 
         return result;
@@ -260,13 +272,13 @@ public abstract class ItemGroupMixIn {
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         final File dir = configXml.getParentFile();
-        dir.mkdirs();
         boolean success = false;
         try {
+            Util.createDirectories(dir.toPath());
             XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
 
             // load it
-            TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
+            TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem, IOException>() {
                 @Override public TopLevelItem call() throws IOException {
                     return (TopLevelItem) Items.load(parent, dir);
                 }
@@ -295,7 +307,7 @@ public abstract class ItemGroupMixIn {
         }
     }
 
-    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
+    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify)
             throws IOException {
         acl.checkPermission(Item.CREATE);
         type.checkApplicableIn(parent);

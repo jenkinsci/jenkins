@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.,
  * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,10 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Functions;
 import hudson.Util;
 import hudson.search.SearchableModelObject;
@@ -39,7 +41,6 @@ import java.util.Collection;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
-import jline.internal.Nullable;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -93,7 +94,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * This name is also used for directory name, so it cannot contain
      * any character that's not allowed on the file system.
      *
-     * @see #getFullName() 
+     * @see #getFullName()
      */
     String getName();
 
@@ -199,9 +200,9 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     @Deprecated
     default String getAbsoluteUrl() {
         String r = Jenkins.get().getRootUrl();
-        if(r==null)
+        if (r == null)
             throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
-        return Util.encode(r+getUrl());
+        return Util.encode(r + getUrl());
     }
 
     /**
@@ -248,21 +249,83 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     void delete() throws IOException, InterruptedException;
 
-    PermissionGroup PERMISSIONS = new PermissionGroup(Item.class,Messages._Item_Permissions_Title());
-    Permission CREATE = new Permission(PERMISSIONS, "Create", Messages._Item_CREATE_description(), Permission.CREATE, PermissionScope.ITEM_GROUP);
-    Permission DELETE = new Permission(PERMISSIONS, "Delete", Messages._Item_DELETE_description(), Permission.DELETE, PermissionScope.ITEM);
-    Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", Messages._Item_CONFIGURE_description(), Permission.CONFIGURE, PermissionScope.ITEM);
-    Permission READ = new Permission(PERMISSIONS, "Read", Messages._Item_READ_description(), Permission.READ, PermissionScope.ITEM);
-    Permission DISCOVER = new Permission(PERMISSIONS, "Discover", Messages._AbstractProject_DiscoverPermission_Description(), READ, PermissionScope.ITEM);
+    PermissionGroup PERMISSIONS = new PermissionGroup(Item.class, Messages._Item_Permissions_Title());
+    Permission CREATE =
+            new Permission(
+                    PERMISSIONS,
+                    "Create",
+                    Messages._Item_CREATE_description(),
+                    Permission.CREATE,
+                    PermissionScope.ITEM_GROUP);
+    Permission DELETE =
+            new Permission(
+                    PERMISSIONS,
+                    "Delete",
+                    Messages._Item_DELETE_description(),
+                    Permission.DELETE,
+                    PermissionScope.ITEM);
+    Permission CONFIGURE =
+            new Permission(
+                    PERMISSIONS,
+                    "Configure",
+                    Messages._Item_CONFIGURE_description(),
+                    Permission.CONFIGURE,
+                    PermissionScope.ITEM);
+    Permission READ =
+            new Permission(
+                    PERMISSIONS,
+                    "Read",
+                    Messages._Item_READ_description(),
+                    Permission.READ,
+                    PermissionScope.ITEM);
+    Permission DISCOVER =
+            new Permission(
+                    PERMISSIONS,
+                    "Discover",
+                    Messages._AbstractProject_DiscoverPermission_Description(),
+                    READ,
+                    PermissionScope.ITEM);
     /**
      * Ability to view configuration details.
      * If the user lacks {@link #CONFIGURE} then any {@link Secret}s must be masked out, even in encrypted form.
      * @see Secret#ENCRYPTED_VALUE_PATTERN
      */
-    Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.ITEM});
+    Permission EXTENDED_READ =
+            new Permission(
+                    PERMISSIONS,
+                    "ExtendedRead",
+                    Messages._AbstractProject_ExtendedReadPermission_Description(),
+                    CONFIGURE,
+                    SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"),
+                    new PermissionScope[] {PermissionScope.ITEM});
     // TODO the following really belong in Job, not Item, but too late to move since the owner.name is encoded in the ID:
-    Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE, PermissionScope.ITEM);
-    Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ, PermissionScope.ITEM);
-    Permission WIPEOUT = new Permission(PERMISSIONS, "WipeOut", Messages._AbstractProject_WipeOutPermission_Description(), null, Functions.isWipeOutPermissionEnabled(), new PermissionScope[]{PermissionScope.ITEM});
-    Permission CANCEL = new Permission(PERMISSIONS, "Cancel", Messages._AbstractProject_CancelPermission_Description(), Permission.UPDATE, PermissionScope.ITEM);
+    Permission BUILD =
+            new Permission(
+                    PERMISSIONS,
+                    "Build",
+                    Messages._AbstractProject_BuildPermission_Description(),
+                    Permission.UPDATE,
+                    PermissionScope.ITEM);
+    Permission WORKSPACE =
+            new Permission(
+                    PERMISSIONS,
+                    "Workspace",
+                    Messages._AbstractProject_WorkspacePermission_Description(),
+                    Permission.READ,
+                    PermissionScope.ITEM);
+    Permission WIPEOUT =
+            new Permission(
+                    PERMISSIONS,
+                    "WipeOut",
+                    Messages._AbstractProject_WipeOutPermission_Description(),
+                    null,
+                    Functions.isWipeOutPermissionEnabled(),
+                    new PermissionScope[] {PermissionScope.ITEM});
+    Permission CANCEL =
+            new Permission(
+                    PERMISSIONS,
+                    "Cancel",
+                    Messages._AbstractProject_CancelPermission_Description(),
+                    Permission.UPDATE,
+                    PermissionScope.ITEM);
 }

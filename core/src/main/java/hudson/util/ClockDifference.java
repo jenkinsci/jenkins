@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import hudson.Util;
@@ -53,7 +54,7 @@ public final class ClockDifference {
      * Returns true if the difference is big enough to be considered dangerous.
      */
     public boolean isDangerous() {
-        return Math.abs(diff)>5000;
+        return Math.abs(diff) > 5000;
     }
 
     /**
@@ -68,13 +69,13 @@ public final class ClockDifference {
      */
     @Override
     public String toString() {
-        if(-1000<diff && diff <1000)
+        if (-1000 < diff && diff < 1000)
             return Messages.ClockDifference_InSync();  // clock is in sync
 
         long abs = Math.abs(diff);
 
         String s = Util.getTimeSpanString(abs);
-        if(diff<0)
+        if (diff < 0)
             s = Messages.ClockDifference_Ahead(s);
         else
             s = Messages.ClockDifference_Behind(s);
@@ -84,14 +85,14 @@ public final class ClockDifference {
 
     public String toHtml() {
         String s = toString();
-        if(isDangerous())
+        if (isDangerous())
             s = Util.wrapToErrorSpan(s);
         return s;
     }
 
     public static String toHtml(Node d) {
         try {
-            if(d==null) return FAILED_HTML;
+            if (d == null) return FAILED_HTML;
             return d.getClockDifference().toHtml();
         } catch (IOException | InterruptedException e) {
             return FAILED_HTML;
@@ -103,7 +104,7 @@ public final class ClockDifference {
      * This version handles null {@link ClockDifference}.
      */
     public static String toHtml(ClockDifference d) {
-        if(d==null)     return FAILED_HTML;
+        if (d == null)     return FAILED_HTML;
         return d.toHtml();
     }
 

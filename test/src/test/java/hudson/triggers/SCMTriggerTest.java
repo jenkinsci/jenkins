@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
 import static org.junit.Assert.assertEquals;
@@ -82,6 +83,7 @@ public class SCMTriggerTest {
         p.setScm(new TestSCM(checkoutStarted));
 
         Future<FreeStyleBuild> build = p.scheduleBuild2(0, new Cause.UserCause());
+        assertNotNull(build);
         checkoutStarted.block();
         assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(StreamTaskListener.fromStdout()));
         build.get();  // let mock build finish
@@ -123,7 +125,7 @@ public class SCMTriggerTest {
         }
 
         @Override
-        public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+        public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
             checkoutStarted.signal();
             Thread.sleep(400);  // processing time for mock update
             synchronized (this) { if (myRev < 2) myRev = 2; }
@@ -151,19 +153,19 @@ public class SCMTriggerTest {
         });
 
         SCMTrigger t = new SCMTrigger("@daily");
-        t.start(p,true);
+        t.start(p, true);
         p.addTrigger(t);
 
         // Start one build to block others
-        assertTrue(p.scheduleBuild(new Cause.UserCause()));
+        p.scheduleBuild2(0, new Cause.UserCause()).waitForStart();
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new Cause.UserCause());
         assertNotNull(fb);
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("First poll")));
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("Second poll")));
-        assertTrue(p.scheduleBuild(new SCMTriggerCause("Third poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("First poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("Second poll")));
+        assertNotNull(p.scheduleBuild2(0, new SCMTriggerCause("Third poll")));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();

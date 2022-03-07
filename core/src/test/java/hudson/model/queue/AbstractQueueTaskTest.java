@@ -43,39 +43,48 @@ public class AbstractQueueTaskTest {
         assertNull(t.getWhyBlocked());
         assertNull(t.getCauseOfBlockage());
     }
+
     static class LegacyTask extends AbstractQueueTask {
         @Override
         public boolean isBuildBlocked() {
             return getCauseOfBlockage() != null;
         }
+
         @Override
         public String getWhyBlocked() {
             CauseOfBlockage causeOfBlockage = getCauseOfBlockage();
             return causeOfBlockage != null ? causeOfBlockage.getShortDescription() : null;
         }
+
         @Override
         public String getName() {
             return null;
         }
+
         @Override
         public String getFullDisplayName() {
             return null;
         }
+
         @Override
         public void checkAbortPermission() {
         }
+
         @Override
         public boolean hasAbortPermission() {
             return false;
         }
+
         @Override
         public String getUrl() {
             return null;
         }
+
         @Override
         public String getDisplayName() {
             return null;
         }
+
         @Override
         public Queue.Executable createExecutable() throws IOException {
             throw new IOException();

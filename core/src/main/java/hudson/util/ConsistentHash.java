@@ -21,9 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import hudson.util.Iterators.DuplicateFilterIterator;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -98,7 +100,7 @@ public class ConsistentHash<T> {
     private final class Table {
         private final int[] hash;
         // really T[]
-        private final Object[] owner; 
+        private final Object[] owner;
 
         private Table() {
             int r = 0;
@@ -139,7 +141,7 @@ public class ConsistentHash<T> {
          *
          * <p>
          * This is a permutation of all the nodes, where nodes with more replicas
-         * are more likely to show up early on. 
+         * are more likely to show up early on.
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
@@ -175,7 +177,7 @@ public class ConsistentHash<T> {
                     return -1;
                 }
                 // make it a circle
-                idx %= hash.length; 
+                idx %= hash.length;
             }
             return idx;
         }
@@ -193,7 +195,7 @@ public class ConsistentHash<T> {
      * This hash function need not produce a very uniform distribution, as the
      * output is rehashed with SHA-256. But it does need to make sure it doesn't
      * produce the same value for two different 'T's (and that's why this returns
-     * String, not the usual int.) 
+     * String, not the usual int.)
      */
     public interface Hash<T> {
         /**
@@ -212,7 +214,7 @@ public class ConsistentHash<T> {
     }
 
     public ConsistentHash(int defaultReplication) {
-        this((Hash<T>) DEFAULT_HASH,defaultReplication);
+        this((Hash<T>) DEFAULT_HASH, defaultReplication);
     }
 
     public ConsistentHash(Hash<T> hash) {
@@ -304,7 +306,7 @@ public class ConsistentHash<T> {
     private int digest(String s) {
         try {
             MessageDigest messageDigest = createMessageDigest();
-            messageDigest.update(s.getBytes());
+            messageDigest.update(s.getBytes(StandardCharsets.UTF_8));
             byte[] digest = messageDigest.digest();
 
             // 16 bytes -> 4 bytes
@@ -325,7 +327,7 @@ public class ConsistentHash<T> {
      * unsigned byte->int.
      */
     private int b2i(byte b) {
-        return ((int)b) & 0xFF;
+        return ((int) b) & 0xFF;
     }
 
     /**
@@ -344,7 +346,7 @@ public class ConsistentHash<T> {
     }
 
     /**
-     * Takes a string, hash it with SHA-256, then calls {@link #lookup(int)}. 
+     * Takes a string, hash it with SHA-256, then calls {@link #lookup(int)}.
      */
     public T lookup(String queryPoint) {
         return lookup(digest(queryPoint));

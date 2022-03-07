@@ -31,7 +31,7 @@ public abstract class FileVisitor {
      * letting visitors decide whether or not to descend into a symlink directory.)
      */
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
-        visit(link,relativePath);
+        visit(link, relativePath);
     }
 
     /**
@@ -43,13 +43,13 @@ public abstract class FileVisitor {
     public boolean understandsSymlink() {
         return false;
     }
-    
+
     /**
      * Decorates a visitor by a given filter.
      */
     public final FileVisitor with(FileFilter f) {
-        if(f==null) return this;
-        return new FilterFileVisitor(f,this);
+        if (f == null) return this;
+        return new FilterFileVisitor(f, this);
     }
 
     private static final class FilterFileVisitor extends FileVisitor implements Serializable {
@@ -57,14 +57,14 @@ public abstract class FileVisitor {
         private final FileVisitor visitor;
 
         private FilterFileVisitor(FileFilter filter, FileVisitor visitor) {
-            this.filter = filter!=null ? filter : PASS_THROUGH;
+            this.filter = filter != null ? filter : PASS_THROUGH;
             this.visitor = visitor;
         }
 
         @Override
         public void visit(File f, String relativePath) throws IOException {
-            if(f.isDirectory() || filter.accept(f))
-                visitor.visit(f,relativePath);
+            if (f.isDirectory() || filter.accept(f))
+                visitor.visit(f, relativePath);
         }
 
         private static final FileFilter PASS_THROUGH = pathname -> true;

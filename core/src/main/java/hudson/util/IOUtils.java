@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.Collection;
@@ -85,9 +86,9 @@ public class IOUtils {
     public static InputStream skip(InputStream in, long size) throws IOException {
         DataInputStream di = new DataInputStream(in);
 
-        while (size>0) {
-            int chunk = (int)Math.min(SKIP_BUFFER.length,size);
-            di.readFully(SKIP_BUFFER,0,chunk);
+        while (size > 0) {
+            int chunk = (int) Math.min(SKIP_BUFFER.length, size);
+            di.readFully(SKIP_BUFFER, 0, chunk);
             size -= chunk;
         }
 
@@ -131,7 +132,7 @@ public class IOUtils {
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
-        if(Functions.isWindows())   return -1;
+        if (Functions.isWindows())   return -1;
         try {
             return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
         } catch (IOException cause) {
@@ -148,7 +149,7 @@ public class IOUtils {
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
         try (BufferedReader reader = new BufferedReader(
-                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
+                encoding == null ? new InputStreamReader(is, Charset.defaultCharset()) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
         }
     }
