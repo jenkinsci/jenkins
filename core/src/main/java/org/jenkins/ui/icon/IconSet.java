@@ -329,7 +329,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-edit-delete icon-sm", "16x16/edit-delete.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-edit-select-all icon-sm", "16x16/edit-select-all.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-empty icon-sm", "16x16/empty.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green icon-sm", "16x16/green.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-sm", "16x16/green_anime.gif", Icon.ICON_SMALL_STYLE));
@@ -344,8 +343,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-red icon-sm", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-sm", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_SMALL_STYLE, true));
-        icons.addIcon(new Icon("icon-text-error icon-sm", "16x16/text-error.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-text icon-sm", "16x16/text.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-sm", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-sm", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-collapse icon-sm", "16x16/collapse.png", Icon.ICON_SMALL_STYLE));
@@ -355,7 +352,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-edit-select-all icon-sm", "16x16/edit-select-all.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-empty icon-sm", "16x16/empty.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-expand icon-sm", "16x16/expand.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-grey icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));
