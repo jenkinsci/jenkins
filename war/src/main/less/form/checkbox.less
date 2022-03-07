@@ -28,6 +28,28 @@
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
 
+  &:not(:disabled) {
+    &:active,
+    &:focus {
+      & + label {
+        &::before {
+          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 2px var(--focus-input-border);
+        }
+      }
+    }
+
+    &:checked {
+      &:active,
+      &:focus {
+        & + label {
+          &::before {
+            box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+          }
+        }
+      }
+    }
+  }
+
   &:checked {
     & + label {
       &:active,
