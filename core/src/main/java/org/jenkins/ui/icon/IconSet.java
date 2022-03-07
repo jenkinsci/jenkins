@@ -78,10 +78,7 @@ public class IconSet {
     // for Jelly
     @Restricted(NoExternalUse.class)
     public static String getSymbol(String name, String title, String tooltip, String classes) {
-        String translatedName = name.replace(" icon-sm", "")
-                .replace(" icon-md", "")
-                .replace(" icon-lg", "")
-                .replace(" icon-xlg", "");
+        String translatedName = cleanName(name);
 
         if (SYMBOLS.containsKey(translatedName)) {
             String symbol = SYMBOLS.get(translatedName);
@@ -552,11 +549,10 @@ public class IconSet {
      */
     @Restricted(NoExternalUse.class)
     public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
-        if (tangoIcon != null) {
-            tangoIcon = tangoIcon.split(" ")[0];
-        }
+        String cleanedTangoIcon = cleanName(tangoIcon);
 
         Map<String, String> translations = new HashMap<>();
+        translations.put("icon-application-certificate", "symbol-ribbon");
         translations.put("icon-clipboard", "symbol-logs");
         translations.put("icon-clock", "symbol-play");
         translations.put("icon-edit-delete", "symbol-trash");
@@ -565,19 +561,26 @@ public class IconSet {
         translations.put("icon-gear", "symbol-settings");
         translations.put("icon-gear2", "symbol-settings");
         translations.put("icon-help", "symbol-help-circle");
+        translations.put("icon-keys", "symbol-key");
         translations.put("icon-monitor", "symbol-terminal");
+        translations.put("icon-new-package", "symbol-add");
         translations.put("icon-next", "symbol-arrow-right");
         translations.put("icon-plugin", "symbol-plugins");
         translations.put("icon-previous", "symbol-arrow-left");
-        translations.put("icon-setting", "symbol-build");
         translations.put("icon-search", "symbol-search");
+        translations.put("icon-setting", "symbol-build");
         translations.put("icon-terminal", "symbol-terminal");
         translations.put("icon-text", "symbol-details");
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
-        translations.put("icon-application-certificate", "symbol-ribbon");
-        translations.put("icon-keys", "symbol-key");
 
-        return translations.getOrDefault(tangoIcon, null);
+        return translations.getOrDefault(cleanedTangoIcon, null);
+    }
+
+    private static String cleanName(String tangoIcon) {
+        if (tangoIcon != null) {
+            tangoIcon = tangoIcon.split(" ")[0];
+        }
+        return tangoIcon;
     }
 }
