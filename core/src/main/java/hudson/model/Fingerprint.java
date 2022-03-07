@@ -1411,7 +1411,11 @@ public class Fingerprint implements ModelObject, Saveable {
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(@CheckForNull Fingerprint fingerprint) {
-        if (fingerprint == null || fingerprint.facets == null) {
+        if (fingerprint == null) {
+            return;
+        }
+        if (fingerprint.facets == null) {
+            logger.log(Level.WARNING, "Missing fingerprint facet, see JENKINS-67602");
             return;
         }
 
