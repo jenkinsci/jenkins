@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Project Relationship}">
     <l:app-bar title="${%Project Relationship}">
       <a class="jenkins-button" tooltip="${%Help}" href="projectRelationship-help">
-        <l:icon src="symbol-help-circle" class="icon-sm" />
+        <l:icon src="symbol-help-circle" />
       </a>
     </l:app-bar>
 
