@@ -97,7 +97,7 @@ THE SOFTWARE.
                           </a>
                         </j:if>
                         <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="${%View}">
-                          <l:icon src="symbol-download" />
+                          <l:icon src="symbol-view" />
                         </a>
                       </j:if>
                     </td>
