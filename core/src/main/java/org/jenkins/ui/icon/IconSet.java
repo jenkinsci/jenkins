@@ -54,7 +54,7 @@ public class IconSet {
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
     private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
 
-    private static final String PLACEHOLDER_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><title>Ellipse</title><circle cx=\"256\" cy=\"256\" r=\"192\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\"/></svg>";
+    private static final String PLACEHOLDER_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" height=\"48\" viewBox=\"0 0 512 512\"><title>Close</title><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M368 368L144 144M368 144L144 368\"/></svg>";
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
     public IconSet() {
@@ -329,7 +329,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-edit-delete icon-sm", "16x16/edit-delete.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-edit-select-all icon-sm", "16x16/edit-select-all.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-empty icon-sm", "16x16/empty.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green icon-sm", "16x16/green.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-sm", "16x16/green_anime.gif", Icon.ICON_SMALL_STYLE));
@@ -344,8 +343,6 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-red icon-sm", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-sm", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_SMALL_STYLE, true));
-        icons.addIcon(new Icon("icon-text-error icon-sm", "16x16/text-error.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-text icon-sm", "16x16/text.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-sm", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-sm", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_SMALL_STYLE, true));
         icons.addIcon(new Icon("icon-collapse icon-sm", "16x16/collapse.png", Icon.ICON_SMALL_STYLE));
@@ -355,7 +352,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-edit-select-all icon-sm", "16x16/edit-select-all.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-empty icon-sm", "16x16/empty.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-expand icon-sm", "16x16/expand.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-grey icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));

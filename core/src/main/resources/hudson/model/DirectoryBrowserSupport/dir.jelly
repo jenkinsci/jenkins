@@ -39,7 +39,7 @@ THE SOFTWARE.
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <l:icon class="icon-go-next icon-sm" onclick="this.parentNode.submit()" style="vertical-align:middle; cursor:pointer"/>
+            <l:icon class="icon-next icon-md" onclick="this.parentNode.submit()" style="vertical-align:middle; cursor:pointer"/>
           </form>
         </div>
         <j:choose>
