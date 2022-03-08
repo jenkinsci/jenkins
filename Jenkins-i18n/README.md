@@ -50,7 +50,6 @@ t/removed_unused.t ..
 1..15
 ok 1 - dies without file parameter
 ok 2 - get the expected error message
-# Using /home/semantix/Projects/jenkins/Jenkins-i18n/tmp/t_removed_unused_t/default_1/sample.properties for tests
 ok 3 - dies without keys parameter
 ok 4 - get the expected error message
 ok 5 - dies with invalid keys parameter
@@ -68,7 +67,7 @@ ok 12 - resulting properties file has the expected number of lines
 # With a backup
 ok 13 - got the expected number of keys removed
 ok 14 - resulting properties file has the expected number of lines
-ok 15 - File has a backup as expected at /home/semantix/Projects/jenkins/Jenkins-i18n/tmp/t_removed_unused_t/default_1/sample.properties.bak
+ok 15 - File has a backup as expected
 ok
 All tests successful.
 Files=2, Tests=16,  0 wallclock secs ( 0.02 usr  0.00 sys +  0.14 cusr  0.01 csys =  0.17 CPU)
