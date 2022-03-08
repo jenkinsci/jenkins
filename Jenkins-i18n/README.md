@@ -3,42 +3,84 @@
 Perl script to generate missing translation keys and missing properties files,
 to remove unused keys, and to convert utf8 properties files to iso or ascii.
 
-1. It recursively looks for files in a folder, and analyzes them to extract
-   the keys being used in the application.
-2. If --add=true, it generates the appropriate file for the desired language
-   and adds these keys to it, adding the english text as a reference. If the
-   properties file already exists the script update it with the new keys.
-3. When --remove=true and there are unused keys in our file, the script
-   removes them.
-4. If an editor is passed as argument, the script edits each modified file
-   after adding new keys.
-5. Finally, when --toiso=true or --toascii=true, the script is able to
-   convert utf-8 properties files to iso or unicode hex representation is
-   ascii.
-
 Note, while the migration to Jenkins this file will report the keys which
 should point to Jenkins instead of the old name.
 
-# INSTALLATION
+## Installation
 
-To install this module type the following:
+Although this module *should* be ready to be published to CPAN, at this moment
+is just used by the `translation-tool.pl` CLI, so installing from CPAN is not an
+option.
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+That said, `Jenkins::i18n` module has external dependencies as well.
 
-# DEPENDENCIES
+There are several ways to install Perl modules, all very well documented by
+the community. Those external dependencies are all Perl modules available at
+[CPAN](https://metacpan.org/).
 
-This module requires these other modules and libraries:
+Here is a list of ways to do it:
 
-  blah blah blah
+1. Install through packages from your OS: best way.
+2. Install with [cpan](https://metacpan.org/dist/CPAN/view/scripts/cpan#SYNOPSIS) CLI and [local::lib](https://metacpan.org/pod/local::lib).
+3. Install [perlbrew](https://perlbrew.pl/), install your personal `perl` then use `cpan` CLI.
+4. Install modules as root using `cpan` CLI: worst and not recommended method.
 
-# REFERENCES
+### Dependencies
 
+See the `Makefile.PL` file for `TEST_REQUIRES` and `PREREQ_PM` entries.
+
+## Testing
+
+Once the dependencies are installed, you can run the tests available for this
+module:
+
+```
+prove -lvm
+```
+
+Here is a sample:
+
+```
+$ prove -lvm
+t/Jenkins-i18n.t ....
+1..1
+ok 1 - use Jenkins::i18n;
+ok
+t/removed_unused.t ..
+1..15
+ok 1 - dies without file parameter
+ok 2 - get the expected error message
+# Using /home/semantix/Projects/jenkins/Jenkins-i18n/tmp/t_removed_unused_t/default_1/sample.properties for tests
+ok 3 - dies without keys parameter
+ok 4 - get the expected error message
+ok 5 - dies with invalid keys parameter
+ok 6 - get the expected error message
+# Without a license
+ok 7 - got the expected number of keys removed
+ok 8 - resulting properties file has the expected number of lines
+ok 9 - dies with invalid license parameter
+ok 10 - get the expected error message
+# Restoring file
+# With a license
+ok 11 - got the expected number of keys removed
+ok 12 - resulting properties file has the expected number of lines
+# Restoring file
+# With a backup
+ok 13 - got the expected number of keys removed
+ok 14 - resulting properties file has the expected number of lines
+ok 15 - File has a backup as expected at /home/semantix/Projects/jenkins/Jenkins-i18n/tmp/t_removed_unused_t/default_1/sample.properties.bak
+ok
+All tests successful.
+Files=2, Tests=16,  0 wallclock secs ( 0.02 usr  0.00 sys +  0.14 cusr  0.01 csys =  0.17 CPU)
+Result: PASS
+```
+
+## References
+
+- [Jenkins Internationalization](https://www.jenkins.io/doc/developer/internationalization/)
 - [i18n](https://wiki.mageia.org/en/What_is_i18n,_what_is_l10n)
 
-# COPYRIGHT AND LICENCE
+## Copyright and licence
 
 The MIT License
 
@@ -62,4 +104,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
