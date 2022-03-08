@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Jenkins-i18n.t
+lib/Jenkins/i18n.pm
