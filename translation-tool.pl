@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 =pod
 
@@ -56,6 +56,10 @@ use File::Basename;
 use File::Find;
 use File::Path;
 use Getopt::Long;
+use Set::Tiny 0.04;
+
+use lib './Jenkins-i18n/lib';
+use Jenkins::i18n qw(remove_unused);
 
 my $DATA_START = tell DATA;
 
@@ -235,6 +239,7 @@ sub processFile {
                         print $out $cache{$_} . "\n";
                     } else {
                         if ($counter) {
+
                             # add unique value for each added translation
                             print $out "---TranslateMe " .
                                 $countervalue . "--- " .
@@ -253,10 +258,18 @@ sub processFile {
     # open the editor if the user has specified it and there are changes to
     # manage
     system("$editor $ofile")
-        if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
+        if ($editor
+        && $add
+        && ($missing ne "" || $same ne "" || $nj ne ''));
 
     # write new keys in our file adding the English translation as a reference
-    removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
+    if ($remove && $unused ne "") {
+        my $removed = remove_unused(
+            $ofile,
+            Set::Tiny->new(keys(%keys)),
+            read_license($DATA_START));
+        print "Removed $removed keys\n";
+    }
 
     # convert the language file to ISO or ASCII which are
     # the charsets which Jenkins supports right now
@@ -354,36 +367,11 @@ sub loadPropertiesFile {
     }
 
     close($in);
+
     # TODO: Use of uninitialized value $_ in pattern match (m//) at
     # ./translation-tool.pl line 345.
     $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
     return %ret;
-}
-
-# remove unused keys from a file
-sub removeUnusedKeys {
-    my ($ofile, %keys) = @_;
-    print "Removing unused keys from: $ofile\n";
-    my $back = $ofile . "~~";
-    if (rename($ofile, $back) && open(FI, $back) && open(FO, ">$ofile")) {
-        my $cont = 0;
-        while (<FI>) {
-            if (!$cont) {
-                if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
-                    if (!$keys{$1}) {
-                        $cont = (/\\\s*$/) ? 1 : 0;
-                        next;
-                    }
-                }
-                print FO $_;
-            } elsif ($cont && !/\\\s*$/) {
-                $cont = 0;
-            }
-        }
-        close(FI);
-        close(FO);
-        unlink($back);
-    }
 }
 
 # convert a UTF-8 file to either ISO-8859 or ASCII
@@ -393,7 +381,10 @@ sub convert {
         print "\nConverting file $ofile to " .
             ($toiso ? "ISO-8859" : "ASCII") . "\n";
         my $back = $ofile . "~~";
-        if (rename($ofile, $back) && open(FI, $back) && open(FO, ">$ofile")) {
+        if (   rename($ofile, $back)
+            && open(FI, $back)
+            && open(FO, ">$ofile"))
+        {
             while (<FI>) {
                 if ($toiso) {
                     s/([\xC2\xC3])([\x80-\xBF])/chr(ord($1)<<6&0xC0|ord($2)&0x3F)/eg;
@@ -454,7 +445,6 @@ sub trim($) {
     return $string;
 }
 
-### Usage
 sub usage {
     print "
 Translation Tool for Jenkins
