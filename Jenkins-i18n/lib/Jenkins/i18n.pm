@@ -3,7 +3,7 @@ package Jenkins::i18n;
 use 5.014004;
 use strict;
 use warnings;
-use Config::Properties 1.80;
+use Jenkins::i18n::Properties;
 
 =pod
 
@@ -63,7 +63,7 @@ keys: a L<Set::Tiny> instance of the keys from the original English properties f
 
 =item 3
 
-license: a scalar reference with a license to include the header of the translated properties file. Optional.
+license: a scalar reference with a license to include the header of the translated properties file.
 
 =item 4
 
@@ -77,44 +77,37 @@ Returns the number of keys removed (as an integer).
 
 sub remove_unused {
     my $file = shift;
-    die "file is a required parameter\n" unless ( defined($file) );
+    die "file is a required parameter\n" unless (defined($file));
     my $keys = shift;
-    die "keys is a required parameter\n" unless ( defined($keys) );
+    die "keys is a required parameter\n" unless (defined($keys));
     die "keys must be a Set::Tiny instance\n"
-        unless ( ref($keys) eq 'Set::Tiny' );
+        unless (ref($keys) eq 'Set::Tiny');
     my $license_ref = shift;
-    die "license must be an scalar reference"
-        if ( defined($license_ref) and ( ref($license_ref) ne 'SCALAR' ) );
+    die "license must be an array reference"
+        unless (ref($license_ref) eq 'ARRAY');
     my $use_backup = shift;
-    $use_backup = 0 unless ( defined($use_backup) );
+    $use_backup = 0 unless (defined($use_backup));
 
     my $props_handler;
 
     if ($use_backup) {
         my $backup = "$file.bak";
-        rename( $file, $backup )
+        rename($file, $backup)
             or die "Cannot rename $file to $backup: $!\n";
-        $props_handler = Config::Properties->new( file => $backup );
-    }
-    else {
-        $props_handler = Config::Properties->new( file => $file );
+        $props_handler = Jenkins::i18n::Properties->new(file => $backup);
+    } else {
+        $props_handler = Jenkins::i18n::Properties->new(file => $file);
     }
 
     my %curr_props = $props_handler->properties;
-    my $removed    = 0;
+    my $removed = 0;
 
-    foreach my $key ( keys(%curr_props) ) {
-        $removed++ unless ( $keys->has($key) );
+    foreach my $key (keys(%curr_props)) {
+        $removed++ unless ($keys->has($key));
     }
 
-    open( my $out, '>', $file ) or die "Cannot write to $file: $!\n";
-
-    if ($license_ref) {
-        $props_handler->save( $out, $$license_ref );
-    }
-    else {
-        $props_handler->save($out);
-    }
+    open(my $out, '>', $file) or die "Cannot write to $file: $!\n";
+    $props_handler->save($out, $license_ref);
     close($out) or die "Cannot save $file: $!\n";
 
     return $removed;
@@ -130,7 +123,7 @@ __END__
 
 =item *
 
-L<Config::Properties>
+L<Jenkins::i18n::Properties>
 
 =item *
 
