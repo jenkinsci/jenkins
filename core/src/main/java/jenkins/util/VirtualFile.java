@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
@@ -1026,7 +1025,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public int mode() throws IOException {
                 try {
                     return f.mode();
-                } catch (InterruptedException | PosixException x) {
+                } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
             }
