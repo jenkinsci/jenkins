@@ -77,7 +77,9 @@ sub save {
         unless (ref($license_ref) eq 'ARRAY');
 
     foreach my $line (@{$license_ref}) {
-        print $fh "# $line\n";
+        # the license is expected to have lines starting with
+        # a space and with a new line at the end
+        print $fh "#$line";
     }
 
     $self->_save($fh);
