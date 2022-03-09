@@ -1,49 +1,54 @@
 #!/usr/bin/perl
-# The MIT License
-#
-# Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number
-# of other of contributors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 
-# Author: Manuel Carrasco
-# Date:   20 Mar 2010
+=pod
 
-# Perl script to generate missing translation keys and missing properties files,
-# to remove unused keys, and to convert utf8 properties files to iso or ascii.
-#
-# 1.- It recursively looks for files in a folder, and analyzes them to extract
-#     the keys being used in the application.
-# 2.- If --add=true, it generates the appropriate file for the desired language
-#     and adds these keys to it, adding the english text as a reference. If the
-#     properties file already exists the script update it with the new keys.
-# 3.- When --remove=true and there are unused keys in our file, the script
-#     removes them.
-# 4.- If an editor is passed as argument, the script edits each modified file
-#     after adding new keys.
-# 5.- Finally, when --toiso=true or --toascii=true, the script is able to
-#     convert utf-8 properties files to iso or unicode hex representation is
-#     ascii.
-#
+=head1 DESCRIPTION
 
-# Note, while the migration to Jenkins this file will report the keys which
-# should point to Jenkins instead of the old name.
+Perl script to generate missing translation keys and missing properties files,
+to remove unused keys, and to convert utf8 properties files to iso or ascii.
+
+=over
+
+=item 1.
+
+It recursively looks for files in a folder, and analyzes them to extract the
+keys being used in the application.
+
+=item 2.
+
+If C<--add>, it generates the appropriate file for the desired language and
+adds these keys to it, adding the english text as a reference. If the
+properties file already exists the script update it with the new keys.
+
+=item 3.
+
+When C<--remove> and there are unused keys in our file, the script removes
+them.
+
+=item 4.
+
+If an editor is passed as argument, the script edits each modified file
+after adding new keys.
+
+=item 5
+
+Finally, when C<--toiso> or C<--toascii>, the script is able to convert UTF-8
+properties files to iso or unicode hex representation is ascii.
+
+=back
+
+Note, while the migration to Jenkins this file will report the keys which
+should point to Jenkins instead of the old name.
+
+=head1 AUTHOR
+
+Manuel Carrasco
+
+=head1 DATE
+
+20 Mar 2010
+
+=cut
 
 use warnings;
 use strict;
@@ -51,6 +56,8 @@ use File::Basename;
 use File::Find;
 use File::Path;
 use Getopt::Long;
+
+my $DATA_START = tell DATA;
 
 my (
     $lang, $editor, $dir, $toiso, $toascii, $add,
@@ -215,28 +222,32 @@ sub processFile {
 
     # write new keys in our file adding the English translation as a reference
     if ($add && $missing ne "") {
-        printLicense($ofile) unless (-f $ofile);
-        open(F, ">>$ofile");
+        printLicense($DATA_START, $ofile) unless (-f $ofile);
+        open(my $out, '>>', $ofile) or die "Cannot write to $ofile: $!\n";
+
         foreach (keys %keys) {
             if (!$okeys{$_}) {
+
                 if (!defined($okeys{$_})) {
-                    print F "$_=";
+                    print $out "$_=";
+
                     if (defined($cache{$_})) {
-                        print F $cache{$_} . "\n";
+                        print $out $cache{$_} . "\n";
                     } else {
                         if ($counter) {
                             # add unique value for each added translation
-                            print F "---TranslateMe " . $countervalue . "--- " .
+                            print $out "---TranslateMe " .
+                                $countervalue . "--- " .
                                 ($ekeys{$_} ? $ekeys{$_} : $_) . "\n";
                         } else {
-                            print F "\n";
+                            print $out "\n";
                         }
                     }
                     $countervalue++;
                 }
             }
         }
-        close(F);
+        close($out);
     }
 
     # open the editor if the user has specified it and there are changes to
@@ -421,29 +432,18 @@ sub isUtf8 {
 
 # print MIT license in new files
 # Note: the license is read from the head of this file
-my $license;
-
 sub printLicense {
-    my $file = shift;
-    if (!$license && open(F, $0)) {
-        $license = "";
-        my $on = 0;
-        while (<F>) {
-            $on = 1 if (!$on && /The MIT/);
-            last if ($on && (/^$/ || /^[^#]/));
-            $license .= $_ if ($on);
-        }
-        close(F);
+    my ($start, $file) = @_;
+    my $data_ref = read_license($start);
+    my $dir_name = dirname($file);
+    mkpath($dir_name) unless (-d $dir_name);
+    open(my $out, ">" . $file) or die "Cannot write to $file: $!\n";
+
+    foreach my $line (@{$data_ref}) {
+        print $out "#$line";
     }
-    if ($license && $license ne "") {
-        my $dirname = dirname($file);
-        unless (-d $dirname) {
-            mkpath($dirname);
-        }
-        open(F, ">" . $file) || die $!;
-        print F "$license\n";
-        close(F);
-    }
+
+    close($out);
 }
 
 # trim function to remove whitespace from the start and end of the string
@@ -486,5 +486,40 @@ Usage: $0 --lang=xx [options] [dir]
      - Remove all orphaned keys from German files which are in the current file
         $0 --lang=de --remove .
 
+   You can also see aditional information from this program by using perldoc:
+     perldoc translation-tool.pl
+
 ";
 }
+
+sub read_license {
+    my $start = shift;
+    seek DATA, $start, 0;
+    my @license = <DATA>;
+    return \@license;
+}
+
+__DATA__
+ The MIT License
+
+ Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number
+ of other of contributors
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
