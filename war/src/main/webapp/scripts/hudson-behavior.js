@@ -503,10 +503,10 @@ var tooltip;
 function registerValidator(e) {
 
     // Retrieve the validation error area
-    var tr = e.parentNode.parentNode.querySelector(".validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector(".validation-error-area");
     if (!tr) {
         console.warn("Couldn't find the expected validation element (.validation-error-area) for element",
-          e.parentNode.parentNode)
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
@@ -585,9 +585,10 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var tr = e.parentNode.parentNode.querySelector( ".validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
@@ -614,9 +615,10 @@ function registerRegexpValidator(e,regexp,message) {
  * @param e Input element
  */
 function registerMinMaxValidator(e) {
-    var tr = e.parentNode.parentNode.querySelector( ".validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
