@@ -83,7 +83,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1706.v5257fc59612a_</version>
+      <version>1712.v68cd645cb_f35</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -142,13 +142,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.20</version>
+      <version>758.v7a_ea_491852f3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.55</version>
+      <version>1.56</version>
       <scope>test</scope>
     </dependency>
     <dependency>

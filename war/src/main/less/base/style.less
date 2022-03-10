@@ -413,10 +413,15 @@ pre.console {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
-  padding: 4px;
-  white-space: normal;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
 }
 
 .disabledJob {
