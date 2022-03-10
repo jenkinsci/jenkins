@@ -126,8 +126,8 @@ THE SOFTWARE.
       <artifactId>bridge-method-annotation</artifactId>
       <version>${bridge-method-injector.version}</version>
     </dependency>
-    <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
+      <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
       <groupId>com.jcraft</groupId>
       <artifactId>jzlib</artifactId>
     </dependency>
@@ -464,11 +464,11 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <!--
-      still including the xpp3 driver to ensure backwards compatibilty
-      for other plugins that may be depending on it. Not included into BOM
-    -->
     <dependency>
+      <!--
+        still including the xpp3 driver to ensure backwards compatibilty
+        for other plugins that may be depending on it. Not included into BOM
+      -->
       <groupId>xpp3</groupId>
       <artifactId>xpp3</artifactId>
       <version>1.1.4c</version>

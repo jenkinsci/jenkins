@@ -41,8 +41,8 @@
       <artifactId>commons-lang</artifactId>
       <optional>true</optional>
     </dependency>
-    <!-- ed25519 algorithm, see JENKINS-45318 -->
     <dependency>
+      <!-- ed25519 algorithm, see JENKINS-45318 -->
       <groupId>net.i2p.crypto</groupId>
       <artifactId>eddsa</artifactId>
       <version>0.3.0</version>
