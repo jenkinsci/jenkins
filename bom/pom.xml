@@ -385,7 +385,7 @@ THE SOFTWARE.
         <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
-        <!-- SLF4J used in maven-plugin and core -->
+        <!-- SLF4J used in maven-plugin and possibly others -->
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4jVersion}</version>
