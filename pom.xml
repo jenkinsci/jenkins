@@ -588,6 +588,8 @@ THE SOFTWARE.
                 <lineSeparator>\n</lineSeparator>
                 <expandEmptyElements>false</expandEmptyElements>
                 <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <sortDependencies>scope,groupId,artifactId</sortDependencies>
+                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
               </sortPom>
             </pom>
           </configuration>
