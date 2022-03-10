@@ -133,7 +133,6 @@ THE SOFTWARE.
         <artifactId>commons-io</artifactId>
         <version>2.11.0</version>
       </dependency>
-      <!--Jelly-->
       <dependency>
         <groupId>commons-jelly</groupId>
         <artifactId>commons-jelly-tags-fmt</artifactId>
@@ -250,7 +249,6 @@ THE SOFTWARE.
         <artifactId>remoting</artifactId>
         <version>${remoting.version}</version>
       </dependency>
-      <!-- Modules -->
       <dependency>
         <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>instance-identity</artifactId>
@@ -326,7 +324,6 @@ THE SOFTWARE.
         <artifactId>json-lib</artifactId>
         <version>2.4-jenkins-3</version>
       </dependency>
-      <!--Stapler-->
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler</artifactId>
