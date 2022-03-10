@@ -147,6 +147,14 @@ THE SOFTWARE.
       <version>2.3</version>
       <scope>provided</scope>
     </dependency>
+    <!-- offline profiler API when we need it -->
+    <!--dependency
+      <groupId>com.yourkit.api</groupId>
+      <artifactId>yjp</artifactId>
+      <version>dontcare</version>
+      <scope>system</scope>
+      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
+    </dependency-->
     <dependency>
       <!--
         not actually used by test but used by dependency plugin to include it inside the war.
@@ -157,14 +165,6 @@ THE SOFTWARE.
       <version>5.22</version>
       <scope>test</scope>
     </dependency>
-    <!-- offline profiler API when we need it -->
-    <!--dependency
-      <groupId>com.yourkit.api</groupId>
-      <artifactId>yjp</artifactId>
-      <version>dontcare</version>
-      <scope>system</scope>
-      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
-    </dependency-->
   </dependencies>
 
   <build>
