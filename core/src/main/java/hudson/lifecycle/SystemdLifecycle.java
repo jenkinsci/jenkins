@@ -1,6 +1,5 @@
 package hudson.lifecycle;
 
-import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -26,7 +25,7 @@ public class SystemdLifecycle extends ExitLifecycle {
     interface Systemd extends Library {
         Systemd INSTANCE = Native.load("systemd", Systemd.class);
 
-        int sd_notify(int unset_environment, String state) throws LastErrorException;
+        int sd_notify(int unset_environment, String state);
     }
 
     @Override
@@ -60,10 +59,9 @@ public class SystemdLifecycle extends ExitLifecycle {
     }
 
     private static synchronized void notify(String message) {
-        try {
-            Systemd.INSTANCE.sd_notify(0, message);
-        } catch (LastErrorException e) {
-            LOGGER.log(Level.WARNING, null, e);
+        int rv = Systemd.INSTANCE.sd_notify(0, message);
+        if (rv < 0) {
+            LOGGER.log(Level.WARNING, "sd_notify(3) returned {0}", rv);
         }
     }
 }
