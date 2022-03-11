@@ -162,7 +162,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.22</version>
+      <version>5.24</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -181,6 +181,7 @@ THE SOFTWARE.
               <mainClass>Main</mainClass>
             </manifest>
             <manifestEntries>
+              <Add-Opens>java.base/java.lang java.base/java.io java.base/java.util java.base/java.util.concurrent</Add-Opens>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
