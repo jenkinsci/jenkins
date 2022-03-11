@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  * @see Scrambler
- * @since 1.162 and restricted since TODO
+ * @since 1.162 and restricted since 2.236
  */
 @Restricted(NoExternalUse.class)
 @RestrictedSince("2.236")
