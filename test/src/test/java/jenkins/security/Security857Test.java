@@ -101,7 +101,7 @@ public class Security857Test {
      * @param escape How the escape-by-default directive was set. null: not set, true: set to true, false: set to false
      */
     private void checkResponse(String response, Boolean escape) {
-        String EVIDENCE = "<script> alert";
+        String evidence = "<script> alert";
         if (escape == null) {
             Assert.assertFalse("There is no escape-by-default tag in the jelly (true is assumed) but there are unescaped characters in the response.", response.contains(EVIDENCE));
         } else if (escape) {
