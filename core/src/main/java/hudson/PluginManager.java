@@ -1783,8 +1783,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public void copy(File target) throws Exception {
             try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
-            } catch (Exception e) {
-                throw e;
             }
         }
 
