@@ -103,11 +103,11 @@ public class Security857Test {
     private void checkResponse(String response, Boolean escape) {
         String evidence = "<script> alert";
         if (escape == null) {
-            Assert.assertFalse("There is no escape-by-default tag in the jelly (true is assumed) but there are unescaped characters in the response.", response.contains(EVIDENCE));
+            Assert.assertFalse("There is no escape-by-default tag in the jelly (true is assumed) but there are unescaped characters in the response.", response.contains(evidence));
         } else if (escape) {
-            Assert.assertFalse("Set explicitly the <?jelly escape-by-default='true' in the jelly but there are unescaped characters in the response. Jenkins is not escaping the characters and it should to.", response.contains(EVIDENCE));
+            Assert.assertFalse("Set explicitly the <?jelly escape-by-default='true' in the jelly but there are unescaped characters in the response. Jenkins is not escaping the characters and it should to.", response.contains(evidence));
         } else {
-            Assert.assertTrue("Set explicitly the <?jelly escape-by-default='false' in the jelly but there are escaped characters in the response. Jenkins is escaping the characters and it shouldn't to.", response.contains(EVIDENCE));
+            Assert.assertTrue("Set explicitly the <?jelly escape-by-default='false' in the jelly but there are escaped characters in the response. Jenkins is escaping the characters and it shouldn't to.", response.contains(evidence));
         }
     }
 }
