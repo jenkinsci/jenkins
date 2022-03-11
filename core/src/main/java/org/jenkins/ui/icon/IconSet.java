@@ -545,7 +545,6 @@ public class IconSet {
      */
     @Restricted(NoExternalUse.class)
     public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
-        String cleanedTangoIcon = cleanName(tangoIcon);
 
         Map<String, String> translations = new HashMap<>();
         translations.put("icon-application-certificate", "symbol-ribbon");
@@ -570,6 +569,7 @@ public class IconSet {
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
 
+        String cleanedTangoIcon = cleanName(tangoIcon);
         return translations.getOrDefault(cleanedTangoIcon, null);
     }
 
