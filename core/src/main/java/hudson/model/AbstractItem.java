@@ -527,9 +527,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * then it will be loaded, then this method will be invoked
      * to perform any implementation-specific work.
      *
-     * <p>
-     *
-     *
      * @param src
      *      Item from which it's copied from. The same type as {@code this}. Never null.
      */

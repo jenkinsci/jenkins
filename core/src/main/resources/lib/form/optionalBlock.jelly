@@ -66,9 +66,9 @@ THE SOFTWARE.
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <div class="optionalBlock-container">
+      <div class="optionalBlock-container jenkins-form-item">
         <div class="help-sibling tr optional-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-          <div colspan="3">
+          <div class="jenkins-checkbox-help-wrapper">
             <f:checkbox name="${attrs.name}" class="optional-block-control block-control" onclick="javascript:updateOptionalBlock(this,true)"
                         negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
             <f:helpLink url="${attrs.help}" featureName="${title}"/>

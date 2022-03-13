@@ -27,11 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Renders a row that shows description text below an input field.
   </st:documentation>
-  <div class='tr'>
-    <div colspan="2"></div>
-    <div class="setting-description">
-      <d:invokeBody />
-    </div>
-    <div></div>
+  <div class="jenkins-form-description">
+    <d:invokeBody />
   </div>
 </j:jelly>

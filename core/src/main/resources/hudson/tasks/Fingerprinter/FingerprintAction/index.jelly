@@ -36,18 +36,20 @@ THE SOFTWARE.
         <l:icon class="icon-fingerprint icon-xlg"/>
         ${%Recorded Fingerprints}
       </h1>
-      <table class="fingerprint-in-build sortable bigtable">
-        <tr>
-          <th initialSortDir="down">${%File}</th>
-          <th>${%Original owner}</th>
-          <th>${%Age}</th>
-        </tr>
+      <table class="fingerprint-in-build sortable jenkins-table">
+        <thead>
+          <tr>
+            <th initialSortDir="down">${%File}</th>
+            <th>${%Original owner}</th>
+            <th>${%Age}</th>
+          </tr>
+        </thead>
         <j:forEach var="e" items="${it.fingerprints}">
           <j:set var="f" value="${e.value}" />
           <tr>
             <td>
-              <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <l:icon class="icon-fingerprint icon-sm"/> ${e.key}
+              <a class="jenkins-table__link" href="${rootURL}/fingerprint/${f.hashString}/">
+                ${e.key}
               </a>
             </td>
             <td>

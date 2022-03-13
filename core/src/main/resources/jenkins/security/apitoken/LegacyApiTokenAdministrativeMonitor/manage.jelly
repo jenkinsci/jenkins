@@ -35,7 +35,8 @@ THE SOFTWARE.
                 <p>${%recommendationMessage}</p>
                 
                 <j:set var="userList" value="${it.impactedUserList}"/>
-                <table class="pane bigtable align-th-left">
+                <table class="pane jenkins-table">
+                <thead>
                     <tr>
                         <th width="1%"><!-- checkbox --></th>
                         <th>${%UserId}</th>
@@ -53,6 +54,7 @@ THE SOFTWARE.
                             <l:helpIcon tooltip="${%HasMoreRecentlyUsedToken_tooltip}" />
                         </th>
                     </tr>
+                </thead>
                     <j:choose>
                         <j:when test="${!userList.isEmpty()}">
                             <j:forEach var="user" items="${userList}">

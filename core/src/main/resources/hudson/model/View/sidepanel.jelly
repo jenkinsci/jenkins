@@ -54,7 +54,7 @@ THE SOFTWARE.
       <l:task href="${rootURL}/${it.viewUrl}builds" icon="icon-notepad icon-md" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
-        <l:task href="${rootURL}/${it.viewUrl}configure" icon="icon-gear icon-md" permission="${it.CONFIGURE}" title="${%Edit View}"/>
+        <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="${%Edit View}"/>
       </j:if>
       <j:if test="${it.owner.canDelete(it)}">
         <l:task href="delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete View}"/>
