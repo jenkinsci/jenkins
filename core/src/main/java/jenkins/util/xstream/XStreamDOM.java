@@ -79,8 +79,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * that read from DOM and {@link HierarchicalStreamWriter} that writes to DOM. See
  * {@link #newReader()} and {@link #newWriter()} for those operations.
  *
- * <h3>XStreamDOM as a field of another XStream-enabled class</h3>
  * <p>
+ * <strong>XStreamDOM as a field of another XStream-enabled class:</strong>
  * {@link XStreamDOM} can be used as a type of a field of another class that's itself XStream-enabled,
  * such as this:
  *
@@ -106,8 +106,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * The {@link XStreamDOM} object in the bar field will have the "payload" element in its tag name
  * (which means the bar element cannot have multiple children.)
  *
- * <h3>XStream and name escaping</h3>
  * <p>
+ * <strong>XStream and name escaping:</strong>
  * Because XStream wants to use letters like '$' that's not legal as a name char in XML,
  * the XML data model that it thinks of (unescaped) is actually translated into the actual
  * XML-compliant infoset via {@link XmlFriendlyReplacer}. This translation is done by
