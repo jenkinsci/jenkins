@@ -90,7 +90,7 @@ public class Security380Test {
         }
 
         public HttpResponse doIndex() throws Exception {
-            return HttpResponses.plainText(Integer.toString(Jenkins.get().getItems().size()));
+            return HttpResponses.text(Integer.toString(Jenkins.get().getItems().size()));
         }
     }
 }

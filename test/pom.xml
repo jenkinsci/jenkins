@@ -75,13 +75,6 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <version>${project.version}</version>
-      <type>executable-war</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
       <version>1712.v68cd645cb_f35</version>
       <scope>test</scope>
@@ -105,20 +98,10 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>test-annotations</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>6.708.ve61636eb_65a_5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mailer</artifactId>
-      <version>408.vd726a_1130320</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <type>executable-war</type>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -128,9 +111,20 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-auth</artifactId>
-      <version>3.1</version>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -141,8 +135,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-project</artifactId>
-      <version>758.v7a_ea_491852f3</version>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.708.ve61636eb_65a_5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -153,14 +147,26 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <version>1.24</version>
+      <artifactId>mailer</artifactId>
+      <version>408.vd726a_1130320</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>758.v7a_ea_491852f3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>1.24</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -174,12 +180,6 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
       <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>4.2.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -229,7 +229,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <argLine>${jacocoSurefireArgs} -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>

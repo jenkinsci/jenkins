@@ -32,41 +32,26 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>access-modifier-annotation</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>annotation-indexer</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.localizer</groupId>
-      <artifactId>localizer</artifactId>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <!-- ed25519 algorithm, see JENKINS-45318 -->
+      <groupId>net.i2p.crypto</groupId>
+      <artifactId>eddsa</artifactId>
+      <version>0.3.0</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-common</artifactId>
+      <version>${mina-sshd.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -76,27 +61,24 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.apache.sshd</groupId>
-      <artifactId>sshd-common</artifactId>
-      <version>${mina-sshd.version}</version>
+      <groupId>org.glassfish.tyrus.bundles</groupId>
+      <artifactId>tyrus-standalone-client-jdk</artifactId>
+      <version>2.0.1</version>
       <optional>true</optional>
     </dependency>
-    <!-- ed25519 algorithm, see JENKINS-45318 -->
     <dependency>
-      <groupId>net.i2p.crypto</groupId>
-      <artifactId>eddsa</artifactId>
-      <version>0.3.0</version>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.localizer</groupId>
+      <artifactId>localizer</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.tyrus.bundles</groupId>
-      <artifactId>tyrus-standalone-client-jdk</artifactId>
-      <version>2.0.1</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -112,9 +94,27 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <optional>true</optional>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
