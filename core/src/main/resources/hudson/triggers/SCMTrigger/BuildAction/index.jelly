@@ -30,13 +30,7 @@ THE SOFTWARE.
   <l:layout title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}">
     <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
-      <l:rightspace>
-        <h1>${%Polling Log}</h1>
-        <a href="pollingLog">
-          <l:icon class="icon-document icon-md"/>${%View as plain text}
-        </a>
-      </l:rightspace>
-
+      <h1>${%Polling Log}</h1>
       <p>${%blurb}</p>
 
       <pre>
