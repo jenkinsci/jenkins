@@ -214,7 +214,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing</doclint>
+            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -828,9 +828,6 @@ THE SOFTWARE.
         <jdk>11</jdk>
       </activation>
       <properties>
-        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
-        <doclint>none</doclint>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- release is needed for reliable cross compilation. It is supported
         starting JDK 9, but as the only earlier version we support is 8, it would
         be either compiled by javac from 8 or one from a newer compiler that
