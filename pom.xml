@@ -822,19 +822,5 @@ THE SOFTWARE.
         <failIfNoTests>false</failIfNoTests>
       </properties>
     </profile>
-    <profile>
-      <id>jdk11</id>
-      <activation>
-        <jdk>11</jdk>
-      </activation>
-      <properties>
-        <!-- release is needed for reliable cross compilation. It is supported
-        starting JDK 9, but as the only earlier version we support is 8, it would
-        be either compiled by javac from 8 or one from a newer compiler that
-        correctly handle the release flag. This will replace both source and target
-        once we drop support for JDK 8 that only recognize source and target. -->
-        <maven.compiler.release>${java.level}</maven.compiler.release>
-      </properties>
-    </profile>
   </profiles>
 </project>
