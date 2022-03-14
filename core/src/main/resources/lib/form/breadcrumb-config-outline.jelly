@@ -32,5 +32,5 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.breadcrumb-config-outline.init"/>
-  <l:breadcrumb title="${attrs.title?:'%configuration'}" href="${rootURL}/configure" id="inpage-nav" />
+  <l:breadcrumb title="${attrs.title?:'%configuration'}" id="inpage-nav" />
 </j:jelly>
