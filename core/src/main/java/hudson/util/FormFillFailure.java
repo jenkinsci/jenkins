@@ -137,9 +137,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
                 if (req == null) { // being called from some other context
                     return message;
                 }
-                // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class=" + getKind().name().toLowerCase(Locale.ENGLISH) + "><img src='" +
-                        req.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                return "<div class=" + getKind().name().toLowerCase(Locale.ENGLISH) + ">" +
                         message + "</div>";
             }
 
