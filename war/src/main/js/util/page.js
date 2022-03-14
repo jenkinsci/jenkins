@@ -41,7 +41,7 @@ function onWinScroll(callback) {
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-header');
+    return elementHeight('#page-header') + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
