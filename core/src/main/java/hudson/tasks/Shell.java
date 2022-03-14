@@ -27,6 +27,7 @@ package hudson.tasks;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.PersistentDescriptor;
@@ -43,7 +44,6 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -175,7 +175,7 @@ public class Shell extends CommandInterpreter {
         @Deprecated
         public String getShellOrDefault() {
             if (shell == null) {
-                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+                return Functions.isWindows() ? "sh" : "/bin/sh";
             }
             return shell;
         }
@@ -251,7 +251,7 @@ public class Shell extends CommandInterpreter {
 
             @Override
             public String call() throws IOException {
-                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+                return Functions.isWindows() ? "sh" : "/bin/sh";
             }
         }
 
