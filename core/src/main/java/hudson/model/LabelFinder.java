@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -57,5 +58,5 @@ public abstract class LabelFinder implements ExtensionPoint {
      * @return
      *      A set of labels for the node. Can be empty but never null.
      */
-    public abstract Collection<LabelAtom> findLabels(Node node);
+    public abstract @NonNull Collection<LabelAtom> findLabels(@NonNull Node node);
 }

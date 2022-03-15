@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.Encoder;
-import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -314,7 +313,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         public Encoder getEncoderCustomChild() {
             return new Encoder() {
                 @Override
-                public Object encode(Object source) throws EncoderException {
+                public Object encode(Object source) {
                     // it's not about implementation...
                     return null;
                 }

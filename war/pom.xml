@@ -64,16 +64,24 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>executable-war</artifactId>
-      <version>2.3</version>
-      <scope>provided</scope>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
+      <!-- specified in the parent -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
         <!--
           jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
         -->
@@ -86,31 +94,7 @@ THE SOFTWARE.
           <groupId>org.kohsuke.metainf-services</groupId>
           <artifactId>metainf-services</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remoting</artifactId>
-      <!-- specified in the parent -->
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>cli</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <!--
-        not actually used by test but used by dependency plugin to include it inside the war.
-      -->
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>winstone</artifactId>
-      <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.22</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -118,15 +102,15 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>launchd-slave-installer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>windows-slave-installer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>launchd-slave-installer</artifactId>
+      <artifactId>systemd-slave-installer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -134,7 +118,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>systemd-slave-installer</artifactId>
+      <artifactId>windows-slave-installer</artifactId>
     </dependency>
     <dependency>
       <!--
@@ -157,7 +141,12 @@ THE SOFTWARE.
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>executable-war</artifactId>
+      <version>2.3</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency
       <groupId>com.yourkit.api</groupId>
@@ -166,6 +155,16 @@ THE SOFTWARE.
       <scope>system</scope>
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
+    <dependency>
+      <!--
+        not actually used by test but used by dependency plugin to include it inside the war.
+      -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>winstone</artifactId>
+      <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
+      <version>5.24</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -182,6 +181,7 @@ THE SOFTWARE.
               <mainClass>Main</mainClass>
             </manifest>
             <manifestEntries>
+              <Add-Opens>java.base/java.lang java.base/java.io java.base/java.util java.base/java.util.concurrent</Add-Opens>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
