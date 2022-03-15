@@ -1,21 +1,35 @@
 import tippy from "tippy.js"
 
-tippy("[tooltip]", {
-  content: element => element.getAttribute("tooltip"),
-  arrow: false,
-  theme: "tooltip",
-  animation: "tooltip",
-  appendTo: document.body,
-})
+registerTooltips()
 
-tippy("[html-tooltip]", {
-  content: element => element.getAttribute("html-tooltip"),
-  allowHTML: true,
-  arrow: false,
-  theme: "tooltip",
-  animation: "tooltip",
-  appendTo: document.body,
-})
+/**
+ * Registers tooltips for the page
+ * If called again, destroys existing tooltips and registers them again (useful for progressive rendering)
+ */
+function registerTooltips() {
+  [...document.querySelectorAll("*")].forEach(node => {
+    if (node._tippy) {
+      node._tippy.destroy()
+    }
+  })
+
+  tippy("[tooltip]", {
+    content: element => element.getAttribute("tooltip"),
+    arrow: false,
+    theme: "tooltip",
+    animation: "tooltip",
+    appendTo: document.body,
+  })
+
+  tippy("[html-tooltip]", {
+    content: element => element.getAttribute("html-tooltip"),
+    allowHTML: true,
+    arrow: false,
+    theme: "tooltip",
+    animation: "tooltip",
+    appendTo: document.body,
+  })
+}
 
 /**
  * Displays a tooltip for three seconds on the provided element after interaction
@@ -23,7 +37,7 @@ tippy("[html-tooltip]", {
  * @param {HTMLElement} element - The element to show the tooltip
  */
 function hoverNotification(text, element) {
-  let tooltip = tippy(element, {
+  const tooltip = tippy(element, {
     interactive: true,
     trigger: "hover",
     arrow: false,
@@ -41,4 +55,5 @@ function hoverNotification(text, element) {
   tooltip.show()
 }
 
+window.registerTooltips = registerTooltips
 window.hoverNotification = hoverNotification

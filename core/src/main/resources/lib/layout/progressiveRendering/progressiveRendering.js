@@ -28,6 +28,7 @@ function progressivelyRender(handler, callback, statusId) {
         if (r.status == 'done') {
             callback(r.data);
             $(statusId).style.display = 'none';
+            registerTooltips();
         } else if (r.status == 'canceled') {
             // TODO ugly; replace with single tr of class=unknown?
             $$('#' + statusId + ' .progress-bar-done')[0].innerHTML = 'Aborted.';
@@ -40,6 +41,7 @@ function progressivelyRender(handler, callback, statusId) {
             $$('#' + statusId + ' .progress-bar-done')[0].style.width = (100 * r.status) + '%';
             $$('#' + statusId + ' .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
             checkNewsLater(500);
+            registerTooltips();
         }
     }
     function checkNewsLater(timeout) {
