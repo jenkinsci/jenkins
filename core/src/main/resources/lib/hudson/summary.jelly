@@ -44,22 +44,16 @@ THE SOFTWARE.
   </st:documentation>
   <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
-      <tr>
+      <tr class="app-summary">
         <td>
           <j:choose>
             <j:when test="${attrs.href!=null}">
               <a href="${attrs.href}">
-                <span class="icon-xlg">
-                  <l:icon src="${icon}"
-                          alt="" style="width: 48px; height: 48px; margin-right:1em;" />
-                </span>
+                <l:icon src="${icon}" />
               </a>
             </j:when>
             <j:otherwise>
-              <span class="icon-xlg">
-                <l:icon src="${icon}"
-                        alt="" style="width: 48px; height: 48px; margin-right:1em;" />
-              </span>
+              <l:icon src="${icon}" />
             </j:otherwise>
           </j:choose>
         </td>
