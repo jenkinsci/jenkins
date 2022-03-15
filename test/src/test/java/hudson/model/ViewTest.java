@@ -41,8 +41,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -647,9 +645,9 @@ public class ViewTest {
     public void shouldFindNestedViewByName() throws Exception {
         //given
         String testNestedViewName = "right2ndNestedView";
-        View right2ndNestedView = mockedViewWithName(testNestedViewName);
+        View right2ndNestedView = new ListView(testNestedViewName);
         //and
-        View left2ndNestedView = mockedViewWithName("left2ndNestedView");
+        View left2ndNestedView = new ListView("left2ndNestedView");
         DummyCompositeView rightNestedGroupView = new DummyCompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
         //and
         listView("leftTopLevelView");
@@ -658,10 +656,6 @@ public class ViewTest {
         View foundNestedView = j.jenkins.getView(testNestedViewName);
         //then
         assertEquals(right2ndNestedView, foundNestedView);
-    }
-
-    private View mockedViewWithName(String viewName) {
-        return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
     }
 
     public void prepareSec1923() {
