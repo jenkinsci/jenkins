@@ -58,6 +58,7 @@
     "lodash": "^4.17.20",
     "raf": "^3.4.1",
     "sortablejs": "^1.13.0",
+    "tippy.js": "^6.3.7",
     "window-handle": "^1.0.0"
   },
   "browserslist": [
