@@ -1,5 +1,12 @@
 import tippy from "tippy.js"
 
+const TOOLTIP_BASE = {
+  arrow: false,
+  theme: "tooltip",
+  animation: "tooltip",
+  appendTo: document.body
+}
+
 registerTooltips()
 
 /**
@@ -15,19 +22,13 @@ function registerTooltips() {
 
   tippy("[tooltip]", {
     content: element => element.getAttribute("tooltip"),
-    arrow: false,
-    theme: "tooltip",
-    animation: "tooltip",
-    appendTo: document.body,
+    ...TOOLTIP_BASE
   })
 
   tippy("[html-tooltip]", {
     content: element => element.getAttribute("html-tooltip"),
     allowHTML: true,
-    arrow: false,
-    theme: "tooltip",
-    animation: "tooltip",
-    appendTo: document.body,
+    ...TOOLTIP_BASE
   })
 }
 
@@ -40,12 +41,9 @@ function hoverNotification(text, element) {
   const tooltip = tippy(element, {
     interactive: true,
     trigger: "hover",
-    arrow: false,
-    theme: "tooltip",
     offset: [0, 0],
-    animation: "tooltip",
     content: text,
-    appendTo: document.body,
+    ...TOOLTIP_BASE,
     onShow(instance) {
       setTimeout(() => {
         instance.hide()
