@@ -49,14 +49,14 @@ THE SOFTWARE.
           <j:choose>
             <j:when test="${attrs.href!=null}">
               <a href="${attrs.href}">
-                <span class="icon-lg">
+                <span class="icon-xlg">
                   <l:icon src="${icon}"
                           alt="" style="width: 48px; height: 48px; margin-right:1em;" />
                 </span>
               </a>
             </j:when>
             <j:otherwise>
-              <span class="icon-lg">
+              <span class="icon-xlg">
                 <l:icon src="${icon}"
                         alt="" style="width: 48px; height: 48px; margin-right:1em;" />
               </span>
