@@ -224,7 +224,7 @@
     // For links with badges next to them, eg build monitor page, we need to shrink the margins of
     // the badge so that it doesn't cause a table column resize, yet doesn't change in appearance
     @media (hover: hover) {
-      & + a.model-link {
+      & + a.model-link:not(.model-link--float) {
         transform: translateX(10px);
         margin-right: calc((14px + 1ch) * -1) !important;
       }
