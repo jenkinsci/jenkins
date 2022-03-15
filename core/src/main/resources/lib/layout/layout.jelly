@@ -255,6 +255,8 @@ THE SOFTWARE.
     </footer>
     </j:if>
 
+    <script src="${resURL}/jsbundles/tooltips.js" type="text/javascript" />
+
     <!-- SVG sprite polyfill for IE 11.
          Loaded at the end in order to not make modern browsers wait for it. This causes a flash-of-no-icons on IE 11  -->
     <script src="${resURL}/scripts/svgxuse.min.js" type="text/javascript" async="true" />
