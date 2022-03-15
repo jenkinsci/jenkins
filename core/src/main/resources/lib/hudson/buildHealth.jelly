@@ -41,29 +41,29 @@ THE SOFTWARE.
       <j:if test="${!empty(healthReports)}">
         <x:attribute name="html-tooltip">
           <div class="jenkins-tooltip--table-wrapper">
-              <table class="jenkins-table">
-                <thead>
+            <table class="jenkins-table">
+              <thead>
+                <tr>
+                  <th align="left">W</th>
+                  <th align="left">${%Description}</th>
+                  <th align="right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <j:forEach var="rpt" items="${healthReports}">
                   <tr>
-                    <th align="left">W</th>
-                    <th align="left">${%Description}</th>
-                    <th align="right">%</th>
+                    <td align="left" class="jenkins-table__cell--tight jenkins-table__icon">
+                      <div class="jenkins-table__cell__button-wrapper">
+                        <l:icon class="${rpt.iconClassName} icon-sm" />
+                      </div>
+                    </td>
+                    <td>${rpt.localizableDescription}</td>
+                    <td align="right">${rpt.score}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  <j:forEach var="rpt" items="${healthReports}">
-                    <tr>
-                      <td align="left" class="jenkins-table__cell--tight jenkins-table__icon">
-                        <div class="jenkins-table__cell__button-wrapper">
-                          <l:icon class="${rpt.iconClassName} icon-sm" />
-                        </div>
-                      </td>
-                      <td>${rpt.localizableDescription}</td>
-                      <td align="right">${rpt.score}</td>
-                    </tr>
-                  </j:forEach>
-                </tbody>
-              </table>
-            </div>
+                </j:forEach>
+              </tbody>
+            </table>
+          </div>
         </x:attribute>
       </j:if>
         <j:if test="${buildHealth!=null}">
