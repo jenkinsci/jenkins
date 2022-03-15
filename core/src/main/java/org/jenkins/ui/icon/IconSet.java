@@ -548,6 +548,7 @@ public class IconSet {
 
         Map<String, String> translations = new HashMap<>();
         translations.put("icon-application-certificate", "symbol-ribbon");
+        translations.put("icon-document", "symbol-document-text");
         translations.put("icon-clipboard", "symbol-logs");
         translations.put("icon-clock", "symbol-play");
         translations.put("icon-edit-delete", "symbol-trash");
