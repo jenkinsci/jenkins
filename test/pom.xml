@@ -229,7 +229,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <argLine>${jacocoSurefireArgs} -Xmx1g</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
