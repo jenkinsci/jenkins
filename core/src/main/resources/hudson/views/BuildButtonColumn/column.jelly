@@ -39,8 +39,8 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
               <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-table__button--green" href="${href}">
-                  <l:ionicon name="play-outline" />
-                  <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
+                <l:icon src="symbol-play" />
+                <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
             </div>
           </j:if>

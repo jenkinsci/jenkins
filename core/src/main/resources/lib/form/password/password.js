@@ -32,7 +32,5 @@ Behaviour.specify('.hidden-password', 'hidden-password-button', 0, function (e) 
         e.querySelector('.hidden-password-field').setAttribute('type', 'password');
         e.querySelector('.hidden-password-placeholder').remove();
         secretUpdateBtn.remove();
-        // fix UI bug when DOM changes
-        Event.fire(window, 'jenkins:bottom-sticker-adjust');
     };
 });

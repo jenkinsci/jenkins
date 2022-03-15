@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -28,7 +27,7 @@ public class FilePathSettingsProvider extends SettingsProvider {
 
     @Override
     public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
-        if (StringUtils.isEmpty(path)) {
+        if (path == null || path.isEmpty()) {
             return null;
         }
 

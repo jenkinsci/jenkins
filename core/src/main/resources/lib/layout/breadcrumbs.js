@@ -23,8 +23,13 @@ var breadcrumbs = (function() {
     var logger = function() {};
     // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
-    function makeMenuHtml(icon,displayName) {
+    function makeMenuHtml(icon, iconXml, displayName) {
         var displaynameSpan = '<span>' + displayName + '</span>';
+
+        if (iconXml != null) {
+          return iconXml + displaynameSpan;
+        }
+
         if (icon === null) return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
 
         // TODO: move this to the API response in a clean way
@@ -106,8 +111,12 @@ var breadcrumbs = (function() {
      *
      * @param {HTMLElement} e
      *      anchor tag
+     * @param {String} contextMenuUrl
+     *      The URL that renders JSON for context menu. Optional.
      */
-    function invokeContextMenu(e) {
+    function invokeContextMenu(e, contextMenuUrl) {
+      contextMenuUrl = contextMenuUrl || "contextMenu";
+
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
@@ -126,20 +135,19 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {
-
           // fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), "pageMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), contextMenuUrl), {
                 onComplete:function (x) {
                   var items = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
                         if (e.type === "HEADER") {
-                            e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                            e.text = makeMenuHtml(e.icon, e.iconXml, "<span class='header'>" + e.displayName + "</span>");
                             e.disabled = true;
                         } else if (e.type === "SEPARATOR") {
                             e.text = "<span class='separator'>--</span>";
                             e.disabled = true;
                         } else {
-                          e.text = makeMenuHtml(e.icon, e.displayName);
+                          e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
                         }
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
@@ -175,7 +183,7 @@ var breadcrumbs = (function() {
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
         a.observe("click", function() {
-            invokeContextMenu(this);
+            invokeContextMenu(this, "childrenContextMenu");
         })
     });
 
@@ -194,7 +202,7 @@ var breadcrumbs = (function() {
          * @return {breadcrumbs.MenuItem}
          */
         "add" : function (url,icon,displayName) {
-            this.items.push({ url:url, text:makeMenuHtml(icon,displayName) });
+            this.items.push({ url:url, text:makeMenuHtml(icon, null, displayName) });
             return this;
         }
     };

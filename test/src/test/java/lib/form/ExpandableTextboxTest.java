@@ -28,15 +28,18 @@ import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
@@ -152,7 +155,7 @@ public class ExpandableTextboxTest {
     @Test
     @Issue("SECURITY-1498")
     public void noXssUsingInputValue() throws Exception {
-        XssProperty xssProperty = new XssProperty("</textarea><h1>HACK</h1>");
+        ExpandableTextBoxProperty xssProperty = new ExpandableTextBoxProperty("</textarea><h1>HACK</h1>");
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);
 
@@ -161,7 +164,7 @@ public class ExpandableTextboxTest {
 
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
-        HtmlInput xssInput = configurePage.getElementByName("_.xss");
+        HtmlInput xssInput = configurePage.getElementByName("_.theField");
         HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
@@ -171,19 +174,37 @@ public class ExpandableTextboxTest {
         assertEquals(numberOfH1Before, numberOfH1After);
     }
 
-    public static final class XssProperty extends OptionalJobProperty<Job<?, ?>> {
+    @Test
+    @Issue("JENKINS-67627")
+    public void expandsIntoNewlines() throws Exception {
+        OptionalJobProperty property = new ExpandableTextBoxProperty("foo bar baz"); // A bit of a misnomer here, we're using code for an existing test
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(property);
 
-        private String xss;
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage configurePage = wc.getPage(p, "configure");
 
-        public XssProperty(String xss) {
-            this.xss = xss;
+        HtmlInput input = configurePage.getElementByName("_.theField");
+        HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlElementUtil.click(expandButton);
+        final DomElement textArea = configurePage.getElementByName("_.theField");
+        assertTrue(textArea instanceof HtmlTextArea);
+        assertEquals("foo\nbar\nbaz", ((HtmlTextArea) textArea).getText());
+    }
+
+    public static final class ExpandableTextBoxProperty extends OptionalJobProperty<Job<?, ?>> {
+
+        private String theField;
+
+        public ExpandableTextBoxProperty(String theField) {
+            this.theField = theField;
         }
 
-        public String getXss() {
-            return xss;
+        public String getTheField() {
+            return theField;
         }
 
-        @TestExtension("noXssUsingInputValue")
+        @TestExtension({"noXssUsingInputValue", "expandsIntoNewlines"})
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
         }
     }

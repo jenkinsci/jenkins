@@ -31,10 +31,12 @@ THE SOFTWARE.
         </st:attribute>
     </st:documentation>
     <j:set var="prior" value="${null}"/>
-    <j:forEach var="logRecord" items="${h.reverse(logRecords)}">
+    <div class="logrecord-container">
+      <j:forEach var="logRecord" items="${h.reverse(logRecords)}">
         <j:set var="parts" value="${h.printLogRecordHtml(logRecord, prior)}"/>
         <pre class="logrecord-metadata"><j:out value="${parts[0]}"/><st:nbsp/><j:out value="${parts[2]}"/><st:nbsp/><j:out value="${parts[1]}"/></pre>
         <pre><j:out value="${parts[3]}"/></pre>
         <j:set var="prior" value="${logRecord}"/>
-    </j:forEach>
+      </j:forEach>
+    </div>
 </j:jelly>
