@@ -90,7 +90,7 @@ import org.kohsuke.stapler.verb.POST;
  *
  * TODO: still a work in progress.
  *
- * <h3>Access Control</h3>
+ * <p><strong>Access Control</strong>:
  * {@link LogRecorder} is only visible for administrators and system readers, and this access control happens at
  * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *

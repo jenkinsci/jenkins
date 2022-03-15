@@ -52,7 +52,6 @@ for (i = 0; i < buildTypes.size(); i++) {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
-                '-Pjapicmp',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
@@ -128,16 +127,6 @@ for (i = 0; i < buildTypes.size(); i++) {
                   fingerprint: true
                   )
             }
-            publishHTML([
-              allowMissing: true,
-              alwaysLinkToLastBuild: false,
-              includes: 'japicmp.html',
-              keepAll: false,
-              reportDir: 'core/target/japicmp',
-              reportFiles: 'japicmp.html',
-              reportName: 'API compatibility',
-              reportTitles: 'japicmp report',
-            ])
           }
         }
       }

@@ -11,6 +11,24 @@
   tr.already-upgraded {
     background-color: var(--plugin-manager-bg-color-already-upgraded);
   }
+  
+  tr.unavailable {
+    background-color: var(--plugin-manager-unavailable-bg-color);
+  }
+  tr.unavailable span.unavailable-label {
+    display: inline-block;
+    border: 1px solid #666;
+    color: var(--plugin-manager-unavailable-label-color);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0 0.5rem;
+    margin: 0.25rem 0.5rem;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+  }
 
   tr.all-dependents-disabled .enable input,
   tr.all-dependents-disabled .enable button,

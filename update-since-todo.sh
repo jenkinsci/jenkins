@@ -7,13 +7,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-me="$( basename "$0" )"
-
 # Needs bash 4+
 declare -A commitsAndTags
 
 IFS=$'\n'
-for todo in $( git grep --line-number '@since TODO' | grep -v "$me" )
+for todo in $( git grep --line-number '@since TODO' -- *.java *.jelly *.js)
 do
     #echo "TODO: $todo"
     file=$( echo "$todo" | cut -d : -f 1 )
