@@ -1,9 +1,9 @@
 .tippy-box[data-theme~='tooltip'] {
   background: var(--tooltip-background);
-  color: var(--tooltip-foreground);
+  color: var(--tooltip-color);
   padding: 0.55rem 0.8rem;
   border-radius: 10px;
-  box-shadow: var(--tooltip-shadow);
+  box-shadow: var(--tooltip-box-shadow);
   font-weight: 500;
   font-size: 0.75rem;
   backdrop-filter: saturate(2) blur(15px);
@@ -14,12 +14,18 @@
   }
 
   // We style tables as they have additional margin/border radius when in tooltips
+  .jenkins-tooltip--table-wrapper {
+    background-color: rgba(black, 0.05);
+    margin: -0.55rem -0.8rem;
+    border-radius: 10px;
+  }
+
   .jenkins-table {
-    --table-background: rgba(black, 0.05);
+    --table-background: transparent;
     --table-border-radius: 8px;
 
-    margin: -0.55rem -0.8rem;
-    width: 400px;
+    margin: 0;
+    width: 450px;
   }
 }
 
