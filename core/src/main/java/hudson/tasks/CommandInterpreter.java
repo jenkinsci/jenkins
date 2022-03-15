@@ -117,7 +117,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
         int r = -1;
         try {
             try {
-                script = createScriptFile(ws);
+                script = createScriptFile(ws, listener);
             } catch (IOException e) {
                 Util.displayIOException(e, listener);
                 Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
@@ -197,9 +197,19 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
 
     /**
      * Creates a script file in a temporary name in the specified directory.
+     * @deprecated use {@link #createScriptFile(FilePath, TaskListener)}
      */
+    @Deprecated
     public FilePath createScriptFile(@NonNull FilePath dir) throws IOException, InterruptedException {
-        return dir.createTextTempFile("jenkins", getFileExtension(), getContents(), false);
+        return createScriptFile(dir, TaskListener.NULL);
+    }
+
+    /**
+     * Creates a script file in a temporary name in the specified directory.
+     * @since TODO
+     */
+    public FilePath createScriptFile(@NonNull FilePath dir, @NonNull TaskListener listener) throws IOException, InterruptedException {
+        return dir.createTextTempFile("jenkins", getFileExtension(), getContents(), listener, false);
     }
 
     public abstract String[] buildCommandLine(FilePath script);

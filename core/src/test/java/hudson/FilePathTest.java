@@ -26,6 +26,9 @@ package hudson;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -807,7 +810,7 @@ public class FilePathTest {
         File deleteSuffixesRecursiveFolder = temp.newFolder("deleteSuffixesRecursive");
         FilePath filePath = new FilePath(deleteSuffixesRecursiveFolder);
         FilePath suffix = filePath.withSuffix(WorkspaceList.COMBINATOR + "suffixed");
-        FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
+        FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", TaskListener.NULL, true);
 
         assertThat(textTempFile.exists(), is(true));
 
@@ -1137,5 +1140,28 @@ public class FilePathTest {
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("./_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt2"));
+    }
+
+    @Test
+    @Issue("JENKINS-68027")
+    public void characterCodingException() throws Exception {
+        FilePath dir = new FilePath(temp.newFolder());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TaskListener listener = new StreamTaskListener(baos, Charset.defaultCharset());
+        String polytonicGreek = "echo Ἄνδρα μοι ἔννεπε, Μοῦσα, πολύτροπον, ὃς μάλα πολλὰ";
+        FilePath textTempFile = dir.createTextTempFile(
+                "jenkins",
+                ".txt",
+                polytonicGreek,
+                listener,
+                false);
+        String log = baos.toString(Charset.defaultCharset().name());
+        if (Charset.defaultCharset().equals(StandardCharsets.UTF_8)) {
+            assertThat(textTempFile.readToString(), equalTo(polytonicGreek));
+            assertThat(log, is(emptyString()));
+        } else {
+            assertThat(textTempFile.readToString(), equalTo("echo ????? ??? ??????, ?????, ??????????, ?? ???? ?????"));
+            assertThat(log, containsString("Falling back to lossy encoding."));
+        }
     }
 }

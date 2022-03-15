@@ -69,6 +69,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -85,6 +86,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -1593,7 +1595,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see File#createTempFile(String, String)
      */
     public FilePath createTextTempFile(final String prefix, final String suffix, final String contents) throws IOException, InterruptedException {
-        return createTextTempFile(prefix, suffix, contents, true);
+        return createTextTempFile(prefix, suffix, contents, TaskListener.NULL, true);
     }
 
     /**
@@ -1616,11 +1618,43 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      directory (java.io.tmpdir)
      * @return
      *      The new FilePath pointing to the temporary file
+     * @deprecated
+     *      use {@link #createTextTempFile(String, String, String, boolean, TaskListener)}
      * @see File#createTempFile(String, String)
      */
+    @Deprecated
     public FilePath createTextTempFile(final String prefix, final String suffix, final String contents, final boolean inThisDirectory) throws IOException, InterruptedException {
+        return createTextTempFile(prefix, suffix, contents, TaskListener.NULL, inThisDirectory);
+    }
+
+    /**
+     * Creates a temporary file in this directory (or the system temporary
+     * directory) and set the contents to the given text (encoded in the
+     * platform default encoding)
+     *
+     * @param prefix
+     *      The prefix string to be used in generating the file's name; must be
+     *      at least three characters long
+     * @param suffix
+     *      The suffix string to be used in generating the file's name; may be
+     *      null, in which case the suffix ".tmp" will be used
+     * @param contents
+     *      The initial contents of the temporary file.
+     * @param listener
+     *      If there are any problems encoding the file, an error will be printed here.
+     * @param inThisDirectory
+     *      If true, then create this temporary in the directory pointed to by
+     *      this.
+     *      If false, then the temporary file is created in the system temporary
+     *      directory (java.io.tmpdir)
+     * @return
+     *      The new FilePath pointing to the temporary file
+     * @see File#createTempFile(String, String)
+     * @since TODO
+     */
+    public FilePath createTextTempFile(final String prefix, final String suffix, final String contents, final TaskListener listener, final boolean inThisDirectory) throws IOException, InterruptedException {
         try {
-            return new FilePath(channel, act(new CreateTextTempFile(inThisDirectory, prefix, suffix, contents)));
+            return new FilePath(channel, act(new CreateTextTempFile(inThisDirectory, prefix, suffix, contents, listener)));
         } catch (IOException e) {
             throw new IOException("Failed to create a temp file on " + remote, e);
         }
@@ -1632,12 +1666,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String prefix;
         private final String suffix;
         private final String contents;
+        private final TaskListener listener;
 
-        CreateTextTempFile(boolean inThisDirectory, String prefix, String suffix, String contents) {
+        CreateTextTempFile(boolean inThisDirectory, String prefix, String suffix, String contents, @NonNull TaskListener listener) {
             this.inThisDirectory = inThisDirectory;
             this.prefix = prefix;
             this.suffix = suffix;
             this.contents = contents;
+            this.listener = Objects.requireNonNull(listener);
         }
 
         @Override
@@ -1654,11 +1690,36 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 throw new IOException("Failed to create a temporary directory in " + dir, e);
             }
 
-            try (Writer w = Files.newBufferedWriter(Util.fileToPath(f), Charset.defaultCharset())) {
-                w.write(contents);
+            boolean lossy = false;
+            try {
+                losslessWrite(f);
+            } catch (CharacterCodingException e) {
+                Functions.printStackTrace(e, listener.error(
+                        "Lossless encoding in JVM default character set "
+                                + Charset.defaultCharset().name()
+                                + " failed. Falling back to lossy encoding."));
+                lossy = true;
+            }
+            if (lossy) {
+                lossyWrite(f);
             }
 
             return f.getAbsolutePath();
+        }
+
+        private void losslessWrite(File f) throws IOException {
+            try (Writer w = Files.newBufferedWriter(Util.fileToPath(f), Charset.defaultCharset())) {
+                w.write(contents);
+            }
+        }
+
+        @SuppressFBWarnings(
+                value = "DM_DEFAULT_ENCODING",
+                justification = "Fallback if losslessWrite failed due to CharacterCodingException")
+        private void lossyWrite(File f) throws IOException {
+            try (Writer w = new FileWriter(f)) {
+                w.write(contents);
+            }
         }
     }
 
