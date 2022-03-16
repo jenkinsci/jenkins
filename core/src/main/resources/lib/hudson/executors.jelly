@@ -35,21 +35,22 @@ THE SOFTWARE.
     <d:tag name="computerCaption">
 
       <a href="${rootURL}/${c.url}" class="jenkins-link--with-icon model-link inside"><l:icon src="${c.iconClassName}" alt="${altText}"/><st:nbsp/>${title}</a>
-      <j:if test="${c.offline}">
-        <st:nbsp/>
-        <j:choose>
-          <j:when test="${c.offlineCause!=null and !c.connecting}">
-            (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
-          </j:when>
-          <j:when test="${c.connecting}">
-            (<l:icon class="icon-hourglass icon-sm"/>${%launching})
-          </j:when>
-          <j:otherwise>
-            (${%offline})
-          </j:otherwise>
-        </j:choose>
-      </j:if>
-      <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
+      <span style="float: right; font-weight: normal;">
+        <j:if test="${c.offline}">
+          <j:choose>
+            <j:when test="${c.offlineCause!=null and !c.connecting}">
+              (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
+            </j:when>
+            <j:when test="${c.connecting}">
+              (<l:icon class="icon-hourglass icon-sm"/>${%launching})
+            </j:when>
+            <j:otherwise>
+              (${%offline})
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+        <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
+      </span>
     </d:tag>
     <d:tag name="executor">
       <j:if test="${!c.offline or (c.offline and !e.idle)}">
