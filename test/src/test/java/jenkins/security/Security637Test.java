@@ -30,7 +30,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeNoException;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -38,6 +40,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
+import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -61,7 +64,10 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                EnvVars envVars = new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))
+                        ? null
+                        : new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED");
+                DumbSlave slave = j.createOnlineSlave(null, envVars);
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
@@ -187,7 +193,11 @@ public class Security637Test {
                 assertNotNull(project);
 
                 Field handlerField = URL.class.getDeclaredField("handler");
-                handlerField.setAccessible(true);
+                try {
+                    handlerField.setAccessible(true);
+                } catch (RuntimeException e) {
+                    assumeNoException(e);
+                }
 
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
                 for (URL url : urlJobProperty.urlSet) {
