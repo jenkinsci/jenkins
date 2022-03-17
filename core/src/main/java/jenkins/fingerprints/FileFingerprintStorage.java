@@ -90,6 +90,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Load the Fingerprint stored inside the given file.
      */
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "intentional check for fingerprint corruption")
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if (!configFile.exists()) {
