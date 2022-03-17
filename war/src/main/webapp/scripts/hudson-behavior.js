@@ -1441,45 +1441,6 @@ function rowvgStartEachRow(recursive,f) {
     }
   })
 
-    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
-        this[".top-sticker"](sticker);
-    });
-
-    /**
-     * @param {HTMLElement} sticker
-     */
-    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
-
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        var initialBreadcrumbPosition = DOM.getRegion(shadow);
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-            if(pos.top <= initialBreadcrumbPosition.top) {
-                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
-            }
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        adjustSticker();
-    });
-
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
