@@ -1414,10 +1414,6 @@ public class Fingerprint implements ModelObject, Saveable {
         if (fingerprint == null) {
             return;
         }
-        if (fingerprint.facets == null) {
-            logger.log(Level.WARNING, "Missing fingerprint facet, see JENKINS-67602");
-            return;
-        }
 
         for (FingerprintFacet facet : fingerprint.facets) {
             facet._setOwner(fingerprint);
