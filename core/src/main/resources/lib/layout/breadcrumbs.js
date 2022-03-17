@@ -105,84 +105,6 @@ var breadcrumbs = (function() {
     }
 
     /**
-     * '>' control used to launch context menu.
-     */
-    var menuSelector = (function() {
-        var menuSelector = $(document.createElement("div"));
-        var menuSelectorTarget;
-        var parentToUpdate;
-
-        document.body.appendChild(menuSelector);
-        menuSelector.id = 'menuSelector';
-
-        /**
-         * @param target
-         *      DOM node to attach this selector to.
-         */
-        menuSelector.show = function(target) {
-            var xy = Dom.getXY(target);
-
-            if ($(target).hasClassName("inside"))
-                xy[0] -= this.offsetWidth;  // show the menu selector inside the text
-
-            if ($(target).hasClassName("inverse")) {
-                menuSelector.addClassName("inverse");
-            } else {
-                menuSelector.removeClassName("inverse");
-            }
-
-            xy[0] += target.offsetWidth;
-            xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
-            Dom.setXY(this, xy);
-            this.target = target;
-
-            this.style.visibility = "visible";
-
-            menuSelectorTarget = target;
-            var updateParentSelector = menuSelectorTarget.getAttribute('update-parent-class');
-            if (updateParentSelector) {
-                parentToUpdate = $(menuSelectorTarget).up(updateParentSelector);
-            }
-        };
-        menuSelector.hide = function() {
-            this.style.visibility = "hidden";
-            menuSelectorTarget = undefined;
-            parentToUpdate = undefined;
-        };
-        menuSelector.observe("click",function () {
-            invokeContextMenu(this.target);
-        });
-
-        // if the mouse leaves the selector, hide it
-        canceller = new Delayed(function () {
-            logger("hiding 'v'");
-            menuSelector.hide();
-        }.bind(menuSelector), 750);
-
-        menuSelector.observe("mouseover",function () {
-            if (menuSelectorTarget) {
-                if (parentToUpdate) {
-                    parentToUpdate.addClassName('model-link-active');
-                }
-                menuSelectorTarget.addClassName('mouseIsOverMenuSelector');
-            }
-            canceller.cancel();
-        });
-        menuSelector.observe("mouseout",function () {
-            canceller.schedule();
-            if (menuSelectorTarget) {
-                if (parentToUpdate) {
-                    parentToUpdate.removeClassName('model-link-active');
-                }
-                menuSelectorTarget.removeClassName('mouseIsOverMenuSelector');
-            }
-        });
-        menuSelector.canceller = canceller;
-
-        return menuSelector;
-    })();
-
-    /**
      * Called when the user clicks a mouse to show a context menu.
      *
      * If the mouse stays there for a while, a context menu gets displayed.
@@ -192,8 +114,8 @@ var breadcrumbs = (function() {
      * @param {String} contextMenuUrl
      *      The URL that renders JSON for context menu. Optional.
      */
-    function invokeContextMenu(e,contextMenuUrl) {
-        contextMenuUrl = contextMenuUrl || "contextMenu";
+    function invokeContextMenu(e, contextMenuUrl) {
+      contextMenuUrl = contextMenuUrl || "contextMenu";
 
         function showMenu(items) {
             menu.hide();
@@ -212,15 +134,20 @@ var breadcrumbs = (function() {
 
         if (e.items) {// use what's already loaded
             showMenu(e.items());
-        } else {// fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
+        } else {
+          // fetch menu on demand
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"), contextMenuUrl), {
                 onComplete:function (x) {
-                    var a = x.responseText.evalJSON().items;
+                  var items = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
-                        if (e.header) {
+                        if (e.type === "HEADER") {
                             e.text = makeMenuHtml(e.icon, e.iconXml, "<span class='header'>" + e.displayName + "</span>");
+                            e.disabled = true;
+                        } else if (e.type === "SEPARATOR") {
+                            e.text = "<span class='separator'>--</span>";
+                            e.disabled = true;
                         } else {
-                            e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
+                          e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
                         }
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
@@ -232,10 +159,9 @@ var breadcrumbs = (function() {
                             delete e.url;
                         }
                     }
-                    a.each(fillMenuItem);
-
-                    e.items = function() { return a };
-                    showMenu(a);
+                    items.each(fillMenuItem);
+                    e.items = function() { return items };
+                    showMenu(items);
                 }
             });
         }
@@ -243,38 +169,22 @@ var breadcrumbs = (function() {
         return false;
     }
 
-//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-//        // when the mouse hovers over LI, activate the menu
-//        if (e.hasClassName("no-context-menu"))  return;
-//        e.observe("mouseover", function () { handleHover(e.firstChild) });
-//    });
-
-    Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
-        // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
-        // $(a).observe("mouseover", function () { handleHover(a,500); });
-
-        a.observe("mouseover",function () {
-            logger("mouse entered model-link %s",this.href);
-            menuSelector.canceller.cancel();
-            menuSelector.show(this);
-        });
-        a.observe("mouseout",function () {
-            logger("mouse left model-link %s",this.href);
-            menuSelector.canceller.schedule();
-        });
+    Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (link) {
+        const isFirefox = (navigator.userAgent.indexOf("Firefox") !== -1)
+        // Firefox adds unwanted lines when copying buttons in text, so use a span instead
+        const dropdownChevron = document.createElement(isFirefox ? "span" : "button")
+        dropdownChevron.className = "jenkins-menu-dropdown-chevron"
+        dropdownChevron.addEventListener("click", function(e) {
+            e.preventDefault();
+            invokeContextMenu(link);
+        })
+        link.appendChild(dropdownChevron)
     });
 
     Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
-        a.observe("mouseover",function() {
-            menuSelector.hide();
-        });
-        a.observe("click",function() {
-            invokeContextMenu(this,"childrenContextMenu");
+        a.observe("click", function() {
+            invokeContextMenu(this, "childrenContextMenu");
         })
-    });
-
-    Behaviour.specify("#breadcrumbs A", 'breadcrumbs', 0, function (a) {
-        $(a).addClassName('breadcrumbBarAnchor');
     });
 
     /**
@@ -309,7 +219,10 @@ var breadcrumbs = (function() {
          *      populating the content.
          */
         "attachMenu" : function (li,menu) {
-            $(li).firstChild.items =  (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).items = (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).addEventListener("click", function() {
+              invokeContextMenu($(li));
+            })
         },
 
         "ContextMenu" : ContextMenu
