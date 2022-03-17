@@ -338,7 +338,7 @@ public class QueueTest {
             @SuppressWarnings("deprecation")
             HtmlPage p = (HtmlPage) wc.getPage("http://localhost:" + connector.getLocalPort() + '/');
             HtmlForm f = p.getFormByName("main");
-            HtmlFileInput input = (HtmlFileInput) f.getInputByName("test");
+            HtmlFileInput input = f.getInputByName("test");
             input.setData(testData);
             HtmlFormUtil.submit(f);
         } finally {

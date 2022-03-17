@@ -393,7 +393,7 @@ public class DomainValidatorTest extends TestCase {
         }
         br.close();
         // List html entries not in TLD text list
-        for (String key : (new TreeMap<>(htmlInfo)).keySet()) {
+        for (String key : new TreeMap<>(htmlInfo).keySet()) {
             if (!ianaTlds.contains(key)) {
                 if (isNotInRootZone(key)) {
                     System.out.println("INFO: HTML entry not yet in root zone: " + key);

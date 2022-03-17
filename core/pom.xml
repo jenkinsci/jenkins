@@ -59,31 +59,49 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>remoting</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>version-number</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>crypto-util</artifactId>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
     </dependency>
-
     <dependency>
-      <!-- working around MCOMPILER-97 -->
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>core-annotation-processors</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-      <optional>true</optional>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.j2objc</groupId>
+          <artifactId>j2objc-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
@@ -95,10 +113,310 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-
+    <dependency>
+      <groupId>com.infradna.tool</groupId>
+      <artifactId>bridge-method-annotation</artifactId>
+      <version>${bridge-method-injector.version}</version>
+    </dependency>
+    <dependency>
+      <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
+      <groupId>com.jcraft</groupId>
+      <artifactId>jzlib</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.solaris</groupId>
+      <artifactId>embedded_su4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.txw2</groupId>
+      <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>xmlpull</groupId>
+          <artifactId>xmlpull</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xpp3</groupId>
+          <artifactId>xpp3_min</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-jelly</groupId>
+      <artifactId>commons-jelly-tags-fmt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-jelly</groupId>
+      <artifactId>commons-jelly-tags-xml</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-jelly</groupId>
+          <artifactId>commons-jelly</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jelly</groupId>
+          <artifactId>commons-jelly-tags-junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jexl</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.stapler</groupId>
+      <artifactId>jenkins-stapler-support</artifactId>
+    </dependency>
+    <dependency>
+      <!-- needed by Jelly -->
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jdom</groupId>
+          <artifactId>jdom</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xom</groupId>
+          <artifactId>xom</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- Groovy shell uses this, but it uses an optional dependency. Not included into BOM. -->
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>2.14.6</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.java.sezpoz</groupId>
+      <artifactId>sezpoz</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.kxml</groupId>
+      <artifactId>kxml2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
+    </dependency>
+    <dependency>
+      <!-- Groovy shell uses this, but it doesn't declare the dependency -->
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jexl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>crypto-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>memory-monitor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>symbol-annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>task-reactor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>commons-jelly-tags-define</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-cli</groupId>
+          <artifactId>commons-cli</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>commons-jelly</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.localizer</groupId>
+      <artifactId>localizer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.robust-http-client</groupId>
+      <artifactId>robust-http-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.winp</groupId>
+      <artifactId>winp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>windows-package-checker</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.jinterop</groupId>
+      <artifactId>j-interop</artifactId>
+    </dependency>
+    <dependency>
+      <!-- not in BOM, optional -->
+      <groupId>org.kohsuke.metainf-services</groupId>
+      <artifactId>metainf-services</artifactId>
+      <version>1.8</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>json-lib</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-codemirror</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-timeline</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-groovy</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-jelly</groupId>
+          <artifactId>commons-jelly</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jexl</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+        <exclusion>
+          <!-- we bundle groovy-all -->
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
@@ -121,246 +439,12 @@ THE SOFTWARE.
       <artifactId>asm-util</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-groovy</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jvnet.hudson</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <!-- we bundle groovy-all -->
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>windows-package-checker</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-codemirror</artifactId>
-    </dependency>
-    <dependency>
-      <!-- this helps us see the source code of the control while we edit Jenkins -->
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.5</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.stapler</groupId>
-      <artifactId>jenkins-stapler-support</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.infradna.tool</groupId>
-      <artifactId>bridge-method-annotation</artifactId>
-      <version>${bridge-method-injector.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>json-lib</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>annotation-indexer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>task-reactor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.localizer</groupId>
-      <artifactId>localizer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>antlr</groupId>
-      <artifactId>antlr</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.thoughtworks.xstream</groupId>
-      <artifactId>xstream</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>xmlpull</groupId>
-          <artifactId>xmlpull</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xpp3</groupId>
-          <artifactId>xpp3_min</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!--
-      still including the xpp3 driver to ensure backwards compatibilty
-      for other plugins that may be depending on it. Not included into BOM
-    -->
-    <dependency>
-      <groupId>xpp3</groupId>
-      <artifactId>xpp3</artifactId>
-      <version>1.1.4c</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.kxml</groupId>
-      <artifactId>kxml2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jaxen</groupId>
-      <artifactId>jaxen</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xom</groupId>
-          <artifactId>xom</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-fmt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-xml</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly-tags-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>commons-jelly-tags-define</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-cli</groupId>
-          <artifactId>commons-cli</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jvnet.hudson</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>commons-jexl</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
@@ -373,24 +457,57 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
+      <!--
+        still including the xpp3 driver to ensure backwards compatibilty
+        for other plugins that may be depending on it. Not included into BOM
+      -->
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c</version>
     </dependency>
     <dependency>
-      <!-- Groovy shell uses this, but it uses an optional dependency. Not included into BOM. -->
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>2.14.6</version>
-      <scope>compile</scope>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- Groovy shell uses this, but it doesn't declare the dependency -->
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
+      <!-- working around MCOMPILER-97 -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>core-annotation-processors</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <!-- offline profiler API to put in the classpath if we need it -->
+    <!--dependency>
+      <groupId>com.yourkit.api</groupId>
+      <artifactId>yjp</artifactId>
+      <version>dontcare</version>
+      <scope>system</scope>
+      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
+    </dependency-->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -412,9 +529,11 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <!-- this helps us see the source code of the control while we edit Jenkins -->
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-timeline</artifactId>
+      <version>1.5</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -424,139 +543,9 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- needed by Jelly -->
-      <groupId>jakarta.servlet.jsp.jstl</groupId>
-      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.txw2</groupId>
-      <artifactId>txw2</artifactId>
-      <exclusions>
-        <!-- StAX is now bundled in the JRE -->
-        <exclusion>
-          <groupId>javax.xml.stream</groupId>
-          <artifactId>stax-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.winp</groupId>
-      <artifactId>winp</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>memory-monitor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.solaris</groupId>
-      <artifactId>embedded_su4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.java.sezpoz</groupId>
-      <artifactId>sezpoz</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.jinterop</groupId>
-      <artifactId>j-interop</artifactId>
-    </dependency>
-    <dependency>
-      <!-- not in BOM, optional -->
-      <groupId>org.kohsuke.metainf-services</groupId>
-      <artifactId>metainf-services</artifactId>
-      <version>1.8</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.robust-http-client</groupId>
-      <artifactId>robust-http-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>symbol-annotation</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>access-modifier-annotation</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-    </dependency>
-
-    <!-- offline profiler API to put in the classpath if we need it -->
-    <!--dependency>
-      <groupId>com.yourkit.api</groupId>
-      <artifactId>yjp</artifactId>
-      <version>dontcare</version>
-      <scope>system</scope>
-      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
-    </dependency-->
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>error_prone_annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.j2objc</groupId>
-          <artifactId>j2objc-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.checkerframework</groupId>
-          <artifactId>checker-qual</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-    <dependency>
-      <groupId>com.jcraft</groupId>
-      <artifactId>jzlib</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xmlunit</groupId>
@@ -828,44 +817,6 @@ THE SOFTWARE.
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
-    </profile>
-    <profile>
-      <id>japicmp</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.siom79.japicmp</groupId>
-            <artifactId>japicmp-maven-plugin</artifactId>
-            <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
-            <version>0.14.4-20200728.214757-1</version>
-            <configuration>
-              <parameter>
-                <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
-                <oldVersionPattern>\d+[.]\d+</oldVersionPattern>
-                <!-- <onlyModified>true</onlyModified> -->
-                <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
-              </parameter>
-              <oldClassPathDependencies>
-                <dependency>
-                  <!-- provided, so not visible in flattened artifact -->
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>javax.servlet-api</artifactId>
-                  <version>3.1.0</version>
-                  <scope>provided</scope>
-                </dependency>
-              </oldClassPathDependencies>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>cmp</goal>
-                </goals>
-                <phase>verify</phase>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

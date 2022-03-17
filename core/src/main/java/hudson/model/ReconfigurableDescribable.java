@@ -40,16 +40,15 @@ import org.kohsuke.stapler.StaplerRequest;
  * implement this. Rather, it is up to the designer of an extension point to mark the extension point
  * as {@link ReconfigurableDescribable}, as it requires coordination at the owner of the extension point.
  *
- * <h1>Use Cases</h1>
- * <h2>Invisible Property</h2>
  * <p>
+ * <strong>Invisible Property:</strong>
  * This mechanism can be used to create an entirely invisible {@link Describable}, which is handy
  * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define an empty config.jelly to prevent it from
  * showing up in the config UI, then implement {@link #reconfigure(StaplerRequest, JSONObject)}
  * and simply return {@code this}.
  *
- * <h2>Passing some values without going through clients</h2>
  * <p>
+ * <strong>Passing some values without going through clients:</strong>
  * Sometimes your {@link Describable} object may have some expensive objects that you might want to
  * hand over to the next instance. This hook lets you do that.
  *

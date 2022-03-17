@@ -34,50 +34,47 @@ THE SOFTWARE.
     use the &lt;l:breadcrumb> tag.
   </st:documentation>
 
-  <tr id="top-nav">
-    <td id="left-top-nav" colspan="2">
-      <st:adjunct includes="lib.layout.breadcrumbs" />
-      <div class="top-sticker noedge">
-        <div class="top-sticker-inner">
-          <div class="breadcrumbs__wrapper">
-            <ul id="breadcrumbs">
-              <j:forEach var="anc" items="${request.ancestors}">
-                <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                  <li class="item">
-                    <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
-                      <!-- Workaround to set desired name to first breadcrumb (instead of Jenkins) -->
-                      <j:choose>
-                        <j:when test="${anc.object == app}">
-                          ${%Dashboard}
-                        </j:when>
-                        <j:otherwise>
-                          ${anc.object.displayName}
-                        </j:otherwise>
-                      </j:choose>
-                    </a>
-                  </li>
+  <st:adjunct includes="lib.layout.breadcrumbs" />
+
+  <div class="top-sticker noedge">
+    <div class="top-sticker-inner">
+      <div class="jenkins-breadcrumbs">
+        <ul id="breadcrumbs">
+          <j:forEach var="anc" items="${request.ancestors}">
+            <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+              <li class="item">
+                <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null}">
+                  <!-- Workaround to set desired name to first breadcrumb (instead of Jenkins) -->
                   <j:choose>
-                    <j:when test="${h.isModelWithChildren(anc.object)}">
-                      <li class="children" href="${anc.url}/">
-                        <!-- shows '>' for rendering children -->
-                      </li>
+                    <j:when test="${anc.object == app}">
+                      ${%Dashboard}
                     </j:when>
                     <j:otherwise>
-                      <li class="separator">
-                      </li>
+                      ${anc.object.displayName}
                     </j:otherwise>
                   </j:choose>
-                </j:if>
-              </j:forEach>
+                </a>
+              </li>
+              <j:choose>
+                <j:when test="${h.isModelWithChildren(anc.object)}">
+                  <li class="children" href="${anc.url}/">
+                    <!-- shows '>' for rendering children -->
+                  </li>
+                </j:when>
+                <j:otherwise>
+                  <li class="separator">
+                  </li>
+                </j:otherwise>
+              </j:choose>
+            </j:if>
+          </j:forEach>
 
-              <!-- render additional breadcrumb items -->
-              <d:invokeBody />
-            </ul>
+          <!-- render additional breadcrumb items -->
+          <d:invokeBody />
+        </ul>
 
-            <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
-          </div>
-        </div>
+        <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
       </div>
-    </td>
-  </tr>
+    </div>
+  </div>
 </j:jelly>

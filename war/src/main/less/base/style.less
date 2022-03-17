@@ -243,7 +243,7 @@ pre {
   background-color: var(--pre-background);
   color: var(--pre-color) !important;
   font-family: var(--font-family-mono) !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   line-height: 1.66 !important;
 
   a {
@@ -413,10 +413,15 @@ pre.console {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
-  padding: 4px;
-  white-space: normal;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
 }
 
 .disabledJob {
@@ -537,16 +542,6 @@ div.behavior-loading {
 #top-sticker {
     width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
-}
-
-.top-sticker-inner {
-    padding: 1em;
-}
-
-.top-sticker-edge {
-    height: 16px;
-    background-image: url("../../images/top-sticker-bottom-edge.png");
-    background-repeat: repeat-x;
 }
 
 .top-sticker.noedge > .top-sticker-edge {
@@ -1574,7 +1569,7 @@ body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
 
-body.no-decoration #page-head,
+body.no-decoration #page-header,
 body.no-decoration #side-panel,
 body.no-decoration footer {
     display: none;
@@ -1589,6 +1584,7 @@ body.no-sticker #bottom-sticker {
 svg.icon-sm {
     width: 16px;
     height: 16px;
+    vertical-align: top;
 
   svg {
     width: 16px;
@@ -1600,6 +1596,7 @@ svg.icon-sm {
 svg.icon-md {
     width: 24px;
     height: 24px;
+    vertical-align: top;
 
   svg {
     width: 24px;
@@ -1611,6 +1608,7 @@ svg.icon-md {
 svg.icon-lg {
     width: 32px;
     height: 32px;
+    vertical-align: top;
 
   svg {
     width: 32px;
@@ -1622,6 +1620,7 @@ svg.icon-lg {
 svg.icon-xlg {
     width: 48px;
     height: 48px;
+    vertical-align: top;
 
   svg {
     width: 48px;

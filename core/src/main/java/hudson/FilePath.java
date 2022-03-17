@@ -42,7 +42,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -1985,7 +1984,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException, PosixException {
+    public int mode() throws IOException, InterruptedException {
         if (!isUnix())   return -1;
         return act(new Mode());
     }
@@ -3042,7 +3041,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Same as {@link #validateAntFileMask(String, int, boolean)} with the default number of operations.
      * @see #VALIDATE_ANT_FILE_MASK_BOUND
-     * @since TODO
+     * @since 2.325
      */
     public String validateAntFileMask(final String fileMasks, final boolean caseSensitive) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
