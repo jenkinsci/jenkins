@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-    <header id="header" class="page-header">
+    <header id="page-header" class="page-header">
         <div class="page-header__brand">
             <div class="logo">
                 <a id="jenkins-home-link" href="${rootURL}/">
@@ -56,7 +56,7 @@
                                 <j:set var="userName" value="${user.fullName}"/>
                             </j:otherwise>
                         </j:choose>
-                        <a href="${rootURL}/${user.url}" class="model-link inside inverse">
+                        <a href="${rootURL}/${user.url}" class="model-link">
                             <l:svgIcon
                                        class="am-monitor-icon" >
                                 <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>

@@ -13,5 +13,9 @@ Event.observe(window, "load", function () {
             $(e.section).insert({top:"<a id=" + id + " class='section-anchor'>#</a>"});
         menu.add('#' + id, null, caption);
     });
-    breadcrumbs.attachMenu('inpage-nav', menu);
+    var inpageNav = document.getElementById("inpage-nav")
+    var chevron = document.createElement("li")
+    chevron.classList.add("children")
+    inpageNav.parentNode.insertBefore(chevron, inpageNav.nextSibling);
+    breadcrumbs.attachMenu(chevron, menu);
 });
