@@ -853,9 +853,7 @@ var Enumerable = (function() {
         iterator.call(context, value, index++);
       });
     } catch (e) {
-      // This breaks Tippy for some reason?
-      // TypeError: undefined is not an object (evaluating 'self.indexOf')
-      // if (e != $break) throw e;
+      if (e != $break) throw e;
     }
     return this;
   }
@@ -910,8 +908,8 @@ var Enumerable = (function() {
 
   function findAll(iterator, context) {
     var results = [];
-    this.each(function(value, index) {
-      if (iterator.call(context, value, index))
+    this.forEach(function(value, index, self) {
+      if (iterator.call(context, value, index, self))
         results.push(value);
     });
     return results;
