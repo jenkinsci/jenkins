@@ -7,6 +7,24 @@ const TOOLTIP_BASE = {
   appendTo: document.body
 }
 
+let tooltipInstances = []
+const globalPlugin = {
+  fn() {
+    return {
+      onCreate(instance) {
+        tooltipInstances = tooltipInstances.concat(instance);
+      },
+      onDestroy(instance) {
+        tooltipInstances = tooltipInstances.filter(i => i !== instance);
+      }
+    }
+  }
+}
+
+tippy.setDefaultProps({
+  plugins: [globalPlugin]
+})
+
 registerTooltips()
 
 /**
@@ -14,10 +32,8 @@ registerTooltips()
  * If called again, destroys existing tooltips and registers them again (useful for progressive rendering)
  */
 function registerTooltips() {
-  [...document.querySelectorAll("*")].forEach(node => {
-    if (node._tippy) {
-      node._tippy.destroy()
-    }
+  tooltipInstances.forEach(instance => {
+    instance.destroy()
   })
 
   tippy("[tooltip]", {
