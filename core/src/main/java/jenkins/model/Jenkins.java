@@ -2256,7 +2256,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     void trimLabels(Node... nodes) {
         Set<LabelAtom> includedLabels = new HashSet<>();
-        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        Arrays.stream(nodes).filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
         trimLabels(includedLabels);
     }
 
@@ -2982,9 +2982,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the item by its path name from the given context
      *
-     * <h2>Path Names</h2>
-     *
-     * <p>If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     * <p><strong>Path Names:</strong>
+     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
      *

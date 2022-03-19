@@ -31,14 +31,8 @@ THE SOFTWARE.
     <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Polling Log}</h1>
-      <l:rightspace>
-        <a href="pollingLog">
-          <l:icon class="icon-document icon-md"/>${%View as plain text}
-        </a>
-      </l:rightspace>
-
       <p>${%blurb}</p>
-      
+
       <pre>
         <st:getOutput var="output" />
         <j:whitespace>${it.writePollingLogTo(0,output)}</j:whitespace>

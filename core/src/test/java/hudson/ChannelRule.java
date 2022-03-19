@@ -6,6 +6,7 @@ import hudson.remoting.ChannelBuilder;
 import hudson.remoting.FastPipedInputStream;
 import hudson.remoting.FastPipedOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,50 +55,7 @@ public final class ChannelRule extends ExternalResource {
             french.join();
             british.join();
         } catch (IOException e) {
-            // perhaps this exception is caused by earlier abnormal termination of the channel?
-            /* for the record, this is the failure.
-                    Nov 12, 2009 6:18:55 PM hudson.remoting.Channel$CloseCommand execute
-                    SEVERE: close command failed on This side of the channel
-                    java.io.IOException: Pipe is already closed
-                        at hudson.remoting.FastPipedOutputStream.write(FastPipedOutputStream.java:127)
-                        at java.io.ObjectOutputStream$BlockDataOutputStream.drain(ObjectOutputStream.java:1838)
-                        at java.io.ObjectOutputStream$BlockDataOutputStream.setBlockDataMode(ObjectOutputStream.java:1747)
-                        at java.io.ObjectOutputStream.writeNonProxyDesc(ObjectOutputStream.java:1249)
-                        at java.io.ObjectOutputStream.writeClassDesc(ObjectOutputStream.java:1203)
-                        at java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1387)
-                        at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1150)
-                        at java.io.ObjectOutputStream.writeFatalException(ObjectOutputStream.java:1538)
-                        at java.io.ObjectOutputStream.writeObject(ObjectOutputStream.java:329)
-                        at hudson.remoting.Channel.send(Channel.java:413)
-                        at hudson.remoting.Channel.close(Channel.java:717)
-                        at hudson.remoting.Channel$CloseCommand.execute(Channel.java:676)
-                        at hudson.remoting.Channel$ReaderThread.run(Channel.java:860)
-                    Caused by: hudson.remoting.FastPipedInputStream$ClosedBy: The pipe was closed at...
-                        at hudson.remoting.FastPipedInputStream.close(FastPipedInputStream.java:103)
-                        at java.io.ObjectInputStream$PeekInputStream.close(ObjectInputStream.java:2305)
-                        at java.io.ObjectInputStream$BlockDataInputStream.close(ObjectInputStream.java:2643)
-                        at java.io.ObjectInputStream.close(ObjectInputStream.java:873)
-                        at hudson.remoting.Channel$ReaderThread.run(Channel.java:866)
-                    Nov 12, 2009 6:18:55 PM hudson.remoting.Channel$CloseCommand execute
-                    INFO: close command created at
-                    Command close created at
-                        at hudson.remoting.Command.<init>(Command.java:58)
-                        at hudson.remoting.Command.<init>(Command.java:47)
-                        at hudson.remoting.Channel$CloseCommand.<init>(Channel.java:673)
-                        at hudson.remoting.Channel$CloseCommand.<init>(Channel.java:673)
-                        at hudson.remoting.Channel.close(Channel.java:717)
-                        at hudson.remoting.Channel$CloseCommand.execute(Channel.java:676)
-                        at hudson.remoting.Channel$ReaderThread.run(Channel.java:860)
-                    Nov 12, 2009 6:18:55 PM hudson.remoting.Channel$ReaderThread run
-                    SEVERE: I/O error in channel This side of the channel
-                    java.io.EOFException
-                        at java.io.ObjectInputStream$BlockDataInputStream.peekByte(ObjectInputStream.java:2554)
-                        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1297)
-                        at java.io.ObjectInputStream.readObject(ObjectInputStream.java:351)
-                        at hudson.remoting.Channel$ReaderThread.run(Channel.java:849)
-
-             */
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
         } catch (InterruptedException x) {
             throw new AssertionError(x);
         }

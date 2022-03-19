@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.71</version>
+    <version>1.72</version>
     <relativePath />
   </parent>
 
@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.339</revision>
+    <revision>2.340</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -214,7 +214,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing</doclint>
+            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -820,23 +820,6 @@ THE SOFTWARE.
       </activation>
       <properties>
         <failIfNoTests>false</failIfNoTests>
-      </properties>
-    </profile>
-    <profile>
-      <id>jdk11</id>
-      <activation>
-        <jdk>11</jdk>
-      </activation>
-      <properties>
-        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
-        <doclint>none</doclint>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- release is needed for reliable cross compilation. It is supported
-        starting JDK 9, but as the only earlier version we support is 8, it would
-        be either compiled by javac from 8 or one from a newer compiler that
-        correctly handle the release flag. This will replace both source and target
-        once we drop support for JDK 8 that only recognize source and target. -->
-        <maven.compiler.release>${java.level}</maven.compiler.release>
       </properties>
     </profile>
   </profiles>

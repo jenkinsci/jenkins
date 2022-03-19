@@ -76,7 +76,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1712.v68cd645cb_f35</version>
+      <version>1721.v385389722736</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -229,7 +229,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <argLine>${jacocoSurefireArgs} -Xmx1g</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
