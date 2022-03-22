@@ -43,7 +43,7 @@ THE SOFTWARE.
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
         <a class="yui-button link-button" id="description-link" href="editDescription" onclick="return replaceDescription();">
           <span class="leading-icon">
-            <l:svgIcon viewBox="0 0 16 16" class="icon-small" href="${imagesURL}/material-icons/edit.svg#edit"/>
+            <l:icon src="symbol-edit" />
           </span>
           <j:choose>
             <j:when test="${empty(it.description)}">

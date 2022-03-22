@@ -27,7 +27,7 @@ public class ApplyButtonTest {
     public void editDescription() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE); // need something using CodeMirror
         FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
 
         HtmlPage config = j.createWebClient().getPage(b, "configure");
         HtmlForm form = config.getFormByName("config");

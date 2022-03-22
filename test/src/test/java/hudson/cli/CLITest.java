@@ -43,10 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +75,7 @@ public class CLITest {
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
-    
+
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
@@ -97,17 +97,18 @@ public class CLITest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         FreeStyleProject p = r.createFreeStyleProject("p");
-        p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         doInterrupt(p, "-http", "-auth", "admin:admin");
         doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }
+
     private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         List<String> args = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString()));
         args.addAll(Arrays.asList(modeArgs));
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
-        while (!baos.toString().contains("Sleeping ")) {
+        while (!baos.toString(Charset.defaultCharset().name()).contains("Sleeping ")) {
             if (!proc.isAlive()) {
                 throw new AssertionError("Process failed to start with " + proc.join());
             }
@@ -128,10 +129,11 @@ public class CLITest {
                 "java", "-jar", jar.getAbsolutePath(), "-s", url, "-http", "-user", "asdf", "who-am-i"
         ).stdout(baos).stderr(baos).join();
 
-        assertThat(baos.toString(), containsString("There's no Jenkins running at"));
+        assertThat(baos.toString(Charset.defaultCharset().name()), containsString("There's no Jenkins running at"));
         assertNotEquals(0, ret);
         // TODO -webSocket currently produces a stack trace
     }
+
     @TestExtension("reportNotJenkins")
     public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
 
@@ -171,12 +173,12 @@ public class CLITest {
         JenkinsRule.WebClient wc = r.createWebClient()
                 .withRedirectEnabled(false)
                 .withThrowExceptionOnFailingStatusCode(false);
-        
+
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
 
-        for (String transport: Arrays.asList("-http", "-webSocket")) {
+        for (String transport : Arrays.asList("-http", "-webSocket")) {
 
             String url = r.getURL().toString() + "cli-proxy/";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -185,7 +187,7 @@ public class CLITest {
             ).stdout(baos).stderr(baos).join();
 
             //assertThat(baos.toString(), containsString("There's no Jenkins running at"));
-            assertThat(baos.toString(), containsString("Authenticated as: anonymous"));
+            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: anonymous"));
             assertEquals(0, ret);
         }
     }
@@ -207,7 +209,7 @@ public class CLITest {
                     .stderr(baos)
                     .stdin(CLITest.class.getResourceAsStream("huge-stdin.txt"))
                     .join();
-            assertThat(baos.toString(), not(containsString("java.io.IOException: Stream is closed")));
+            assertThat(baos.toString(Charset.defaultCharset().name()), not(containsString("java.io.IOException: Stream is closed")));
             assertEquals(0, ret);
         }
     }

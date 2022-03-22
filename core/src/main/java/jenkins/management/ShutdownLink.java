@@ -47,7 +47,7 @@ public class ShutdownLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "system-log-out.png";
+        return "symbol-power";
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ShutdownLink extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
     }
-  
+
     @NonNull
     @Override
     public Category getCategory() {

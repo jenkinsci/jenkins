@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,6 +37,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
@@ -81,7 +83,7 @@ public class NodeTest {
     public static boolean notTake = false;
 
     @Before
-    public void before(){
+    public void before() {
        addDynamicLabel = false;
        notTake = false;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -94,7 +96,7 @@ public class NodeTest {
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
         OfflineCause cause = new OfflineCause.ByCLI("message");
         node.setTemporaryOfflineCause(cause);
-        for(ComputerListener l : ComputerListener.all()){
+        for (ComputerListener l : ComputerListener.all()) {
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
         assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
@@ -165,10 +167,9 @@ public class NodeTest {
         label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for (TagCloud.Entry e : cloud) {
-            if(e.item.equals(label)){
+            if (e.item.equals(label)) {
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
-            }
-            else{
+            } else {
                 assertEquals("Label " + e.item + " should not have any tied project.", 0, e.weight, 0);
             }
         }
@@ -203,7 +204,7 @@ public class NodeTest {
         assertNull("Node should take project which is assigned to its label.", node.canTake(item));
         assertNull("Node should take project which is assigned to its label.", node.canTake(item2));
         assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
-        String message = Messages._Node_LabelMissing(node.getNodeName(),j.jenkins.getLabel("notContained")).toString();
+        String message = Messages._Node_LabelMissing(node.getNodeName(), j.jenkins.getLabel("notContained")).toString();
         assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
         node.setMode(Node.Mode.EXCLUSIVE);
         assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
@@ -223,7 +224,7 @@ public class NodeTest {
         notTake = false;
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
-        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(),node.getNodeName()).toString();
+        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(), node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
     }
 
@@ -248,7 +249,7 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","abcdef");
+        User user = realm.createAccount("John Smith", "abcdef");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
@@ -427,12 +428,13 @@ public class NodeTest {
     }
 
     @TestExtension
-    public static class LabelFinderImpl extends LabelFinder{
+    public static class LabelFinderImpl extends LabelFinder {
 
+        @NonNull
         @Override
-        public Collection<LabelAtom> findLabels(Node node) {
+        public Collection<LabelAtom> findLabels(@NonNull Node node) {
             List<LabelAtom> atoms = new ArrayList<>();
-            if(addDynamicLabel){
+            if (addDynamicLabel) {
                 atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
             }
             return atoms;
@@ -442,11 +444,11 @@ public class NodeTest {
     }
 
     @TestExtension
-    public static class NodePropertyImpl extends NodeProperty{
+    public static class NodePropertyImpl extends NodeProperty {
 
         @Override
-        public CauseOfBlockage canTake(Queue.BuildableItem item){
-            if(notTake)
+        public CauseOfBlockage canTake(Queue.BuildableItem item) {
+            if (notTake)
                 return new CauseOfBlockage.BecauseLabelIsBusy(item.getAssignedLabel());
             return null;
         }

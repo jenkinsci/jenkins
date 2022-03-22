@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.bugs;
 
 import static org.junit.Assert.assertFalse;
@@ -60,7 +61,7 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 /**
- * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access. 
+ * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -76,7 +77,7 @@ public class JnlpAccessWithSecuredHudsonTest {
      * Creates a new agent that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
-        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
+        return new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
@@ -84,7 +85,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Test
     public void anonymousCanAlwaysLoadJARs() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         JenkinsRule.WebClient wc = r.createWebClient();
         HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
@@ -93,13 +94,13 @@ public class JnlpAccessWithSecuredHudsonTest {
         JenkinsRule.WebClient jnlpAgent = r.createWebClient();
 
         // parse the JNLP page into DOM to list up the jars.
-        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
+        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/jenkins-agent.jnlp", "application/x-java-jnlp-file");
         URL baseUrl = jnlp.getUrl();
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
-        for( Object jar : dom.selectNodes("//jar") ) {
-            URL url = new URL(baseUrl,((Element)jar).attributeValue("href"));
+        for (Object jar : dom.selectNodes("//jar")) {
+            URL url = new URL(baseUrl, ((Element) jar).attributeValue("href"));
             System.out.println(url);
-            
+
             // now make sure that these URLs are unprotected
             Page jarResource = jnlpAgent.getPage(url);
             assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));

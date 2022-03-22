@@ -37,11 +37,11 @@ public interface RunAction2 extends Action {
     /**
      * Called when this action is {@linkplain Run#addAction added to a build}.
      */
-    void onAttached(Run<?,?> r);
+    void onAttached(Run<?, ?> r);
 
     /**
      * Called after a {@linkplain Run#onLoad build is loaded} to which this action was previously {@linkplain #onAttached attached}.
      */
-    void onLoad(Run<?,?> r);
+    void onLoad(Run<?, ?> r);
 
 }

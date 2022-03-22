@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -38,7 +40,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,12 +54,12 @@ public class TarArchiverTest {
      */
     @Issue("JENKINS-9397")
     @Test public void permission() throws Exception {
-        assumeTrue(!Functions.isWindows());
+        assumeFalse(Functions.isWindows());
 
-        File tar = File.createTempFile("test","tar");
-        File zip = File.createTempFile("test","zip");
+        File tar = File.createTempFile("test", "tar");
+        File zip = File.createTempFile("test", "zip");
 
-        FilePath dir = new FilePath(File.createTempFile("test","dir"));
+        FilePath dir = new FilePath(File.createTempFile("test", "dir"));
 
         try {
             dir.delete();
@@ -73,7 +74,7 @@ public class TarArchiverTest {
             f.chmod(0644);
             int dirMode = dir.child("subdir").mode();
 
-            dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
+            dir.tar(Files.newOutputStream(tar.toPath()), "**/*");
             dir.zip(Files.newOutputStream(zip.toPath()));
 
 
@@ -83,9 +84,9 @@ public class TarArchiverTest {
             // extract via the tar command
             run(e, "tar", "xvpf", tar.getAbsolutePath());
 
-            assertEquals(0755,e.child("a.txt").mode());
-            assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0644,e.child("subdir/b.txt").mode());
+            assertEquals(0755, e.child("a.txt").mode());
+            assertEquals(dirMode, e.child("subdir").mode());
+            assertEquals(0644, e.child("subdir/b.txt").mode());
 
 
             // extract via the zip command
@@ -94,8 +95,8 @@ public class TarArchiverTest {
             e = e.listDirectories().get(0);
 
             assertEquals(0755, e.child("a.txt").mode());
-            assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0644,e.child("subdir/b.txt").mode());
+            assertEquals(dirMode, e.child("subdir").mode());
+            assertEquals(0644, e.child("subdir/b.txt").mode());
         } finally {
             tar.delete();
             zip.delete();
@@ -107,32 +108,32 @@ public class TarArchiverTest {
         try {
             assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
         } catch (IOException x) { // perhaps restrict to x.message.contains("Cannot run program")? or "error=2, No such file or directory"?
-            Assume.assumeNoException("failed to run " + Arrays.toString(cmds), x);
+            assumeNoException("failed to run " + Arrays.toString(cmds), x);
         }
     }
 
     @Issue("JENKINS-14922")
     @Test public void brokenSymlinks() throws Exception {
-        assumeTrue(!Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File dir = tmp.getRoot();
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         new FilePath(dir).tar(new NullStream(), "**");
     }
-    
-    
+
+
     /**
      * Test backing up an open file
      */
-    
+
     @Issue("JENKINS-20187")
     @Test public void growingFileTar() throws Exception {
-        File file=new File(tmp.getRoot(),"growing.file");
+        File file = new File(tmp.getRoot(), "growing.file");
         GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
         Thread t1 = new Thread(runnable1);
         t1.start();
 
         new FilePath(tmp.getRoot()).tar(new NullStream(), "**");
-        
+
         runnable1.doFinish();
         t1.join();
     }

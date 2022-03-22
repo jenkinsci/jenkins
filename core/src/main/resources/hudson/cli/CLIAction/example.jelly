@@ -24,16 +24,6 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:once>
-    <style type="text/css">
-      pre {
-          color: white;
-          background-color: black;
-          padding: 1em;
-          font-weight: bold;
-      }
-    </style>
-  </st:once>
-  <pre id="example">java -jar <a href="${rootURL}/jnlpJars/jenkins-cli.jar" style="color: white">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} <j:if test="${it.webSocketSupported}">-webSocket</j:if> ${commandArgs}</pre>
+  <pre id="example">java -jar <a href="${rootURL}/jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} <j:if test="${it.webSocketSupported}">-webSocket</j:if> ${commandArgs}</pre>
 </j:jelly>
 

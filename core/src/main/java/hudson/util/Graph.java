@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -56,7 +57,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <dt>/map
  * <dd>Clickable map
  * </dl>
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.320
  */
@@ -109,7 +110,7 @@ public abstract class Graph {
         Color graphBg = stringToColor(req.getParameter("graphBg"));
         Color plotBg = stringToColor(req.getParameter("plotBg"));
 
-        if (graph==null)    graph = createGraph();
+        if (graph == null)    graph = createGraph();
         graph.setBackgroundPaint(graphBg);
         Plot p = graph.getPlot();
         p.setBackgroundPaint(plotBg);
@@ -125,7 +126,7 @@ public abstract class Graph {
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
     public static Dimension safeDimension(int width, int height, int defaultWidth, int defaultHeight) {
-        if (width <= 0 || height <= 0 || width > MAX_AREA/height) {
+        if (width <= 0 || height <= 0 || width > MAX_AREA / height) {
             width = defaultWidth;
             height = defaultHeight;
         }
@@ -151,12 +152,12 @@ public abstract class Graph {
         if (req.checkIfModified(timestamp, rsp)) return;
 
         try {
-            BufferedImage image = render(req,null);
+            BufferedImage image = render(req, null);
             rsp.setContentType("image/png");
             ServletOutputStream os = rsp.getOutputStream();
             ImageIO.write(image, "PNG", os);
             os.close();
-        } catch(Error e) {
+        } catch (Error e) {
             /* OpenJDK on ARM produces an error like this in case of headless error
                 Caused by: java.lang.Error: Probable fatal error:No fonts found.
                         at sun.font.FontManager.getDefaultPhysicalFont(FontManager.java:1088)
@@ -187,14 +188,14 @@ public abstract class Graph {
                         at hudson.tasks.test.TestResultProjectAction.doTrend(TestResultProjectAction.java:97)
                         ... 37 more
              */
-            if(e.getMessage().contains("Probable fatal error:No fonts found")) {
-                rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
+            if (e.getMessage().contains("Probable fatal error:No fonts found")) {
+                rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
                 return;
             }
             throw e; // otherwise let the caller deal with it
-        } catch(HeadlessException e) {
+        } catch (HeadlessException e) {
             // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
+            rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
         }
     }
 
@@ -205,9 +206,9 @@ public abstract class Graph {
         if (req.checkIfModified(timestamp, rsp)) return;
 
         ChartRenderingInfo info = new ChartRenderingInfo();
-        render(req,info);
+        render(req, info);
 
         rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
+        rsp.getWriter().println(ChartUtilities.getImageMap("map", info));
     }
 }

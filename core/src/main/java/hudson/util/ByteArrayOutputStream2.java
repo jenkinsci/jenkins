@@ -24,16 +24,16 @@ public class ByteArrayOutputStream2 extends ByteArrayOutputStream {
      * Reads the given {@link InputStream} completely into the buffer.
      */
     public void readFrom(InputStream is) throws IOException {
-        while(true) {
-            if(count==buf.length) {
+        while (true) {
+            if (count == buf.length) {
                 // reallocate
-                byte[] data = new byte[buf.length*2];
-                System.arraycopy(buf,0,data,0,buf.length);
+                byte[] data = new byte[buf.length * 2];
+                System.arraycopy(buf, 0, data, 0, buf.length);
                 buf = data;
             }
 
-            int sz = is.read(buf,count,buf.length-count);
-            if(sz<0)     return;
+            int sz = is.read(buf, count, buf.length - count);
+            if (sz < 0)     return;
             count += sz;
         }
     }

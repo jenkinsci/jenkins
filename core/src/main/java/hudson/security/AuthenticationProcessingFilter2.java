@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -46,12 +48,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  * Login filter with a change for Jenkins so that
  * we can pick up the hidden "from" form field defined in {@code login.jelly}
  * to send the user back to where he came from, after a successful authentication.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Restricted(NoExternalUse.class)
 public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
+    @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "This is a password parameter, not a password")
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
         // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
@@ -59,6 +62,7 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
         setPasswordParameter("j_password");
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "request.getSession(true) does in fact have a side effect")
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {

@@ -15,6 +15,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
@@ -46,7 +47,7 @@ public class ParametersTest {
     @Test
     public void parameterTypes() throws Exception {
         FreeStyleProject otherProject = j.createFreeStyleProject();
-        otherProject.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(otherProject);
 
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
@@ -66,36 +67,33 @@ public class ParametersTest {
 
         HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[input/@value='string']")).getParentNode();
         assertNotNull(element);
-        assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("string description", element.getParentNode().querySelector(".jenkins-form-description").getTextContent());
 
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
-        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
         element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
         assertNotNull(element);
-        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode().getNextSibling().getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("boolean description", element.getParentNode().getParentNode().querySelector(".jenkins-form-description").getTextContent());
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
-        System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
         assertTrue(booleanParameterInput.isChecked());
         assertEquals("boolean", element.getTextContent());
 
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("choice description", element.getParentNode().querySelector(".jenkins-form-description").getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='run']")).getParentNode();
         assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        assertEquals("run description", element.getParentNode().querySelector(".jenkins-form-description").getTextContent());
+        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
@@ -117,19 +115,20 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
+        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "name", "name")).get(0).getParentNode();
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
-        HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-description')]")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-label')]")).getTextContent());
+
+        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "name", "value").get(0);
+
+        HtmlOption opt = DomNodeUtil.selectSingleNode(choiceSelect, "option[@value='Choice <2>']");
         assertNotNull(opt);
-        assertEquals("Choice <2>", opt.asText());
+        assertEquals("Choice <2>", opt.asNormalizedText());
         opt.setSelected(true);
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
@@ -145,7 +144,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -162,7 +161,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -182,7 +181,7 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
         Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
         assertNotNull(sensitiveVars);
@@ -205,9 +204,7 @@ public class ParametersTest {
         HtmlForm form = page.getFormByName("parameters");
 
         j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        j.waitUntilNoActivity();
 
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
@@ -231,6 +228,7 @@ public class ParametersTest {
         wc.setThrowExceptionOnFailingStatusCode(true);
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
+        j.waitUntilNoActivity();
     }
 
     @Issue("SECURITY-353")
@@ -267,6 +265,7 @@ public class ParametersTest {
         collector.checkThat("parameters page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>"));
         collector.checkThat("parameters page should not leave param description unescaped", text, not(containsString("<param description>")));
     }
+
     static class MyMarkupFormatter extends MarkupFormatter {
         @Override
         public void translate(String markup, @NonNull Writer output) throws IOException {
