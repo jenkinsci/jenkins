@@ -27,21 +27,15 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <div align="right">
         <a href="rss" class="jenkins-button jenkins-button--transparent">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+            <l:icon src="symbol-rss" />
             <span>${%All}</span>
         </a>
         <a href="rss?level=SEVERE" class="jenkins-button jenkins-button--transparent">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+            <l:icon src="symbol-rss" />
             <span>${%SEVERE}</span>
         </a>
         <a href="rss?level=WARNING" class="jenkins-button jenkins-button--transparent">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+            <l:icon src="symbol-rss" />
             <span>${%WARNING}</span>
         </a>
     </div>
