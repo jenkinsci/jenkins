@@ -61,13 +61,13 @@
   }
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
 }
 
 .jenkins-button--primary {
-  color: var(--button-foreground--primary) !important;
+  color: var(--button-color--primary) !important;
   font-weight: 600;
   text-shadow: none;
 
@@ -118,7 +118,7 @@
 }
 
 @variants: {
-  destructive: #fc2125;
+  destructive: var(--red);
 }
 
 each(@variants, {
