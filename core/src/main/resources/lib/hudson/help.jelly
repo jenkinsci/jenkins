@@ -33,10 +33,10 @@ THE SOFTWARE.
       The tooltip to display
     </st:attribute>
     <st:attribute name="iconSize">
-      Icon size, available are: small, medium, large, xlarge 
+      Icon size, available are: small, medium, large, xlarge
     </st:attribute>
   </st:documentation>
-  <a href="${href}">
-    <l:helpIcon iconSize="${iconSize}" class="icon-help" tooltip="${tooltip}"/>
+  <a href="${attrs.href}" class="jenkins-help-button ${attrs.iconSize}" tooltip="${attrs.tooltip}">
+    ?
   </a>
 </j:jelly>

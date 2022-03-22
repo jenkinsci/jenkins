@@ -1,138 +1,114 @@
-@import '../abstracts/theme.less';
-
-#tasks {
-  margin-bottom: 20px;
-  display: inline-block;
-  width: 100%;
-}
-
-#tasks .task {
+#tasks,
+.subtasks {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  position: relative;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-.task.disabled {
-  opacity: 0.5;
-  background-color: transparent;
-}
-
-.task-link-wrapper {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 2px 0;
-}
-
-.task-link,
-.task-disabled-link {
-  display: inline-flex;
-  flex: 1;
-  align-items: center;
-  padding: 0.5rem 1rem 0.5rem 1.25rem;
-  max-width: 100%;
-}
-
-.task-link:link,
-.task-link:visited {
-  color: var(--link-dark-color);
-  text-decoration: none;
-  font-weight: 500;
-
-  &:hover,
-  &:focus {
-    text-decoration: none;
-    background-color: var(--task-link-bg-color--hover);
-  }
-
-  &:active {
-    text-decoration: none;
-    background-color: var(--task-link-bg-color--active);
-  }
-
-  &:focus {
-    outline: 0;
-    // Use a box-shadow instead of an outline or a border because the alternatives
-    // are hidden behind the parent container
-    box-shadow: inset 0 0 0 3px var(--focus);
-  }
-}
-
-.task-link--active {
-  background-color: var(--task-link-bg-color--active);
-  position: relative;
-
-  &::before {
-    position: absolute;
-    left: 0;
-    height: 100%;
-    content: '';
-    border-left: 4px solid var(--primary-hover);
-  }
-}
-
-.task-link--active:link,
-.task-link--active:visited {
-  &:hover,
-  &:focus {
-    background-color: var(--task-link-bg-color--active);
-  }
-}
-
-// Target only icons withink task link in order to keep backwards compatibility
-.task .task-icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  margin-right: 0.5rem;
-  width: 1.5rem;
-  height: 1.5rem;
-
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    color: var(--primary);
-  }
-}
-// Reset the margin for the icon links
-.task .task-icon-link img,
-.task img.task-icon-link {
-  margin: 0;
-  // Dimensions have !important to override inline styles set by <l:icon>
-  height: 1.5rem !important;
-  width: 1.5rem !important;
-}
-
-.task-link-text {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  display: inline-block;
+  flex-direction: column;
+  margin: 1.6rem 0 1.2rem 2rem;
+  gap: 5px;
 }
 
 .subtasks {
-  padding-left: 1.25rem;
-  width: 100%;
-}
+  margin-top: 5px;
+  margin-bottom: 0;
 
-.subtasks .task {
-  &:first-of-type {
-    border-top: 2px solid #eaeff2;
-  }
-
-  &:last-of-type {
-    border-bottom: 2px solid #eaeff2;
+  &:empty {
+    display: none;
   }
 }
-// Some styles should not be applied to tasks or subtasks in nested levels,
-// such as border values
-.subtasks .subtasks .task {
+
+#tasks .task {
+  margin: 0 0 0 -0.8rem;
+}
+
+#tasks .task .task-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.55rem 0.8rem;
+  gap: 0.75rem;
+  cursor: pointer;
+  z-index: 0;
+  font-weight: 500 !important;
+  font-size: 0.9rem;
+  color: var(--text-color) !important;
+  background: transparent;
+  outline: none;
   border: none;
+  text-decoration: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    border-radius: 10px;
+    opacity: 0;
+    transition: 0.2s ease;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    border-radius: 10px;
+    opacity: 0.05;
+    transition: 0.2s ease;
+    box-shadow: 0 0 0 10px transparent;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.05;
+    }
+  }
+
+  .task-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+
+    svg,
+    img {
+      width: 100% !important;
+      height: 100% !important;
+      color: var(--text-color);
+
+      * {
+        transition: stroke-width var(--standard-transition);
+      }
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.1;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 5px var(--text-color);
+    }
+  }
+
+  &--active {
+    font-weight: 600 !important;
+
+    svg * {
+      stroke-width: 38px;
+    }
+
+    &::before {
+      opacity: 0.1 !important;
+    }
+  }
 }

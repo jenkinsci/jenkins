@@ -171,7 +171,7 @@ THE SOFTWARE.
               </j:when>
 
               <j:otherwise>
-                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
+                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
