@@ -28,8 +28,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
       <l:task contextMenu="false" href="${it.upUrl}" icon="icon-up icon-md" title="${%Back to Project}"/>
-      <l:task contextMenu="false" href="${buildUrl.baseUrl}/" icon="icon-search icon-md" title="${%Status}"/>
-      <l:task href="${buildUrl.baseUrl}/changes" icon="icon-notepad icon-md" title="${%Changes}"/>
+      <l:task contextMenu="false" href="${buildUrl.baseUrl}/" icon="symbol-details" title="${%Status}"/>
+      <l:task href="${buildUrl.baseUrl}/changes" icon="symbol-changes" title="${%Changes}"/>
       <p:console-link/>
       <l:task href="${buildUrl.baseUrl}/configure" icon="symbol-settings" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
 </j:jelly>

@@ -72,7 +72,7 @@ public class NodeProvisionerTest {
      */
     static class Latch {
         /** Initial value */
-        public final CountDownLatch counter;
+        public final transient CountDownLatch counter;
         private final int init;
 
         Latch(int n) {
