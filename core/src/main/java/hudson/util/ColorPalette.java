@@ -36,16 +36,12 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
  * @author Kohsuke Kawaguchi
  */
 public class ColorPalette {
-    public static final Color RED = new Color(0xEF,0x29,0x29);
-    public static final Color YELLOW = new Color(0xFC,0xE9,0x4F);
-    public static final Color BLUE = new Color(0x72,0x9F,0xCF);
-    public static final Color GREY = new Color(0xAB,0xAB,0xAB);
-    public static final Color DARK_GREY = new Color(0x77,0x77,0x77);
+    public static final Color RED = new Color(0xcc, 0x00, 0x03);
+    public static final Color YELLOW = new Color(0xff, 0x98, 0x00);
+    public static final Color BLUE = new Color(0x13, 0X83, 0X47);
+    public static final Color GREY = new Color(0x96, 0x96, 0x96);
+    public static final Color DARK_GREY = new Color(0x33, 0x33, 0x33);
     public static final Color LIGHT_GREY = new Color(0xcc,0xcc,0xcc);
-    public static final Color MODERN_RED = new Color(204, 0, 3);
-    public static final Color MODERN_YELLOW = new Color(255, 152, 0);
-    public static final Color MODERN_GREEN = new Color(19, 131, 71);
-    public static final Color MODERN_DARK_GREY = new Color(51, 51, 51);
 
     /**
      * Color list usable for generating line charts.
