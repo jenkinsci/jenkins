@@ -46,7 +46,7 @@ THE SOFTWARE.
     <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
-    <st:attribute name="alt">alt</st:attribute>
+    <st:attribute name="alt">alt, adds invisible text suitable for screen-readers for symbols, sets the alt attribute for normal images</st:attribute>
   </st:documentation>
 
   <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
@@ -67,6 +67,7 @@ THE SOFTWARE.
       <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
         <j:arg value="${iconSrc.substring(7)}" />
         <j:arg value="${alt ?: ''}" />
+        <j:arg value="${tooltip ?: ''}" />
         <j:arg value="${iconMetadata.classSpec ?: ''}" />
       </j:invokeStatic>
       <j:out value="${icon}" />

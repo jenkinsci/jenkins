@@ -11,7 +11,7 @@
 
     <div class="tab">
         <a href="${href}" class="addTab" aria-label="${attrs.title}">
-            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-content-symbol.svg#ic_add_24px" />
+            <l:icon src="symbol-add" />
         </a>
     </div>
 </j:jelly>
