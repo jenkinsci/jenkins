@@ -170,10 +170,8 @@ public class ConsistentHashTest {
             throw exception;
         };
 
-        final RuntimeException e = assertThrows(RuntimeException.class, () -> {
-            ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
-            hash.add("foo");
-        });
+        ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
+        final RuntimeException e = assertThrows(RuntimeException.class, () -> hash.add("foo"));
         assertSame(exception, e);
     }
 

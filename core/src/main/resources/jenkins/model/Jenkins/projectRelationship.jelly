@@ -28,9 +28,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Project Relationship}">
+    <l:app-bar title="${%Project Relationship}">
+      <a class="jenkins-button" tooltip="${%Help}" href="projectRelationship-help">
+        <l:icon src="symbol-help-circle" />
+      </a>
+    </l:app-bar>
+
     <st:include page="sidepanel.jelly" />
+
     <l:main-panel>
-      <h1><l:icon class="icon-search icon-xlg"/>${%Project Relationship}</h1>
       <form action="projectRelationship" method="get">
         <table width="100%">
           <tr>
@@ -48,7 +54,6 @@ THE SOFTWARE.
           <tr>
             <td colspan="3" style="text-align:right">
               <f:submit value="${%Compare}" />
-              <a href="projectRelationship-help"><l:icon class="icon-help icon-sm"/></a>
             </td>
           </tr>
 

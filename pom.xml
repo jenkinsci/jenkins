@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.71</version>
+    <version>1.72</version>
     <relativePath />
   </parent>
 
@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.337</revision>
+    <revision>2.340</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,7 +90,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.12</remoting.version>
+    <remoting.version>4.13</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.3.1</mockito.version>
+    <mockito.version>4.4.0</mockito.version>
     <spotless.version>2.21.0</spotless.version>
   </properties>
 
@@ -214,7 +214,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing</doclint>
+            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -588,6 +588,8 @@ THE SOFTWARE.
                 <lineSeparator>\n</lineSeparator>
                 <expandEmptyElements>false</expandEmptyElements>
                 <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <sortDependencies>scope,groupId,artifactId</sortDependencies>
+                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
               </sortPom>
             </pom>
           </configuration>
@@ -821,20 +823,25 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>jdk11</id>
+      <id>jdk-17-and-above</id>
       <activation>
-        <jdk>11</jdk>
+        <jdk>[17,)</jdk>
       </activation>
       <properties>
-        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
-        <doclint>none</doclint>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- release is needed for reliable cross compilation. It is supported
-        starting JDK 9, but as the only earlier version we support is 8, it would
-        be either compiled by javac from 8 or one from a newer compiler that
-        correctly handle the release flag. This will replace both source and target
-        once we drop support for JDK 8 that only recognize source and target. -->
-        <maven.compiler.release>${java.level}</maven.compiler.release>
+        <!--
+          Animal Sniffer does not work on Java 17, but we cannot remove it from our configuration
+          entirely until we drop support for Java 8. As a temporary solution, we skip it when
+          running on Java 17. When JENKINS-54842 is resolved, this can be deleted.
+        -->
+        <animal.sniffer.skip>true</animal.sniffer.skip>
+
+        <!--
+          Spotless requires custom arguments to be added to .mvn/jvm.config when running on Java 17,
+          but we cannot add those custom arguments until we drop support for Java 8. As a temporary
+          workaround, we skip Spotless when running on Java 17. When JENKINS-68015 is resolved, this
+          can be deleted.
+        -->
+        <spotless.check.skip>true</spotless.check.skip>
       </properties>
     </profile>
   </profiles>

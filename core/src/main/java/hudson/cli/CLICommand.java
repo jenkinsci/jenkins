@@ -41,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
@@ -406,8 +407,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public final String getSingleLineSummary() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printSingleLineUsage(out);
+        Charset charset;
         try {
-            return out.toString(getClientCharset().name());
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -420,8 +429,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public final String getUsage() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printUsage(out);
+        Charset charset;
         try {
-            return out.toString(getClientCharset().name());
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -433,9 +450,17 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Restricted(NoExternalUse.class)
     public final String getLongDescription() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Charset charset;
+        try {
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         PrintStream ps;
         try {
-            ps = new PrintStream(out, false, getClientCharset().name());
+            ps = new PrintStream(out, false, charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -443,7 +468,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         printUsageSummary(ps);
         ps.close();
         try {
-            return out.toString(getClientCharset().name());
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -476,7 +501,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.encoding = encoding;
     }
 
-    protected @NonNull Charset getClientCharset() {
+    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }
