@@ -3,6 +3,7 @@ package jenkins.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
 import hudson.model.DependencyGraph;
@@ -12,7 +13,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class JenkinsFutureDependencyGraphTest {
 
@@ -47,13 +49,13 @@ public class JenkinsFutureDependencyGraphTest {
     @Issue("JENKINS-67237")
     @Test
     public void testStartRebuildOfDependencyGraphWhileAlreadyRebuilding() throws InterruptedException, ExecutionException  {
-        ObservableAndControllableDependencyGraph graph = new ObservableAndControllableDependencyGraph();
-        Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(graph);
+        RebuildDependencyGraphController rebuildDependencyGraphController = new RebuildDependencyGraphController();
+        Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(rebuildDependencyGraphController);
 
 
         Future<DependencyGraph> firstFutureDependencyGraph = jenkins.rebuildDependencyGraphAsync();
         //Wait until rebuild has started
-        while (graph.getNumberOfStartedBuilds() < 1) {
+        while (rebuildDependencyGraphController.getNumberOfStartedBuilds() < 1) {
             Thread.sleep(500);
         }
 
@@ -61,12 +63,12 @@ public class JenkinsFutureDependencyGraphTest {
 
         assertThat("Starting a new rebuild of the dependency graph while already rebuilding should result in two distinct future dependency graphs, but didn't.", firstFutureDependencyGraph, is(not(secondFutureDependencyGraph)));
 
-        graph.setLetBuildFinish(true);
+        rebuildDependencyGraphController.setLetBuildFinish(true);
         //Wait for both builds to complete
         firstFutureDependencyGraph.get();
         secondFutureDependencyGraph.get();
 
-        assertThat("Two dependency graphs should have been built, but weren't.", graph.getNumberOfFinishedBuilds(),  is(2));
+        assertThat("Two dependency graphs should have been built, but weren't.", rebuildDependencyGraphController.getNumberOfFinishedBuilds(),  is(2));
 
 
     }
@@ -76,13 +78,13 @@ public class JenkinsFutureDependencyGraphTest {
     @Issue("JENKINS-67237")
     @Test
     public void testStartRebuildOfDependencyGraphWhileAlreadyRebuildingAndAnotherOneScheduled() throws InterruptedException, ExecutionException  {
-        ObservableAndControllableDependencyGraph graph = new ObservableAndControllableDependencyGraph();
-        Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(graph);
+        RebuildDependencyGraphController rebuildDependencyGraphController = new RebuildDependencyGraphController();
+        Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(rebuildDependencyGraphController);
 
 
         jenkins.rebuildDependencyGraphAsync();
         //Wait until rebuild has started
-        while (graph.getNumberOfStartedBuilds() < 1) {
+        while (rebuildDependencyGraphController.getNumberOfStartedBuilds() < 1) {
             Thread.sleep(500);
         }
 
@@ -92,53 +94,64 @@ public class JenkinsFutureDependencyGraphTest {
         assertThat("Two future dependency graphs that were scheduled in short succession should be equal, but weren't", secondFutureDependencyGraph, is(thirdFutureDependencyGraph));
         assertThat("Last scheduled future dependency graph should have been returned, but wasn't.", jenkins.getFutureDependencyGraph(), is(thirdFutureDependencyGraph));
 
-        graph.setLetBuildFinish(true);
+        rebuildDependencyGraphController.setLetBuildFinish(true);
         //Wait for builds to complete
         thirdFutureDependencyGraph.get();
 
-        assertThat("Two dependency graphs should have been built, but weren't.", graph.getNumberOfFinishedBuilds(), is(2));
+        assertThat("Two dependency graphs should have been built, but weren't.", rebuildDependencyGraphController.getNumberOfFinishedBuilds(), is(2));
     }
 
 
-
-
-    private Jenkins mockJenkinsWithControllableDependencyGraph(ObservableAndControllableDependencyGraph observableAndControllableDependencyGraph) {
+    private Jenkins mockJenkinsWithControllableDependencyGraph(RebuildDependencyGraphController rebuildDependencyGraphController) {
         Jenkins mockedJenkins = spy(j.jenkins);
-        Mockito.when(mockedJenkins.createNewDependencyGraph()).thenReturn(observableAndControllableDependencyGraph);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+
+                rebuildDependencyGraphController.increaseNumberOfStartedBuilds();
+                if (!rebuildDependencyGraphController.isLetBuildFinish()) {
+                    //NOOP
+                }
+                invocation.callRealMethod();
+
+                rebuildDependencyGraphController.increaseNumberOfFinishedBuilds();
+                return null;
+            }
+        }).when(mockedJenkins).rebuildDependencyGraph();
+
         return mockedJenkins;
     }
 
-    /**
-     * The build state of this dependency graph is observable and controllable.
-     */
-    class ObservableAndControllableDependencyGraph extends DependencyGraph {
+    class RebuildDependencyGraphController {
 
         private volatile boolean letBuildFinish = false;
         private volatile int numberOfStartedBuilds = 0;
         private volatile int numberOfFinishedBuilds = 0;
 
-        @Override
-        public void build() {
-            numberOfStartedBuilds++;
-            while (!letBuildFinish) {
-                //NOOP
-            }
-            numberOfFinishedBuilds++;
+        public boolean isLetBuildFinish() {
+            return letBuildFinish;
         }
 
-
-
-        public void setLetBuildFinish(boolean v) {
-            letBuildFinish = v;
+        public void setLetBuildFinish(boolean letBuildFinish) {
+            this.letBuildFinish = letBuildFinish;
         }
 
         public int getNumberOfStartedBuilds() {
             return numberOfStartedBuilds;
         }
 
+        public void increaseNumberOfStartedBuilds() {
+            this.numberOfStartedBuilds++;
+        }
+
         public int getNumberOfFinishedBuilds() {
             return numberOfFinishedBuilds;
         }
 
+        public void increaseNumberOfFinishedBuilds() {
+            this.numberOfFinishedBuilds++;
+        }
+
     }
+
 }
