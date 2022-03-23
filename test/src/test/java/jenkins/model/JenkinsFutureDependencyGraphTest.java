@@ -26,7 +26,7 @@ public class JenkinsFutureDependencyGraphTest {
         Jenkins jenkins = j.jenkins;
 
         DependencyGraph resultingGraph = jenkins.getFutureDependencyGraph().get();
-        assertThat("Completed future dependency graph should be equal to the stored dependency graph, but wasn't.", jenkins.getDependencyGraph(), is(resultingGraph));
+        assertThat("Completed future dependency graph should be empty, but wasn't.", resultingGraph, is(DependencyGraph.EMPTY));
     }
 
 

@@ -498,7 +498,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient volatile DependencyGraph dependencyGraph;
     private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
-    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph = CompletableFuture.completedFuture(DependencyGraph.EMPTY);
     private transient Object dependencyGraphLock = new Object();
 
     /**
@@ -3922,17 +3922,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpCancelDependencyGraphCalculation() {
-        LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
-        if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
-            synchronized (dependencyGraphLock) {
+        synchronized (dependencyGraphLock) {
+            LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+            if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
                 scheduledFutureDependencyGraph.cancel(true);
             }
-        }
-        if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
-            synchronized (dependencyGraphLock) {
+            if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
                 calculatingFutureDependencyGraph.cancel(true);
             }
         }
+
+
     }
 
     public Object getDynamic(String token) {
@@ -4904,6 +4904,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
 
+
     public Future<DependencyGraph> getFutureDependencyGraph() {
         synchronized (dependencyGraphLock) {
             //Scheduled future will be the most recent one --> Return
@@ -4911,11 +4912,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return scheduledFutureDependencyGraph;
             }
             //Calculating future will be the most recent one --> Return
-            if (calculatingFutureDependencyGraph != null) {
-                return calculatingFutureDependencyGraph;
-            }
-            //No scheduled or calculating future --> Already completed dependency graph is the most recent one
-            return CompletableFuture.completedFuture(dependencyGraph);
+            return calculatingFutureDependencyGraph;
         }
     }
 
@@ -4946,7 +4943,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
         synchronized (dependencyGraphLock) {
-            // Collects calls to this method to avoid unnecessary calculation of the dependency graph
+            // Collect calls to this method to avoid unnecessary calculation of the dependency graph
             if (scheduledFutureDependencyGraph != null) {
                 return scheduledFutureDependencyGraph;
             }
@@ -4958,24 +4955,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
-
-            //Wait for the currently running calculation to finish
-            while (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
-                Thread.sleep(100);
-            }
-
-            // Scheduled future becomes the currently calculating future
             synchronized (dependencyGraphLock) {
+                //Wait for the currently running calculation to finish
+                calculatingFutureDependencyGraph.get();
+
+                // Scheduled future becomes the currently calculating future
                 calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
                 scheduledFutureDependencyGraph = null;
             }
 
             rebuildDependencyGraph();
-
-            // Mark that we finished calculating the dependency graph
-            synchronized (dependencyGraphLock) {
-                calculatingFutureDependencyGraph = null;
-            }
             return dependencyGraph;
         }, delay, unit);
     }
