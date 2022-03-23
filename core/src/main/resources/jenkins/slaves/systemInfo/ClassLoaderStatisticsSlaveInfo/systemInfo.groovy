@@ -7,25 +7,25 @@ if (my instanceof SlaveComputer) {
 
     table(class: 'bigtable') {
         tr {
-            th _('Loading Type')
-            th _('Time (s)')
-            th _('Count')
+            th gettext('Loading Type')
+            th gettext('Time (s)')
+            th gettext('Count')
         }
         tr {
-            td _('Classes')
+            td gettext('Classes')
             td(style: right) {text(fmt.format(c.classLoadingTime / 1000000000))}
             td(style: right) {
                 text(c.classLoadingCount)
                 def classLoadingPrefetchCacheCount = c.classLoadingPrefetchCacheCount
                 if (classLoadingPrefetchCacheCount != -1) {
-                    text(_(' (prefetch cache: '))
+                    text(gettext(' (prefetch cache: '))
                     text(classLoadingPrefetchCacheCount)
-                    text(_(')'))
+                    text(gettext(')'))
                 }
             }
         }
         tr {
-            td _('Resources')
+            td gettext('Resources')
             td(style: right) {text(fmt.format(c.resourceLoadingTime / 1000000000))}
             td(style: right) {text(c.resourceLoadingCount)}
         }

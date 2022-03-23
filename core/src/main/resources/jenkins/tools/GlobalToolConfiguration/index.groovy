@@ -10,15 +10,15 @@ def st=namespace("jelly:stapler")
 l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
     l.side_panel {
         l.tasks {
-            l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"symbol-settings", href:"${rootURL}/manage", title:_("Manage Jenkins"))
+            l.task(icon:"icon-up icon-md", href:rootURL+'/', title:gettext("Back to Dashboard"))
+            l.task(icon:"symbol-settings", href:"${rootURL}/manage", title:gettext("Manage Jenkins"))
         }
     }
     l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
         div(class:"behavior-loading") {
-            l.spinner(text: _("LOADING"))
+            l.spinner(text: gettext("LOADING"))
         }
 
         f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
@@ -32,8 +32,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
 
             l.isAdmin() {
                 f.bottomButtonBar {
-                    f.submit(value: _("Save"))
-                    f.apply(value: _("Apply"))
+                    f.submit(value: gettext("Save"))
+                    f.apply(value: gettext("Apply"))
                 }
             }
         }

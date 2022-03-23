@@ -26,7 +26,7 @@ package jenkins.model.GlobalBuildDiscarderConfiguration
 
 f = namespace(lib.FormTagLib)
 
-f.section(title: _("Global Build Discarders")) {
+f.section(title: gettext("Global Build Discarders")) {
     f.block() {
         f.repeatableHeteroProperty(field: "configuredBuildDiscarders", hasHeader: true, oneEach: true)
     }

@@ -27,7 +27,7 @@ package jenkins.model.ArtifactManagerConfiguration
 f = namespace(lib.FormTagLib)
 
 if (!jenkins.model.ArtifactManagerFactoryDescriptor.all().isEmpty()) {
-    f.section(title: _("Artifact Management for Builds")) {
+    f.section(title: gettext("Artifact Management for Builds")) {
         f.block() {
             f.repeatableHeteroProperty(field: "artifactManagerFactories", hasHeader: true)
         }

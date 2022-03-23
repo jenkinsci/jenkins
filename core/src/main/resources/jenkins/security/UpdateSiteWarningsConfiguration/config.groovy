@@ -41,26 +41,26 @@ def printEntry(warning, title, checked) {
     }
 }
 
-f.section(title:_("Hidden security warnings")) {
+f.section(title:gettext("Hidden security warnings")) {
 
-    f.advanced(title: _("Security warnings"), align:"left") {
+    f.advanced(title: gettext("Security warnings"), align:"left") {
         f.block {
-            text(_("blurb"))
+            text(gettext("blurb"))
         }
-        f.entry(title: _("Security warnings"),
+        f.entry(title: gettext("Security warnings"),
                 help: '/descriptorByName/UpdateSiteWarningsConfiguration/help') {
             table(width:"100%") {
 
                 descriptor.applicableWarnings.each { warning ->
                     if (warning.type == hudson.model.UpdateSite.Warning.Type.CORE) {
                         printEntry(warning,
-                                _("warning.core", warning.message),
+                                gettext("warning.core", warning.message),
                                 !descriptor.isIgnored(warning))
                     }
                     else if (warning.type == hudson.model.UpdateSite.Warning.Type.PLUGIN) {
                         def plugin = descriptor.getPlugin(warning)
                         printEntry(warning,
-                                _("warning.plugin", plugin.displayName, warning.message),
+                                gettext("warning.plugin", plugin.displayName, warning.message),
                                 !descriptor.isIgnored(warning))
                     }
                 }

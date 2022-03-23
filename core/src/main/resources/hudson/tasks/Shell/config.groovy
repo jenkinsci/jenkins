@@ -24,17 +24,17 @@
 package hudson.tasks.Shell
 f=namespace(lib.FormTagLib)
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
+f.entry(title:gettext("Command"),description:gettext("description",rootURL)) {
     f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': "mode: 'text/x-sh'")
 }
 
 f.advanced() {
-    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
+    f.entry(title:gettext("Exit code to set build unstable"), field: "unstableReturn") {
         f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
     }
 
     if (instance?.configuredLocalRules || descriptor.applicableLocalRules) {
-        f.entry(title: _("filterRules")) {
+        f.entry(title: gettext("filterRules")) {
             f.hetero_list(
                     name: "configuredLocalRules",
                     hasHeader: true,
@@ -42,7 +42,7 @@ f.advanced() {
                     disableDragAndDrop: true,
                     descriptors: descriptor.applicableLocalRules,
                     items: instance?.configuredLocalRules,
-                    addCaption: _("addFilterRule")
+                    addCaption: gettext("addFilterRule")
             )
         }
     }

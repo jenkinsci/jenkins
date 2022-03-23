@@ -6,7 +6,7 @@ def l = namespace(lib.LayoutTagLib)
 def f = namespace(lib.FormTagLib)
 
 l.layout(permission: Jenkins.ADMINISTER) {
-    def title = _("title", my.shortName)
+    def title = gettext("title", my.shortName)
     l.header(title:title)
     l.main_panel {
         h1 {
@@ -14,9 +14,9 @@ l.layout(permission: Jenkins.ADMINISTER) {
             text(" ")
             text(title)
         }
-        p { raw _("msg",my.shortName) }
+        p { raw gettext("msg",my.shortName) }
         f.form(method:"post",action:"doUninstall") {
-            f.submit(value:_("Yes"))
+            f.submit(value:gettext("Yes"))
         }
     }
 }

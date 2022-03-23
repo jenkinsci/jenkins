@@ -28,7 +28,7 @@ def t = namespace(lib.JenkinsTagLib)
 
 l.layout {
     l.main_panel() {
-        h1 _("Log: ${my.displayName}")
+        h1 gettext("Log: ${my.displayName}")
 
         if (my.isFixingActive()) {
             pre(id: "out")

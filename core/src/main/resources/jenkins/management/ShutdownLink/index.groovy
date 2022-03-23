@@ -9,8 +9,8 @@ def st = namespace("jelly:stapler")
 l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
     l.side_panel {
         l.tasks {
-            l.task(icon: "icon-up icon-md", href: rootURL + '/', title: _("Back to Dashboard"))
-            l.task(icon: "symbol-settings", href: "${rootURL}/manage", title: _("Manage Jenkins"))
+            l.task(icon: "icon-up icon-md", href: rootURL + '/', title: gettext("Back to Dashboard"))
+            l.task(icon: "symbol-settings", href: "${rootURL}/manage", title: gettext("Manage Jenkins"))
         }
     }
     l.main_panel {
@@ -30,7 +30,7 @@ l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
 
 
             f.bottomButtonBar {
-                f.submit(value: _(app.isQuietingDown()
+                f.submit(value: gettext(app.isQuietingDown()
                         ? Messages.ShutdownLink_ShutDownReason_update()
                         : Messages.ShutdownLink_DisplayName_prepare()))
             }
@@ -39,7 +39,7 @@ l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
         if (app.isQuietingDown()) {
             f.form(method: "post", name: "cancelShutdown", action: "cancel") {
                 f.bottomButtonBar {
-                    f.submit(value: _(Messages.ShutdownLink_DisplayName_cancel()))
+                    f.submit(value: gettext(Messages.ShutdownLink_DisplayName_cancel()))
                 }
             }
         }

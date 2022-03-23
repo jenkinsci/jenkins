@@ -31,11 +31,11 @@ dl {
         a(name: "resource-root-url")
         l.isAdmin() {
           form(method: "post", action: "${rootURL}/${my.url}/act") {
-              f.submit(name: 'redirect', value: _("Configure resource root URL"))
-              f.submit(name: 'dismiss', value: _("Dismiss"))
+              f.submit(name: 'redirect', value: gettext("Configure resource root URL"))
+              f.submit(name: 'dismiss', value: gettext("Dismiss"))
             }
         }
 
-        raw(_("blurb"))
+        raw(gettext("blurb"))
     }
 }

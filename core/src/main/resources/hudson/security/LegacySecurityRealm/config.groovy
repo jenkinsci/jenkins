@@ -6,9 +6,9 @@ import jenkins.model.Jenkins
 
 def f = namespace(lib.FormTagLib)
 
-f.entry(title: _('Unprotected URLs')) {
+f.entry(title: gettext('Unprotected URLs')) {
     p(class: "jenkins-form-description") {
-        _('blurb')
+        gettext('blurb')
     }
     ul {
         for (def action : Jenkins.get().getActions().sort { x, y -> x.getUrlName() <=> y.getUrlName() }) {
@@ -22,9 +22,9 @@ f.entry(title: _('Unprotected URLs')) {
                     br()
                     PluginWrapper whichPlugin = Jenkins.get().getPluginManager().whichPlugin(action.getClass())
                     if (whichPlugin == null) {
-                        text(_("byCore"))
+                        text(gettext("byCore"))
                     } else {
-                        raw(_("byPlugin", whichPlugin.getDisplayName(), whichPlugin.getUrl()))
+                        raw(gettext("byPlugin", whichPlugin.getDisplayName(), whichPlugin.getUrl()))
                     }
                 }
             }

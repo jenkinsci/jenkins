@@ -43,18 +43,18 @@ div(class: "alert alert-danger", role: "alert") {
     l.isAdmin() {
         form(method: "post", action: "${rootURL}/${my.url}/forward") {
             if (!pluginWarnings.isEmpty()) {
-                f.submit(name: 'fix', value: _("pluginManager.link"))
+                f.submit(name: 'fix', value: gettext("pluginManager.link"))
             }
-            f.submit(name: 'configure', value: _("configureSecurity.link"))
+            f.submit(name: 'configure', value: gettext("configureSecurity.link"))
         }
     }
 
-    text(_("blurb"))
+    text(gettext("blurb"))
 
     if (!coreWarnings.isEmpty()) {
         dl {
             dt {
-                text(_("coreTitle", jenkins.model.Jenkins.version))
+                text(gettext("coreTitle", jenkins.model.Jenkins.version))
             }
             listWarnings(coreWarnings)
         }
@@ -63,7 +63,7 @@ div(class: "alert alert-danger", role: "alert") {
         dl {
             pluginWarnings.each { plugin, warnings ->
                 dt {
-                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, rel: 'noopener noreferrer', target: "_blank")
+                    a(gettext("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, rel: 'noopener noreferrer', target: "_blank")
                 }
                 listWarnings(warnings)
             }
@@ -71,6 +71,6 @@ div(class: "alert alert-danger", role: "alert") {
     }
 
     if (my.hasApplicableHiddenWarnings()) {
-        text(_("more"))
+        text(gettext("more"))
     }
 }

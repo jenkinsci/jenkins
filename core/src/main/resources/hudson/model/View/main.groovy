@@ -4,7 +4,7 @@ t=namespace(lib.JenkinsTagLib)
 st=namespace("jelly:stapler")
 
 if (items == null) {
-    p(_('broken'))
+    p(gettext('broken'))
 } else if (items.isEmpty()) {
     if (app.items.size() != 0) {
         set("views",my.owner.views)

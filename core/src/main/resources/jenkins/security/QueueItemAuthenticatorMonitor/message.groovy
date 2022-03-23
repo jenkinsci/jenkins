@@ -29,36 +29,36 @@ def f = namespace(lib.FormTagLib)
 div(class: "alert alert-warning", role: "alert") {
 
     form(method: "post", action: "${rootURL}/${my.url}/act") {
-        f.submit(name: 'redirect', value: _("Learn more..."))
-        f.submit(name: 'dismiss', value: _("Dismiss"))
+        f.submit(name: 'redirect', value: gettext("Learn more..."))
+        f.submit(name: 'dismiss', value: gettext("Dismiss"))
     }
 
-    text(_("blurb"))
+    text(gettext("blurb"))
 
     ul(style: "list-style-type: none;") {
         if (my.queueItemAuthenticatorPresent) {
-            li(raw(_("queueItemAuthenticatorPresent")))
+            li(raw(gettext("queueItemAuthenticatorPresent")))
 
 
             if (my.queueItemAuthenticatorConfigured) {
-                li(raw(_("queueItemAuthenticatorConfigured")))
+                li(raw(gettext("queueItemAuthenticatorConfigured")))
 
 
                 if (my.anyBuildLaunchedAsSystemWithAuthenticatorPresent) {
-                    li(raw(_("anyBuildLaunchedAsSystem", rootURL)))
+                    li(raw(gettext("anyBuildLaunchedAsSystem", rootURL)))
                     form(method: "post", action: "${rootURL}/${my.url}/act") {
-                        f.submit(name: 'reset', value: _("Reset"))
+                        f.submit(name: 'reset', value: gettext("Reset"))
                     }
                 }
                 // else: This monitor will not be displayed
 
 
             } else {
-                li(raw(_("noQueueItemAuthenticatorConfigured", rootURL)))
+                li(raw(gettext("noQueueItemAuthenticatorConfigured", rootURL)))
             }
 
         } else {
-            li(raw(_("noQueueItemAuthenticatorPresent")))
+            li(raw(gettext("noQueueItemAuthenticatorPresent")))
         }
 
     }

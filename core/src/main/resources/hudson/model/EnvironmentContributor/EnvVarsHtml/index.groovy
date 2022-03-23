@@ -5,9 +5,9 @@ import hudson.scm.SCM
 def st = namespace("jelly:stapler")
 def l = namespace(lib.LayoutTagLib)
 
-l.layout(title: _("Available Environmental Variables"), type: 'one-column') {
+l.layout(title: gettext("Available Environmental Variables"), type: 'one-column') {
     l.main_panel {
-        p _("blurb")
+        p gettext("blurb")
 
         dl {
             EnvironmentContributor.all().each { e -> st.include(it:e, page:"buildEnv", optional:true) }

@@ -28,7 +28,7 @@ import jenkins.security.QueueItemAuthenticatorDescriptor
 f=namespace(lib.FormTagLib)
 
 if (!QueueItemAuthenticatorDescriptor.all().isEmpty()) {
-    f.section(title:_("Access Control for Builds")) {
+    f.section(title:gettext("Access Control for Builds")) {
         f.block() {
             f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
         }

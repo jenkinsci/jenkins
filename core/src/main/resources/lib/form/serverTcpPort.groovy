@@ -16,12 +16,12 @@ def f = namespace(lib.FormTagLib)
 def type = "${field}.type"
 
 div(name: field) {
-    f.radio(name: type, value: "fixed", title: _("Fixed"), id: "radio-${field}-fixed", checked: port > 0) {
-        input(type: "number", class: "jenkins-input", name: "value", id: "${field}Id", placeholder: _("Port"),
+    f.radio(name: type, value: "fixed", title: gettext("Fixed"), id: "radio-${field}-fixed", checked: port > 0) {
+        input(type: "number", class: "jenkins-input", name: "value", id: "${field}Id", placeholder: gettext("Port"),
                 value: port > 0 ? port : null, min: 0, max: 65535, step: 1)
     }
 
-    f.radio(name: type, value: "random", title: _("Random"), id: "radio-${field}-random", checked: port == 0)
+    f.radio(name: type, value: "random", title: gettext("Random"), id: "radio-${field}-random", checked: port == 0)
 
-    f.radio(name: type, value: "disable", title: _("Disable"), id: "radio-${field}-disable", checked: port == -1)
+    f.radio(name: type, value: "disable", title: gettext("Disable"), id: "radio-${field}-disable", checked: port == -1)
 }

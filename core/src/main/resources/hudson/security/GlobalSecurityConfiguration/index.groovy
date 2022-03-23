@@ -19,42 +19,42 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
 
         p()
         div(class:"behavior-loading") {
-            l.spinner(text: _("LOADING"))
+            l.spinner(text: gettext("LOADING"))
         }
         f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             set("instance",my)
             set("descriptor", my.descriptor)
 
-            f.section(title:_("Authentication")) {
+            f.section(title:gettext("Authentication")) {
                 f.entry() {
-                    f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
+                    f.checkbox(title:gettext("Disable remember me"), field: "disableRememberMe")
                 }
 
-                f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
+                f.descriptorRadioList(title:gettext("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
 
-                f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
+                f.descriptorRadioList(title:gettext("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
-            f.section(title: _("Markup Formatter")) {
-                f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
+            f.section(title: gettext("Markup Formatter")) {
+                f.dropdownDescriptorSelector(title:gettext("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
             }
 
-            f.section(title: _("Agents")) {
-                f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
+            f.section(title: gettext("Agents")) {
+                f.entry(title: gettext("TCP port for inbound agents"), field: "slaveAgentPort") {
                     if (my.slaveAgentPortEnforced) {
                         if (my.slaveAgentPort == -1) {
-                            text(_("slaveAgentPortEnforcedDisabled"))
+                            text(gettext("slaveAgentPortEnforcedDisabled"))
                         } else if (my.slaveAgentPort == 0) {
-                            text(_("slaveAgentPortEnforcedRandom"))
+                            text(gettext("slaveAgentPortEnforcedRandom"))
                         } else {
-                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
+                            text(gettext("slaveAgentPortEnforced", my.slaveAgentPort))
                         }
                     } else {
                         f.serverTcpPort()
                     }
                 }
-                f.advanced(title: _("Agent protocols"), align:"left") {
-                    f.entry(title: _("Agent protocols")) {
+                f.advanced(title: gettext("Agent protocols"), align:"left") {
+                    f.entry(title: gettext("Agent protocols")) {
                         def agentProtocols = my.agentProtocols
                         div() {
                             for (AgentProtocol p : AgentProtocol.all()) {
@@ -70,7 +70,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                                             st.include(from:p, page: "description", optional:true)
                                             if (p.deprecated) {
                                               br()
-                                              text(b(_("Deprecated. ")))
+                                              text(b(gettext("Deprecated. ")))
                                               st.include(from:p, page: "deprecationCause", optional:true)
                                             }
                                         }
@@ -92,7 +92,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
 
             l.isAdmin() {
                 f.bottomButtonBar {
-                    f.submit(value: _("Save"))
+                    f.submit(value: gettext("Save"))
                     f.apply()
                 }
             }

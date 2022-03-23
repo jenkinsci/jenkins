@@ -27,32 +27,32 @@ def f = namespace(lib.FormTagLib)
 
 if (!my.isDone()) {
     div(class:"alert alert-danger") {
-        raw _("pleaseRekeyAsap", app.rootDir, my.url)
+        raw gettext("pleaseRekeyAsap", app.rootDir, my.url)
     }
 }
 
 if (my.isFixingActive()) {
     div(class:"alert alert-info") {
-        raw _("rekeyInProgress", my.url)
+        raw gettext("rekeyInProgress", my.url)
     }
 } else if (my.logFile.exists()) {
     if (my.isDone()) {
         div(class:"alert alert-info") {
-            raw _("rekeySuccessful", my.url)
+            raw gettext("rekeySuccessful", my.url)
         }
     } else {
         div(class:"alert alert-warning") {
-            raw _("rekeyHadProblems", my.url)
+            raw gettext("rekeyHadProblems", my.url)
         }
     }
 }
 
 form(method: "post", action: "${rootURL}/${my.url}/scan", name:"rekey") {
-    f.submit(name: "background", value:_("Re-key in background now"))
+    f.submit(name: "background", value:gettext("Re-key in background now"))
     if (my.isScanOnBoot()) {
-        input(type: "button", class: "yui-button", disabled: "true", value:_("Re-keying currently scheduled during the next startup"))
+        input(type: "button", class: "yui-button", disabled: "true", value:gettext("Re-keying currently scheduled during the next startup"))
     } else {
-        f.submit(name: "schedule", value:_("Schedule a re-key during the next startup"))
+        f.submit(name: "schedule", value:gettext("Schedule a re-key during the next startup"))
     }
-    f.submit(name: "dismiss", value:_("Dismiss"))
+    f.submit(name: "dismiss", value:gettext("Dismiss"))
 }

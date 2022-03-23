@@ -10,17 +10,17 @@ SlowTriggerAdminMonitor tam = my
 dl {
     div(class: "alert alert-warning") {
         form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear") {
-            input(name: "clear", type: "submit", value: _("Dismiss"), class: "submit-button primary")
+            input(name: "clear", type: "submit", value: gettext("Dismiss"), class: "submit-button primary")
         }
 
-        text(_("blurb"))
+        text(gettext("blurb"))
 
         table(class: "pane sortable bigtable", width: "100%") {
             tr {
-                th(_("Trigger"))
-                th(_("Most Recent Occurrence"))
-                th(_("Most Recently Occurring Job"))
-                th(_("Duration"))
+                th(gettext("Trigger"))
+                th(gettext("Most Recent Occurrence"))
+                th(gettext("Most Recently Occurring Job"))
+                th(gettext("Duration"))
             }
 
             tam.errors.each { trigger, val ->

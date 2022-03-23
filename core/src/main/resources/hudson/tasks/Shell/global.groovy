@@ -24,8 +24,8 @@
 package hudson.tasks.Shell
 f=namespace(lib.FormTagLib)
 
-f.section(title:_("Shell")) {
-    f.entry(field: 'shell', title:_("Shell executable")) {
+f.section(title:gettext("Shell")) {
+    f.entry(field: 'shell', title:gettext("Shell executable")) {
         f.textbox()
     }
 }

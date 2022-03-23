@@ -11,9 +11,9 @@ l.layout {
         h1 {
             l.icon(class: 'icon-error icon-xlg')
             text(" ")
-            text(_("Error"))
+            text(gettext("Error"))
         }
-        p(_("msg"))
+        p(gettext("msg"))
         pre(Functions.printThrowable(my.cause))
     }
 }

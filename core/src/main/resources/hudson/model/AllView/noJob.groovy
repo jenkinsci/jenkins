@@ -18,17 +18,17 @@ div {
     div(class: "empty-state-block") {
         if (isTopLevelAllView) {
             if (canSetUpDistributedBuilds || hasItemCreatePermission) {
-                h1(_("Welcome to Jenkins!"))
+                h1(gettext("Welcome to Jenkins!"))
 
-                p(_("noJobDescription"))
+                p(gettext("noJobDescription"))
                 
                 section(class: "empty-state-section") {
-                    h2(_("startBuilding"), class: "h4")
+                    h2(gettext("startBuilding"), class: "h4")
 
                     ul(class: "empty-state-section-list") {
                         li(class: "content-block") {
                             a(href: "newJob", class: "content-block__link") {
-                                span(_("createJob"))
+                                span(gettext("createJob"))
                                 span(class: "trailing-icon") {
                                     l.svgIcon(
                                             class: "icon-sm",
@@ -41,11 +41,11 @@ div {
 
                 if (canSetUpDistributedBuilds) {
                     section(class: "empty-state-section") {
-                        h2(_("setUpDistributedBuilds"), class: "h4")
+                        h2(gettext("setUpDistributedBuilds"), class: "h4")
                         ul(class: "empty-state-section-list") {
                             li(class: "content-block") {
                                 a(href: "computer/new", class: "content-block__link") {
-                                    span(_("setUpAgent"))
+                                    span(gettext("setUpAgent"))
                                     span(class: "trailing-icon") {
                                         l.svgIcon(
                                                 class: "icon-sm",
@@ -57,7 +57,7 @@ div {
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
                                     a(href: "configureClouds", class: "content-block__link") {
-                                        span(_("setUpCloud"))
+                                        span(gettext("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.svgIcon(
                                                     class: "icon-sm",
@@ -71,7 +71,7 @@ div {
                                 a(href: "https://www.jenkins.io/redirect/distributed-builds",
                                         target: "_blank",
                                         class: "content-block__link content-block__help-link") {
-                                    span(_("learnMoreDistributedBuilds"))
+                                    span(gettext("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
                                         l.svgIcon(
                                                 class: "icon-sm",
@@ -88,12 +88,12 @@ div {
             // we're in a folder
 
             section(class: "empty-state-section") {
-                h2(_("This folder is empty"), class: "h4")
+                h2(gettext("This folder is empty"), class: "h4")
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
                         a(href: "newJob", class: "content-block__link") {
-                            span(_("createJob"))
+                            span(gettext("createJob"))
                             span(class: "trailing-icon") {
                                 l.svgIcon(
                                         class: "icon-sm",
@@ -109,12 +109,12 @@ div {
         if (h.isAnonymous() && !hasItemCreatePermission) {
             def canSignUp = app.securityRealm.allowsSignup()
 
-            h1(_("Welcome to Jenkins!"))
+            h1(gettext("Welcome to Jenkins!"))
 
             if (canSignUp) {
-                p(_("anonymousDescriptionSignUpEnabled"))
+                p(gettext("anonymousDescriptionSignUpEnabled"))
             } else {
-                p(_("anonymousDescription"))
+                p(gettext("anonymousDescription"))
             }
 
             section(class: "empty-state-section") {
@@ -122,7 +122,7 @@ div {
                     li(class: "content-block") {
                         a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}",
                                 class: "content-block__link") {
-                            span(_("Log in to Jenkins"))
+                            span(gettext("Log in to Jenkins"))
                             span(class: "trailing-icon") {
                                 l.svgIcon(
                                         class: "icon-sm",
@@ -134,7 +134,7 @@ div {
                     if (canSignUp) {
                         li(class: "content-block") {
                             a(href: "signup", class: "content-block__link") {
-                                span(_("Sign up for Jenkins"))
+                                span(gettext("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
                                     l.svgIcon(
                                             class: "icon-sm",
