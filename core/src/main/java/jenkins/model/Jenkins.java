@@ -3961,7 +3961,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
-                result &= configureDescriptor(req,json,d);
+                result &= configureDescriptor(req, json, d);
 
             save();
             updateComputerList();
