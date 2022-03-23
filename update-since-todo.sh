@@ -13,7 +13,7 @@ declare -A commitsAndTags
 IFS=$'\n'
 for todo in $( git grep --line-number '@since TODO\|@RestrictedSince("TODO")' -- *.java *.jelly *.js)
 do
-    #echo "TODO: $todo"
+    echo "$todo" | xargs
     file=$( echo "$todo" | cut -d : -f 1 )
     line=$( echo "$todo" | cut -d : -f 2 )
 
@@ -39,7 +39,7 @@ done
 
 if [[ "${#commitsAndTags[@]}" -gt 0 ]] ; then
   echo ''
-  echo "List of commits introducing new API and the first release they went in:"
+  echo "List of commits introducing new API or restricting access and the first release they went in:"
   declare -A releases
   for commit in "${!commitsAndTags[@]}" ; do
     release="${commitsAndTags[$commit]}"
