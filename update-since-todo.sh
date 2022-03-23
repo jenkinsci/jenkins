@@ -11,7 +11,7 @@ set -o pipefail
 declare -A commitsAndTags
 
 IFS=$'\n'
-for todo in $( git grep --line-number '@since TODO' -- *.java *.jelly *.js)
+for todo in $( git grep --line-number '@since TODO\|@RestrictedSince("TODO")' -- *.java *.jelly *.js)
 do
     #echo "TODO: $todo"
     file=$( echo "$todo" | cut -d : -f 1 )
@@ -28,8 +28,9 @@ do
         echo -e "\tfirst tag was $firstTag"
         commitsAndTags[$lineSha]="$firstTag"
         echo -e "\tUpdating file in place"
-        sedExpr="${line}s/@since TODO/@since ${firstTag//jenkins-/}/"
-        sed -i.bak "$sedExpr" "$file"
+        atSince="${line}s/@since TODO/@since ${firstTag//jenkins-/}/"
+        atRestrictedSince="${line}s/@RestrictedSince(\"TODO\")/@RestrictedSince(\"${firstTag//jenkins-/}\")/"
+        sed -i.bak "$atRestrictedSince;$atSince" "$file"
         rm -f "$file.bak"
     else
         echo -e "\tNot updating file, no tag found. Normal if the associated PR/commit is not merged and released yet; otherwise make sure to fetch tags from jenkinsci/jenkins"
