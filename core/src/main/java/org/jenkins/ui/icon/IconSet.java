@@ -77,7 +77,10 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String tooltip, String classes) {
+    public static String getSymbol(String name, String title, String tooltip, String classes, Class<?> classToLoadFrom) {
+        if (classToLoadFrom == null) {
+            classToLoadFrom = IconSet.class;
+        }
         String translatedName = cleanName(name);
 
         if (SYMBOLS.containsKey(translatedName)) {
@@ -92,7 +95,7 @@ public class IconSet {
         }
 
         // Load symbol if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + translatedName + ".svg");
+        InputStream inputStream = classToLoadFrom.getResourceAsStream("/images/symbols/" + translatedName + ".svg");
         String symbol = null;
 
         try {
