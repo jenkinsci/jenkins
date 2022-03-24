@@ -24,6 +24,7 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.PluginWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
@@ -81,7 +83,16 @@ public class IconSet {
         if (classToLoadFrom == null) {
             classToLoadFrom = IconSet.class;
         }
+
+        String prefix = null;
+        if (classToLoadFrom != IconSet.class) {
+            prefix = getPluginNameOrNull(classToLoadFrom);
+        }
+
         String translatedName = cleanName(name);
+        if (prefix != null) {
+            translatedName = String.join("-", prefix, translatedName);
+        }
 
         if (SYMBOLS.containsKey(translatedName)) {
             String symbol = SYMBOLS.get(translatedName);
@@ -122,6 +133,15 @@ public class IconSet {
         SYMBOLS.put(translatedName, symbol);
 
         return prependTitleIfRequired(symbol, title);
+    }
+
+    private static String getPluginNameOrNull(Class<?> classToLoadFrom) {
+        PluginWrapper plugin = Jenkins.get().getPluginManager().whichPlugin(classToLoadFrom);
+        if (plugin != null) {
+            return plugin.getShortName();
+        }
+        // null for core classes
+        return null;
     }
 
     public IconSet addIcon(Icon icon) {
