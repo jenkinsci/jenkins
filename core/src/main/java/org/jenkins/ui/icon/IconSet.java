@@ -99,7 +99,7 @@ public class IconSet {
         }
 
         // Load symbol if it exists
-        InputStream inputStream = getClassLoader(identifier).getResourceAsStream("/images/symbols/" + translatedName + ".svg");
+        InputStream inputStream = getClassLoader(identifier).getResourceAsStream("images/symbols/" + translatedName + ".svg");
         String symbol = null;
 
         try {
