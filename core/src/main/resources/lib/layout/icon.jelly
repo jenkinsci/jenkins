@@ -77,7 +77,7 @@ THE SOFTWARE.
         <j:arg value="${alt ?: ''}" />
         <j:arg value="${tooltip ?: ''}" />
         <j:arg value="${iconMetadata.classSpec ?: ''}" />
-        <j:arg value="${loadFrom.class}" />
+        <j:arg value="${h.extractPluginNameFromIconSrc(iconSrc)}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>
