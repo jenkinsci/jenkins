@@ -62,14 +62,6 @@ THE SOFTWARE.
     <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
   </j:if>
 
-  <j:set var="loadFrom" value="${action}" />
-  <j:if test="${loadFrom == null}">
-    <j:set var="loadFrom" value="${m}"/>
-  </j:if>
-  <j:if test="${loadFrom == null}">
-    <j:set var="loadFrom" value="${it}"/>
-  </j:if>
-
   <j:choose>
     <j:when test="${iconSrc.startsWith('symbol-')}">
       <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
