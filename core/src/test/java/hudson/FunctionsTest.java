@@ -25,7 +25,10 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -367,6 +370,34 @@ public class FunctionsTest {
     @Test public void printLogRecordHtmlNoLogger() {
         LogRecord lr = new LogRecord(Level.INFO, "<discarded/>");
         assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcHandlesNull() {
+        String result = Functions.extractPluginNameFromIconSrc(null);
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcHandlesEmptyString() {
+        String result = Functions.extractPluginNameFromIconSrc(null);
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcOnlyReturnsPluginFromStart() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-plugin-mailer plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcExtractsPlugin() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
     }
 
     @Issue("JDK-6507809")
