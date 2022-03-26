@@ -29,8 +29,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout permission="${app.ADMINISTER}" title="${%Configure Log Recorder}">
   <st:include page="sidepanel.jelly" />
+  <l:app-bar title="${%Configure log recorder}">
+    <a class="jenkins-button" tooltip="${%Additional information on log levels}" href="${%url}">
+      <l:icon src="symbol-help-circle" />
+    </a>
+  </l:app-bar>
   <l:main-panel>
-    <h1>${%Configure log recorder} <t:help iconSize="large" href="https://www.jenkins.io/redirect/log-recorders" /></h1>
     <p>
       ${%Enter the name of the logger you want to enable}.
     </p>

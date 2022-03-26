@@ -107,7 +107,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.324")
     public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();

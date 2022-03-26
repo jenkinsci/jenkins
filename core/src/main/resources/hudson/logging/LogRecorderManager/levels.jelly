@@ -27,14 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log Levels">
+<l:layout title="${%Logger Configuration}">
+  <l:app-bar title="${%Logger Configuration}">
+    <a class="jenkins-button" tooltip="${%Additional information on log levels}" href="${%url}">
+      <l:icon src="symbol-help-circle" />
+    </a>
+  </l:app-bar>
+
   <st:include page="sidepanel.jelly" />
+
   <l:main-panel>
-    <h1>
-      ${%Logger Configuration}
-      <t:help iconSize="large" tooltip="${%Additional information on log levels}" href="${%url}" />
-    </h1>
-    <table class="sortable pane jenkins-table" id="logLevels">
+    <table class="sortable jenkins-table" id="logLevels">
       <thead>
         <tr>
           <th>${%Name}</th>

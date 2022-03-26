@@ -99,11 +99,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             String text = a.getDisplayName();
             String base = Functions.getIconFilePath(a);
             if (base == null)     return this;
-            String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-
             String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
 
-            return add(url, icon, text);
+            if (base.startsWith("symbol-")) {
+                Icon icon = Functions.tryGetIcon(base);
+                return add(url, icon.getClassSpec(), text);
+            } else {
+                String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
+                return add(url, icon, text);
+            }
         }
 
         public ContextMenu add(String url, String icon, String text) {
@@ -160,7 +164,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * Add a separator row (no icon, no URL, no text).
          *
-         * @since TODO - Provide version
+         * @since 2.340
          */
         public ContextMenu addSeparator() {
             final MenuItem item = new MenuItem();
@@ -315,7 +319,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * The type of menu item
-         * @since TODO
+         * @since 2.340
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")

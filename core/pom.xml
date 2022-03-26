@@ -376,7 +376,7 @@ THE SOFTWARE.
       <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
