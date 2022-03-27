@@ -103,7 +103,6 @@
     display: inline-block;
 }
 .token-list .token-list-new-item .new-token-value{
-    width: 40%; 
     display: none;
     font-family: monospace;
     margin-right: 2px; 
@@ -149,4 +148,4 @@
 }
 .token-list .repeatable-add{
     margin: 6px 6px 3px 6px;
-}
+}}
