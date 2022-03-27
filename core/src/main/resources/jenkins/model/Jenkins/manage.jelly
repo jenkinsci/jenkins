@@ -42,6 +42,8 @@ THE SOFTWARE.
         <st:include page="downgrade.jelly" />
       </section>
 
+      <l:copyButton message="Hello" text="Copied this!" tooltip="Hello world" />
+
       <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>
