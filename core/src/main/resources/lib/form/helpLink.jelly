@@ -55,7 +55,8 @@ THE SOFTWARE.
     <j:when test="${attrs.url!=null}">
       <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + attrs.featureName : '%Help'}" />
       <a href="#" class="jenkins-help-button" tooltip="${altText}" helpURL="${rootURL}${attrs.url}">
-        ?
+        <!-- .jenkins-help-button span element is required as it's restyled in CSS -->
+        <span>?</span>
       </a>
     </j:when>
   </j:choose>
