@@ -380,7 +380,7 @@ public class FunctionsTest {
 
     @Test
     public void extractPluginNameFromIconSrcHandlesEmptyString() {
-        String result = Functions.extractPluginNameFromIconSrc(null);
+        String result = Functions.extractPluginNameFromIconSrc("");
 
         assertThat(result, is(emptyString()));
     }
