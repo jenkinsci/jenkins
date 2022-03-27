@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
     </st:attribute>
-    <st:attribute name="message" use="required">
+    <st:attribute name="message">
       Confirmation message to be shown once the text is copied.
     </st:attribute>
     <st:attribute name="tooltip">
@@ -46,9 +46,9 @@ THE SOFTWARE.
   </st:documentation>
 
   <button class="jenkins-button jenkins-button--transparent jenkins-copy-button ${attrs.clazz}"
-          tooltip="${attrs.tooltip}"
           text="${attrs.text}"
-          message="${attrs.message}"
+          message="${attrs.message ?: '%Copied'}"
+          tooltip="${attrs.tooltip ?: '%Copy'}"
           style="${attrs.style}"
           type="button">
     <span class="jenkins-copy-button__icon" />

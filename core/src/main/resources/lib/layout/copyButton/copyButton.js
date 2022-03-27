@@ -1,4 +1,4 @@
-document.querySelectorAll(".jenkins-copy-button").forEach(function (copyButton) {
+Behaviour.specify(".jenkins-copy-button", 'copyButton', 0, function(copyButton) {
   copyButton.addEventListener("click", () => {
     // Make an invisible textarea element containing the text
     const fakeInput = document.createElement('textarea');
