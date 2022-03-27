@@ -36,8 +36,10 @@ function registerTooltips() {
     instance.destroy()
   })
 
-  tippy("[tooltip]", {
-    content: element => element.getAttribute("tooltip"),
+  tippy("[tooltip]:not([tooltip=\"\"])", {
+    content: element => element.getAttribute("tooltip")
+      .replace("<br>", "\n")
+      .replace("<br/>", "\n"),
     ...TOOLTIP_BASE
   })
 
