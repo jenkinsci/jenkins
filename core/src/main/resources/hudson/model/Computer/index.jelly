@@ -74,16 +74,46 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
-        <j:if test="${it.node.assignedLabels.size() gt 1}">
+      <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
           <h2>${%Labels}</h2>
-          <j:forEach var="entry" items="${it.node.labelCloud}">
-            <!-- Skip the label for this node -->
-            <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-              <wbr/>
-            </j:if>
-          </j:forEach>
+          <table id="labels" class="jenkins-table sortable">
+            <thead>
+              <tr>
+                <th class="jenkins-table__cell--tight">S</th>
+                <th initialSortDir="down">${%Name}</th>
+                <th>${%Description}</th>
+                <th align="right" tooltip="Number of associated nodes">${%Associated nodes}</th>
+                <th align="right" tooltip="Number of total Executors that belong to this label">${%Configured executors}</th>
+                <th align="right" tooltip="Number of total Executkors that belong to this label that are functioning">${%Total configured}</th>
+                <th align="right" tooltip="Number of busy Executors that are carrying out some work right now">${%Busy executors}</th>
+                <th align="right" tooltip="Number of idle Executors that can start working immediately">${%Idle executors}</th>
+              </tr>
+            </thead>
+            <tbody>
+            <j:forEach var="entry" items="${it.node.labelCloud}">
+              <!-- Skip the label for this node -->
+              <j:if test="${entry.item!=it.node.selfLabel}">
+                <tr id="label_${entry.item.name}">
+                  <td data="${entry.item.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <l:icon src="${entry.item.iconClassName}" alt="${entry.item.iconAltText}"/>
+                    </div>
+                  </td>
+                  <td>
+                    <a class="${entry.item.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+                  </td>
+                  <td>${entry.item.description}</td>
+                  <td align="right">${entry.item.nodes.size()}</td>
+                  <td align="right">${entry.item.totalConfiguredExecutors}</td>
+                  <td align="right">${entry.item.totalExecutors}</td>
+                  <td align="right">${entry.item.busyExecutors}</td>
+                  <td align="right">${entry.item.idleExecutors}</td>
+                </tr>
+              </j:if>
+            </j:forEach>
+          </tbody>
+        </table>
         </div>
       </j:if>
 
