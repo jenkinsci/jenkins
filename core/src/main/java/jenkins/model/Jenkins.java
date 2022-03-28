@@ -3931,8 +3931,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 calculatingFutureDependencyGraph.cancel(true);
             }
         }
-
-
     }
 
     public Object getDynamic(String token) {
@@ -4951,10 +4949,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
-            synchronized (dependencyGraphLock) {
-                //Wait for the currently running calculation to finish
-                calculatingFutureDependencyGraph.get();
+            //Wait for the currently running calculation to finish
+            calculatingFutureDependencyGraph.get();
 
+            synchronized (dependencyGraphLock) {
                 // Scheduled future becomes the currently calculating future
                 calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
                 scheduledFutureDependencyGraph = null;
