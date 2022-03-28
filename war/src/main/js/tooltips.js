@@ -39,7 +39,8 @@ function registerTooltips() {
   tippy("[tooltip]:not([tooltip=\"\"])", {
     content: element => element.getAttribute("tooltip")
       .replace("<br>", "\n")
-      .replace("<br/>", "\n"),
+      .replace("<br/>", "\n")
+      .replace("\\n", "\n"),
     ...TOOLTIP_BASE
   })
 
