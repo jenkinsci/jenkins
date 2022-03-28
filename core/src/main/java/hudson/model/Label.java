@@ -354,6 +354,46 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
+     * Returns the icon for this label depends on state of all associated computers.
+     *
+     * @see #isOffline()
+     * @see #getIconClassName()
+     */
+    @Exported
+    public String getIcon() {
+        // All nodes are offline
+        if (isOffline()) return "symbol-computer-offline";
+        return "symbol-computer";
+    }
+
+    /**
+     * Returns the class name that will be used to lookup the icon.
+     *
+     * This class name will be added as a class tag to the html img tags where the icon should
+     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
+     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     *
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     *
+     * @see #getIcon()
+     */
+    @Exported
+    public String getIconClassName() {
+        // All nodes are offline
+        if (isOffline()) return "symbol-computer-offline";
+        return "symbol-computer";
+    }
+
+    /** Returns icon as alt text. 
+      Is used in labels table to enable sorting by state
+     */
+    public String getIconAltText() {
+        // All nodes are offline
+        if (isOffline()) return "[all-offline]";
+        return "[online]";
+    }
+
+    /**
      * Returns a human readable text that explains this label.
      */
     @Exported
