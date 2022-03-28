@@ -119,27 +119,27 @@ The project is using some labels to mark the status and the content of the pull 
 The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
 Out of those labels, here is a definition of labels the maintainers are using to manage the status of the pull requests:
 
-- `needs-docs` marks a pull requests as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes the [Jenkins handbook](https://www.jenkins.io/doc/book/)) ;
-for such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
+- `needs-docs` marks a pull requests as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes the [Jenkins handbook](https://www.jenkins.io/doc/book/)).
+For such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
 If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and review in tandem with the primary pull request that proposes the code change.
-- `needs-fix` marks a pull requests with reviews requesting some code change which are not addressed yet ;
-such pull requests won't be merged until the code has been fixed and the tests are passing
-- `needs-justification` marks pull requests on which maintainers are debating the motivation for the proposed changed ;
-the maintainers are requiring a clear description of the high-level effort with which the pull request is associated.
+- `needs-fix` marks a pull requests with reviews requesting some code change which are not addressed yet.
+Such pull requests won't be merged until the code has been fixed and the tests are passing
+- `needs-justification` marks pull requests on which maintainers are debating the motivation for the proposed changed.
+The maintainers are requiring a clear description of the high-level effort with which the pull request is associated.
 This is to ensure that the context of the changes is well understood by everyone.
 The use of design document, high-level tracking epics, minimal reproducible example with steps, etc. is encouraged.
 - `needs-more-review` marks pull requests which are lacking reviews and comments, because the changes are complex or because a debate started among reviewers and more opinions would be beneficial
-- `on-hold` marks pull requests depending on another event/release, and it cannot be merged right now ;
-when the dependent task has been completed, the pull request will be ready for merge.
+- `on-hold` marks pull requests depending on another event/release, and it cannot be merged right now.
+When the dependent task has been completed, the pull request will be ready for merge.
 - `proposed-for-close` marks pull requests where there is either no consensus on the next steps, or where the next steps have not been pursed and an extended period of time has been elapsed.
 such pull requests are typically closed within the next week after the label has been applied.
 They can always be reopened once consensus has been reached on the next steps or when action is taking regarding these next steps.
-- `ready-for-merge` marks pull requests that met the acceptance criteria, as defined elsewhere in this document ;
-such pull requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
-- `stalled` marks pull requests with no activities but a reasonable content which would benefit the project ;
-such pull requests can be taken over by others
-- `work-in-progress` marks pull requests which are still under active development ;
-such pull requests are not ready for final review
+- `ready-for-merge` marks pull requests that met the acceptance criteria, as defined elsewhere in this document.
+Such pull requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
+- `stalled` marks pull requests with no activities but a reasonable content which would benefit the project.
+Such pull requests can be taken over by others
+- `work-in-progress` marks pull requests which are still under active development.
+Such pull requests are not ready for final review
 
 In order to make sure pull requests are shipped in a timely manner, time constrains are applied to `ready-for-merge`, `stalled` and `proposed-for-close`. 
 
