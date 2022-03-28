@@ -117,7 +117,7 @@ There is no additional action required from pull request authors at this point.
 
 The project is using some labels to mark the status and the content of the pull-requests.
 The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
-Out of those labels, here are a definition of labels the maintainers are using to manage the status of the pull-requests:
+Out of those labels, here is a definition of labels the maintainers are using to manage the status of the pull-requests:
 
 - `needs-docs` marks a pull-requests lacking documentation in the code or on jenkins.io ;
 such pull-requests won't be merged until the comments are addressed
@@ -126,11 +126,11 @@ such pull-requests won't be merged until the code has been fixed and the tests a
 - `needs-justification` marks pull-requests on which maintainers are debating the motivation for the proposed changed
 - `needs-more-review` marks pull-requests which are lacking reviews and comments, because the changes are complex or because a debate started among reviewers and more opinions would be beneficial
 - `on-hold` marks pull-requests depending on another event/release, and it cannot be merged right now
-- `propose-for-close` marks pull-requests with no activities or consensus on its content and maintainers do not see a way forward ;
+- `proposed-for-close` marks pull-requests with no activities or consensus on its content and maintainers do not see a way forward ;
 such pull-requests are usually closed within the next 96hrs after the label is applied
 - `ready-for-merge` marks pull-requests which were reviewed and approved by at least two maintainers ;
 such pull-requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
-- `stalled` marks pull-requests with no activities but a reasonnable content which would benefit the project ;
+- `stalled` marks pull-requests with no activities but a reasonable content which would benefit the project ;
 such pull-requests can be taken over by others
 - `work-in-progress` marks pull-requests which are still under active development ;
 such pull-requests are not ready for final review
