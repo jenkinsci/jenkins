@@ -384,8 +384,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return "symbol-computer";
     }
 
-    /** Returns icon as alt text. 
-      Is used in labels table to enable sorting by state
+    /**
+     * Returns icon as alt text.
+     *
+     * Is used in labels table to enable sorting by state.
      */
     public String getIconAltText() {
         // All nodes are offline
