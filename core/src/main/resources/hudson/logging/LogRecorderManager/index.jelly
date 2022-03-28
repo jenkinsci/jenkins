@@ -35,9 +35,7 @@ THE SOFTWARE.
         ${%Add new log recorder}
       </a>
     </l:isAdmin>
-    <a class="jenkins-button" tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders">
-      <l:icon src="symbol-help-circle" />
-    </a>
+    <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
   </l:app-bar>
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">

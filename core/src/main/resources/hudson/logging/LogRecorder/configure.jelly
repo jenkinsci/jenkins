@@ -27,13 +27,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permission="${app.ADMINISTER}" title="${%Configure Log Recorder}">
-  <st:include page="sidepanel.jelly" />
+<l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}">
   <l:app-bar title="${%Configure log recorder}">
-    <a class="jenkins-button" tooltip="${%Additional information on log levels}" href="${%url}">
-      <l:icon src="symbol-help-circle" />
-    </a>
+    <t:help href="https://www.jenkins.io/redirect/log-recorders" tooltip="${%Additional information on log levels}" />
   </l:app-bar>
+
+  <st:include page="sidepanel.jelly" />
+
   <l:main-panel>
     <p>
       ${%Enter the name of the logger you want to enable}.
