@@ -119,16 +119,22 @@ The project is using some labels to mark the status and the content of the pull 
 The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
 Out of those labels, here is a definition of labels the maintainers are using to manage the status of the pull requests:
 
-- `needs-docs` marks a pull requests lacking documentation in the code or on jenkins.io ;
-such pull requests won't be merged until the comments are addressed
+- `needs-docs` marks a pull requests as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes the [Jenkins handbook](https://www.jenkins.io/doc/book/)) ;
+for such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
+If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and review in tandem with the primary pull request that proposes the code change.
 - `needs-fix` marks a pull requests with reviews requesting some code change which are not addressed yet ;
 such pull requests won't be merged until the code has been fixed and the tests are passing
-- `needs-justification` marks pull requests on which maintainers are debating the motivation for the proposed changed
+- `needs-justification` marks pull requests on which maintainers are debating the motivation for the proposed changed ;
+the maintainers are requiring a clear description of the high-level effort with which the pull request is associated.
+This is to ensure that the context of the changes is well understood by everyone.
+The use of design document, high-level tracking epics, minimal reproducible example with steps, etc. is encouraged.
 - `needs-more-review` marks pull requests which are lacking reviews and comments, because the changes are complex or because a debate started among reviewers and more opinions would be beneficial
-- `on-hold` marks pull requests depending on another event/release, and it cannot be merged right now
-- `proposed-for-close` marks pull requests with no activities or consensus on its content and maintainers do not see a way forward ;
-such pull requests are usually closed within the next 96hrs after the label is applied
-- `ready-for-merge` marks pull requests which were reviewed and approved by at least two maintainers ;
+- `on-hold` marks pull requests depending on another event/release, and it cannot be merged right now ;
+when the dependent task has been completed, the pull request will be ready for merge.
+- `proposed-for-close` marks pull requests where there is either no consensus on the next steps, or where the next steps have not been pursed and an extended period of time has been elapsed.
+such pull requests are typically closed within the next week after the label has been applied.
+They can always be reopened once consensus has been reached on the next steps or when action is taking regarding these next steps.
+- `ready-for-merge` marks pull requests that met the acceptance criteria, as defined elsewhere in this document ;
 such pull requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
 - `stalled` marks pull requests with no activities but a reasonable content which would benefit the project ;
 such pull requests can be taken over by others
@@ -142,7 +148,7 @@ A pull request labeled with `ready-for-merge` is merged within the next 24hrs af
 A pull request with no activites for the past 30 days can be marked with the label `stalled`.
 
 If a pull request marked with the label `stalled` has no new activited after 30days, it can be marked as `proposed-for-close`.
-96hrs after this label is applied to a pull request, it will be closed.
+7 days after this label is applied to a pull request, it will be closed.
 
 When creating the pull request, if you activate the _Allow edits by maintainers_, you accept that maintainers can push new commits into the pull requests.
 As some maintainers are willing to attend to typo fix, merge conflicts while reviewing pull requests, accepting edits from maintainers can speed up the integration of the pull requests into the project.
