@@ -113,6 +113,40 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
+### Pull-Requests management
+
+The project is using some labels to mark the status and the content of the pull-requests.
+The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
+Out of those labels, here are a definition of labels the maintainers are using to manage the status of the pull-requests:
+
+- `needs-docs` marks a pull-requests lacking documentation in the code or on jenkins.io ;
+such pull-requests won't be merged until the comments are addressed
+- `needs-fix` marks a pull-requests with reviews requesting some code change which are not addressed yet ;
+such pull-requests won't be merged until the code has been fixed and the tests are passing
+- `needs-justification` marks pull-requests on which maintainers are debating the motivation for the proposed changed
+- `needs-more-review` marks pull-requests which are lacking reviews and comments, because the changes are complex or because a debate started among reviewers and more opinions would be beneficial
+- `on-hold` marks pull-requests depending on another event/release, and it cannot be merged right now
+- `propose-for-close` marks pull-requests with no activities or consensus on its content and maintainers do not see a way forward ;
+such pull-requests are usually closed within the next 96hrs after the label is applied
+- `ready-for-merge` marks pull-requests which were reviewed and approved by at least two maintainers ;
+such pull-requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
+- `stalled` marks pull-requests with no activities but a reasonnable content which would benefit the project ;
+such pull-requests can be taken over by others
+- `work-in-progress` marks pull-requests which are still under active development ;
+such pull-requests are not ready for final review
+
+In order to make sure pull-requests are shipped in a timely manner, time constrains are applied to `ready-for-merge`, `stalled` and `proposed-for-close`. 
+
+A pull-request labeled with `ready-for-merge` is merged within the next 24hrs after the label is applied, if there is no negative feedback.
+
+A pull-request with no activites for the past 30 days can be marked with the label `stalled`.
+
+If a pull-request marked with the label `stalled` has no new activited after 30days, it can be marked as `proposed-for-close`. 
+96hrs after this label is applied to a pull-request, it will be closed.
+
+When creating the pull-request, if you activate the _Allow edits by maintainers_, you accept that maintainers can push new commits into the pull-requests. 
+As some maintainers are willing to attend to typo fix, merge conflicts while reviewing pull-requests, accepting edits from maintainers can speed up the integration of the pull-requests into the project.
+
 ## IntelliJ suggestion
 
 In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
