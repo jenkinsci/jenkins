@@ -137,14 +137,14 @@ such pull requests are not ready for final review
 
 In order to make sure pull requests are shipped in a timely manner, time constrains are applied to `ready-for-merge`, `stalled` and `proposed-for-close`. 
 
-A pull-request labeled with `ready-for-merge` is merged within the next 24hrs after the label is applied, if there is no negative feedback.
+A pull request labeled with `ready-for-merge` is merged within the next 24hrs after the label is applied, if there is no negative feedback.
 
-A pull-request with no activites for the past 30 days can be marked with the label `stalled`.
+A pull request with no activites for the past 30 days can be marked with the label `stalled`.
 
-If a pull-request marked with the label `stalled` has no new activited after 30days, it can be marked as `proposed-for-close`. 
-96hrs after this label is applied to a pull-request, it will be closed.
+If a pull request marked with the label `stalled` has no new activited after 30days, it can be marked as `proposed-for-close`.
+96hrs after this label is applied to a pull request, it will be closed.
 
-When creating the pull-request, if you activate the _Allow edits by maintainers_, you accept that maintainers can push new commits into the pull requests. 
+When creating the pull request, if you activate the _Allow edits by maintainers_, you accept that maintainers can push new commits into the pull requests.
 As some maintainers are willing to attend to typo fix, merge conflicts while reviewing pull requests, accepting edits from maintainers can speed up the integration of the pull requests into the project.
 
 ## IntelliJ suggestion
