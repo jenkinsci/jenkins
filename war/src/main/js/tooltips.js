@@ -30,23 +30,28 @@ registerTooltips()
 /**
  * Registers tooltips for the page
  * If called again, destroys existing tooltips and registers them again (useful for progressive rendering)
+ * @param {HTMLElement} container - Registers the tooltips for the given container
  */
-function registerTooltips() {
+function registerTooltips(container = document) {
   tooltipInstances.forEach(instance => {
-    instance.destroy()
+    if (instance.props.container === container) {
+      instance.destroy()
+    }
   })
 
-  tippy("[tooltip]:not([tooltip=\"\"])", {
+  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), {
     content: element => element.getAttribute("tooltip")
       .replace("<br>", "\n")
       .replace("<br/>", "\n")
       .replace("\\n", "\n"),
+    container: container,
     ...TOOLTIP_BASE
   })
 
-  tippy("[html-tooltip]", {
+  tippy(container.querySelectorAll("[html-tooltip]"), {
     content: element => element.getAttribute("html-tooltip"),
     allowHTML: true,
+    container: container,
     ...TOOLTIP_BASE
   })
 }

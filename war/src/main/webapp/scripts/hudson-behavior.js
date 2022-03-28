@@ -1736,6 +1736,7 @@ function refreshPart(id,url) {
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
+                    registerTooltips(node)
                 }
             });
         }
