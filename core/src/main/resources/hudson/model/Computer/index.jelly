@@ -84,10 +84,10 @@ THE SOFTWARE.
                 <th initialSortDir="down">${%Name}</th>
                 <th>${%Description}</th>
                 <th align="right" tooltip="Number of associated nodes">${%Associated nodes}</th>
-                <th align="right" tooltip="Number of total Executors that belong to this label">${%Configured executors}</th>
-                <th align="right" tooltip="Number of total Executkors that belong to this label that are functioning">${%Total configured}</th>
-                <th align="right" tooltip="Number of busy Executors that are carrying out some work right now">${%Busy executors}</th>
-                <th align="right" tooltip="Number of idle Executors that can start working immediately">${%Idle executors}</th>
+                <th align="right" tooltip="Number of total executors that belong to this label">${%Configured executors}</th>
+                <th align="right" tooltip="Number of total executors that belong to this label that are functioning">${%Total configured}</th>
+                <th align="right" tooltip="Number of busy executors that are carrying out some work right now">${%Busy executors}</th>
+                <th align="right" tooltip="Number of idle executors that can start working immediately">${%Idle executors}</th>
               </tr>
             </thead>
             <tbody>
