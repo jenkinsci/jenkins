@@ -30,7 +30,6 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${!it.installed}">
           <h1>
-            <l:icon class="icon-installer icon-xlg"/>
             ${%Install as Windows Service}
           </h1>
 
