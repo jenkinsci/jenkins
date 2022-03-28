@@ -95,7 +95,7 @@ Also, not every change needs to be merged into the core.
 Many features would be better introduced as plugins that have separate release cycles and allow delivering changes faster.
 We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
 but we try to keep the core as minimal as possible in terms of dependencies.
-When the motivation of the changes is not clear, the pull-requests needs to be labeled with `needs-justification`.
+When the motivation of the changes is not clear, the pull requests needs to be labeled with `needs-justification`.
 
 ==== Ensuring Compatibility
 
@@ -142,7 +142,7 @@ but sometimes the changes go straight to the pull requests.
 And we are fine with that, especially for small patches.
 Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
 We are fine with that as well.
-The pull-requests can be marked with `needs-more-review` to get more eyes on the changes.
+The pull requests can be marked with `needs-more-review` to get more eyes on the changes.
 If there is no consensus about the feasibility and implementation,
 code reviewers are expected to suggest proper channels for contributors to discuss their contributions.
 
