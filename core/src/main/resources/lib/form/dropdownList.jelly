@@ -46,7 +46,17 @@ THE SOFTWARE.
         <j:if test="${attrs.help!=null}">
             <f:helpArea/>
         </j:if>
-        <div class="jenkins-select">
+        <div class="jenkins-select" style="max-width: calc(100% - 2rem)">
+            <style>
+                .dropdown-help {
+                    position: relative;
+                }
+                .dropdown-help a.jenkins-help-button {
+                    position: absolute;
+                    top: -4rem;
+                    right: 0;
+                }
+            </style>
             <!-- create drop-down list -->
             <select class="jenkins-select__input dropdownList"
                     disabled="${readOnlyMode ? 'true' : null}"
