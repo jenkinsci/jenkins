@@ -65,7 +65,7 @@ THE SOFTWARE.
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
           <j:set var="help" value="${descriptor.helpFile}"/>
           <j:if test="${help != null}">
-            <div class="help-sibling dropdown-help" style="width:100%">
+            <div class="help-sibling jenkins-select-help">
               <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
               <f:helpArea/>
             </div>
