@@ -46,7 +46,7 @@ THE SOFTWARE.
         <j:if test="${attrs.help!=null}">
             <f:helpArea/>
         </j:if>
-        <div class="jenkins-select jenkins-select-help-aware">
+        <div class="jenkins-select">
             <!-- create drop-down list -->
             <select class="jenkins-select__input dropdownList"
                     disabled="${readOnlyMode ? 'true' : null}"
