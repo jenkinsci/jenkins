@@ -57,9 +57,9 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
 
-  <scm>
-    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
     <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>

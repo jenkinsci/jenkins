@@ -24,6 +24,8 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.PluginWrapper;
+import hudson.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
@@ -47,7 +50,8 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> SYMBOLS = new ConcurrentHashMap<>();
+    // keyed by plugin name / core, and then symbol name returning the SVG as a string
+    private static final Map<String, Map<String, String>> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -77,11 +81,14 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String tooltip, String classes) {
+    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName) {
         String translatedName = cleanName(name);
 
-        if (SYMBOLS.containsKey(translatedName)) {
-            String symbol = SYMBOLS.get(translatedName);
+        String identifier = Util.fixEmpty(pluginName) == null ? "core" : pluginName;
+        Map<String, String> symbolsForLookup = SYMBOLS.computeIfAbsent(identifier, (key) -> new ConcurrentHashMap<>());
+
+        if (symbolsForLookup.containsKey(translatedName)) {
+            String symbol = symbolsForLookup.get(translatedName);
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty()) {
@@ -92,7 +99,7 @@ public class IconSet {
         }
 
         // Load symbol if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + translatedName + ".svg");
+        InputStream inputStream = getClassLoader(identifier).getResourceAsStream("images/symbols/" + translatedName + ".svg");
         String symbol = null;
 
         try {
@@ -116,9 +123,23 @@ public class IconSet {
         symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        SYMBOLS.put(translatedName, symbol);
+        symbolsForLookup.put(translatedName, symbol);
+        SYMBOLS.put(identifier, symbolsForLookup);
 
         return prependTitleIfRequired(symbol, title);
+    }
+
+    private static ClassLoader getClassLoader(String pluginName) {
+        if (pluginName.equals("core")) {
+            return IconSet.class.getClassLoader();
+        }
+
+        PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(pluginName);
+        if (plugin != null) {
+            return plugin.classLoader;
+        }
+
+        return IconSet.class.getClassLoader();
     }
 
     public IconSet addIcon(Icon icon) {
