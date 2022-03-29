@@ -113,45 +113,47 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
-### Pull requests management
+### Pull request management
 
-The project is using some labels to mark the status and the content of the pull requests.
+The Jenkins project uses a well-defined set of labels to mark the status and content of pull requests.
 The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
-Out of those labels, here is a definition of labels the maintainers are using to manage the status of the pull requests:
+These labels are defined as follows:
 
 - `needs-docs` marks a pull requests as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes the [Jenkins handbook](https://www.jenkins.io/doc/book/)).
 For such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
-If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and review in tandem with the primary pull request that proposes the code change.
+If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and reviewed in tandem with the primary pull request that proposes the code change.
 - `needs-fix` marks a pull requests with reviews requesting some code change which are not addressed yet.
-Such pull requests won't be merged until the code has been fixed and the tests are passing
+Such pull requests will not be merged until the code has been fixed and the tests pass.
 - `needs-justification` marks pull requests on which maintainers are debating the motivation for the proposed changed.
-The maintainers are requiring a clear description of the high-level effort with which the pull request is associated.
-This is to ensure that the context of the changes is well understood by everyone.
-The use of design document, high-level tracking epics, minimal reproducible example with steps, etc. is encouraged.
+To properly evaluate the solution provided in a pull request, maintainers must be able to understand the high-level problem that the pull request attempts to solve.
+While the context might be obvious to the author, it is not always apparent to reviewers and maintainers.
+The use of design documents, high-level tracking epics, [minimal reproducible examples (MREs)](https://en.wikipedia.org/wiki/Minimal_reproducible_example), etc. is strongly encouraged.
 - `needs-more-review` marks pull requests which are lacking reviews and comments, because the changes are complex or because a debate started among reviewers and more opinions would be beneficial
 - `on-hold` marks pull requests depending on another event/release, and it cannot be merged right now.
 When the dependent task has been completed, the pull request will be ready for merge.
 - `proposed-for-close` marks pull requests where there is either no consensus on the next steps, or where the next steps have not been pursed and an extended period of time has been elapsed.
-such pull requests are typically closed within the next week after the label has been applied.
+Such pull requests are typically closed approximately one week after the label has been applied.
 They can always be reopened once consensus has been reached on the next steps or when action is taking regarding these next steps.
 - `ready-for-merge` marks pull requests that met the acceptance criteria, as defined elsewhere in this document.
-Such pull requests are usually merged within the next 24hrs after the label is applied, if there is no negative feeback
+If there is no negative feedback, such pull requests are typically merged within approximately 24 hours.
 - `stalled` marks pull requests with no activities but a reasonable content which would benefit the project.
-Such pull requests can be taken over by others
+If the original author lacks the time and interest to continue the original effort, we suggest that someone else pick up where the original author left off to drive the effort to completion.
 - `work-in-progress` marks pull requests which are still under active development.
-Such pull requests are not ready for final review
+Such pull requests are not ready for final review.
 
-In order to make sure pull requests are shipped in a timely manner, time constrains are applied to `ready-for-merge`, `stalled` and `proposed-for-close`. 
+To ensure that pull requests are processed efficiently, the `ready-for-merge`, `stalled`, and `proposed-for-close` labels are subject to time constraints.
 
-A pull request labeled with `ready-for-merge` is merged within the next 24hrs after the label is applied, if there is no negative feedback.
+A pull request labeled with `ready-for-merge` is merged after approximately 24 hours if there is no negative feedback.
 
-A pull request with no activites for the past 30 days can be marked with the label `stalled`.
+If a pull request has remained incomplete with no activity for over a month, we will make this explicit by labeling the PR as `stalled`.
 
-If a pull request marked with the label `stalled` has no new activited after 30days, it can be marked as `proposed-for-close`.
-7 days after this label is applied to a pull request, it will be closed.
+If a pull request labelled as `stalled` remains inactive for yet another month, we will label it as `proposed-for-close` in order to maintain an orderly PR queue.
+Approximately one week after this label is applied to a pull request, it will be closed.
 
-When creating the pull request, if you activate the _Allow edits by maintainers_, you accept that maintainers can push new commits into the pull requests.
-As some maintainers are willing to attend to typo fix, merge conflicts while reviewing pull requests, accepting edits from maintainers can speed up the integration of the pull requests into the project.
+While contributors are strongly encouraged to drive PRs to completion on their own, we recognize that in some situations the help of a maintainer can be valuable.
+Yet also, we recognize that some contributors prefer not to receive unsolicited changes.
+When opening a pull request, enabling the _Allow edits by maintainers_ option indicates that you accept that maintainers may push new commits into your pull request branch.
+As some maintainers are willing to fix typographical errors and merge conflicts while reviewing pull requests, accepting edits from maintainers can speed up the integration of your pull request.
 
 ## IntelliJ suggestion
 
