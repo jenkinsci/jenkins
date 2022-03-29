@@ -29,10 +29,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                 f.entry() {
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
-
-                f.dropdownDescriptorSelector(title:_("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
-
-                f.dropdownDescriptorSelector(title:_("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
+                f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
+                f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
             f.section(title: _("Markup Formatter")) {
