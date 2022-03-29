@@ -39,23 +39,23 @@ THE SOFTWARE.
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
       <div>
-        <h2>${%Nodes}</h2>
-        <table id="nodes_${it.displayName}" class="jenkins-table sortable">
+        <h2>${%title.nodes}</h2>
+        <table class="jenkins-table sortable">
             <thead>
               <tr>
                 <th class="jenkins-table__cell--tight">S</th>
-                <th initialSortDir="down">${%Name}</th>
-                <th>${%Description}</th>
-                <th align="right" tooltip="Number of total executors that belong to this node">${%Configured executors}</th>
-                <th align="right" tooltip="Number of busy executors that are carrying out some work right now">${%Busy executors}</th>
-                <th align="right" tooltip="Number of idle executors that can start working immediately">${%Idle executors}</th>
+                <th initialSortDir="down">${%table.column.name.legend}</th>
+                <th>${%table.column.description.legend}</th>
+                <th align="right" tooltip="${%table.column.definedExecutors.tooltip}">${%table.column.definedExecutors.legend}</th>
+                <th align="right" tooltip="${%table.column.busyExecutors.tooltip}">${%table.column.busyExecutors.legend}</th>
+                <th align="right" tooltip="${%table.column.idleExecutors.tooltip}">${%table.column.idleExecutors.legend}</th>
               </tr>
             </thead>
             <tbody>
             <j:forEach var="n" items="${it.sortedNodes}">
               <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
               <j:set var="url" value="${rootURL}/${c.url}"/>
-                <tr id="node_${c.name}">
+                <tr>
                   <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
                     <div class="jenkins-table__cell__button-wrapper">
                       <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
@@ -74,12 +74,12 @@ THE SOFTWARE.
         </table>
       </div>
 
-      <h2>${%Projects}</h2>
+      <h2>${%title.projects_tied_on(it.displayName)}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            ${%None}
+            ${%projects.none}
           </p>
         </j:when>
         <j:otherwise>
