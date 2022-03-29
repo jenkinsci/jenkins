@@ -37,7 +37,7 @@ THE SOFTWARE.
       the action object itself is available in the 'action' variable
     -->
     <st:include page="action.jelly" from="${action}" optional="true">
-      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}"/>
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"/>
       <j:if test="${icon!=null}">
         <j:choose>
           <j:when test="${h.getActionUrl(it.url,action).contains('pollingLog')}">
