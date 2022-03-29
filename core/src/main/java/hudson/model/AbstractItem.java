@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,87 +22,85 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static hudson.model.queue.Executables.getParentOf;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
-import hudson.XmlFile;
-import hudson.Util;
-import hudson.Functions;
 import hudson.BulkChange;
+import hudson.Functions;
+import hudson.Util;
+import hudson.XmlFile;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
+import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
-import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import jenkins.model.DirectlyModifiableTopLevelItemGroup;
-import jenkins.model.Jenkins;
-import jenkins.model.queue.ItemDeletion;
-import jenkins.security.NotReallyRoleSensitiveCallable;
-import jenkins.util.xml.XMLUtils;
-
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.HttpDeletable;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.xml.sax.SAXException;
-
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import static hudson.model.queue.Executables.getParentOf;
-import hudson.model.queue.SubTask;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.Jenkins;
+import jenkins.model.queue.ItemDeletion;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.SystemProperties;
+import jenkins.util.xml.XMLUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.HttpDeletable;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.access.AccessDeniedException;
+import org.xml.sax.SAXException;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -127,7 +125,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected volatile String description;
 
     private transient ItemGroup parent;
-    
+
     protected String displayName;
 
     protected AbstractItem(ItemGroup parent, String name) {
@@ -135,7 +133,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         doSetName(name);
     }
 
-    @Exported(visibility=999)
+    @Override
+    @Exported(visibility = 999)
     public String getName() {
         return name;
     }
@@ -161,15 +160,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @return The display name of this object, or if it is not set, the name
      * of the object.
      */
+    @Override
     @Exported
     public String getDisplayName() {
-        if(null!=displayName) {
+        if (null != displayName) {
             return displayName;
         }
         // if the displayName is not set, then return the name as we use to do
         return getName();
     }
-    
+
     /**
      * This is intended to be used by the Job configuration pages where
      * we want to return null if the display name is not set.
@@ -180,23 +180,22 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public String getDisplayNameOrNull() {
         return displayName;
     }
-    
+
     /**
-     * This method exists so that the Job configuration pages can use 
+     * This method exists so that the Job configuration pages can use
      * getDisplayNameOrNull so that nothing is shown in the display name text
      * box if the display name is not set.
-     * @param displayName
-     * @throws IOException
      */
     public void setDisplayNameOrNull(String displayName) throws IOException {
         setDisplayName(displayName);
     }
-    
+
     public void setDisplayName(String displayName) throws IOException {
         this.displayName = Util.fixEmptyAndTrim(displayName);
         save();
     }
-             
+
+    @Override
     public File getRootDir() {
         return getParent().getRootDirFor(this);
     }
@@ -204,7 +203,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
-    @WithBridgeMethods(value=Jenkins.class,castRequired=true)
+    @WithBridgeMethods(value = Jenkins.class, castRequired = true)
     @Override public @NonNull ItemGroup getParent() {
         if (parent == null) {
             throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
@@ -283,7 +282,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
         if (!hasPermission(Item.CONFIGURE)) {
             if (parent instanceof AccessControlled) {
-                ((AccessControlled)parent).checkPermission(Item.CREATE);
+                ((AccessControlled) parent).checkPermission(Item.CREATE);
             }
             checkPermission(Item.DELETE);
         }
@@ -320,17 +319,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                                 "User {2} has no {3} permission for existing job with the same name",
-                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name} );
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name});
                     }
                     // Don't explicitly mention that there is another item with the same name.
                     throw new Failure(Messages.Jenkins_NotAllowedName(newName));
                 }
             }
-        } catch(AccessDeniedException ex) {
+        } catch (AccessDeniedException ex) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                         "User {2} has {3} permission, but no {4} for existing job with the same name",
-                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name} );
+                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name});
             }
             throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
         }
@@ -355,6 +354,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
+    @SuppressFBWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD", justification = "no big deal")
     protected void renameTo(final String newName) throws IOException {
 
         if (!isNameEditable()) {
@@ -387,7 +387,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
                 boolean success = false;
 
-                try {// rename data files
+                try { // rename data files
                     boolean interrupted = false;
                     boolean renamed = false;
 
@@ -421,7 +421,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         // shuts down there might be a new job created under the
                         // old name.
                         Copy cp = new Copy();
-                        cp.setProject(new org.apache.tools.ant.Project());
+                        cp.setProject(new Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
                         src.setDir(oldRoot);
@@ -471,22 +471,25 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Gets all the jobs that this {@link Item} contains as descendants.
      */
+    @Override
     public abstract Collection<? extends Job> getAllJobs();
 
+    @Override
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if(n.length()==0)   return getName();
-        else                return n+'/'+getName();
+        if (n.length() == 0)   return getName();
+        else                return n + '/' + getName();
     }
 
+    @Override
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if(n.length()==0)   return getDisplayName();
-        else                return n+" » "+getDisplayName();
+        if (n.length() == 0)   return getDisplayName();
+        else                return n + " » " + getDisplayName();
     }
-    
+
     /**
      * Gets the display name of the current item relative to the given group.
      *
@@ -498,7 +501,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public String getRelativeDisplayNameFrom(ItemGroup p) {
         return Functions.getRelativeDisplayNameFrom(this, p);
     }
-    
+
     /**
      * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
      * @since 1.512
@@ -512,6 +515,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opportunity to do a post load processing.
      */
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
         doSetName(name);
@@ -523,26 +527,25 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * then it will be loaded, then this method will be invoked
      * to perform any implementation-specific work.
      *
-     * <p>
-     * 
-     *
      * @param src
      *      Item from which it's copied from. The same type as {@code this}. Never null.
      */
+    @Override
     public void onCopiedFrom(Item src) {
     }
 
+    @Override
     public final String getUrl() {
         // try to stick to the current view if possible
         StaplerRequest req = Stapler.getCurrentRequest();
         String shortUrl = getShortUrl();
         String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
-            String seed = Functions.getNearestAncestorUrl(req,this);
+            String seed = Functions.getNearestAncestorUrl(req, this);
             LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
-            if(seed!=null) {
+            if (seed != null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
-                return seed.substring(req.getContextPath().length()+1)+'/';
+                return seed.substring(req.getContextPath().length() + 1) + '/';
             }
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
@@ -572,18 +575,20 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return base + shortUrl;
     }
 
+    @Override
     public String getShortUrl() {
         String prefix = getParent().getUrlChildPrefix();
         String subdir = Util.rawEncode(getName());
         return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
+    @Override
     public String getSearchUrl() {
         return getShortUrl();
     }
 
     @Override
-    @Exported(visibility=999,name="url")
+    @Exported(visibility = 999, name = "url")
     public final String getAbsoluteUrl() {
         return Item.super.getAbsoluteUrl();
     }
@@ -598,6 +603,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Returns the {@link ACL} for this object.
      */
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -605,8 +611,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Save the settings to a file.
      */
+    @Override
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -618,11 +625,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
+
     private static class Replacer {
         private final String fullName;
+
         Replacer(AbstractItem i) {
             fullName = i.getFullName();
         }
+
         private Object readResolve() {
             Jenkins j = Jenkins.getInstanceOrNull();
             if (j == null) {
@@ -637,7 +647,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
         setDescription(req.getParameter("description"));
@@ -651,7 +661,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * which should now be unused by core but is left in case plugins are still using it.
      */
     @RequirePOST
-    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         delete();
         if (req == null || rsp == null) { // CLI
             return;
@@ -672,7 +682,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
-    public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    @Override
+    public void delete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         try {
             delete();
             rsp.setStatus(204);
@@ -689,6 +700,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
+    @Override
     public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
         boolean responsibleForAbortingBuilds = !ItemDeletion.contains(this);
@@ -729,8 +741,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
                         final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
                         final SubTask subtask = executable != null ? getParentOf(executable) : null;
-                                
-                        if (subtask != null) {        
+
+                        if (subtask != null) {
                             Item item = Tasks.getItemOf(subtask);
                             while (item != null) {
                                 if (item == this) {
@@ -814,7 +826,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            updateByXml((Source)new StreamSource(req.getReader()));
+            updateByXml((Source) new StreamSource(req.getReader()));
             return;
         }
 
@@ -828,6 +840,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * The user must have at least {@link #EXTENDED_READ}.
      * If he lacks {@link #CONFIGURE}, then any {@link Secret}s detected will be masked out.
      */
+
     @Restricted(NoExternalUse.class)
     public void writeConfigDotXml(OutputStream os) throws IOException {
         checkPermission(EXTENDED_READ);
@@ -855,7 +868,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
-        updateByXml((Source)source);
+        updateByXml((Source) source);
     }
 
     /**
@@ -879,13 +892,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
             // try to reflect the changes by reloading
             Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
-            if (o!=this) {
+            if (o != this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
-                throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
+                throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
             }
 
-            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void,IOException>() {
+            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
                 @Override public Void call() throws IOException {
                     onLoad(getParent(), getRootDir().getName());
                     return null;
@@ -946,10 +959,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!getACL().hasPermission(Item.DISCOVER)) {
+            if (!hasPermission(Item.DISCOVER)) {
                 return null;
             }
-            getACL().checkPermission(Item.READ);
+            checkPermission(Item.READ);
         }
         return this;
     }
@@ -958,18 +971,18 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.
      */
     @CLIResolver
     public static AbstractItem resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Item name") String name) throws CmdLineException {
+            @Argument(required = true, metaVar = "NAME", usage = "Item name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.get().getItemByFullName(name, AbstractItem.class);
-        if (item==null) {
+        if (item == null) {
             AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.get());
             throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
                     : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));

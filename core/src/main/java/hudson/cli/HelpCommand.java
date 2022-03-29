@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
-import jenkins.model.Jenkins;
-
 import java.util.Map;
 import java.util.TreeMap;
-
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -41,7 +40,7 @@ import org.springframework.security.access.AccessDeniedException;
 @Extension
 public class HelpCommand extends CLICommand {
 
-    @Argument(metaVar="COMMAND", usage="Name of the command")
+    @Argument(metaVar = "COMMAND", usage = "Name of the command")
     public String command;
 
     @Override
@@ -65,13 +64,13 @@ public class HelpCommand extends CLICommand {
     }
 
     private int showAllCommands() {
-        Map<String,CLICommand> commands = new TreeMap<>();
+        Map<String, CLICommand> commands = new TreeMap<>();
         for (CLICommand c : CLICommand.all())
-            commands.put(c.getName(),c);
+            commands.put(c.getName(), c);
 
         for (CLICommand c : commands.values()) {
-            stderr.println("  "+c.getName());
-            stderr.println("    "+c.getShortDescription());
+            stderr.println("  " + c.getName());
+            stderr.println("    " + c.getShortDescription());
         }
 
         return 0;
@@ -85,7 +84,7 @@ public class HelpCommand extends CLICommand {
         }
 
         command.printUsage(stderr, command.getCmdLineParser());
-        
+
         return 0;
     }
 }

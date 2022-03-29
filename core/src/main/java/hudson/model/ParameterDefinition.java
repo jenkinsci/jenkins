@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Luca Domenico Milanesio, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,27 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.AbortException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.AbortException;
+import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.util.DescriptorList;
-
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Util;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -97,7 +95,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * @see StringParameterDefinition
  */
-@ExportedBean(defaultVisibility=3)
+@ExportedBean(defaultVisibility = 3)
 public abstract class ParameterDefinition implements
         Describable<ParameterDefinition>, ExtensionPoint, Serializable {
 
@@ -105,7 +103,7 @@ public abstract class ParameterDefinition implements
 
     private String description;
 
-    public ParameterDefinition(@NonNull String name) {
+    protected ParameterDefinition(@NonNull String name) {
         if (name == null) {
             throw new IllegalArgumentException("Parameter name must be non-null");
         }
@@ -116,7 +114,7 @@ public abstract class ParameterDefinition implements
      * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link org.kohsuke.stapler.DataBoundConstructor} and allow {@link #setDescription} to be used as needed
      */
     @Deprecated
-    public ParameterDefinition(@NonNull String name, String description) {
+    protected ParameterDefinition(@NonNull String name, String description) {
         this(name);
         setDescription(description);
     }
@@ -134,9 +132,9 @@ public abstract class ParameterDefinition implements
 
     @Exported
     public String getType() {
-    	return this.getClass().getSimpleName();
+        return this.getClass().getSimpleName();
     }
-    
+
     @Exported
     @NonNull
     public String getName() {
@@ -186,7 +184,7 @@ public abstract class ParameterDefinition implements
      */
     @CheckForNull
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
-    
+
     /**
      * Create a parameter value from a GET with query string.
      * If no value is available in the request, it returns a default value if possible, or null.
@@ -222,12 +220,12 @@ public abstract class ParameterDefinition implements
      */
     @CheckForNull
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
-        throw new AbortException("CLI parameter submission is not supported for the "+getClass()+" type. Please file a bug report for this");
+        throw new AbortException("CLI parameter submission is not supported for the " + getClass() + " type. Please file a bug report for this");
     }
-    
+
     /**
      * Returns default parameter value for this definition.
-     * 
+     *
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */
@@ -274,7 +272,7 @@ public abstract class ParameterDefinition implements
     /**
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
-    public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
+    public static DescriptorExtensionList<ParameterDefinition, ParameterDescriptor> all() {
         return Jenkins.get().getDescriptorList(ParameterDefinition.class);
     }
 

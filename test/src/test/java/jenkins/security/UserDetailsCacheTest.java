@@ -21,20 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
-
-import hudson.security.HudsonPrivateSecurityRealm;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+
+import hudson.security.HudsonPrivateSecurityRealm;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -64,7 +63,7 @@ public class UserDetailsCacheTest {
     }
 
     @Test
-    public void getCachedFalse() throws Exception {
+    public void getCachedFalse() {
         UserDetailsCache cache = UserDetailsCache.get();
         assertNotNull(cache);
         UserDetails alice1 = cache.getCached("alice");
@@ -81,7 +80,7 @@ public class UserDetailsCacheTest {
     }
 
     @Test
-    public void getCachedFalseNotFound() throws Exception {
+    public void getCachedFalseNotFound() {
         UserDetailsCache cache = UserDetailsCache.get();
         assertNotNull(cache);
         UserDetails bob = cache.getCached("bob");

@@ -24,7 +24,9 @@
 
 package jenkins.scm;
 
-import com.google.common.collect.ImmutableSet;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -32,25 +34,24 @@ import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
-import org.kohsuke.stapler.export.Exported;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Allows a {@link Run} to provide {@link SCM}-related methods, such as providing changesets and culprits.
  *
  * @since 2.60
  */
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
 public interface RunWithSCM<JobT extends Job<JobT, RunT>,
-        RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT>> {
+        RunT extends Run<JobT, RunT> & RunWithSCM<JobT, RunT>> {
 
     /**
      * Gets all {@link ChangeLogSet}s currently associated with this item.
@@ -96,10 +97,12 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         }
 
         return new AbstractSet<User>() {
-            private Set<String> culpritIds = ImmutableSet.copyOf(getCulpritIds());
+            private Set<String> culpritIds = Collections.unmodifiableSet(new HashSet<>(getCulpritIds()));
 
+            @Override
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(culpritIds.iterator()) {
+                return new AdaptedIterator<String, User>(culpritIds.iterator()) {
+                    @Override
                     protected User adapt(String id) {
                         // TODO: Probably it should not auto-create users
                         return User.getById(id, true);
@@ -107,6 +110,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
                 };
             }
 
+            @Override
             public int size() {
                 return culpritIds.size();
             }
@@ -123,7 +127,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
     @NonNull
     default Set<User> calculateCulprits() {
         Set<User> r = new HashSet<>();
-        RunT p = ((RunT)this).getPreviousCompletedBuild();
+        RunT p = ((RunT) this).getPreviousCompletedBuild();
         if (p != null) {
             Result pr = p.getResult();
             if (pr != null && pr.isWorseThan(Result.SUCCESS)) {

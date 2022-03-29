@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Matthew R. Harrah, Red Hat, Inc., Stephen Connolly, Tom Huybrechts, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,9 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -66,19 +73,17 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
@@ -117,12 +122,9 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-
 /**
  * A job is an runnable entity under the monitoring of Hudson.
- * 
+ *
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
  *
@@ -277,7 +279,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // #3361
+        if (nextBuildNumber == 0) { // JENKINS-3361
             nextBuildNumber = 1;
         }
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
@@ -301,16 +303,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public boolean isBuilding() {
         RunT b = getLastBuild();
-        return b!=null && b.isBuilding();
+        return b != null && b.isBuilding();
     }
-    
+
     /**
      * Returns true if the log file is still being updated.
      */
     public boolean isLogUpdated() {
         RunT b = getLastBuild();
-        return b!=null && b.isLogUpdated();
-    }    
+        return b != null && b.isLogUpdated();
+    }
 
     @Override
     public String getPronoun() {
@@ -357,9 +359,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
-        env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
-        env.put("JOB_NAME",getFullName());
+        env.put("JENKINS_SERVER_COOKIE", SERVER_COOKIE.get());
+        env.put("HUDSON_SERVER_COOKIE", SERVER_COOKIE.get()); // Legacy compatibility
+        env.put("JOB_NAME", getFullName());
         env.put("JOB_BASE_NAME", getName());
         return env;
     }
@@ -381,7 +383,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (node != null) {
             final Computer computer = node.toComputer();
             if (computer != null) {
-                // we need to get computer environment to inherit platform details 
+                // we need to get computer environment to inherit platform details
                 env = computer.getEnvironment();
                 env.putAll(computer.buildEnvironment(listener));
             }
@@ -392,11 +394,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
-        env.put("CLASSPATH","");
+        env.put("CLASSPATH", "");
 
         // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
-            ec.buildEnvironmentFor(this,env,listener);
+            ec.buildEnvironmentFor(this, env, listener);
 
 
         return env;
@@ -404,17 +406,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Programmatically updates the next build number.
-     * 
+     *
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
-     * 
+     *
      * @since 1.199 (before that, this method was package private.)
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
         RunT lb = getLastBuild();
-        if (lb!=null ?  next>lb.getNumber() : next>0) {
+        if (lb != null ?  next > lb.getNumber() : next > 0) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
@@ -479,6 +481,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
+            @Override
             public void find(String token, List<SearchItem> result) {
                 try {
                     if (token.startsWith("#"))
@@ -493,23 +496,25 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             }
 
+            @Override
             public void suggest(String token, List<SearchItem> result) {
                 find(token, result);
             }
         }).add("configure", "config", "configure");
     }
 
+    @Override
     public Collection<? extends Job> getAllJobs() {
-        return Collections.<Job> singleton(this);
+        return Collections.<Job>singleton(this);
     }
 
     /**
      * Adds {@link JobProperty}.
-     * 
+     *
      * @since 1.188
      */
     public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {
-        ((JobProperty)jobProp).setOwner(this);
+        ((JobProperty) jobProp).setOwner(this);
         properties.add(jobProp);
         save();
     }
@@ -557,7 +562,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * List of all {@link JobProperty} exposed primarily for the remoting API.
      * @since 1.282
      */
-    @Exported(name="property",inline=true)
+    @Exported(name = "property", inline = true)
     public List<JobProperty<? super JobT>> getAllProperties() {
         return properties.getView();
     }
@@ -597,6 +602,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Overrides from job properties.
      * @see JobProperty#getJobOverrides
      */
+    @Override
     public Collection<?> getOverrides() {
         List<Object> r = new ArrayList<>();
         for (JobProperty<? super JobT> p : properties)
@@ -618,6 +624,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+        @Override
         public int compare(Run record, String key) {
             try {
                 int k = Integer.parseInt(key);
@@ -627,14 +634,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
 
+        @Override
         public String getKey(Run record) {
             return String.valueOf(record.getNumber());
         }
 
+        @Override
         public boolean isBuilding(Run record) {
             return record.isBuilding();
         }
 
+        @Override
         public String getNextKey(String key) {
             try {
                 int k = Integer.parseInt(key);
@@ -653,13 +663,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            if (!newBuildDir.getParentFile().isDirectory()) {
-                newBuildDir.getParentFile().mkdirs();
-            }
-            if (!oldBuildDir.renameTo(newBuildDir)) {
-                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
-            }
+        if (Files.isDirectory(Util.fileToPath(oldBuildDir)) && !Files.isDirectory(Util.fileToPath(newBuildDir))) {
+            Util.createDirectories(Util.fileToPath(newBuildDir.getParentFile()));
+            Files.move(Util.fileToPath(oldBuildDir), Util.fileToPath(newBuildDir));
         }
     }
 
@@ -685,7 +691,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
-                File newBuildDir = ((Job)item).getBuildDir();
+                File newBuildDir = ((Job) item).getBuildDir();
                 try {
                     if (!Util.isDescendant(item.getRootDir(), newBuildDir)) {
                         //OK builds are stored somewhere outside of the item's root, so none of the other move operations has probably moved it.
@@ -720,10 +726,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the read-only view of all the builds.
-     * 
+     *
      * @return never null. The first entry is the latest build.
      */
-    @Exported(name="allBuilds",visibility=-2)
+    @Exported(name = "allBuilds", visibility = -2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
         return RunList.fromRuns(_getRuns().values());
@@ -734,7 +740,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @since 1.485
      */
-    @Exported(name="builds")
+    @Exported(name = "builds")
     public RunList<RunT> getNewBuilds() {
         return getBuilds().limit(100);
     }
@@ -743,10 +749,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Obtains all the {@link Run}s whose build numbers matches the given {@link RangeSet}.
      */
     public synchronized List<RunT> getBuilds(RangeSet rs) {
-        List<RunT> builds = new LinkedList<>();
+        List<RunT> builds = new ArrayList<>();
 
         for (Range r : rs.getRanges()) {
-            for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
+            for (RunT b = getNearestBuild(r.start); b != null && b.getNumber() < r.end; b = b.getNextBuild()) {
                 builds.add(b);
             }
         }
@@ -794,25 +800,25 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WithBridgeMethods(List.class)
     @Deprecated
     public RunList<RunT> getBuildsByTimestamp(long start, long end) {
-        return getBuilds().byTimestamp(start,end);
+        return getBuilds().byTimestamp(start, end);
     }
 
     @CLIResolver
-    public RunT getBuildForCLI(@Argument(required=true,metaVar="BUILD#",usage="Build number") String id) throws CmdLineException {
+    public RunT getBuildForCLI(@Argument(required = true, metaVar = "BUILD#", usage = "Build number") String id) throws CmdLineException {
         try {
             int n = Integer.parseInt(id);
             RunT r = getBuildByNumber(n);
-            if (r==null)
-                throw new CmdLineException(null, "No such build '#"+n+"' exists");
+            if (r == null)
+                throw new CmdLineException(null, "No such build '#" + n + "' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(null, id+ "is not a number");
+            throw new CmdLineException(null, id + "is not a number", e);
         }
     }
 
     /**
      * Gets the youngest build #m that satisfies {@code n&lt;=m}.
-     * 
+     *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestBuild
@@ -827,7 +833,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the latest build #m that satisfies {@code m&lt;=n}.
-     * 
+     *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestOldBuild
@@ -854,7 +860,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             // is this a permalink?
             for (Permalink p : getPermalinks()) {
-                if(p.getId().equals(token))
+                if (p.getId().equals(token))
                     return p.resolve(this);
             }
 
@@ -868,7 +874,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Some {@link Job}s may not have backing data store for {@link Run}s, but
      * those {@link Job}s that use file system for storing data should use this
      * directory for consistency.
-     * 
+     *
      * @see RunMap
      */
     public File getBuildDir() {
@@ -884,7 +890,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets all the runs.
-     * 
+     *
      * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      * @see LazyBuildMixIn#_getRuns
@@ -893,7 +899,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Called from {@link Run} to remove it from this job.
-     * 
+     *
      * The files are deleted already. So all the callee needs to do is to remove
      * a reference from this {@link Job}.
      * @see LazyBuildMixIn#removeRun
@@ -931,13 +937,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the last successful build, if any. Otherwise null. A successful build
      * would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
-     * 
+     *
      * @see #getLastStableBuild()
      */
     @Exported
     @QuickSilver
     public RunT getLastSuccessfulBuild() {
-        return (RunT)Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -947,7 +953,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
-        return (RunT)Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -957,7 +963,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnstableBuild() {
-        return (RunT)Permalink.LAST_UNSTABLE_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
 
     /**
@@ -967,7 +973,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastStableBuild() {
-        return (RunT)Permalink.LAST_STABLE_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_STABLE_BUILD.resolve(this);
     }
 
     /**
@@ -976,7 +982,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastFailedBuild() {
-        return (RunT)Permalink.LAST_FAILED_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_FAILED_BUILD.resolve(this);
     }
 
     /**
@@ -985,12 +991,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
+        return (RunT) Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
-    
+
     /**
      * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
-     * 
+     *
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.
      */
@@ -998,13 +1004,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT r = getLastBuild();
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
-    
+
     /**
      * Returns candidate build for calculating the estimated duration of the current run.
-     * 
+     *
      * Returns the 3 last successful (stable or unstable) builds, if there are any.
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
-     * 
+     *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
      */
     protected List<RunT> getEstimatedDurationCandidates() {
@@ -1031,29 +1037,29 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             i++;
             r = r.getPreviousBuild();
         }
-        
+
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
             RunT run = fallbackCandidates.remove(0);
             candidates.add(run);
         }
-        
+
         return candidates;
     }
-    
+
     public long getEstimatedDuration() {
         List<RunT> builds = getEstimatedDurationCandidates();
-        
-        if(builds.isEmpty())     return -1;
+
+        if (builds.isEmpty())     return -1;
 
         long totalDuration = 0;
         for (RunT b : builds) {
             totalDuration += b.getDuration();
         }
-        if(totalDuration==0) return -1;
+        if (totalDuration == 0) return -1;
 
-        return Math.round((double)totalDuration / builds.size());
+        return Math.round((double) totalDuration / builds.size());
     }
 
     /**
@@ -1098,13 +1104,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
             }
-            scmDisplayName = " " + Util.join(scmNames, ", ");
+            scmDisplayName = " " + String.join(", ", scmNames);
         }
 
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
             int idx = 0;
             if (r instanceof RunWithSCM) {
-                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
                     for (ChangeLogSet.Entry e : c) {
                         entries.add(new FeedItem(e, idx++));
                     }
@@ -1115,18 +1121,22 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
                 entries, new FeedAdapter<FeedItem>() {
+                    @Override
                     public String getEntryTitle(FeedItem item) {
                         return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
                     }
 
+                    @Override
                     public String getEntryUrl(FeedItem item) {
                         return item.getBuild().getUrl() + "changes#detail" + item.idx;
                     }
 
+                    @Override
                     public String getEntryID(FeedItem item) {
                             return getEntryUrl(item);
                         }
 
+                    @Override
                     public String getEntryDescription(FeedItem item) {
                         StringBuilder buf = new StringBuilder();
                         for (String path : item.e.getAffectedPaths())
@@ -1134,10 +1144,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return buf.toString();
                     }
 
+                    @Override
                     public Calendar getEntryTimestamp(FeedItem item) {
                             return item.getBuild().getTimestamp();
                         }
 
+                    @Override
                     public String getEntryAuthor(FeedItem entry) {
                         return JenkinsLocationConfiguration.get().getAdminAddress();
                     }
@@ -1176,7 +1188,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Get the current health report for a job.
-     * 
+     *
      * @return the health report. Never returns null
      */
     public HealthReport getBuildHealth() {
@@ -1322,7 +1334,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<>(NOOP, getAllProperties());
                 JSONObject jsonProperties = json.optJSONObject("properties");
                 if (jsonProperties != null) {
-                  t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+                  t.rebuild(req, jsonProperties, JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
                 } else {
                   t.clear();
                 }
@@ -1338,7 +1350,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ItemListener.fireOnUpdated(this);
 
             final ProjectNamingStrategy namingStrategy = Jenkins.get().getProjectNamingStrategy();
-                if(namingStrategy.isForceExistingJobs()){
+                if (namingStrategy.isForceExistingJobs()) {
                     namingStrategy.checkName(name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
@@ -1398,64 +1410,91 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getIconClassName();
     }
 
+    private static class ChartLabel implements Comparable<ChartLabel> {
+        final Run run;
+
+        ChartLabel(Run r) {
+            this.run = r;
+        }
+
+        @Override
+        public int compareTo(ChartLabel that) {
+            return this.run.number - that.run.number;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            // JENKINS-2682 workaround for Eclipse compilation bug
+            // on (c instanceof ChartLabel)
+            if (o == null || !ChartLabel.class.isAssignableFrom(o.getClass()))  {
+                return false;
+            }
+            ChartLabel that = (ChartLabel) o;
+            return run == that.run;
+        }
+
+        public Color getColor() {
+            // TODO: consider gradation. See
+            // http://www.javadrive.jp/java2d/shape/index9.html
+            Result r = run.getResult();
+            if (r == Result.FAILURE)
+                return ColorPalette.RED;
+            else if (r == Result.UNSTABLE)
+                return ColorPalette.YELLOW;
+            else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                return ColorPalette.DARK_GREY;
+            else
+                return ColorPalette.BLUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return run.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            String l = run.getDisplayName();
+            if (run instanceof Build) {
+                String s = ((Build) run).getBuiltOnStr();
+                if (s != null)
+                    l += ' ' + s;
+            }
+            return l;
+        }
+    }
+
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "category dataset is only relevant for coloring, not equality")
+    private static class ChartLabelStackedAreaRenderer2 extends StackedAreaRenderer2 {
+        private final CategoryDataset categoryDataset;
+
+        ChartLabelStackedAreaRenderer2(CategoryDataset categoryDataset) {
+            this.categoryDataset = categoryDataset;
+        }
+
+        @Override
+        public Paint getItemPaint(int row, int column) {
+            ChartLabel key = (ChartLabel) categoryDataset.getColumnKey(column);
+            return key.getColor();
+        }
+
+        @Override
+        public String generateURL(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return String.valueOf(label.run.number);
+        }
+
+        @Override
+        public String generateToolTip(CategoryDataset dataset, int row, int column) {
+            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+            return label.run.getDisplayName() + " : " + label.run.getDurationString();
+        }
+    }
+
     public Graph getBuildTimeGraph() {
-        return new Graph(getLastBuildTime(),500,400) {
+        return new Graph(getLastBuildTime(), 500, 400) {
             @Override
             protected JFreeChart createGraph() {
-                class ChartLabel implements Comparable<ChartLabel> {
-                    final Run run;
-
-                    ChartLabel(Run r) {
-                        this.run = r;
-                    }
-
-                    public int compareTo(ChartLabel that) {
-                        return this.run.number - that.run.number;
-                    }
-
-                    @Override
-                    public boolean equals(Object o) {
-                        // HUDSON-2682 workaround for Eclipse compilation bug
-                        // on (c instanceof ChartLabel)
-                        if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
-                            return false;
-                        }
-                        ChartLabel that = (ChartLabel) o;
-                        return run == that.run;
-                    }
-
-                    public Color getColor() {
-                        // TODO: consider gradation. See
-                        // http://www.javadrive.jp/java2d/shape/index9.html
-                        Result r = run.getResult();
-                        if (r == Result.FAILURE)
-                            return ColorPalette.RED;
-                        else if (r == Result.UNSTABLE)
-                            return ColorPalette.YELLOW;
-                        else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                            return ColorPalette.GREY;
-                        else
-                            return ColorPalette.BLUE;
-                    }
-
-                    @Override
-                    public int hashCode() {
-                        return run.hashCode();
-                    }
-
-                    @Override
-                    public String toString() {
-                        String l = run.getDisplayName();
-                        if (run instanceof Build) {
-                            String s = ((Build) run).getBuiltOnStr();
-                            if (s != null)
-                                l += ' ' + s;
-                        }
-                        return l;
-                    }
-
-                }
-
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<>();
                 for (Run r : getNewBuilds()) {
                     if (r.isBuilding())
@@ -1485,8 +1524,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 plot.setBackgroundPaint(Color.WHITE);
                 plot.setOutlinePaint(null);
                 plot.setForegroundAlpha(0.8f);
-                // plot.setDomainGridlinesVisible(true);
-                // plot.setDomainGridlinePaint(Color.white);
                 plot.setRangeGridlinesVisible(true);
                 plot.setRangeGridlinePaint(Color.black);
 
@@ -1501,28 +1538,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 ChartUtil.adjustChebyshev(dataset, rangeAxis);
                 rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-                StackedAreaRenderer ar = new StackedAreaRenderer2() {
-                    @Override
-                    public Paint getItemPaint(int row, int column) {
-                        ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
-                        return key.getColor();
-                    }
-
-                    @Override
-                    public String generateURL(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return String.valueOf(label.run.number);
-                    }
-
-                    @Override
-                    public String generateToolTip(CategoryDataset dataset, int row,
-                            int column) {
-                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                        return label.run.getDisplayName() + " : "
-                                + label.run.getDurationString();
-                    }
-                };
+                StackedAreaRenderer ar = new ChartLabelStackedAreaRenderer2(dataset);
                 plot.setRenderer(ar);
 
                 // crop extra space around the graph
@@ -1535,7 +1551,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private Calendar getLastBuildTime() {
         final RunT lastBuild = getLastBuild();
-        if (lastBuild ==null) {
+        if (lastBuild == null) {
             final GregorianCalendar neverBuiltCalendar = new GregorianCalendar();
             neverBuiltCalendar.setTimeInMillis(0);
             return neverBuiltCalendar;
@@ -1587,5 +1603,5 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new BuildTimelineWidget(getBuilds());
     }
 
-    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class, "serverCookie", 16);
 }

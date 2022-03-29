@@ -23,25 +23,26 @@
  */
 (function(){
     document.addEventListener("DOMContentLoaded", function() {
-        var graphLocation = document.querySelector('.js-load-graph');
+        const graphLocation = document.querySelector('.js-load-graph');
         if (graphLocation) {
-            var type = graphLocation.getAttribute("data-graph-type");
-            var parentSelector = graphLocation.getAttribute("data-graph-parent-selector");
-            var baseUrl = graphLocation.getAttribute("data-graph-base-url");
-            var graphAlt = graphLocation.getAttribute("data-graph-alt");
+            const type = graphLocation.getAttribute("data-graph-type");
+            const parentSelector = graphLocation.getAttribute("data-graph-parent-selector");
+            const baseUrl = graphLocation.getAttribute("data-graph-base-url");
+            const graphAlt = graphLocation.getAttribute("data-graph-alt");
             
-            var parent = document.querySelector(parentSelector);
+            const parent = document.querySelector(parentSelector);
             if (parent) {
-                var availableWidth = parent.offsetWidth;
-                var padding = 30;
+                const availableWidth = parent.offsetWidth;
+                const padding = 30;
                 // for some browsers, the perfect width is not enough
-                var quirkyBrowserAdjustment = 15;
-                var graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
+                const quirkyBrowserAdjustment = 15;
+                const graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
 
                 // type in {sec10, min, hour}
-                var graphUrl = baseUrl + "/graph?type=" + type + "&width=" + graphWidth + "&height=500";
-                var graphImgTag = document.createElement("img");
+                const graphUrl = baseUrl + "/graph?type=" + type + "&width=" + graphWidth + "&height=500";
+                const graphImgTag = document.createElement("img");
                 graphImgTag.src = graphUrl;
+                graphImgTag.srcset = graphUrl + "&scale=2 2x";
                 graphImgTag.alt = graphAlt;
                 graphLocation.appendChild(graphImgTag);
             }

@@ -21,9 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
@@ -31,24 +37,19 @@ import org.kohsuke.stapler.FunctionList;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.InterceptorAnnotation;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
 @Restricted(NoExternalUse.class)
 public class DoActionFilter implements FunctionList.Filter {
     private static final Logger LOGGER = Logger.getLogger(DoActionFilter.class.getName());
 
     /**
      * if a method has "do" as name (not possible in pure Java but doable in Groovy or other JVM languages)
-     * the new system does not consider it as a web method. 
+     * the new system does not consider it as a web method.
      * <p>
      * Use {@code @WebMethod(name="")} or {@code doIndex} in such case.
      */
     private static final Pattern DO_METHOD_REGEX = Pattern.compile("^do[^a-z].*");
-    
+
+    @Override
     public boolean keep(@NonNull Function m) {
 
         if (m.getAnnotation(StaplerNotDispatchable.class) != null) {
@@ -119,7 +120,7 @@ public class DoActionFilter implements FunctionList.Filter {
             return true;
         }
 
-        // as HttpResponseException inherits from RuntimeException, 
+        // as HttpResponseException inherits from RuntimeException,
         // there is no requirement for the developer to explicitly checks it.
         Class<?>[] checkedExceptionTypes = m.getCheckedExceptionTypes();
         for (Class<?> checkedExceptionType : checkedExceptionTypes) {
@@ -127,7 +128,7 @@ public class DoActionFilter implements FunctionList.Filter {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

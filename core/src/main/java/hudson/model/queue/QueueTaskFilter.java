@@ -24,16 +24,15 @@
 
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
-
 import java.io.IOException;
 import java.util.Collection;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.
@@ -75,10 +74,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getCauseOfBlockage();
     }
 
+    @Override
     public String getName() {
         return base.getName();
     }
 
+    @Override
     public String getFullDisplayName() {
         return base.getFullDisplayName();
     }
@@ -88,18 +89,22 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getEstimatedDuration();
     }
 
+    @Override
     public @CheckForNull Executable createExecutable() throws IOException {
         return base.createExecutable();
     }
 
+    @Override
     public void checkAbortPermission() {
         base.checkAbortPermission();
     }
 
+    @Override
     public boolean hasAbortPermission() {
         return base.hasAbortPermission();
     }
 
+    @Override
     public String getUrl() {
         return base.getUrl();
     }
@@ -109,6 +114,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.isConcurrentBuild();
     }
 
+    @Override
     public String getDisplayName() {
         return base.getDisplayName();
     }

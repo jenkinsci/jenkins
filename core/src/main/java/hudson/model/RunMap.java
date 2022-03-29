@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static java.util.logging.Level.FINEST;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -32,15 +40,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
-
-import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import org.apache.commons.collections.comparators.ReverseComparator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -54,11 +58,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
+public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
      */
-    private final SortedMap<Integer,R> view = Collections.unmodifiableSortedMap(this);
+    private final SortedMap<Integer, R> view = Collections.unmodifiableSortedMap(this);
 
     private Constructor<R> cons;
 
@@ -95,18 +99,21 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Walks through builds, newer ones first.
      */
+    @Override
     public Iterator<R> iterator() {
         return new Iterator<R>() {
             R last = null;
             R next = newestBuild();
 
+            @Override
             public boolean hasNext() {
-                return next!=null;
+                return next != null;
             }
 
+            @Override
             public R next() {
                 last = next;
-                if (last!=null)
+                if (last != null)
                     next = last.getPreviousBuild();
                 else
                     throw new NoSuchElementException();
@@ -115,7 +122,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
             @Override
             public void remove() {
-                if (last==null)
+                if (last == null)
                     throw new UnsupportedOperationException();
                 removeValue(last);
             }
@@ -132,7 +139,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Gets the read-only view of this map.
      */
-    public SortedMap<Integer,R> getView() {
+    public SortedMap<Integer, R> getView() {
         return view;
     }
 
@@ -152,19 +159,15 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     /**
      * @deprecated  as of 1.485
-     *      Use {@link ReverseComparator}
+     *      Use {@link Comparator#reverseOrder}
      */
     @Deprecated
-    public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
-        public int compare(Comparable o1, Comparable o2) {
-            return o2.compareTo(o1);
-        }
-    };
+    public static final Comparator<Comparable> COMPARATOR = Comparator.reverseOrder();
 
     /**
      * {@link Run} factory.
      */
-    public interface Constructor<R extends Run<?,R>> {
+    public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
     }
 
@@ -186,13 +189,17 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     public R put(R r) {
         // Defense against JENKINS-23152 and its ilk.
         File rootDir = r.getRootDir();
-        if (rootDir.isDirectory()) {
+        if (Files.isDirectory(rootDir.toPath())) {
             throw new IllegalStateException("JENKINS-23152: " + rootDir + " already existed; will not overwrite with " + r);
         }
         if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
             proposeNewNumber(r.getNumber());
         }
-        rootDir.mkdirs();
+        try {
+            Util.createDirectories(rootDir.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return super._put(r);
     }
 
@@ -219,7 +226,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     @Override
     protected R retrieve(File d) throws IOException {
-        if(new File(d,"build.xml").exists()) {
+        if (new File(d, "build.xml").exists()) {
             // if the build result file isn't in the directory, ignore it.
             try {
                 R b = cons.create(d);

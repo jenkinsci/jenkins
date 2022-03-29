@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.diagnostics;
-
-import hudson.model.AdministrativeMonitor;
-import hudson.model.ProjectTest;
-import hudson.model.Slave;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import hudson.model.AdministrativeMonitor;
+import hudson.model.ProjectTest;
+import hudson.model.Slave;
+import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
 public class ControllerExecutorsNoAgentsTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void testInitial() {
         ControllerExecutorsNoAgents monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(ControllerExecutorsNoAgents.class);

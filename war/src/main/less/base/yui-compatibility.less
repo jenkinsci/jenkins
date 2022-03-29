@@ -12,11 +12,6 @@
   // for this selector
 }
 
-.yui-skin-sam .yui-ac-input {
-  position: absolute;
-  width: 100%;
-}
-
 .yui-skin-sam .yui-ac-container {
   position: absolute;
   top: 1.6em;
@@ -107,6 +102,8 @@
   }
 
   .yuimenu {
+    z-index: 1000 !important;
+
     .bd {
       border-color: var(--input-border);
       background-color: var(--menu-bg-color);
@@ -115,12 +112,14 @@
 }
 
 /* Overrides for treeview-skin.css */
-
-.ygtvlabel,
-.ygtvlabel:link,
-.ygtvlabel:visited,
-.ygtvlabel:hover {
-  color: inherit;
+.ygtvitem {
+  .ygtvlabel,
+  .ygtvlabel:link,
+  .ygtvlabel:visited,
+  .ygtvlabel:hover {
+    color: inherit;
+    background-color: inherit;
+  }
 }
 
 .ygtvfocus {
@@ -164,6 +163,14 @@ div.yahooTree td {
 #jenkins .yuimenuitem {
   font-size: var(--font-size-xs);
   padding: 3px;
+
+  svg,
+  img {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    color: var(--primary) !important;
+  }
 }
 
 #jenkins .yuimenuitem,
@@ -218,4 +225,9 @@ div.yahooTree td {
     right: 0.75em;
     display: inline-block;
   }
+}
+
+.yui-panel,
+.yui-panel .bd {
+  background-color: var(--background) !important;
 }

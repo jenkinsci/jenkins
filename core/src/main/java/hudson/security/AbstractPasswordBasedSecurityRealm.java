@@ -173,12 +173,14 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     }
 
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
+        @Override
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
             // authentication is assumed to be done already in the retrieveUser method
         }
 
+        @Override
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            return doAuthenticate(username,authentication.getCredentials().toString());
+            return doAuthenticate(username, authentication.getCredentials().toString());
         }
     }
 

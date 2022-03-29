@@ -1,21 +1,20 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.utils.AbortExceptionPublisher;
 import hudson.model.utils.IOExceptionPublisher;
 import hudson.model.utils.ResultWriterPublisher;
 import hudson.model.utils.TrueFalsePublisher;
 import hudson.tasks.ArtifactArchiver;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Freestyle publishers statuses tests
@@ -41,8 +40,7 @@ public class FreestyleJobPublisherTest {
         artifactArchiver.setOnlyIfSuccessful(false);
         p.getPublishersList().add(artifactArchiver); // transfer file to build dir
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-        assertEquals("Build must fail, because we used FalsePublisher", Result.FAILURE, b.getResult());
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
         assertEquals("Publisher, after publisher with return false status, must see FAILURE status", FileUtils.readFileToString(file, StandardCharsets.UTF_8), Result.FAILURE.toString());
@@ -63,9 +61,8 @@ public class FreestyleJobPublisherTest {
         artifactArchiver.setOnlyIfSuccessful(false);
         p.getPublishersList().add(artifactArchiver); // transfer file to build dir
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
 
-        assertEquals("Build must fail, because we used AbortExceptionPublisher", Result.FAILURE, b.getResult());
         j.assertLogNotContains("\tat", b); // log must not contain stacktrace
         j.assertLogContains("Threw AbortException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
@@ -88,9 +85,8 @@ public class FreestyleJobPublisherTest {
         artifactArchiver.setOnlyIfSuccessful(false);
         p.getPublishersList().add(artifactArchiver); // transfer file to build dir
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
 
-        assertEquals("Build must fail, because we used FalsePublisher", Result.FAILURE, b.getResult());
         j.assertLogContains("\tat hudson.model.utils.IOExceptionPublisher", b); // log must contain stacktrace
         j.assertLogContains("Threw IOException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");

@@ -37,9 +37,11 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
-    <jacocoSurefireArgs /><!-- empty by default -->
+    <!-- empty by default -->
+    <jacocoSurefireArgs />
   </properties>
 
   <dependencyManagement>
@@ -54,28 +56,27 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>1.11</version>
+        <version>1.13</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps via mailer and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.6</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1.76</version>
+        <version>1145.vb_cf6cf6ed960</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <version>${project.version}</version>
-      <type>executable-war</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.69</version>
+      <version>1723.vcd938b_e66072</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -89,73 +90,96 @@ THE SOFTWARE.
       <artifactId>jenkins-test-harness-tools</artifactId>
       <version>2.2</version>
       <scope>test</scope>
-    </dependency>
-     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>6.15</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mailer</artifactId>
-      <version>1.34</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-auth</artifactId>
-      <version>${matrix-auth.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.1</version>
-      <scope>test</scope>
       <exclusions>
-        <exclusion> <!-- TODO it seems to want Guava 27.1; apparently it manages to run against 11.0.1 -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-test-harness</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-project</artifactId>
-      <version>${matrix-project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>junit</artifactId>
-      <version>1.49</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <type>executable-war</type>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <version>1.22</version>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-mail-api</artifactId>
+      <version>1.6.2-5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>2.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.714.v79e858ef76a_2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.56</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>408.vd726a_1130320</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>758.v7a_ea_491852f3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>1.24</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>netx</artifactId>
       <version>0.5-hudson-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>4.0.3</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -180,11 +204,11 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>old-remoting-for-test</id>
-            <phase>generate-test-resources</phase>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
               <goal>copy</goal>
             </goals>
+            <phase>generate-test-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -205,12 +229,9 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
           <systemPropertyVariables>
-              <!-- use AntClassLoader that supports predictable file handle release -->
-              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
-              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
-              <buildDirectory>${project.build.directory}</buildDirectory>
+            <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+            <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
@@ -277,7 +298,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.6</version>
+            <version>0.8.7</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which
@@ -300,10 +321,10 @@ THE SOFTWARE.
               -->
               <execution>
                 <id>post-unit-test</id>
-                <phase>test</phase>
                 <goals>
                   <goal>report</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
                   <!-- Sets the path to the file which contains the execution data. -->
                   <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
@@ -312,6 +333,38 @@ THE SOFTWARE.
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk-8-and-below</id>
+      <activation>
+        <jdk>(,1.8]</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>${jacocoSurefireArgs} -Xmx1g</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk-9-and-above</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>${jacocoSurefireArgs} -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+            </configuration>
           </plugin>
         </plugins>
       </build>

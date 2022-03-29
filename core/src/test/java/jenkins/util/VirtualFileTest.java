@@ -24,11 +24,49 @@
 
 package jenkins.util;
 
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
@@ -40,44 +78,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-
 public class VirtualFileTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File ws = tmp.newFolder("ws");
         FileUtils.write(new File(ws, "safe"), "safe", StandardCharsets.US_ASCII, false);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
@@ -92,12 +99,7 @@ public class VirtualFileTest {
         VirtualFile hack = root.child("hack");
         assertFalse(hack.isFile());
         assertFalse(hack.exists());
-        try {
-            hack.open();
-            fail();
-        } catch (FileNotFoundException | NoSuchFileException x) {
-            // OK
-        }
+        assertThrows(FileNotFoundException.class, hack::open);
     }
 
     @Issue("JENKINS-26810")
@@ -112,6 +114,7 @@ public class VirtualFileTest {
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
     }
+
     private static String modeString(int mode) throws IOException {
         return mode == -1 ? "N/A" : PosixFilePermissions.toString(Util.modeToPermissions(mode));
     }
@@ -120,7 +123,7 @@ public class VirtualFileTest {
     @Test public void list() throws Exception {
         File root = tmp.getRoot();
         FilePath rootF = new FilePath(root);
-        Set<String> paths = ImmutableSet.of("top.txt", "sub/mid.txt", "sub/subsub/lowest.txt", ".hg/config.txt", "very/deep/path/here");
+        Set<String> paths = new HashSet<>(Arrays.asList("top.txt", "sub/mid.txt", "sub/subsub/lowest.txt", ".hg/config.txt", "very/deep/path/here"));
         for (String path : paths) {
             rootF.child(path).write("", null);
         }
@@ -141,59 +144,73 @@ public class VirtualFileTest {
         }
     }
     /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */
+
     private static final class Ram extends VirtualFile {
         private final Set<String> paths; // e.g., [/very/deep/path/here]
         private final String path; // e.g., empty string or /very or /very/deep/path/here
+
         Ram(Set<String> paths, String path) {
             this.paths = paths;
             this.path = path;
         }
+
         @Override
         public String getName() {
             return path.replaceFirst(".*/", "");
         }
+
         @Override
         public URI toURI() {
             return URI.create("ram:" + path);
         }
+
         @Override
         public VirtualFile getParent() {
             return new Ram(paths, path.replaceFirst("/[^/]+$", ""));
         }
+
         @Override
-        public boolean isDirectory() throws IOException {
+        public boolean isDirectory() {
             return paths.stream().anyMatch(p -> p.startsWith(path + "/"));
         }
+
         @Override
-        public boolean isFile() throws IOException {
+        public boolean isFile() {
             return paths.contains(path);
         }
+
         @Override
         public boolean exists() throws IOException {
             return isFile() || isDirectory();
         }
+
         @Override
-        public VirtualFile[] list() throws IOException {
+        public VirtualFile[] list() {
             return paths.stream().filter(p -> p.startsWith(path + "/")).map(p -> new Ram(paths, p.replaceFirst("(\\Q" + path + "\\E/[^/]+)/.+", "$1"))).toArray(VirtualFile[]::new);
         }
+
         @Override
         public VirtualFile child(String name) {
             return new Ram(paths, path + "/" + name);
         }
+
         @Override
-        public long length() throws IOException {
+        public long length() {
             return 0;
         }
+
         @Override
-        public long lastModified() throws IOException {
+        public long lastModified() {
             return 0;
         }
+
         @Override
         public boolean canRead() throws IOException {
             return isFile();
         }
+
         @Override
-        public InputStream open() throws IOException {
+        public InputStream open() {
             return new NullInputStream(0);
         }
     }
@@ -229,6 +246,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -251,7 +269,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
+            sourcePath.zip(outputStream, "**", null, true, true, "");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -280,7 +298,7 @@ public class VirtualFileTest {
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
         String prefix = "test1";
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, prefix + "/");
+            sourcePath.zip(outputStream, "**", null, true, true, prefix + "/");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -309,7 +327,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFile(source);
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
+            sourcePath.zip(outputStream, "**", null, true, true, "");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -338,7 +356,7 @@ public class VirtualFileTest {
         String prefix = "test1";
         VirtualFile sourcePath = VirtualFile.forFile(source);
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, prefix + "/");
+            sourcePath.zip(outputStream, "**", null, true, true, prefix + "/");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -359,7 +377,7 @@ public class VirtualFileTest {
 
     @Issue("JENKINS-26810")
     @Test public void readLink() throws Exception {
-        assumeFalse("Symlinks do not work well on Windows", Functions.isWindows());
+        assumeFalse(Functions.isWindows());
         File root = tmp.getRoot();
         FilePath rootF = new FilePath(root);
         rootF.child("plain").write("", null);
@@ -422,6 +440,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -439,6 +458,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -455,6 +475,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -471,6 +492,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -487,6 +509,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_Glob_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
         File root = tmp.getRoot();
         String symlinkName = "symlink";
@@ -608,6 +631,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_FilePathVF() throws Exception {
+        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -667,6 +691,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void simpleList_WithSymlink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which has limited behavior.
         prepareFileStructureForIsDescendant(tmp.getRoot());
@@ -686,6 +711,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void list_NoFollowLinks_WithSymlink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         prepareFileStructureForIsDescendant(tmp.getRoot());
@@ -761,6 +787,7 @@ public class VirtualFileTest {
 
     @Issue("SECURITY-904")
     @Test public void forFile_isDescendant() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -777,6 +804,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-904")
     public void forFilePath_isDescendant() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -791,10 +819,7 @@ public class VirtualFileTest {
     }
 
     private void checkCommonAssertionForIsDescendant(VirtualFile virtualRoot, VirtualFile virtualRootChildA, VirtualFile virtualFromA, String absolutePath) throws Exception {
-        try {
-            virtualRootChildA.isDescendant(absolutePath);
-            fail("isDescendant should have refused the absolute path");
-        } catch (IllegalArgumentException e) {}
+        assertThrows("isDescendant should have refused the absolute path", IllegalArgumentException.class, () -> virtualRootChildA.isDescendant(absolutePath));
 
         assertTrue(virtualRootChildA.isDescendant("aa"));
         assertTrue(virtualRootChildA.isDescendant("aa/aa.txt"));
@@ -852,6 +877,7 @@ public class VirtualFileTest {
     @Test
     @Issue("JENKINS-55050")
     public void forFile_listOnlyDescendants_withoutIllegal() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -867,6 +893,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-904")
     public void forFilePath_listOnlyDescendants_withoutIllegal() throws Exception {
+        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp.getRoot());
 
         File root = tmp.getRoot();
@@ -953,12 +980,14 @@ public class VirtualFileTest {
             this.description = description;
         }
 
+        @Override
         public void describeTo(Description description) {
             description.appendText(this.description);
         }
 
         public static VFMatcher hasName(String expectedName) {
             return new VFMatcher("Has name: " + expectedName) {
+                @Override
                 protected boolean matchesSafely(VirtualFile vf) {
                     return expectedName.equals(vf.getName());
                 }
@@ -1014,7 +1043,7 @@ public class VirtualFileTest {
         String childString = "child";
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile child = VirtualFile.forFile(ws).child(childString);
-        assertThat(child.length(), is((long)childString.length()));
+        assertThat(child.length(), is((long) childString.length()));
     }
 
     @Test
@@ -1100,6 +1129,7 @@ public class VirtualFileTest {
     @Test
     @Issue("SECURITY-1452")
     public void testOpenNoFollowLinks_FollowsLink_AbstractBase() throws Exception {
+        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
@@ -1123,12 +1153,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFile(ws).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
     }
 
     @Test
@@ -1142,12 +1167,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
-        try {
-        child.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> child.open(true));
     }
 
     @Test
@@ -1160,12 +1180,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
-        try {
-            childVirtualPath.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> childVirtualPath.open(true));
     }
 
     @Test
@@ -1178,12 +1193,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFilePath(new FilePath(ws)).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
     }
 
     @Test
@@ -1228,7 +1238,7 @@ public class VirtualFileTest {
         String childString = "child";
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile child = VirtualFile.forFilePath(new FilePath(ws)).child(childString);
-        assertThat(child.length(), is((long)childString.length()));
+        assertThat(child.length(), is((long) childString.length()));
     }
 
     @Test
@@ -1442,6 +1452,7 @@ public class VirtualFileTest {
 
     @Test
     public void hasSymlink_True_FilePathVF() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp.getRoot());
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);
@@ -1459,6 +1470,7 @@ public class VirtualFileTest {
 
     @Test
     public void hasSymlink_True_FileVF() throws IOException, InterruptedException {
+        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp.getRoot());
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);
@@ -1512,13 +1524,13 @@ public class VirtualFileTest {
             this.root = root;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getName() {
             return file.getName();
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public URI toURI() {
             return file.toURI();
@@ -1544,7 +1556,7 @@ public class VirtualFileTest {
             return false;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public VirtualFile[] list() {
             File[] kids = file.listFiles();
@@ -1562,9 +1574,9 @@ public class VirtualFileTest {
             return new VirtualFileMinimalImplementation(kid, root);
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public VirtualFile child(@Nonnull String name) {
+        public VirtualFile child(@NonNull String name) {
             return child(new File(file, name), root);
         }
 
@@ -1592,11 +1604,11 @@ public class VirtualFileTest {
 
     private static class VirtualFileMinimalImplementationWithDescendants extends VirtualFileMinimalImplementation {
 
-        public VirtualFileMinimalImplementationWithDescendants(File file) {
+        VirtualFileMinimalImplementationWithDescendants(File file) {
             super(file);
         }
 
-        public VirtualFileMinimalImplementationWithDescendants(File file, File root) {
+        VirtualFileMinimalImplementationWithDescendants(File file, File root) {
             super(file, root);
         }
 
@@ -1606,7 +1618,7 @@ public class VirtualFileTest {
         }
 
         @Override
-        public boolean isDescendant(String childRelativePath) throws IOException {
+        public boolean isDescendant(String childRelativePath) {
             return true;
         }
 

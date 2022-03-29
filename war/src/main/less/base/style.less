@@ -58,6 +58,10 @@ dt {
   font-weight: bold;
 }
 
+::selection {
+  background: var(--selection-color);
+}
+
 .fixed-width {
   font-family: monospace;
 }
@@ -84,16 +88,6 @@ td.center-align {
 #main-table {
   padding: 0;
   border-collapse: collapse;
-}
-
-#top-panel {
-  margin-bottom: 3pt;
-  height: 34px;
-  background: url(../../images/topbar.png) repeat-x;
-}
-
-#top-panel a {
-  text-decoration: none;
 }
 
 .skiplink {
@@ -132,6 +126,18 @@ td.center-align {
 
 a {
   .link();
+}
+
+.jenkins-link--with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-color) !important;
+  }
 }
 
 p a {
@@ -228,18 +234,22 @@ td.tab {
   background: #f0f0f0;
 }
 
-.dashboard td {
-  padding: 4px 4px 4px 4px;
-}
-
 pre {
-    white-space: pre-wrap;       /* css-3 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
-    margin: 0;
-}
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0 0 var(--section-padding);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+  color: var(--pre-color) !important;
+  font-family: var(--font-family-mono) !important;
+  font-weight: 500 !important;
+  line-height: 1.66 !important;
 
-pre a {
+  a {
+    font-weight: inherit;
     word-wrap: break-word;
+  }
 }
 
 pre.console {
@@ -270,11 +280,6 @@ pre.console {
 
 .setting-checkbox {
   font-weight: 500;
-}
-
-.setting-main {
-  margin-top: 0.25rem;
-  width: 100%; /* try to make this column as big as possible. */
 }
 
 .setting-help {
@@ -337,10 +342,6 @@ pre.console {
 /* div that looks like a hyperlink */
 .pseudoLink {
   cursor: pointer;
-}
-
-.advancedLink {
-  text-align: right;
 }
 
 .advancedBody {
@@ -412,32 +413,19 @@ pre.console {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
-  padding: 4px;
-  white-space: normal;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
 }
 
 .disabledJob {
   color: gray;
-}
-
-.spinner {
-  padding-left: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: left;
-}
-
-.spinner-right {
-  padding-right: 32px;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  background-image: url("../../images/spinner.gif");
-  background-repeat: no-repeat;
-  background-position: right;
 }
 
 #login-field {
@@ -460,105 +448,100 @@ pre.console {
 }
 
 div.behavior-loading {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+
+  &::before {
+    content: "";
     position: absolute;
+    top: 0;
     left: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #e4e4e4;
-    text-align: center;
-    // TODO: use a display font, maybe 3rem
-    font-size: 300%;
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-}
-
-.config div.behavior-loading {
-    background: rgba(255, 255, 255, 0.85);
-    left: 0;
-    width: 100%;
-    right: 0;
-    top: 15px;
     bottom: 0;
-    height: 100%;
-    width: auto;
-    min-height: 100%;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-    filter: alpha(opacity=100);
-    font-size: 1.5em;
-    z-index: 99;
-    opacity: 1;
-    color: #999;
-    text-shadow: #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px;
-}
-
-.behavior-loading::before {
-  content: ' ';
-  display: block;
-  width: 100px;
-  height: 100px;
-  margin: 200px auto 25px;
-  background-color: rgba(0, 0, 0, 0.15);
-  border: 5px solid rgba(0, 0, 0, 0.33);
-  position: relative;
-  z-index: 2;
-  border-radius: 100%;
-  -webkit-animation: sk-scaleout 1s infinite ease-in-out;
-  animation: sk-scaleout 1s infinite ease-in-out;
-  box-shadow: #fff 0 0 0 10px;
-}
-
-@-webkit-keyframes sk-scaleout {
-  0% { -webkit-transform: scale(0); }
-
-  100% {
-    -webkit-transform: scale(1);
-    opacity: 0;
+    right: 0;
+    background: var(--background);
+    opacity: 0.95;
   }
-}
-
-@keyframes sk-scaleout {
-  0% {
-    -webkit-transform: scale(0);
-    transform: scale(0);
-  }
-
- 100% {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-
-label.attach-previous {
-    margin-left: 0.5em;
 }
 
 .bottom-sticker,
 #bottom-sticker {
-    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+  position: sticky;
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: -2rem;
+  width: calc(100% + 4rem);   /* it needs to occupy the entire width or else the underlying content will see through */
+  z-index: 999;
 }
 
 .bottom-sticker-inner {
+  position: relative;
+  padding: 1em 2rem;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
     background: var(--background);
-    padding: 1em 0;
+    opacity: 0;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(to right, transparent, white 2rem, white calc(100% - 2rem), transparent);
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  .yui-button {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
 }
 
 .top-sticker,
 #top-sticker {
     width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
-}
-
-.top-sticker-inner {
-    padding: 1em;
-}
-
-.top-sticker-edge {
-    height: 16px;
-    background-image: url("../../images/top-sticker-bottom-edge.png");
-    background-repeat: repeat-x;
 }
 
 .top-sticker.noedge > .top-sticker-edge {
@@ -577,9 +560,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/error.png");
-    background-position: left center;
+    background-image: url("../../images/svgs/error.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .error-inline {
@@ -593,10 +577,10 @@ label.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url("../../images/16x16/warning.png");
-    background-size: 16px 16px;
-    background-position: left center;
+    background-image: url("../../images/svgs/warning.svg");
+    background-position: left top;
     background-repeat: no-repeat;
+    background-size: 16px 16px;
 }
 
 .warning-inline {
@@ -605,13 +589,25 @@ label.attach-previous {
 }
 
 .info {
-    color: var(--text-color);
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    background-image: url("../../images/16x16/go-next.png"); /* TODO: get a better icon */
-    background-position: left center;
-    background-repeat: no-repeat;
+  position: relative;
+  color: var(--text-color);
+  font-weight: bold;
+  min-height: 16px;
+  padding-left: 30px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EArrow Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M268 112l144 144-144 144M392 256H100'/%3E%3C/svg%3E");
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+  }
 }
 
 .icon16x16 {
@@ -632,12 +628,34 @@ label.attach-previous {
 /* ====================== help ===================================== */
 
 .help {
+  position: relative;
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: var(--help-area-bg-color);
-  padding: 1em;
-  margin-bottom: 1em;
+  padding: 1rem;
+  margin: 1rem 0;
   word-break: break-word;
+  border-radius: 6px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    opacity: 0.05;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .help a {
@@ -651,18 +669,6 @@ label.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
-}
-
-.help-button {
-  margin-left: 2px;
-  margin-right: 2ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.setting-help .help-button {
-  margin: 0;
 }
 
 .icon-help,
@@ -740,7 +746,7 @@ img.icon-help {
   border-bottom: 1px solid var(--bigtable-header-border-color);
 }
 
-#projectstatus th {
+#projectstatus > thead > th {
   text-align: left;
   // padding: 7px 0px;
 }
@@ -780,35 +786,30 @@ table.parameters > tbody:hover {
 }
 
 .healthReport div.healthReportDetails {
-    display: none;
-}
+  display: none;
+  margin-left: 20px;
+  padding: 0;
+  --table-border-radius: 7px;
 
-.healthReport:hover,
-.healthReport.hover { /* fix IE6 bug with :hover */
-    background: transparent;
+  table {
+    border-radius: 0;
+    width: 450px;
+    margin-bottom: 0;
+    box-sizing: content-box;
+    padding-bottom: 2px;
+
+    * {
+      box-sizing: border-box;
+    }
+  }
 }
 
 .healthReport:hover div.healthReportDetails,
 .healthReport.hover div.healthReportDetails {
-    display: block;
-    position: absolute;
-    background-color: #ffe;
-    border: 1px solid #bbb;
-    margin-left: 32px; /* move it across a bit */
-    z-index: 26;
-}
-
-.healthReport div.healthReportDetails table {
-    border-collapse: collapse;
-    width: 450px; /* fix IE bug with width */
+  display: block;
 }
 
 /* ========================= build history ========================= */
-#buildHistory .healthReport {
-    display: inline;
-    margin-right: 1em;
-}
-
 #buildHistory a:visited {
   color: fuchsia;
 }
@@ -843,99 +844,105 @@ table.parameters > tbody:hover {
 #buildHistory .build-rss-all-icon,
 #buildHistory .build-rss-failed-icon {
   margin-right: 0.25rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 #buildHistoryPage {
   position: relative;
-}
 
-#buildHistoryPage .build-search-row td {
-    position: relative;
-}
+  .build-search-row, .build-search-no-results-row {
+    &:hover {
+      background: transparent !important;
+    }
 
-#buildHistoryPage .build-search-row .clear {
-    position: absolute;
-    padding: 0 4px;
-    cursor: pointer;
-    top: 4px;
-    right: 6px;
-    opacity: 0.5;
-}
+    td {
+      padding: 8px;
+    }
+  }
 
-#buildHistoryPage .build-search-row .clear:hover {
-    background-color: var(--very-light-grey);
-    border: 1px solid var(--medium-grey);
-    padding-right: 3px;
-    border-top-right-radius: 2px;
-}
+  .build-search-no-results-row {
+    border: none!important;
+    width: 100%!important;
+    background: transparent;
 
-#buildHistoryPage .build-search-row input {
-    width: 100%;
-    padding-left: 5px;
-    padding-right: 20px;
-}
-
-#buildHistoryPage .build-search-row table {
-    width: 100%;
-}
-
-#buildHistoryPage .build-search-row .build-search-help {
-    width: 20px;
-}
-
-#buildHistoryPage .build-search-row .icon-help {
-    position: absolute;
-    cursor: pointer;
-    top: 6px;
+    td {
+      padding-top: 0!important;
+    }
+  }
 }
 
 #buildHistoryPageNav {
   position: absolute;
-  right: -21px;
-  top: 41px;
-  border: 1px solid;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  right: -28px;
+  top: 96px;
+  border-radius: 6px;
+  background: var(--input-color);
+  border: 2px solid var(--input-border);
   visibility: hidden;
-}
+  z-index: 0;
+  opacity: 0;
+  transition: 0.2s ease;
 
-#buildHistoryPageNav .nav {
-  width: 16px;
-  height: 16px;
-  background: no-repeat;
-  background-position: center;
-  background-size: 16px 16px;
-  margin: 4px 2px;
-  cursor: pointer;
+  // Invisible pseudo element on the left so #buildHistoryPageNav
+  // doesn't disappear when moving cursor over gap
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -8px;
+    bottom: 0;
+    width: 8px;
+    background: transparent;
+    z-index: -1;
+  }
+
+  .buildHistoryPageNav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 8px;
+    height: 30px;
+    cursor: pointer;
+    transition: opacity .2s ease;
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &:active {
+      opacity: 0.25;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    &-page-one-top {
+      width: 12px;
+      height: 2px;
+      background: currentColor;
+      margin: 2px 0;
+      border-radius: 2px;
+    }
+
+    svg {
+      fill: currentColor;
+      width: 12px;
+      height: 12px;
+    }
+  }
 }
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  border-color: var(--light-grey) !important;
-}
-
-#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav:hover {
-  border-color: var(--medium-grey) !important;
-}
-
-#buildHistoryPageNav .pageOne {
-  background-image: url(../../images/16x16/go_top.png);
-}
-
-#buildHistoryPageNav .pageUp {
-  background-image: url(../../images/16x16/go_up.png);
-}
-
-#buildHistoryPageNav .pageDown {
-  background-image: url(../../images/16x16/go_down.png);
-}
-
-#buildHistoryPageNav .find {
-  background-image: url(../../images/16x16/find.png);
+  right: -38px;
+  opacity: 1;
 }
 
 .build-row.model-link-active {
@@ -999,26 +1006,67 @@ table.parameters > tbody:hover {
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
-  border: 1px solid #000;
-  overflow: visible;
-  background-color: white;
-  color: black;
+  overflow-y: scroll;
+  color: var(--text-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(black, 0.15);
+  margin-top: 8px;
+  margin-left: 3px;
+  max-height: 300px;
+  z-index: 1000;
+  background: var(--background);
+  padding: 0.3rem;
 }
 
-.comboBoxSelectedItem {
-  background-color: Highlight;
-  color: HighlightText;
+.comboBoxItem {
+  position: relative;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    border-radius: 10px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    z-index: -1;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.1;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+  }
 }
 
 .combobox-values {
   display: none;
 }
 
-
 /* ========================= directory tree ========================= */
-.parentPath {
-  font-size: var(--font-size-base);
-  font-weight: bold;
+.parentPath form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .jenkins-input {
+    display: inline-flex;
+    width: 300px;
+  }
 }
 
 .dirTree li {
@@ -1030,18 +1078,20 @@ table.parameters > tbody:hover {
 }
 
 table.fileList {
-  margin-left: 2em;
   padding: 0;
 }
 
-table.fileList td {
-  padding: 0;
+table.fileList td:not(:first-of-type) {
+  padding: 0 1rem 0 0;
+  color: var(--text-color-secondary);
+
+  svg {
+    color: var(--link-color) !important;
+  }
 }
 
 table.fileList td.fileSize {
-  padding-left: 2em;
   text-align: right;
-  color: #888;
 }
 
 
@@ -1090,162 +1140,50 @@ table.fingerprint-in-build td {
   padding-right: 1em;
 }
 
+.radioBlock-container {
+  margin-bottom: calc(var(--section-padding) / 3);
 
-
-
-/* ========================= plugin manager ========================= */
-#plugins {
-  margin-top: 0;
-  border-top: none;
-}
-
-#plugins.bigtable {
-  // Add this fallback because tables with hidden rows will
-  // not have a bottom border
-  border-bottom: 1px solid var(--bigtable-row-border-color);
-}
-
-#pluginsAdv tr:hover {
-  background-color: inherit;
-}
-
-#plugins tr.already-upgraded {
-  background-color: var(--plugin-manager-bg-color-already-upgraded);
-}
-
-#plugins tr.all-dependents-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-dependents input,
-#plugins tr.has-disabled-dependency .enable input {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-#plugins tr.has-dependents-but-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-#plugins tr.has-disabled-dependency .enable input {
-  opacity: 0.4;
-}
-
-#plugins tr.deleted input {
-  visibility: hidden !important;
-}
-
-#plugins .dependent-list,
-#plugins .dependency-list {
-  display: none;
-}
-
-#plugins .enable-state-info,
-#plugins .uninstall-state-info {
-    padding: 5px 20px;
-    max-width: 70%;
-    border: solid 1px var(--warning);
-    border-radius: 3px;
-    text-align: center;
-}
-
-#plugins .enable-state-info {
-    float: left;
-}
-
-#plugins .uninstall-state-info {
-    float: right;
-}
-
-#plugins .plugin-dependency-info .title,
-#plugins .plugin-dependency-info .subtitle {
-    opacity: 0.7;
-}
-
-#plugins .plugin-dependency-info .title {
-    margin-bottom: 5px;
-    font-size: larger;
-    font-weight: bolder;
-}
-
-#plugins .plugin-dependency-info span {
-    margin: 5px 5px 0 0;
-    background-color: var(--primary);
-    display: inline-block;
-    padding: 0.2em 0.6em 0.3em;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    line-height: 1;
-    color: var(--white);
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25em;
-}
-
-/* ========================= repeatable elements ========================= */
-
-.repeated-chunk {
-    border: 2px dashed transparent;
-    padding-left: 1.5rem;
-}
-
-.repeated-chunk.hover {
-    border-color: var(--medium-grey);
-}
-
-.repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/*
-    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
-    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
-    when the user does "Add".
-*/
-div.to-be-removed { display: none; }
-
-/* ========================= Other form related CSS ========================= */
-
-.form-container {
-  max-width: 100%;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .optionalBlock-container > .form-container,
 .radioBlock-container > .form-container,
 .dropdownList-container {
-  margin-left: 0.25rem;
-  border-left: 2px dashed rgba(0, 0, 0, 0.33);
-  padding-left: 1rem;
+  position: relative;
+  padding-left: 32px;
+  transition: var(--standard-transition);
+  margin-top: calc(var(--section-padding) / 3);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    bottom: 0;
+    width: 2px;
+    background: var(--input-border);
+    border-radius: 2px;
+    transition: var(--standard-transition);
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.dropdownList-container {
+  margin-bottom: var(--section-padding);
+}
+
+.form-container--hidden {
+  visibility: hidden !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
+  overflow: hidden;
 }
 
 .row-set-end { display: none; }
@@ -1254,89 +1192,26 @@ div.to-be-removed { display: none; }
 
 textarea {
     margin-bottom: 0;
+    resize: vertical;
 }
 
+// Remove styling + textarea-handle.gif when IE11 is no longer supported
 div.textarea-handle {
-    height: 5px;
+    height: 6px;
     font-size: 0;
     background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
     border: 1px solid var(--medium-grey);
     border-top: none;
     cursor: s-resize;
+
+    // Hide .textarea-handle on devices that support native textarea resizing
+    @supports (resize: both) {
+        display: none;
+    }
 }
 
 textarea.rich-editor {
   visibility: hidden;
-}
-
-/* ========================= hover notification ========================= */
-
-#hoverNotification {
-    visibility: hidden;
-    background-color: white;
-    border: 1px solid black;
-    padding: 0.5em;
-}
-
-/* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container .has-help {
-    display: flex;
-}
-
-.hetero-list-container .has-help .dd-handle {
-    flex: 1;
-}
-
-.hetero-list-container .dd-handle,
-.repeated-container .dd-handle {
-    cursor: move;
-    background-image: url(../../images/grip.png);
-    background-repeat: repeat-y;
-    padding-left: 20px;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk,
-.repeated-container.with-drag-drop .repeated-chunk {
-    padding: 0.5em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    padding-left: 1.5rem;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
-.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
-  margin-left: -1.25rem;
-}
-
-// SortableJS drag & drop classes
-.repeated-chunk--sortable-ghost {
-  height: 100px;
-  width: 100%;
-  overflow: hidden;
-}
-.repeated-chunk--sortable-chosen {
-  height: 100px;
-  width: 100%;
-  background-color: transparent;
-  border: 2px solid var(--primary);
-
-  & > * {
-    display: none;
-  }
-}
-
-/* ========================= plugin update center ========================= */
-
-#plugins .excerpt {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: var(--text-color-secondary);
-}
-
-#plugins .excerpt a {
-  text-decoration: underline;
 }
 
 /*
@@ -1355,16 +1230,6 @@ textarea.rich-editor {
     margin-top: 0.5em;
     padding-left: 2em;
     color: #f00;
-}
-
-#pluginsAdv {
-  padding: 0.5rem;
-}
-
-#pluginsAdv section {
-  &:not(:last-child) {
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ========================= progress bar ========================= */
@@ -1546,6 +1411,26 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= logRecords.jelly ================== */
 
+.logrecord-container {
+  border-radius: 10px;
+  overflow: hidden;
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+}
+
 .logrecord-metadata {
     font-size: var(--font-size-xs);
 }
@@ -1626,7 +1511,7 @@ select.select-ajax-pending {
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: var(--form-input-border-radius);
 }
 
 .alert a {
@@ -1676,7 +1561,7 @@ body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
 
-body.no-decoration #page-head,
+body.no-decoration #page-header,
 body.no-decoration #side-panel,
 body.no-decoration footer {
     display: none;
@@ -1691,37 +1576,48 @@ body.no-sticker #bottom-sticker {
 svg.icon-sm {
     width: 16px;
     height: 16px;
+    vertical-align: top;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .icon-md,
 svg.icon-md {
     width: 24px;
     height: 24px;
+    vertical-align: top;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .icon-lg,
 svg.icon-lg {
     width: 32px;
     height: 32px;
+    vertical-align: top;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .icon-xlg,
 svg.icon-xlg {
     width: 48px;
     height: 48px;
-}
+    vertical-align: top;
 
-/* -------------------------------------- */
-
-/* --------------- RSS bar -------------- */
-
-#rss-bar {
-    margin: 1em;
-    text-align: right;
-}
-
-#rss-bar .icon-rss {
-    border: 0;
+  svg {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* -------------------------------------- */
@@ -1742,21 +1638,31 @@ svg.icon-xlg {
   fill: currentColor;
 }
 
-/* -------------------------------------- */
-
-.tr {
-  margin-top: 0.4em;
+.jenkins-icon-adjacent {
+  margin-left: 0.5rem;
+  width: 100%;
 }
 
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2em;
+  height: 2rem;
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */
 .default-hidden {
   display: none;
+}
+
+.app-summary {
+  & > td:first-of-type {
+    img,
+    svg {
+      width: 48px !important;
+      height: 48px !important;
+      margin-right: 1rem;
+    }
+  }
 }
 
 /* -------------------------------------- */

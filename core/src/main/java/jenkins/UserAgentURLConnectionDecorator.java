@@ -21,19 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
 import hudson.URLConnectionDecorator;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
 
 /**
  * Sets a Jenkins specific user-agent HTTP header for {@link HttpURLConnection}.

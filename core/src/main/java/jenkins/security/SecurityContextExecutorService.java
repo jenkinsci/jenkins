@@ -21,14 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
-import jenkins.util.InterceptingExecutorService;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import org.springframework.security.core.context.SecurityContext;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 import static org.springframework.security.core.context.SecurityContextHolder.setContext;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import jenkins.util.InterceptingExecutorService;
+import org.springframework.security.core.context.SecurityContext;
 
 /**
  * Creates a delegating {@link ExecutorService}
@@ -51,6 +53,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     protected Runnable wrap(final Runnable r) {
         final SecurityContext callingContext = getContext();
         return new Runnable() {
+            @Override
             public void run() {
                 SecurityContext old = getContext();
                 setContext(callingContext);
@@ -67,6 +70,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     protected <V> Callable<V> wrap(final Callable<V> c) {
         final SecurityContext callingContext = getContext();
         return new Callable<V>() {
+            @Override
             public V call() throws Exception {
                 SecurityContext old = getContext();
                 setContext(callingContext);

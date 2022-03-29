@@ -21,7 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
+
+import static java.time.Instant.now;
+import static java.time.Instant.ofEpochMilli;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -39,8 +44,6 @@ import hudson.security.ACLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import static java.time.Instant.*;
-import static java.time.temporal.ChronoUnit.MINUTES;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -51,7 +54,9 @@ import jenkins.util.SystemProperties;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -181,7 +186,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         try {
             return new Token(dbsUrl, authenticationName, Instant.now());
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + dbsUrl + " user: " + authenticationName, ex);
         }
         return null;
@@ -267,7 +272,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private Instant timestamp;
 
         @VisibleForTesting
-        Token (@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
+        Token(@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;
@@ -297,7 +302,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 String authenticationName = authenticationNameAndBrowserUrl.substring(0, authenticationNameLength);
                 String browserUrl = authenticationNameAndBrowserUrl.substring(authenticationNameLength + 1);
                 return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
-            } catch (Exception ex) {
+            } catch (RuntimeException ex) {
                 // Choose log level that hides people messing with the URLs
                 LOGGER.log(Level.FINE, "Failure decoding", ex);
                 return null;
@@ -309,6 +314,6 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     private static HMACConfidentialKey KEY = new HMACConfidentialKey(ResourceDomainRootAction.class, "key");
 
     // Not @Restricted because the entire class is
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final for Groovy */ int VALID_FOR_MINUTES = SystemProperties.getInteger(ResourceDomainRootAction.class.getName() + ".validForMinutes", 30);
 }

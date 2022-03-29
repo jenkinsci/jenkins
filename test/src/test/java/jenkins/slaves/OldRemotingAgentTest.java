@@ -21,7 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -44,6 +49,12 @@ import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.util.Collection;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -55,16 +66,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.net.URISyntaxException;
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for old Remoting agent versions
@@ -131,11 +132,14 @@ public class OldRemotingAgentTest {
         }
         assertThat(sw.toString(), containsString("@@@ANNOTATED@@@"));
     }
+
     private static final class RemoteConsoleNotePrinter extends MasterToSlaveCallable<Void, IOException> {
         private final TaskListener listener;
+
         RemoteConsoleNotePrinter(TaskListener listener) {
             this.listener = listener;
         }
+
         @Override
         public Void call() throws IOException {
             listener.annotate(new RemoteConsoleNote());
@@ -143,6 +147,7 @@ public class OldRemotingAgentTest {
             return null;
         }
     }
+
     public static final class RemoteConsoleNote extends ConsoleNote<Object> {
         @Override
         public ConsoleAnnotator<Object> annotate(Object context, MarkupText text, int charPos) {
@@ -171,13 +176,13 @@ public class OldRemotingAgentTest {
 
     private static class NodeMonitorAssert extends NodeMonitor {
 
-        static void assertMonitors(Collection<NodeMonitor> toCheck, Computer c) throws AssertionError {
+        static void assertMonitors(Collection<NodeMonitor> toCheck, Computer c) {
             for (NodeMonitor monitor : toCheck) {
                 assertMonitor(monitor, c);
             }
         }
 
-        static void assertMonitor(NodeMonitor monitor, Computer c) throws AssertionError {
+        static void assertMonitor(NodeMonitor monitor, Computer c) {
             AbstractNodeMonitorDescriptor<?> descriptor = monitor.getDescriptor();
             final Method monitorMethod;
             try {

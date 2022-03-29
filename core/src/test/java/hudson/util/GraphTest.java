@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
+import java.awt.Dimension;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.awt.*;
 
 public class GraphTest {
 
@@ -34,13 +34,13 @@ public class GraphTest {
     public static final int DEFAULT_H = 300;
 
     @Test
-    public void testDimensions() throws Exception {
-        final Dimension keep = Graph.safeDimension(Graph.MAX_AREA/1_000, 1000, DEFAULT_W, DEFAULT_H);
-        Assert.assertEquals(Graph.MAX_AREA/1_000, keep.width);
+    public void testDimensions() {
+        final Dimension keep = Graph.safeDimension(Graph.MAX_AREA / 1_000, 1000, DEFAULT_W, DEFAULT_H);
+        Assert.assertEquals(Graph.MAX_AREA / 1_000, keep.width);
         Assert.assertEquals(1_000, keep.height);
 
-        final Dimension keep2 = Graph.safeDimension(Graph.MAX_AREA/2, 2, DEFAULT_W, DEFAULT_H);
-        Assert.assertEquals(Graph.MAX_AREA/2, keep2.width);
+        final Dimension keep2 = Graph.safeDimension(Graph.MAX_AREA / 2, 2, DEFAULT_W, DEFAULT_H);
+        Assert.assertEquals(Graph.MAX_AREA / 2, keep2.width);
         Assert.assertEquals(2, keep2.height);
 
         final Dimension resetArea = Graph.safeDimension(Graph.MAX_AREA, Graph.MAX_AREA, DEFAULT_W, DEFAULT_H);

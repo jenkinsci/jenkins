@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
-import java.util.List;
-
 import hudson.Extension;
-import hudson.model.TopLevelItem;
 import hudson.model.DirectlyModifiableView;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
-
+import java.util.List;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -39,11 +38,11 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class AddJobToViewCommand extends CLICommand {
 
-    @Argument(usage="Name of the view", required=true, index=0)
+    @Argument(usage = "Name of the view", required = true, index = 0)
     private View view;
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="Job names", required=true, index=1)
+    @Argument(usage = "Job names", required = true, index = 1)
     private List<TopLevelItem> jobs;
 
     @Override
@@ -58,7 +57,7 @@ public class AddJobToViewCommand extends CLICommand {
         if (!(view instanceof DirectlyModifiableView)) throw new IllegalStateException(
                 "'" + view.getDisplayName() + "' view can not be modified directly");
 
-        for (TopLevelItem job: jobs) {
+        for (TopLevelItem job : jobs) {
             ((DirectlyModifiableView) view).add(job);
         }
 

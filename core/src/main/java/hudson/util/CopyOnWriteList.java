@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.XStreamException;
@@ -31,16 +32,13 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Arrays;
-
 import jenkins.util.xstream.CriticalXStreamException;
-
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -55,7 +53,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     private volatile List<? extends E> core;
 
     public CopyOnWriteList(List<E> core) {
-        this(core,false);
+        this(core, false);
     }
 
     private CopyOnWriteList(List<E> core, boolean noCopy) {
@@ -95,16 +93,19 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     /**
      * Returns an iterator.
      */
+    @Override
     public Iterator<E> iterator() {
         final Iterator<? extends E> itr = core.iterator();
         return new Iterator<E>() {
             private E last;
+            @Override
             public boolean hasNext() {
                 return itr.hasNext();
             }
 
+            @Override
             public E next() {
-                return last=itr.next();
+                return last = itr.next();
             }
 
             @Override
@@ -139,7 +140,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<>();
     }
 
-    public <E> E[] toArray(E[] array) {
+    public <T> T[] toArray(T[] array) {
         return core.toArray(array);
     }
 
@@ -179,15 +180,18 @@ public class CopyOnWriteList<E> implements Iterable<E> {
             super(mapper);
         }
 
+        @Override
         public boolean canConvert(Class type) {
-            return type==CopyOnWriteList.class;
+            return type == CopyOnWriteList.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (CopyOnWriteList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public CopyOnWriteList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             // read the items from xml into a list
@@ -205,7 +209,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 reader.moveUp();
             }
 
-            return new CopyOnWriteList(items,true);
+            return new CopyOnWriteList(items, true);
         }
     }
 

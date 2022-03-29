@@ -1,13 +1,12 @@
 package hudson.scm;
 
-import hudson.model.AbstractProject;
-import hudson.model.TaskListener;
-import hudson.Launcher;
-import hudson.FilePath;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.Serializable;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractProject;
+import hudson.model.TaskListener;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 
 /**
  * Immutable object that represents the result of {@linkplain SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState) SCM polling}.
@@ -19,7 +18,7 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  * @since 1.345
  */
-public final class PollingResult implements Serializable {
+public final class PollingResult implements SerializableOnlyOverRemoting {
     /**
      * Baseline of the comparison.
      * (This comes from either the workspace, or from the remote repository as of the last polling.
@@ -80,14 +79,14 @@ public final class PollingResult implements Serializable {
     }
 
     public PollingResult(@CheckForNull SCMRevisionState baseline, @CheckForNull SCMRevisionState remote, @NonNull Change change) {
-        if (change==null)   throw new IllegalArgumentException();
+        if (change == null)   throw new IllegalArgumentException();
         this.baseline = baseline;
         this.remote = remote;
         this.change = change;
     }
 
     public PollingResult(@NonNull Change change) {
-        this(null,null,change);
+        this(null, null, change);
     }
 
     public boolean hasChanges() {

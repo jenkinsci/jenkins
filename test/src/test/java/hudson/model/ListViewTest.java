@@ -24,9 +24,20 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -35,7 +46,8 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
-
+import hudson.views.StatusFilter;
+import hudson.views.ViewJobFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,24 +59,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import hudson.views.StatusFilter;
-import hudson.views.ViewJobFilter;
-import jenkins.model.Jenkins;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
-
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,7 +87,7 @@ public class ListViewTest {
     @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
-    
+
     @Test
     public void testJobLinksAreValid() throws Exception {
       /*
@@ -104,7 +101,7 @@ public class ListViewTest {
       FreeStyleProject job1 = folder1.createProject(FreeStyleProject.class, "job1");
       MockFolder folder2 = folder1.createProject(MockFolder.class, "folder2");
       FreeStyleProject job2 = folder2.createProject(FreeStyleProject.class, "job2");
-      
+
       ListView lv = new ListView("myview");
       lv.setRecurse(true);
       lv.setIncludeRegex(".*");
@@ -122,7 +119,7 @@ public class ListViewTest {
       checkLinkFromItemExistsAndIsValid(folder2, folder1, folder1, webClient);
       checkLinkFromViewExistsAndIsValid(job2, folder1, lv2, webClient);
     }
-    
+
     private void checkLinkFromViewExistsAndIsValid(Item item, ItemGroup ig, View view, WebClient webClient) throws IOException, SAXException {
       HtmlPage page = webClient.goTo(view.getUrl());
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
@@ -290,12 +287,8 @@ public class ListViewTest {
         assertEquals(0, itemsNow.size());
 
         // remove a not contained job
-        try {
-            view.doRemoveJobFromView("job2");
-            fail("Remove job2");
-        } catch(Failure e) {
-            assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
-        }
+        Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
+        assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
     }
 
     @Test public void getItemsNames() throws Exception {
@@ -313,7 +306,7 @@ public class ListViewTest {
         names.add("f1/p3");
         names.add("f2/p4");
         lv.setJobNames(names);
-        assertThat(lv.getItems(), containsInAnyOrder(p1,p2));
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
         lv.setRecurse(true);
         assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
     }
@@ -373,9 +366,11 @@ public class ListViewTest {
         @Override public ACL getRootACL() {
             return UNSECURED.getRootACL();
         }
+
         @Override public Collection<String> getGroups() {
             return Collections.emptyList();
         }
+
         @Override public ACL getACL(View item) {
             return new ACL() {
                 @Override public boolean hasPermission2(Authentication a, Permission permission) {
@@ -388,7 +383,7 @@ public class ListViewTest {
     private static class Stream extends ServletInputStream {
         private final InputStream inner;
 
-        public Stream(final InputStream inner) {
+        Stream(final InputStream inner) {
             this.inner = inner;
         }
 
@@ -396,14 +391,27 @@ public class ListViewTest {
         public int read() throws IOException {
             return inner.read();
         }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return inner.read(b);
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return inner.read(b, off, len);
+        }
+
         @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public boolean isReady() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

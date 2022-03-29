@@ -26,22 +26,20 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.MasterToSlaveFileCallable;
+import hudson.Functions;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.Functions;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -78,6 +76,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         return subdir;
     }
 
+    @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
         if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
@@ -101,7 +100,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         @RequirePOST
         public FormValidation doCheckUrl(@QueryParameter String value) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            
+
             try {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
@@ -114,7 +113,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
             } catch (MalformedURLException x) {
                 return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
             } catch (IOException x) {
-                return FormValidation.error(x,Messages.ZipExtractionInstaller_could_not_connect());
+                return FormValidation.error(x, Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 
@@ -126,11 +125,14 @@ public class ZipExtractionInstaller extends ToolInstaller {
      */
     static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
+
+        @Override
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            if(!Functions.isWindows())
+            if (!Functions.isWindows())
                 process(d);
             return null;
         }
+
         private void process(File f) {
             if (f.isFile()) {
                 f.setExecutable(true, false);

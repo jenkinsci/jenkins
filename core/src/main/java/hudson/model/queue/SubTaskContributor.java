@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractProject;
-
 import java.util.Collection;
 import java.util.Collections;
 
@@ -41,7 +41,7 @@ import java.util.Collections;
  * @since 1.377
  */
 public abstract class SubTaskContributor implements ExtensionPoint {
-    public Collection<? extends SubTask> forProject(AbstractProject<?,?> p) {
+    public Collection<? extends SubTask> forProject(AbstractProject<?, ?> p) {
         return Collections.emptyList();
     }
 

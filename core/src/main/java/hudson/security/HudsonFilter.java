@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
-import java.io.IOException;
 import static java.util.logging.Level.SEVERE;
+
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -55,7 +57,7 @@ public class HudsonFilter implements Filter {
      * The SecurityRealm specific filter.
      */
     private volatile Filter filter;
-    
+
     /**
      * The {@link #init(FilterConfig)} may be called before the Jenkins instance is up (which is
      * required for initialization of the filter).  So we store the
@@ -84,7 +86,7 @@ public class HudsonFilter implements Filter {
      */
     @Deprecated
     public static final UserDetailsServiceProxy USER_DETAILS_SERVICE_PROXY = new UserDetailsServiceProxy();
-    
+
     /**
      * {@link RememberMeServices} proxy so that the Spring Security filter chain can stay the same
      * even when security setting is reconfigured.
@@ -96,14 +98,15 @@ public class HudsonFilter implements Filter {
     @Deprecated
     public static final RememberMeServicesProxy REMEMBER_ME_SERVICES_PROXY = new RememberMeServicesProxy();
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         this.filterConfig = filterConfig;
         // this is how we make us available to the rest of Hudson.
-        filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
+        filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(), this);
         try {
             Jenkins hudson = Jenkins.getInstanceOrNull();
             if (hudson != null) {
-                // looks like we are initialized after Hudson came into being. initialize it now. See #3069
+                // looks like we are initialized after Hudson came into being. initialize it now. See JENKINS-3069
                 LOGGER.fine("Security wasn't initialized; Initializing it...");
                 SecurityRealm securityRealm = hudson.getSecurityRealm();
                 reset(securityRealm);
@@ -111,12 +114,12 @@ public class HudsonFilter implements Filter {
                 LOGGER.fine("Security initialized");
             }
         } catch (ExceptionInInitializerError e) {
-            // see HUDSON-4592. In some containers this happens before
+            // see JENKINS-4592. In some containers this happens before
             // WebAppMain.contextInitialized kicks in, which makes
             // the whole thing fail hard before a nicer error check
             // in WebAppMain.contextInitialized. So for now,
             // just report it here, and let the WebAppMain handle the failure gracefully.
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins", e);
         }
     }
 
@@ -124,7 +127,7 @@ public class HudsonFilter implements Filter {
      * Gets the {@link HudsonFilter} created for the given {@link ServletContext}.
      */
     public static HudsonFilter get(ServletContext context) {
-        return (HudsonFilter)context.getAttribute(HudsonFilter.class.getName());
+        return (HudsonFilter) context.getAttribute(HudsonFilter.class.getName());
     }
 
     /**
@@ -141,7 +144,7 @@ public class HudsonFilter implements Filter {
             Filter newf = securityRealm.createFilter(this.filterConfig);
             newf.init(this.filterConfig);
             this.filter = newf;
-            if(oldf!=null)
+            if (oldf != null)
                 oldf.destroy();
         } else {
             // no security related filter needed.
@@ -152,26 +155,28 @@ public class HudsonFilter implements Filter {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         LOGGER.entering(HudsonFilter.class.getName(), "doFilter");
 
         // this is not the best place to do it, but doing it here makes the patch smaller.
-        ((HttpServletResponse)response).setHeader("X-Content-Type-Options", "nosniff");
+        ((HttpServletResponse) response).setHeader("X-Content-Type-Options", "nosniff");
 
         // to deal with concurrency, we need to capture the object.
         Filter f = filter;
 
-        if(f==null) {
+        if (f == null) {
             // Hudson is starting up.
-            chain.doFilter(request,response);
+            chain.doFilter(request, response);
         } else {
-            f.doFilter(request,response,chain);
+            f.doFilter(request, response, chain);
         }
     }
 
+    @Override
     public void destroy() {
         // the filter can be null if the filter is not initialized yet.
-        if(filter != null)
+        if (filter != null)
             filter.destroy();
     }
 

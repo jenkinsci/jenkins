@@ -9,7 +9,6 @@ import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.util.Collections;
 import java.util.List;
-
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -27,7 +26,7 @@ public class NewViewLink extends TransientViewActionFactory {
         // do not show the action if the viewgroup is not modifiable
         ViewGroup vg = v.getOwner();
         if (vg instanceof ModifiableViewGroup) {
-            return Collections.singletonList(new NewViewLinkAction((ModifiableViewGroup)vg));
+            return Collections.singletonList(new NewViewLinkAction((ModifiableViewGroup) vg));
         }
         return Collections.emptyList();
     }

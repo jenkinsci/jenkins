@@ -22,16 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import hudson.security.ACLContext;
-import jenkins.model.DependencyDeclarer;
-import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import jenkins.util.DirectedGraph;
-import jenkins.util.DirectedGraph.SCC;
-
+import hudson.security.ACLContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,9 +36,12 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.util.DirectedGraph;
+import jenkins.util.DirectedGraph.SCC;
 
 /**
  * Maintains the build dependencies between {@link AbstractProject}s
@@ -75,20 +73,20 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
     private boolean built;
 
-    private Comparator<AbstractProject<?,?>> topologicalOrder;
-    private List<AbstractProject<?,?>> topologicallySorted;
+    private Comparator<AbstractProject<?, ?>> topologicalOrder;
+    private List<AbstractProject<?, ?>> topologicallySorted;
 
     /**
      * Builds the dependency graph.
      */
     public DependencyGraph() {
     }
-    
+
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)){
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             this.computationalData = new HashMap<>();
-            for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
+            for (AbstractProject p : Jenkins.get().allItems(AbstractProject.class))
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);
@@ -102,7 +100,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      *
      *
-     * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
+     * See https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     private void topologicalDagSort() {
         DirectedGraph<AbstractProject> g = new DirectedGraph<AbstractProject>() {
@@ -122,22 +120,17 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
         List<SCC<AbstractProject>> sccs = g.getStronglyConnectedComponents();
 
-        final Map<AbstractProject,Integer> topoOrder = new HashMap<>();
+        final Map<AbstractProject, Integer> topoOrder = new HashMap<>();
         topologicallySorted = new ArrayList<>();
-        int idx=0;
+        int idx = 0;
         for (SCC<AbstractProject> scc : sccs) {
             for (AbstractProject n : scc) {
-                topoOrder.put(n,idx++);
+                topoOrder.put(n, idx++);
                 topologicallySorted.add(n);
             }
         }
 
-        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
-            @Override
-            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-                return topoOrder.get(o1)-topoOrder.get(o2);
-            }
-        };
+        topologicalOrder = Comparator.comparingInt(topoOrder::get);
 
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
     }
@@ -175,7 +168,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      *      can be empty but never null.
      */
     public List<AbstractProject> getDownstream(AbstractProject p) {
-        return get(forward,p,false);
+        return get(forward, p, false);
     }
 
     /**
@@ -185,12 +178,12 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      *      can be empty but never null.
      */
     public List<AbstractProject> getUpstream(AbstractProject p) {
-        return get(backward,p,true);
+        return get(backward, p, true);
     }
 
     private List<AbstractProject> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src, boolean up) {
         List<DependencyGroup> v = map.get(src);
-        if(v==null) return Collections.emptyList();
+        if (v == null) return Collections.emptyList();
         List<AbstractProject> result = new ArrayList<>(v.size());
         for (DependencyGroup d : v) result.add(up ? d.getUpstreamProject() : d.getDownstreamProject());
         return result;
@@ -200,26 +193,26 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @since 1.341
      */
     public List<Dependency> getDownstreamDependencies(AbstractProject p) {
-        return get(forward,p);
+        return get(forward, p);
     }
 
     /**
      * @since 1.341
      */
     public List<Dependency> getUpstreamDependencies(AbstractProject p) {
-        return get(backward,p);
+        return get(backward, p);
     }
 
     private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
         List<DependencyGroup> v = map.get(src);
-        if(v==null) {
-            return ImmutableList.of();
+        if (v == null) {
+            return Collections.emptyList();
         } else {
-            ImmutableList.Builder<Dependency> builder = ImmutableList.builder();
+            List<Dependency> builder = new ArrayList<>();
             for (DependencyGroup dependencyGroup : v) {
                 builder.addAll(dependencyGroup.getGroup());
             }
-            return builder.build();
+            return Collections.unmodifiableList(builder);
         }
 
     }
@@ -229,16 +222,16 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      */
     @Deprecated
     public void addDependency(AbstractProject upstream, AbstractProject downstream) {
-        addDependency(new Dependency(upstream,downstream));
+        addDependency(new Dependency(upstream, downstream));
     }
 
     /**
      * Called during the dependency graph build phase to add a dependency edge.
      */
     public void addDependency(Dependency dep) {
-        if(built)
+        if (built)
             throw new IllegalStateException();
-        add(forward,dep.getUpstreamProject(),dep);
+        add(forward, dep.getUpstreamProject(), dep);
         add(backward, dep.getDownstreamProject(), dep);
     }
 
@@ -248,7 +241,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     @Deprecated
     public void addDependency(AbstractProject upstream, Collection<? extends AbstractProject> downstream) {
         for (AbstractProject p : downstream)
-            addDependency(upstream,p);
+            addDependency(upstream, p);
     }
 
     /**
@@ -257,7 +250,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     @Deprecated
     public void addDependency(Collection<? extends AbstractProject> upstream, AbstractProject downstream) {
         for (AbstractProject p : upstream)
-            addDependency(p,downstream);
+            addDependency(p, downstream);
     }
 
     /**
@@ -267,7 +260,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         for (Object o : possibleDependecyDeclarers) {
             if (o instanceof DependencyDeclarer) {
                 DependencyDeclarer dd = (DependencyDeclarer) o;
-                dd.buildDependencyGraph(upstream,this);
+                dd.buildDependencyGraph(upstream, this);
             }
         }
     }
@@ -285,11 +278,11 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         queue.addAll(getDownstream(src));
         queue.remove(dst);
 
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             AbstractProject p = queue.pop();
-            if(p==dst)
+            if (p == dst)
                 return true;
-            if(visited.add(p))
+            if (visited.add(p))
                 queue.addAll(getDownstream(p));
         }
 
@@ -300,14 +293,14 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * Gets all the direct and indirect upstream dependencies of the given project.
      */
     public Set<AbstractProject> getTransitiveUpstream(AbstractProject src) {
-        return getTransitive(backward,src,true);
+        return getTransitive(backward, src, true);
     }
 
     /**
      * Gets all the direct and indirect downstream dependencies of the given project.
      */
     public Set<AbstractProject> getTransitiveDownstream(AbstractProject src) {
-        return getTransitive(forward,src,false);
+        return getTransitive(forward, src, false);
     }
 
     private Set<AbstractProject> getTransitive(Map<AbstractProject, List<DependencyGroup>> direction, AbstractProject src, boolean up) {
@@ -316,11 +309,11 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
         queue.add(src);
 
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             AbstractProject p = queue.pop();
 
-            for (AbstractProject child : get(direction,p,up)) {
-                if(visited.add(child))
+            for (AbstractProject child : get(direction, p, up)) {
+                if (visited.add(child))
                     queue.add(child);
             }
         }
@@ -342,14 +335,15 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
-        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
+        for (Map.Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             e.getValue().sort(NAME_COMPARATOR);
-            e.setValue( Collections.unmodifiableList(e.getValue()) );
+            e.setValue(Collections.unmodifiableList(e.getValue()));
         }
         return Collections.unmodifiableMap(m);
     }
 
     private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<DependencyGroup>() {
+        @Override
         public int compare(DependencyGroup lhs, DependencyGroup rhs) {
             int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
             return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
@@ -361,8 +355,9 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
+    @Override
     public int compare(AbstractProject o1, AbstractProject o2) {
-        return topologicalOrder.compare(o1,o2);
+        return topologicalOrder.compare(o1, o2);
     }
 
     /**
@@ -373,7 +368,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      *
      * @since 1.521
      */
-    public List<AbstractProject<?,?>> getTopologicallySorted() {
+    public List<AbstractProject<?, ?>> getTopologicallySorted() {
         return topologicallySorted;
     }
 
@@ -419,7 +414,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
          * Does this method point to itself?
          */
         public boolean pointsItself() {
-            return upstream==downstream;
+            return upstream == downstream;
         }
 
         @Override
@@ -452,7 +447,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
         DependencyGroup(Dependency first) {
             this.upstream = first.getUpstreamProject();
-            this.downstream= first.getDownstreamProject();
+            this.downstream = first.getDownstreamProject();
             group.add(first);
         }
 

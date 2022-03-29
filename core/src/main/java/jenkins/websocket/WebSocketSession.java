@@ -47,7 +47,7 @@ public abstract class WebSocketSession {
     /**
      * Number of seconds between server-sent pings.
      * Zero to disable.
-     * <p><a href="http://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
+     * <p><a href="https://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
      * <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#support_for_websocket">GKE docs</a> says 30s
      * but this is a total timeout, not inactivity, so you need to set {@code BackendConfigSpec.timeoutSec} anyway.
      * <p>This is set for the whole Jenkins session rather than a particular service,

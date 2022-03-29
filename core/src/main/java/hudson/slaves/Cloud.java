@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,32 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionPoint;
-import hudson.Extension;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Actionable;
 import hudson.model.Computer;
-import hudson.model.Slave;
-import hudson.security.PermissionScope;
-import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.Label;
 import hudson.model.Descriptor;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.security.PermissionScope;
+import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -104,6 +110,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         this.name = name;
     }
 
+    @Override
     public String getDisplayName() {
         return name;
     }
@@ -118,10 +125,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return "cloud/" + name;
     }
 
+    @Override
     public @NonNull String getSearchUrl() {
         return getUrl();
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -221,6 +230,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return canProvision(state.getLabel());
     }
 
+    @Override
     public Descriptor<Cloud> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -237,7 +247,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     /**
      * Returns all the registered {@link Cloud} descriptors.
      */
-    public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
+    public static DescriptorExtensionList<Cloud, Descriptor<Cloud>> all() {
         return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
@@ -251,6 +261,19 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public static final Permission PROVISION = new Permission(
             Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
     );
+
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
+    @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    @Restricted(DoNotUse.class)
+    public static void registerPermissions() {
+        // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
+        // allowing plugins to adapt the system configuration, which may depend on these permissions
+        // having been registered. Since this method is static and since it follows the above
+        // construction of static permission objects (and therefore their calls to
+        // PermissionGroup#register), there is nothing further to do in this method. We call
+        // Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(PERMISSION_SCOPE, PROVISION);
+    }
 
     /**
      * Parameter object for {@link hudson.slaves.Cloud}.

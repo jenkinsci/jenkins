@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.markup;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,7 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -63,7 +63,7 @@ import org.kohsuke.stapler.verb.POST;
  * Implement the following methods to enable and control CodeMirror syntax highlighting
  * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
  * public String getCodeMirrorConfig()
- *   
+ *
  * <h2>Views</h2>
  * <p>
  * This extension point must have a valid {@code config.jelly} that feeds the constructor.
@@ -93,7 +93,7 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
 
     public final @NonNull String translate(@CheckForNull String markup) throws IOException {
         StringWriter w = new StringWriter();
-        translate(markup,w);
+        translate(markup, w);
         return w.toString();
     }
 
@@ -113,7 +113,7 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
 
     @Override
     public MarkupFormatterDescriptor getDescriptor() {
-        return (MarkupFormatterDescriptor)super.getDescriptor();
+        return (MarkupFormatterDescriptor) super.getDescriptor();
     }
 
     /**

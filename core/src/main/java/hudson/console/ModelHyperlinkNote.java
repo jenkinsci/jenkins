@@ -1,12 +1,17 @@
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.User;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link HyperlinkNote} that links to a {@linkplain ModelObject model object},
@@ -22,27 +27,27 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Override
     protected String extraAttributes() {
-        return " class='model-link'";
+        return " class='model-link model-link--float'";
     }
 
     public static String encodeTo(@NonNull User u) {
-        return encodeTo(u,u.getDisplayName());
+        return encodeTo(u, u.getDisplayName());
     }
 
     public static String encodeTo(User u, String text) {
-        return encodeTo('/'+u.getUrl(),text);
+        return encodeTo('/' + u.getUrl(), text);
     }
 
     public static String encodeTo(Item item) {
-        return encodeTo(item,item.getFullDisplayName());
+        return encodeTo(item, item.getFullDisplayName());
     }
 
     public static String encodeTo(Item item, String text) {
-        return encodeTo('/'+item.getUrl(),text);
+        return encodeTo('/' + item.getUrl(), text);
     }
 
     public static String encodeTo(Run r) {
-        return encodeTo('/'+r.getUrl(),r.getDisplayName());
+        return encodeTo('/' + r.getUrl(), r.getDisplayName());
     }
 
     public static String encodeTo(Node node) {
@@ -50,7 +55,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         if (c != null) {
             return encodeTo("/" + c.getUrl(), node.getDisplayName());
         }
-        String nodePath = node == Jenkins.get() ? "(master)" : node.getNodeName();
+        String nodePath = node == Jenkins.get() ? "(built-in)" : node.getNodeName();
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 
@@ -72,7 +77,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
             return "Hyperlinks to models";
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = Logger.getLogger(ModelHyperlinkNote.class.getName());

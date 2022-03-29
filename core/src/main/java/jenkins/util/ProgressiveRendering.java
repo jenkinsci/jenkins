@@ -24,6 +24,7 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -38,7 +39,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
@@ -102,7 +102,6 @@ public abstract class ProgressiveRendering {
     /**
      * For internal use.
      */
-    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @JavaScriptMethod public final void start() {
         Ancestor ancestor = Stapler.getCurrentRequest().findAncestor(BoundObjectTable.class);
         if (ancestor == null) {
@@ -162,7 +161,7 @@ public abstract class ProgressiveRendering {
     private static RequestImpl createMockRequest() {
         RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
         HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
-        final Map<String,Object> getters = new HashMap<>();
+        final Map<String, Object> getters = new HashMap<>();
         for (Method method : HttpServletRequest.class.getMethods()) {
             String m = method.getName();
             if ((m.startsWith("get") || m.startsWith("is")) && method.getParameterTypes().length == 0) {
@@ -250,7 +249,7 @@ public abstract class ProgressiveRendering {
         if (DEBUG_SLEEP != null) {
             try {
                 Thread.sleep(DEBUG_SLEEP);
-            } catch (InterruptedException x) {}
+            } catch (InterruptedException x) { }
         }
         if (status == ERROR) {
             return true; // recent call to data() failed

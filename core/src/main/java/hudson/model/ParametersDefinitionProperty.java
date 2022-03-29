@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,11 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static javax.servlet.http.HttpServletResponse.SC_SEE_OTHER;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.queue.ScheduleResult;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -35,10 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;
@@ -64,7 +68,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
  * The builds also need a {@code sidepanel.jelly}.
  */
-@ExportedBean(defaultVisibility=2)
+@ExportedBean(defaultVisibility = 2)
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
@@ -84,7 +88,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     @Deprecated
-    public AbstractProject<?,?> getOwner() {
+    public AbstractProject<?, ?> getOwner() {
         return (AbstractProject) owner;
     }
 
@@ -134,12 +138,12 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)
-            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
+        if (delay == null)
+            delay = new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
         List<ParameterValue> values = new ArrayList<>();
-        
+
         JSONObject formData = req.getSubmittedForm();
         JSONArray a = JSONArray.fromObject(formData.get("parameter"));
 
@@ -148,7 +152,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             String name = jo.getString("name");
 
             ParameterDefinition d = getParameterDefinition(name);
-            if(d==null)
+            if (d == null)
                 throw new IllegalArgumentException("No such parameter definition: " + name);
             ParameterValue parameterValue = d.createValue(req, jo);
             if (parameterValue != null) {
@@ -158,13 +162,13 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
         }
 
-    	WaitingItem item = Jenkins.get().getQueue().schedule(
+        WaitingItem item = Jenkins.get().getQueue().schedule(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-        if (item!=null) {
+        if (item != null) {
             String url = formData.optString("redirectTo");
-            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
-                url = req.getContextPath()+'/'+item.getUrl();
-            rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
+            if (url == null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
+                url = req.getContextPath() + '/' + item.getUrl();
+            rsp.sendRedirect(formData.optInt("statusCode", SC_CREATED), url);
         } else
             // send the user back to the job top page.
             rsp.sendRedirect(".");
@@ -173,28 +177,33 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     /** @deprecated use {@link #buildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+        buildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<>();
-        for (ParameterDefinition d: parameterDefinitions) {
-        	ParameterValue value = d.createValue(req);
-        	if (value != null) {
-        		values.add(value);
-        	}
+        for (ParameterDefinition d : parameterDefinitions) {
+            ParameterValue value = d.createValue(req);
+            if (value != null) {
+                values.add(value);
+            }
         }
-        if (delay==null)
-            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
+        if (delay == null)
+            delay = new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
-        Queue.Item item = Jenkins.get().getQueue().schedule2(
-                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+        ScheduleResult scheduleResult = Jenkins.get().getQueue().schedule2(
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
+        Queue.Item item = scheduleResult.getItem();
 
+        if (item != null && !scheduleResult.isCreated()) {
+            rsp.sendRedirect(SC_SEE_OTHER, req.getContextPath() + '/' + item.getUrl());
+            return;
+        }
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
-        } else {
-            rsp.sendRedirect(".");
+            return;
         }
+        rsp.sendRedirect(".");
     }
 
     /**
@@ -213,7 +222,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty) super.newInstance(req, formData);
             if (prop != null && prop.parameterDefinitions.isEmpty()) {
                 return null;
             }
@@ -231,14 +240,17 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
     }
 
+    @Override
     public String getDisplayName() {
         return null;
     }
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }
@@ -250,10 +262,12 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             this.parameterDefinitions = parameterDefinitions;
         }
 
+        @Override
         public String get(int index) {
             return this.parameterDefinitions.get(index).getName();
         }
 
+        @Override
         public int size() {
             return this.parameterDefinitions.size();
         }

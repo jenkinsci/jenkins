@@ -1,8 +1,9 @@
 package jenkins.security;
 
+import static java.util.logging.Level.WARNING;
+
 import hudson.Extension;
 import hudson.model.User;
-import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +30,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
     @Override
     public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
-        if(u != null) {
+        if (u != null) {
             Authentication auth;
             try {
                 UserDetails userDetails = u.getUserDetailsForImpersonation2();

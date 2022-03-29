@@ -21,27 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Calendar;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import jenkins.util.SystemProperties;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.Plot;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletOutputStream;
-import javax.imageio.ImageIO;
-import java.io.IOException;
-import java.util.Calendar;
-import java.awt.image.BufferedImage;
-import java.awt.*;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * A JFreeChart-generated graph that's bound to UI.
@@ -55,7 +57,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  * <dt>/map
  * <dd>Clickable map
  * </dl>
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.320
  */
@@ -64,8 +66,9 @@ public abstract class Graph {
     /* package for test */ static /* non-final for script console */ int MAX_AREA = SystemProperties.getInteger(Graph.class.getName() + ".maxArea", 10_000_000); // 4k*2.5k
 
     private final long timestamp;
-    private final int defaultW;
-    private final int defaultH;
+    private final int defaultWidth;
+    private final int defaultHeight;
+    private final int defaultScale = 1;
     private volatile JFreeChart graph;
 
     /**
@@ -73,14 +76,14 @@ public abstract class Graph {
      *      Timestamp of this graph. Used for HTTP cache related headers.
      *      If the graph doesn't have any timestamp to tie it to, pass -1.
      */
-    protected Graph(long timestamp, int defaultW, int defaultH) {
+    protected Graph(long timestamp, int defaultWidth, int defaultHeight) {
         this.timestamp = timestamp;
-        this.defaultW = defaultW;
-        this.defaultH = defaultH;
+        this.defaultWidth = defaultWidth;
+        this.defaultHeight = defaultHeight;
     }
 
-    protected Graph(Calendar timestamp, int defaultW, int defaultH) {
-        this(timestamp.getTimeInMillis(),defaultW,defaultH);
+    protected Graph(Calendar timestamp, int defaultWidth, int defaultHeight) {
+        this(timestamp.getTimeInMillis(), defaultWidth, defaultHeight);
     }
 
     /**
@@ -90,28 +93,40 @@ public abstract class Graph {
 
     private BufferedImage render(StaplerRequest req, ChartRenderingInfo info) {
         String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
+        if (w == null) {
+            w = String.valueOf(defaultWidth);
+        }
+
         String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
+        if (h == null) {
+            h = String.valueOf(defaultHeight);
+        }
+
+        String s = req.getParameter("scale");
+        if (s == null) {
+            s = String.valueOf(defaultScale);
+        }
 
         Color graphBg = stringToColor(req.getParameter("graphBg"));
         Color plotBg = stringToColor(req.getParameter("plotBg"));
 
-        if (graph==null)    graph = createGraph();
+        if (graph == null)    graph = createGraph();
         graph.setBackgroundPaint(graphBg);
         Plot p = graph.getPlot();
         p.setBackgroundPaint(plotBg);
 
-        int width = Integer.parseInt(w);
-        int height = Integer.parseInt(h);
-        Dimension safeDimension = safeDimension(width, height, defaultW, defaultH);
-        return graph.createBufferedImage(safeDimension.width, safeDimension.height, info);
+        int width = Math.min(Integer.parseInt(w), 2560);
+        int height = Math.min(Integer.parseInt(h), 1440);
+        int scale = Math.min(Integer.parseInt(s), 3);
+        Dimension safeDimension = safeDimension(width, height, defaultWidth, defaultHeight);
+        return graph.createBufferedImage(safeDimension.width * scale, safeDimension.height * scale,
+                safeDimension.width, safeDimension.height, info);
     }
 
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
     public static Dimension safeDimension(int width, int height, int defaultWidth, int defaultHeight) {
-        if (width <= 0 || height <= 0 || width > MAX_AREA/height) {
+        if (width <= 0 || height <= 0 || width > MAX_AREA / height) {
             width = defaultWidth;
             height = defaultHeight;
         }
@@ -137,12 +152,12 @@ public abstract class Graph {
         if (req.checkIfModified(timestamp, rsp)) return;
 
         try {
-            BufferedImage image = render(req,null);
+            BufferedImage image = render(req, null);
             rsp.setContentType("image/png");
             ServletOutputStream os = rsp.getOutputStream();
             ImageIO.write(image, "PNG", os);
             os.close();
-        } catch(Error e) {
+        } catch (Error e) {
             /* OpenJDK on ARM produces an error like this in case of headless error
                 Caused by: java.lang.Error: Probable fatal error:No fonts found.
                         at sun.font.FontManager.getDefaultPhysicalFont(FontManager.java:1088)
@@ -173,14 +188,14 @@ public abstract class Graph {
                         at hudson.tasks.test.TestResultProjectAction.doTrend(TestResultProjectAction.java:97)
                         ... 37 more
              */
-            if(e.getMessage().contains("Probable fatal error:No fonts found")) {
-                rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
+            if (e.getMessage().contains("Probable fatal error:No fonts found")) {
+                rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
                 return;
             }
             throw e; // otherwise let the caller deal with it
-        } catch(HeadlessException e) {
+        } catch (HeadlessException e) {
             // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
+            rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
         }
     }
 
@@ -191,9 +206,9 @@ public abstract class Graph {
         if (req.checkIfModified(timestamp, rsp)) return;
 
         ChartRenderingInfo info = new ChartRenderingInfo();
-        render(req,info);
+        render(req, info);
 
         rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
+        rsp.getWriter().println(ChartUtilities.getImageMap("map", info));
     }
 }

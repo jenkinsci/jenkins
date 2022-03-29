@@ -25,6 +25,7 @@
 package hudson.init.impl;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -37,7 +38,7 @@ public class GroovyInitScriptTest {
 
     @Issue("JENKINS-17933")
     @LocalData
-    @Test public void errorsHandled() throws Exception {
+    @Test public void errorsHandled() {
         assertEquals("true", System.getProperty("started"));
         /* TODO Jenkins.logRecords empty during a test, and adding a handler to root logger in JenkinsRule.before() does not work:
         assertTrue(log, log.contains("Nonexistent"));

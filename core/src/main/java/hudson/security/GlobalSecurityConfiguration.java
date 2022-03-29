@@ -21,37 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.RestrictedSince;
 import hudson.markup.MarkupFormatter;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Describable;
 import hudson.model.ManagementLink;
 import hudson.util.FormApply;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
-
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -68,7 +64,7 @@ import org.kohsuke.stapler.verb.POST;
  */
 @Extension(ordinal = Integer.MAX_VALUE - 210) @Symbol("securityConfig")
 public class GlobalSecurityConfiguration extends ManagementLink implements Describable<GlobalSecurityConfiguration> {
-    
+
     private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
 
     public SecurityRealm getSecurityRealm() {
@@ -89,7 +85,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     /**
      * @since 2.24
-     * @return true if the slave agent port is enforced on this instance.
+     * @return true if the inbound agent port is enforced on this instance.
      */
     @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {
@@ -115,11 +111,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         // for compatibility reasons, the actual value is stored in Jenkins
         JSONObject json = req.getSubmittedForm();
         BulkChange bc = new BulkChange(Jenkins.get());
-        try{
+        try {
             boolean result = configure(req, json);
-            LOGGER.log(Level.FINE, "security saved: "+result);
+            LOGGER.log(Level.FINE, "security saved: " + result);
             Jenkins.get().save();
-            FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
+            FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
         } catch (JSONException x) {
             LOGGER.warning(() -> "Bad JSON:\n" + json.toString(2));
             throw x;
@@ -143,7 +139,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         } else {
             j.setMarkupFormatter(null);
         }
-        
+
         // Agent settings
         if (!isSlaveAgentPortEnforced()) {
             try {
@@ -167,26 +163,26 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
         // persist all the additional security configs
         boolean result = true;
-        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER)){
-            result &= configureDescriptor(req,json,d);
+        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER)) {
+            result &= configureDescriptor(req, json, d);
         }
-        
+
         return result;
     }
-    
+
     private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
         // collapse the structure to remain backward compatible with the JSON structure before 1.
         String name = d.getJsonSafeClassName();
         JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
         json.putAll(js);
         return d.configure(req, js);
-    }    
+    }
 
     @Override
     public String getDisplayName() {
         return getDescriptor().getDisplayName();
     }
-    
+
     @Override
     public String getDescription() {
         return Messages.GlobalSecurityConfiguration_Description();
@@ -194,14 +190,14 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Override
     public String getIconFileName() {
-        return "secure.png";
+        return "symbol-lock-closed";
     }
 
     @Override
     public String getUrlName() {
         return "configureSecurity";
     }
-    
+
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
@@ -209,11 +205,9 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.222")
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**
-     * @return
      * @see Describable#getDescriptor()
      */
     @SuppressWarnings("unchecked")
@@ -221,7 +215,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     public Descriptor<GlobalSecurityConfiguration> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }
-    
+
     @Extension @Symbol("security")
     public static final class DescriptorImpl extends Descriptor<GlobalSecurityConfiguration> {
         @Override

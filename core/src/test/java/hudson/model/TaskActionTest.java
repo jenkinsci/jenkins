@@ -2,11 +2,10 @@ package hudson.model;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
-
 import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import java.io.ByteArrayOutputStream;
 import org.junit.Test;
 
 /**
@@ -18,6 +17,8 @@ public class TaskActionTest {
         MyTaskThread(TaskAction taskAction) {
             super(taskAction, ListenerAndText.forMemory(taskAction));
         }
+
+        @Override
         protected void perform(TaskListener listener) throws Exception {
             listener.hyperlink("/localpath", "a link");
         }
@@ -29,20 +30,27 @@ public class TaskActionTest {
             workerThread.start();
         }
 
+        @Override
         public String getIconFileName() {
             return "Iconfilename";
         }
+
+        @Override
         public String getDisplayName() {
             return "My Task Thread";
         }
 
+        @Override
         public String getUrlName() {
             return "xyz";
         }
+
+        @Override
         protected Permission getPermission() {
             return Permission.READ;
         }
 
+        @Override
         protected ACL getACL() {
             return ACL.lambda2((a, p) -> true);
         }

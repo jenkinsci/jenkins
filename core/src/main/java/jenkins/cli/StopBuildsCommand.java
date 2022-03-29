@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.cli;
 
 import hudson.Extension;
@@ -29,14 +30,13 @@ import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 @Extension
 @Restricted(NoExternalUse.class)
@@ -96,7 +96,7 @@ public class StopBuildsCommand extends CLICommand {
                 executor.doStop();
                 isAnyBuildStopped = true;
                 stdout.printf("Build '%s' stopped for job '%s'%n", buildName, jobName);
-            } catch (final Exception e) {
+            } catch (final RuntimeException e) {
                 stdout.printf("Exception occurred while trying to stop build '%s' for job '%s'. ", buildName, jobName);
                 stdout.printf("Exception class: %s, message: %s%n", e.getClass().getSimpleName(), e.getMessage());
             }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,19 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-
-import java.util.Set;
 import java.io.IOException;
-
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -110,13 +109,15 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Returns the URL of this monitor, relative to the context path, like "administrativeMonitor/foobar".
      */
     public String getUrl() {
-        return "administrativeMonitor/"+id;
+        return "administrativeMonitor/" + id;
     }
 
+    @Override
     public String getDisplayName() {
         return id;
     }
 
+    @Override
     public final String getSearchUrl() {
         return getUrl();
     }
@@ -175,7 +176,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
-        rsp.sendRedirect2(req.getContextPath()+"/manage");
+        rsp.sendRedirect2(req.getContextPath() + "/manage");
     }
 
     /**
@@ -201,6 +202,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Ensure that URLs in this administrative monitor are only accessible to users with {@link #getRequiredPermission()}.
      */
+    @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         Jenkins.get().checkPermission(getRequiredPermission());

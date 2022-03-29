@@ -24,26 +24,25 @@
 
 package hudson.cli;
 
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.model.FreeStyleProject;
-import hudson.model.Job;
-import hudson.tasks.BatchFile;
-import hudson.tasks.Builder;
-import hudson.tasks.Shell;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Builder;
+import hudson.tasks.Shell;
+import java.io.File;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -62,38 +61,38 @@ public class ReloadJobCommandTest {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Jenkins.READ)
+                .authorizedTo(Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Job/Configure permission"));
 
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
     }
 
     @Test public void reloadJobShouldFailWithoutJobReadPermission() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such item ‘aProject’ exists."));
 
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
     }
 
     @Test public void reloadJobShouldSucceed() throws Exception {
@@ -101,23 +100,23 @@ public class ReloadJobCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, succeededSilently());
 
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project));
     }
 
-    @Test public void reloadJobShouldFailIfJobDoesNotExist() throws Exception {
+    @Test public void reloadJobShouldFailIfJobDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -129,7 +128,7 @@ public class ReloadJobCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("never_created");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -144,23 +143,23 @@ public class ReloadJobCommandTest {
         FreeStyleProject project3 = j.createFreeStyleProject("aProject3");
         project3.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project3.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project3));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
         changeProjectOnTheDisc(project3, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject3");
 
         assertThat(result, succeededSilently());
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project3.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project3));
     }
 
     @Test public void reloadJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
@@ -170,14 +169,14 @@ public class ReloadJobCommandTest {
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
         project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aProject1", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -185,8 +184,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
     @Test public void reloadJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
@@ -196,14 +195,14 @@ public class ReloadJobCommandTest {
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
         project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -211,8 +210,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
     @Test public void reloadJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
@@ -222,14 +221,14 @@ public class ReloadJobCommandTest {
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
         project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
         assertThat(result, failedWith(5));
@@ -237,8 +236,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
     @Test public void reloadJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
@@ -248,14 +247,14 @@ public class ReloadJobCommandTest {
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
         project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -264,8 +263,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("never_created2: No such item ‘never_created2’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
     @Test public void reloadJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
@@ -274,20 +273,20 @@ public class ReloadJobCommandTest {
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
         project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project2));
 
         changeProjectOnTheDisc(project1, "echo 1", "echo 2");
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject1");
 
         assertThat(result, succeededSilently());
 
-        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
-        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project1));
+        j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
     /**
@@ -301,7 +300,7 @@ public class ReloadJobCommandTest {
     private void changeProjectOnTheDisc(final FreeStyleProject project, final String oldstr,
         final String newstr) throws Exception {
 
-        FilePath fp = new FilePath(new File(project.getRootDir()+"/config.xml"));
+        FilePath fp = new FilePath(new File(project.getRootDir() + "/config.xml"));
         fp.write(fp.readToString().replace(oldstr, newstr), null);
     }
 

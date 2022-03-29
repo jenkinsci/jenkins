@@ -21,16 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.*;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -41,26 +54,15 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.OfflineCause.ByCLI;
-import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-
-import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +83,7 @@ public class NodeTest {
     public static boolean notTake = false;
 
     @Before
-    public void before(){
+    public void before() {
        addDynamicLabel = false;
        notTake = false;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -92,13 +94,13 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
-        OfflineCause cause = new ByCLI("message");
+        OfflineCause cause = new OfflineCause.ByCLI("message");
         node.setTemporaryOfflineCause(cause);
-        for(ComputerListener l : ComputerListener.all()){
+        for (ComputerListener l : ComputerListener.all()) {
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
         assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
-        OfflineCause cause2 = new ByCLI("another message");
+        OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
         assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
     }
@@ -113,7 +115,7 @@ public class NodeTest {
         ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
@@ -121,7 +123,7 @@ public class NodeTest {
         ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
@@ -138,7 +140,7 @@ public class NodeTest {
             computer.doToggleOffline("original message");
         }
 
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
         assertEquals(User.getUnknown(), cause.getUser());
 
@@ -147,7 +149,7 @@ public class NodeTest {
         try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
@@ -165,10 +167,9 @@ public class NodeTest {
         label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for (TagCloud.Entry e : cloud) {
-            if(e.item.equals(label)){
+            if (e.item.equals(label)) {
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
-            }
-            else{
+            } else {
                 assertEquals("Label " + e.item + " should not have any tied project.", 0, e.weight, 0);
             }
         }
@@ -203,7 +204,7 @@ public class NodeTest {
         assertNull("Node should take project which is assigned to its label.", node.canTake(item));
         assertNull("Node should take project which is assigned to its label.", node.canTake(item2));
         assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
-        String message = Messages._Node_LabelMissing(node.getNodeName(),j.jenkins.getLabel("notContained")).toString();
+        String message = Messages._Node_LabelMissing(node.getNodeName(), j.jenkins.getLabel("notContained")).toString();
         assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
         node.setMode(Node.Mode.EXCLUSIVE);
         assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
@@ -223,7 +224,7 @@ public class NodeTest {
         notTake = false;
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
-        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(),node.getNodeName()).toString();
+        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(), node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
     }
 
@@ -237,7 +238,7 @@ public class NodeTest {
         assertNotNull("Channel should be set.", path.getChannel());
         assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
         path = node2.createPath(absolutePath);
-        assertNull("Path should be null if slave have channel null.", path);
+        assertNull("Path should be null if agent have channel null.", path);
     }
 
     @Test
@@ -248,7 +249,7 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","abcdef");
+        User user = realm.createAccount("John Smith", "abcdef");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
@@ -263,33 +264,33 @@ public class NodeTest {
 
     @Test
     public void testGetChannel() throws Exception {
-        Slave slave = j.createOnlineSlave();
+        Slave agent = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
-        assertNotNull("Channel of node should not be null.", slave.getChannel());
+        assertNotNull("Channel of node should not be null.", agent.getChannel());
     }
 
     @Test
     public void testToComputer() throws Exception {
-        Slave slave = j.createOnlineSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
-        assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
-        assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
+        Slave agent = j.createOnlineSlave();
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
+        assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
     }
 
     @Issue("JENKINS-27188")
     @Test public void envPropertiesImmutable() throws Exception {
-        Slave slave = j.createSlave();
+        Slave agent = j.createSlave();
 
         String propertyKey = "JENKINS-27188";
-        EnvVars envVars = slave.getComputer().getEnvironment();
+        EnvVars envVars = agent.getComputer().getEnvironment();
         envVars.put(propertyKey, "huuhaa");
         assertTrue(envVars.containsKey(propertyKey));
-        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+        assertFalse(agent.getComputer().getEnvironment().containsKey(propertyKey));
 
-        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
+        assertNotSame(agent.getComputer().getEnvironment(), agent.getComputer().getEnvironment());
     }
 
     /**
@@ -337,7 +338,7 @@ public class NodeTest {
         n4.setLabelString("label1 label");
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+        p.setAssignedLabel(Label.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
@@ -374,10 +375,10 @@ public class NodeTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void masterComputerConfigDotXml() throws Exception {
+    public void builtInComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
-        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        wc.assertFails("computer/(built-in)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(built-in)/config.xml"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("<hudson/>");
 
@@ -405,13 +406,11 @@ public class NodeTest {
             }
 
             // Gather information for failure message just in case.
-            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+            containsFailureMessage.append("{").append(entry.item).append(", ").append(entry.weight).append("}");
         }
 
         // If a label should be part of the cloud label then fail.
-        if (contains) {
-            fail(containsFailureMessage.toString() + "]");
-        }
+        assertFalse(containsFailureMessage + "]", contains);
     }
 
     /**
@@ -429,12 +428,13 @@ public class NodeTest {
     }
 
     @TestExtension
-    public static class LabelFinderImpl extends LabelFinder{
+    public static class LabelFinderImpl extends LabelFinder {
 
+        @NonNull
         @Override
-        public Collection<LabelAtom> findLabels(Node node) {
+        public Collection<LabelAtom> findLabels(@NonNull Node node) {
             List<LabelAtom> atoms = new ArrayList<>();
-            if(addDynamicLabel){
+            if (addDynamicLabel) {
                 atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
             }
             return atoms;
@@ -444,11 +444,11 @@ public class NodeTest {
     }
 
     @TestExtension
-    public static class NodePropertyImpl extends NodeProperty{
+    public static class NodePropertyImpl extends NodeProperty {
 
         @Override
-        public CauseOfBlockage canTake(Queue.BuildableItem item){
-            if(notTake)
+        public CauseOfBlockage canTake(Queue.BuildableItem item) {
+            if (notTake)
                 return new CauseOfBlockage.BecauseLabelIsBusy(item.getAssignedLabel());
             return null;
         }
