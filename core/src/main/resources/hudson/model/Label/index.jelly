@@ -38,19 +38,40 @@ THE SOFTWARE.
       <j:forEach var="a" items="${it.allActions}">
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
-
       <div>
         <h2>${%Nodes}</h2>
-        <j:forEach var="n" items="${it.sortedNodes}">
-          <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <j:set var="url" value="${rootURL}/${c.url}"/>
-          <nobr>
-            <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
-            <st:nbsp/>
-            <a href="${url}" class="model-link inside">${c.displayName}</a>
-          </nobr>
-          <wbr/>
-        </j:forEach>
+        <table id="nodes_${it.displayName}" class="jenkins-table sortable">
+            <thead>
+              <tr>
+                <th class="jenkins-table__cell--tight">S</th>
+                <th initialSortDir="down">${%Name}</th>
+                <th>${%Description}</th>
+                <th align="right" tooltip="Number of total executors that belong to this node">${%Configured executors}</th>
+                <th align="right" tooltip="Number of busy executors that are carrying out some work right now">${%Busy executors}</th>
+                <th align="right" tooltip="Number of idle executors that can start working immediately">${%Idle executors}</th>
+              </tr>
+            </thead>
+            <tbody>
+            <j:forEach var="n" items="${it.sortedNodes}">
+              <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
+              <j:set var="url" value="${rootURL}/${c.url}"/>
+                <tr id="node_${c.name}">
+                  <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
+                    </div>
+                  </td>
+                  <td>
+                    <a class="${c.className} model-link inside" href="${url}">${c.displayName}</a>
+                  </td>
+                  <td>${c.description}</td>
+                  <td align="right">${c.countExecutors()}</td>
+                  <td align="right">${c.countBusy()}</td>
+                  <td align="right">${c.countIdle()}</td>
+                </tr>
+            </j:forEach>
+          </tbody>
+        </table>
       </div>
 
       <h2>${%Projects}</h2>
