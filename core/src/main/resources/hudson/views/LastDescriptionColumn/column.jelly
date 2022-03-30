@@ -1,0 +1,15 @@
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="lBuild" value="${job.lastBuild}"/>
+  <td>
+    <j:choose>
+      <j:when test="${lBuild!=null}">
+        <j:out value="${lBuild.description!=null ? app.markupFormatter.translate(lBuild.description) : ''}" />
+      </j:when>
+      <j:otherwise>
+        ${%N/A}
+      </j:otherwise>
+    </j:choose>
+  </td>
+</j:jelly>
