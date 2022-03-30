@@ -115,6 +115,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                 Behaviour.applySubtree(nc,true);
                 ensureVisible(nc);
                 layoutUpdateCallback.call();
+                registerTooltips(nc)
             },true);
         });
 
