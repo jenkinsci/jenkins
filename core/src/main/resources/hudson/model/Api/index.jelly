@@ -75,6 +75,7 @@ THE SOFTWARE.
            Access the same data as Python for Python clients. This can be parsed into Python
            objects as <code>ast.literal_eval(urllib.urlopen("...").read())</code>
            and the resulting object tree is identical to that of JSON.
+         </p>
         </dd>
       </dl>
 
