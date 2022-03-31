@@ -80,14 +80,14 @@ THE SOFTWARE.
           <table id="labels" class="jenkins-table sortable">
             <thead>
               <tr>
-                <th class="jenkins-table__cell--tight">S</th>
-                <th initialSortDir="down">${%Name}</th>
-                <th>${%Description}</th>
-                <th align="right" tooltip="Number of associated nodes">${%Associated nodes}</th>
-                <th align="right" tooltip="Number of total executors that belong to this label">${%Configured executors}</th>
-                <th align="right" tooltip="Number of total executors that belong to this label that are functioning">${%Total configured}</th>
-                <th align="right" tooltip="Number of busy executors that are carrying out some work right now">${%Busy executors}</th>
-                <th align="right" tooltip="Number of idle executors that can start working immediately">${%Idle executors}</th>
+                <th class="jenkins-table__cell--tight" tooltip="${%nodes.column.state.description}">${%nodes.column.state.label}</th>
+                <th initialSortDir="down" tooltip="${%nodes.column.name.description}">${%nodes.column.name.label}</th>
+                <th tooltip="${%nodes.column.description.description}">${%nodes.column.description.label}</th>
+                <th align="right" tooltip="${%nodes.column.noOfNodes.description}">${%nodes.column.noOfNodes.label}</th>
+                <th align="right" tooltip="${%nodes.column.noOfExecutors.description}">${%nodes.column.noOfExecutors.label}</th>
+                <th align="right" tooltip="${%nodes.column.noOfExecutorsOnline.description}">${%nodes.column.noOfExecutorsOnline.label}</th>
+                <th align="right" tooltip="${%nodes.column.noOfExecutorsBusy.description}">${%nodes.column.noOfExecutorsBusy.label}</th>
+                <th align="right" tooltip="${%nodes.column.noOfExecutorsIdle.description}">${%nodes.column.noOfExecutorsIdle.label}</th>
               </tr>
             </thead>
             <tbody>
