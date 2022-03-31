@@ -356,8 +356,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns the icon for this label depends on state of all associated computers.
      *
-     * see {@link #isOffline()}
-     * see {@link #getIconClassName()}
+     * @see #isOffline()
+     * @see #getIconClassName()
      */
     @Exported
     public String getIcon() {
