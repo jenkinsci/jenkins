@@ -375,7 +375,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      *
      * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
      *
-     * {@link #getIcon()}
+     * @see #getIcon()
      */
     @Exported
     public String getIconClassName() {
