@@ -370,8 +370,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Returns the class name that will be used to lookup the icon.
      *
      * This class name will be added as a class tag to the html img tags where the icon should
-     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
-     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     * show up followed by a size specifier given by {@link org.jenkins.ui.icon.Icon#toNormalizedIconSizeClass(String)}
+     * The conversion of class tag to src tag is registered through {@link org.jenkins.ui.icon.IconSet#addIcon(org.jenkins.ui.icon.Icon)}
      *
      * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
      *
