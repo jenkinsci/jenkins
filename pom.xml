@@ -103,6 +103,9 @@ THE SOFTWARE.
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.4.0</mockito.version>
     <spotless.version>2.22.0</spotless.version>
+
+    <!-- Filled in by the "jdk-9-and-above" profile if we are running on Java 9+. -->
+    <jenkins.addOpens />
   </properties>
 
   <dependencyManagement>
@@ -820,6 +823,15 @@ THE SOFTWARE.
       </activation>
       <properties>
         <failIfNoTests>false</failIfNoTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk-9-and-above</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
       </properties>
     </profile>
     <profile>
