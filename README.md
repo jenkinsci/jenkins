@@ -22,7 +22,7 @@ Use Jenkins to automate your development workflow, so you can focus on work that
 
 Execute repetitive tasks, save time, and optimize your development process with Jenkins.
 
-# Downloads
+# Downloads 
 
 The Jenkins project provides official distributions as WAR files, Docker images, native packages and installers for platforms including several Linux distributions and Windows.
 See the [Downloads](https://www.jenkins.io/download) page for references.
