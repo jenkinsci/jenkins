@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
-        uses: actions/setup-java@v3.0.0
+        uses: actions/setup-java@v3.1.0
         with:
           distribution: 'temurin'
           java-version: 8
