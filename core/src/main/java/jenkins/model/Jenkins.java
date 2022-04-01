@@ -237,6 +237,7 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -247,7 +248,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -498,7 +498,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile List<JDK> jdks = new ArrayList<>();
 
     private transient volatile DependencyGraph dependencyGraph;
-    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
+    private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph = CompletableFuture.completedFuture(DependencyGraph.EMPTY);
+    private transient Object dependencyGraphLock = new Object();
 
     /**
      * Currently active Views tab bar.
@@ -3578,6 +3580,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
 
+            _cleanUpCancelDependencyGraphCalculation();
+
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3925,6 +3929,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to release all loggers", e);
             // save for later
             errors.add(e);
+        }
+    }
+
+    private void _cleanUpCancelDependencyGraphCalculation() {
+        synchronized (dependencyGraphLock) {
+            LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+            if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
+                scheduledFutureDependencyGraph.cancel(true);
+            }
+            if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
+                calculatingFutureDependencyGraph.cancel(true);
+            }
         }
     }
 
@@ -4898,6 +4914,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
+
+
+    public Future<DependencyGraph> getFutureDependencyGraph() {
+        synchronized (dependencyGraphLock) {
+            //Scheduled future will be the most recent one --> Return
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+            //Calculating future will be the most recent one --> Return
+            return calculatingFutureDependencyGraph;
+        }
+    }
+
+
     /**
      * Rebuilds the dependency map.
      */
@@ -4907,7 +4937,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
-        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -4920,14 +4949,33 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        dependencyGraphDirty.set(true);
-        return Timer.get().schedule(() -> {
-            if (dependencyGraphDirty.get()) {
-                rebuildDependencyGraph();
+        synchronized (dependencyGraphLock) {
+            // Collect calls to this method to avoid unnecessary calculation of the dependency graph
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
             }
-            return dependencyGraph;
-        }, 500, TimeUnit.MILLISECONDS);
+            // Schedule new calculation
+            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+        }
     }
+
+
+    private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
+        return Timer.get().schedule(() -> {
+            //Wait for the currently running calculation to finish
+            calculatingFutureDependencyGraph.get();
+
+            synchronized (dependencyGraphLock) {
+                // Scheduled future becomes the currently calculating future
+                calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
+                scheduledFutureDependencyGraph = null;
+            }
+
+            rebuildDependencyGraph();
+            return dependencyGraph;
+        }, delay, unit);
+    }
+
 
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
@@ -5678,4 +5726,5 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             this.reason = reason;
         }
     }
+
 }

@@ -376,7 +376,7 @@ THE SOFTWARE.
       <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -828,7 +828,7 @@ THE SOFTWARE.
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED</argLine>
+              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
             </configuration>
           </plugin>
         </plugins>

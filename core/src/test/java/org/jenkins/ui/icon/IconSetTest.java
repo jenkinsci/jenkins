@@ -21,7 +21,7 @@ public class IconSetTest {
 
     @Test
     void getSymbol() {
-        String symbol = IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2");
+        String symbol = IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "");
 
         assertThat(symbol, containsString("<span class=\"jenkins-visually-hidden\">Title</span>"));
         assertThat(symbol, containsString("tooltip=\"Tooltip\""));
@@ -30,8 +30,8 @@ public class IconSetTest {
 
     @Test
     void getSymbol_cachedSymbolDoesntReturnAttributes() {
-        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2");
-        String symbol = IconSet.getSymbol("download", "", "", "");
+        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "");
+        String symbol = IconSet.getSymbol("download", "", "", "", "");
 
         assertThat(symbol, not(containsString("<span class=\"jenkins-visually-hidden\">Title</span>")));
         assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
@@ -40,8 +40,8 @@ public class IconSetTest {
 
     @Test
     void getSymbol_cachedSymbolAllowsSettingAllAttributes() {
-        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2");
-        String symbol = IconSet.getSymbol("download", "Title2", "Tooltip2", "class3 class4");
+        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "");
+        String symbol = IconSet.getSymbol("download", "Title2", "Tooltip2", "class3 class4", "");
 
         assertThat(symbol, not(containsString("<span class=\"jenkins-visually-hidden\">Title</span>")));
         assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
@@ -57,7 +57,7 @@ public class IconSetTest {
      */
     @Test
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute() {
-        String symbol = IconSet.getSymbol("download", "Title", "", "class1 class2");
+        String symbol = IconSet.getSymbol("download", "Title", "", "class1 class2", "");
 
         assertThat(symbol, not(containsString("tooltip")));
     }

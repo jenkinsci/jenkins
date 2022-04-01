@@ -24,7 +24,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
-    Icon linked to the specified @href
+    Displays a help button
 
     <st:attribute name="href" use="required">
       Destination of the help icon's link
@@ -32,11 +32,9 @@ THE SOFTWARE.
     <st:attribute name="tooltip">
       The tooltip to display
     </st:attribute>
-    <st:attribute name="iconSize">
-      Icon size, available are: small, medium, large, xlarge
-    </st:attribute>
   </st:documentation>
-  <a href="${attrs.href}" class="jenkins-help-button ${attrs.iconSize}" tooltip="${attrs.tooltip}">
-    ?
+
+  <a href="${attrs.href}" class="jenkins-button" tooltip="${attrs.tooltip ?: '%Help'}" target="_blank" rel="noopener noreferrer">
+    <l:icon src="symbol-help-circle" />
   </a>
 </j:jelly>

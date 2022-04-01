@@ -57,9 +57,9 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
 
-  <scm>
-    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
     <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.340</revision>
+    <revision>2.342</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -102,7 +102,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.4.0</mockito.version>
-    <spotless.version>2.21.0</spotless.version>
+    <spotless.version>2.22.0</spotless.version>
   </properties>
 
   <dependencyManagement>
