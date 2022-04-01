@@ -102,6 +102,4 @@ THE SOFTWARE.
       <span class="jenkins-toggle-switch__description">${description}</span>
     </j:if>
   </span>
-
-  <st:adjunct includes="lib.form.toggleSwitch.toggleSwitch" />
 </j:jelly>
