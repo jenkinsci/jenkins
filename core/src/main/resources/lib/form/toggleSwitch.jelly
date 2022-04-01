@@ -44,7 +44,7 @@ THE SOFTWARE.
     <st:attribute name="id"/>
     <st:attribute name="onclick"/>
     <st:attribute name="class"/>
-    <st:attribute name="invert-label">
+    <st:attribute name="invertLabel">
       Move the label of the toggle switch to the opposite side
     </st:attribute>
     <st:attribute name="readonly">
@@ -74,8 +74,8 @@ THE SOFTWARE.
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
 
-  <span tooltip="${tooltip}"
-        class="jenkins-toggle-switch ${invert-label != null ? 'jenkins-toggle-switch--invert-label' : null}">
+  <span tooltip="${attrs.tooltip}"
+        class="jenkins-toggle-switch ${attrs.invertLabel != null ? 'jenkins-toggle-switch--invert-label' : null}">
     <input type="checkbox"
            name="${name}"
            value="${value}"
@@ -93,8 +93,8 @@ THE SOFTWARE.
           ${title}
         </j:when>
         <j:otherwise>
-          <span class="jenkins-toggle-switch__label__disabled-title">${title}</span>
-          <span class="jenkins-toggle-switch__label__enabled-title">${checkedTitle}</span>
+          <span class="jenkins-toggle-switch__label__unchecked-title">${title}</span>
+          <span class="jenkins-toggle-switch__label__checked-title">${checkedTitle}</span>
         </j:otherwise>
       </j:choose>
     </label>
