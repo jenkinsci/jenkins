@@ -164,6 +164,15 @@ This will help minimize the diff, which makes reviewing PRs easier.
 We also do not recommend `*` imports in the production code.
 Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
 
+The addition of `@{jenkins.addOpens}` to `argLine` exposes a bug in IntelliJ IDEA.
+A patch has been proposed in [JetBrains/intellij-community#1976](https://github.com/JetBrains/intellij-community/pull/1976).
+Pending the merge and release of this patch, IntelliJ IDEA users should work around the problem as follows:
+
+1. Go to **Settings** > **Build, Execution, Deployment** > **Build Tools** > **Maven** > **Running Tests**.
+2. Under "Pass to JUnit process [the] following `maven-surefire-plugin` and `maven-failsafe-plugin` settings", uncheck `argLine`.
+
+Failure to work around the problem as described above will result in a `could not open '{jenkins.addOpens}'` failure when running tests in IntelliJ IDEA.
+
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.

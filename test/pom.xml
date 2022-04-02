@@ -42,6 +42,15 @@ THE SOFTWARE.
     <mavenDebug>false</mavenDebug>
     <!-- empty by default -->
     <jacocoSurefireArgs />
+
+    <!--
+      Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+      Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
+    -->
+    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
+
+    <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
+    <jenkins.insaneHook />
   </properties>
 
   <dependencyManagement>
@@ -73,10 +82,17 @@ THE SOFTWARE.
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- For maven-hpi-plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1723.vcd938b_e66072</version>
+      <version>1731.v383b_5d6c3393</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -191,6 +207,15 @@ THE SOFTWARE.
         <artifactId>maven-hpi-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>test-runtime</id>
+            <goals>
+              <goal>test-runtime</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
@@ -229,6 +254,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
+          <argLine>${jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
@@ -236,6 +262,24 @@ THE SOFTWARE.
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
         </configuration>
+        <executions>
+          <!-- Unbind the default execution so that it does not run before test-runtime. -->
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+          <!-- Bind a new execution which, by virtue of being declared after test-runtime, will also run after it. -->
+          <execution>
+            <id>functional-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -333,38 +377,6 @@ THE SOFTWARE.
                 </configuration>
               </execution>
             </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jdk-8-and-below</id>
-      <activation>
-        <jdk>(,1.8]</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${jacocoSurefireArgs} -Xmx1g</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jdk-9-and-above</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${jacocoSurefireArgs} -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
-            </configuration>
           </plugin>
         </plugins>
       </build>
