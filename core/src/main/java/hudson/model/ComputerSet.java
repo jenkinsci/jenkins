@@ -227,7 +227,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @RequirePOST
     public void doUpdateNow(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Computer.EXTENDED_READ);
+        Jenkins.get().checkAnyPermission(Jenkins.MANAGE, Computer.EXTENDED_READ);
 
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
