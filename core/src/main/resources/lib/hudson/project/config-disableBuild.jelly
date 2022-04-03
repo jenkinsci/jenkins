@@ -37,6 +37,6 @@ THE SOFTWARE.
                   title="${%Disabled}"
                   checkedTitle="${%Enabled}"
                   checked="${!it.disabled}"
-                  invert-label="true"
+                  invertLabel="true"
                   tooltip="${tooltip ?: '%Enable or disable the current project'}" />
 </j:jelly>
