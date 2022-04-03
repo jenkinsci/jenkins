@@ -59,6 +59,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
@@ -256,8 +257,16 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
-        // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
-        final DependencyGraph graph = Jenkins.get().getDependencyGraph();
+
+        DependencyGraph graphTemp;
+        try {
+            graphTemp = Jenkins.get().getFutureDependencyGraph().get();
+        } catch (IllegalStateException | InterruptedException | ExecutionException e) {
+            //Use old version of dependency graph instead
+            graphTemp = Jenkins.get().getDependencyGraph();
+        }
+        DependencyGraph graph = graphTemp;
+
         List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically

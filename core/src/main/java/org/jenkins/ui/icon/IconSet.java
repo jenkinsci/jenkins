@@ -24,6 +24,8 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.PluginWrapper;
+import hudson.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
@@ -47,7 +50,8 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    private static final Map<String, String> SYMBOLS = new ConcurrentHashMap<>();
+    // keyed by plugin name / core, and then symbol name returning the SVG as a string
+    private static final Map<String, Map<String, String>> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
@@ -77,16 +81,25 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String classes) {
-        if (SYMBOLS.containsKey(name)) {
-            String symbol = SYMBOLS.get(name);
+    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName) {
+        String translatedName = cleanName(name);
+
+        String identifier = Util.fixEmpty(pluginName) == null ? "core" : pluginName;
+        Map<String, String> symbolsForLookup = SYMBOLS.computeIfAbsent(identifier, (key) -> new ConcurrentHashMap<>());
+
+        if (symbolsForLookup.containsKey(translatedName)) {
+            String symbol = symbolsForLookup.get(translatedName);
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+            symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
+            if (!tooltip.isEmpty()) {
+                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            }
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
         // Load symbol if it exists
-        InputStream inputStream = IconSet.class.getResourceAsStream("/images/symbols/" + name + ".svg");
+        InputStream inputStream = getClassLoader(identifier).getResourceAsStream("images/symbols/" + translatedName + ".svg");
         String symbol = null;
 
         try {
@@ -102,13 +115,31 @@ public class IconSet {
 
         symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
         symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
+        symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
+        if (!tooltip.isEmpty()) {
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+        }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
         symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
-        SYMBOLS.put(name, symbol);
+        symbolsForLookup.put(translatedName, symbol);
+        SYMBOLS.put(identifier, symbolsForLookup);
 
         return prependTitleIfRequired(symbol, title);
+    }
+
+    private static ClassLoader getClassLoader(String pluginName) {
+        if (pluginName.equals("core")) {
+            return IconSet.class.getClassLoader();
+        }
+
+        PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(pluginName);
+        if (plugin != null) {
+            return plugin.classLoader;
+        }
+
+        return IconSet.class.getClassLoader();
     }
 
     public IconSet addIcon(Icon icon) {
@@ -535,19 +566,39 @@ public class IconSet {
      */
     @Restricted(NoExternalUse.class)
     public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+
+        Map<String, String> translations = new HashMap<>();
+        translations.put("icon-application-certificate", "symbol-ribbon");
+        translations.put("icon-document", "symbol-document-text");
+        translations.put("icon-clipboard", "symbol-logs");
+        translations.put("icon-clock", "symbol-play");
+        translations.put("icon-edit-delete", "symbol-trash");
+        translations.put("icon-fingerprint", "symbol-fingerprint");
+        translations.put("icon-folder", "symbol-folder");
+        translations.put("icon-gear", "symbol-settings");
+        translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-help", "symbol-help-circle");
+        translations.put("icon-keys", "symbol-key");
+        translations.put("icon-monitor", "symbol-terminal");
+        translations.put("icon-new-package", "symbol-add");
+        translations.put("icon-next", "symbol-arrow-right");
+        translations.put("icon-plugin", "symbol-plugins");
+        translations.put("icon-previous", "symbol-arrow-left");
+        translations.put("icon-search", "symbol-search");
+        translations.put("icon-setting", "symbol-build");
+        translations.put("icon-terminal", "symbol-terminal");
+        translations.put("icon-text", "symbol-details");
+        translations.put("icon-up", "symbol-arrow-up");
+        translations.put("icon-user", "symbol-people");
+
+        String cleanedTangoIcon = cleanName(tangoIcon);
+        return translations.getOrDefault(cleanedTangoIcon, null);
+    }
+
+    private static String cleanName(String tangoIcon) {
         if (tangoIcon != null) {
             tangoIcon = tangoIcon.split(" ")[0];
         }
-
-        Map<String, String> translations = new HashMap<>();
-        translations.put("icon-clock", "symbol-play");
-        translations.put("icon-edit-delete", "symbol-trash");
-        translations.put("icon-gear", "symbol-settings");
-        translations.put("icon-gear2", "symbol-settings");
-        translations.put("icon-plugin", "symbol-plugins");
-        translations.put("icon-up", "symbol-arrow-up");
-        translations.put("icon-help", "symbol-help-circle");
-
-        return translations.getOrDefault(tangoIcon, null);
+        return tangoIcon;
     }
 }

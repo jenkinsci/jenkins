@@ -283,6 +283,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * Get the cause if temporary offline.
+     *
+     * @return null if not temporary offline or there was no cause given.
+     * @since 2.340
+     */
+    public OfflineCause getTemporaryOfflineCause() {
+        return temporaryOfflineCause;
+    }
+
+    /**
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {

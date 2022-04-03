@@ -1728,7 +1728,7 @@ function expandTextArea(button,id) {
     }
 
     var parent = n.parentNode;
-    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
     var textArea = parent.childNodes[0];
     textArea.name = field.name;
     textArea.value = value;

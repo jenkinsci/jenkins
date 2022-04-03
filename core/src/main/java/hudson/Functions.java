@@ -1266,7 +1266,12 @@ public class Functions {
 
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if (name == null)     return null;
+        if (name == null) {
+            return null;
+        }
+        if (name.startsWith("symbol-")) {
+            return name;
+        }
         if (name.startsWith("/"))
             return name.substring(1);
         else
@@ -2313,6 +2318,26 @@ public class Functions {
         }
 
         return iconMetadata;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String extractPluginNameFromIconSrc(String iconSrc) {
+        if (iconSrc == null) {
+            return "";
+        }
+
+        if (!iconSrc.contains("plugin-")) {
+            return "";
+        }
+
+        String[] arr = iconSrc.split(" ");
+        for (String element : arr) {
+            if (element.startsWith("plugin-")) {
+                return element.replace("plugin-", "");
+            }
+        }
+
+        return "";
     }
 
     @Restricted(NoExternalUse.class)

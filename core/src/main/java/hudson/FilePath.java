@@ -3455,7 +3455,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static final long serialVersionUID = 1L;
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.328")
     public static final int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());
