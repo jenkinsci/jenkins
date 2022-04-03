@@ -33,12 +33,14 @@ import jakarta.websocket.ClientEndpointConfig;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.Session;
+import java.awt.Desktop;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
@@ -51,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -60,6 +63,13 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
@@ -96,6 +106,13 @@ public class CLI {
     }
 
     public static void main(final String[] _args) throws Exception {
+        if (System.console() == null) {
+            ImageIcon icon = new ImageIcon(Objects.requireNonNull(CLI.class.getResource("/jenkins.png")));
+            System.setProperty("awt.useSystemAAFontSettings", "lcd");
+            System.setProperty("java.awt.headless", "true");
+            JOptionPane.showMessageDialog(null, new EditorPane(getMessage(true)),
+                    "Jenkins Command Line Interface " + computeVersion(), JOptionPane.PLAIN_MESSAGE, icon);
+        }
         try {
             System.exit(_main(_args));
         } catch (NotTalkingToJenkinsException ex) {
@@ -533,4 +550,38 @@ public class CLI {
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
 
     private static final int PING_INTERVAL = Integer.getInteger(CLI.class.getName() + ".pingInterval", 3_000); // JENKINS-59267
+
+    private static final String CLI_HELP = "https://www.jenkins.io/doc/book/managing/cli/";
+
+    private static String getMessage(boolean html) {
+        return "To use the CLI, execute it from the command line.\n"
+                + "For more detailed instructions, see " + formatLink(CLI_HELP, html) + "\n"
+                + "and /cli/ on your Jenkins instance.";
+    }
+
+    private static String formatLink(String url, boolean html) {
+        return html ? String.format("<a href=\"%1$s\">%1$s</a>", url) : url;
+    }
+
+    private static class EditorPane extends JTextPane {
+
+        EditorPane(String htmlBody) {
+            super(new HTMLDocument());
+            setEditorKit(new HTMLEditorKit());
+            setText(htmlBody.replace("\n", "<br>"));
+            setBackground(UIManager.getColor("Panel.background"));
+
+            addHyperlinkListener(e -> {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            setEditable(false);
+            setBorder(null);
+        }
+    }
 }
