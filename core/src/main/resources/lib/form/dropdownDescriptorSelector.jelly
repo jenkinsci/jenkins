@@ -63,6 +63,13 @@ THE SOFTWARE.
         lazy="descriptor,it,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
+          <j:set var="help" value="${descriptor.helpFile}"/>
+          <j:if test="${help != null}">
+            <div class="help-sibling jenkins-select-help">
+              <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
+              <f:helpArea/>
+            </div>
+          </j:if>
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </l:ajax>
       </f:dropdownListBlock>
