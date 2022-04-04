@@ -52,6 +52,7 @@ function registerTooltips(container = document) {
     content: element => element.getAttribute("html-tooltip"),
     allowHTML: true,
     container: container,
+    interactive: true,
     ...TOOLTIP_BASE
   })
 }
@@ -63,7 +64,6 @@ function registerTooltips(container = document) {
  */
 function hoverNotification(text, element) {
   const tooltip = tippy(element, {
-    interactive: true,
     trigger: "hover",
     offset: [0, 0],
     content: text,
