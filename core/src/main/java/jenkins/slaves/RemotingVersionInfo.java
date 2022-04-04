@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
 
-import hudson.util.VersionNumber;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 public class RemotingVersionInfo {
 
     private static final Logger LOGGER = Logger.getLogger(RemotingVersionInfo.class.getName());
-    private static final String RESOURCE_NAME="remoting-info.properties";
+    private static final String RESOURCE_NAME = "remoting-info.properties";
 
     @NonNull
     private static VersionNumber EMBEDDED_VERSION;
@@ -53,7 +53,7 @@ public class RemotingVersionInfo {
     static {
         Properties props = new Properties();
         try (InputStream is = RemotingVersionInfo.class.getResourceAsStream(RESOURCE_NAME)) {
-            if(is!=null) {
+            if (is != null) {
                 props.load(is);
             }
         } catch (IOException e) {
@@ -73,7 +73,7 @@ public class RemotingVersionInfo {
                     "Property %s is not defined in %s", propertyName, RESOURCE_NAME));
         }
 
-        if(prop.contains("${")) { // Due to whatever reason, Maven does not nullify them
+        if (prop.contains("${")) { // Due to whatever reason, Maven does not nullify them
             throw new ExceptionInInitializerError(String.format(
                     "Property %s in %s has unresolved variable(s). Raw value: %s",
                     propertyName, RESOURCE_NAME, prop));

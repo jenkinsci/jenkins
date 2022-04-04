@@ -30,9 +30,9 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,7 +65,7 @@ public class SetBuildDisplayNameCommandTest {
     @Test public void setDescriptionSuccessfully() throws Exception {
 
         FreeStyleProject job = j.createFreeStyleProject("project");
-        FreeStyleBuild build = job.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertSuccess(job);
 
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("project", "1", "DisplayName")

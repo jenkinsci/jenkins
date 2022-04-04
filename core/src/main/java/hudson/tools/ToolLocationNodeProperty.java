@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeProperty;
@@ -34,13 +34,12 @@ import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeSpecific;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * {@link NodeProperty} that allows users to specify different locations for {@link ToolInstallation}s.
@@ -89,7 +88,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @return
      *      never null.
      * @deprecated since 2009-04-09.
-     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
+     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)}
      */
     @Deprecated
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {

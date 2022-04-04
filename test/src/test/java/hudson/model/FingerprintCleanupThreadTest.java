@@ -21,41 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import hudson.Extension;
-import hudson.Util;
-import jenkins.fingerprints.FileFingerprintStorage;
-import jenkins.fingerprints.FingerprintStorage;
-import jenkins.fingerprints.FingerprintStorageDescriptor;
-import jenkins.fingerprints.GlobalFingerprintConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.io.FileMatchers.aReadableFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.Util;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
+import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.FingerprintStorageDescriptor;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.io.FileMatchers.aReadableFile;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringContains.containsString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FingerprintCleanupThreadTest {
 
@@ -73,7 +73,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(true));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
         assertFalse("Should not have logged unimportant, excessive message.", logOutput.contains("possibly trimming"));
     }
 
@@ -84,12 +84,12 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(false));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
         assertFalse("Should have deleted obsolete file.", fpFile.toFile().exists());
     }
 
     @Test
-    public void testGetRecurrencePeriod() throws IOException {
+    public void testGetRecurrencePeriod() {
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         assertEquals("Wrong recurrence period.", PeriodicWork.DAY, cleanupThread.getRecurrencePeriod());
     }
@@ -101,7 +101,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint());
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
         assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
     }
 
@@ -116,7 +116,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(fp);
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
         assertThat(logOutput, containsString("blocked deletion of"));
     }
 
@@ -221,8 +221,16 @@ public class FingerprintCleanupThreadTest {
 
     private static class TestTaskListener implements TaskListener {
 
-        private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private PrintStream logStream = new PrintStream(outputStream);
+        private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        private final PrintStream logStream;
+
+        {
+            try {
+                logStream = new PrintStream(outputStream, false, Charset.defaultCharset().name());
+            } catch (UnsupportedEncodingException e) {
+                throw new AssertionError(e);
+            }
+        }
 
         @NonNull
         @Override
@@ -251,7 +259,7 @@ public class FingerprintCleanupThreadTest {
         }
 
         @Override
-        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+        protected Fingerprint loadFingerprint(File fingerprintFile) {
             return fingerprintToLoad;
         }
 
@@ -291,11 +299,11 @@ public class FingerprintCleanupThreadTest {
 
         private boolean isAlive = true;
 
-        TestFingerprint() throws IOException {
+        TestFingerprint() {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
 
-        TestFingerprint(boolean isAlive) throws IOException {
+        TestFingerprint(boolean isAlive) {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
             this.isAlive = isAlive;
         }
@@ -338,7 +346,7 @@ public class FingerprintCleanupThreadTest {
         }
 
         @Override
-        protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        protected Fingerprint getFingerprint(Fingerprint fp) {
             return new Fingerprint(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
 

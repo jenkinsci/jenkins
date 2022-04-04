@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc., Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,23 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
-import hudson.FilePath;
-import hudson.Util;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.PersistentDescriptor;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-import java.io.IOException;
-
 import hudson.util.LineEndingConversion;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -45,16 +51,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Executes a series of commands by using a shell.
@@ -87,8 +85,8 @@ public class Shell extends CommandInterpreter {
      * a leading line feed works around this problem.
      */
     private static String addLineFeedForNonASCII(String s) {
-        if(!s.startsWith("#!")) {
-            if (s.indexOf('\n')!=0) {
+        if (!s.startsWith("#!")) {
+            if (s.indexOf('\n') != 0) {
                 return "\n" + s;
             }
         }
@@ -98,13 +96,13 @@ public class Shell extends CommandInterpreter {
 
     @Override
     public String[] buildCommandLine(FilePath script) {
-        if(command.startsWith("#!")) {
+        if (command.startsWith("#!")) {
             // interpreter override
             int end = command.indexOf('\n');
-            if(end<0)   end=command.length();
+            if (end < 0)   end = command.length();
             List<String> args = new ArrayList<>(Arrays.asList(Util.tokenize(command.substring(0, end).trim())));
             args.add(script.getRemote());
-            args.set(0,args.get(0).substring(2));   // trim off "#!"
+            args.set(0, args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[0]);
         } else
             return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
@@ -112,7 +110,7 @@ public class Shell extends CommandInterpreter {
 
     @Override
     protected String getContents() {
-        return addLineFeedForNonASCII(LineEndingConversion.convertEOL(command,LineEndingConversion.EOLType.Unix));
+        return addLineFeedForNonASCII(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix));
     }
 
     @Override
@@ -137,7 +135,7 @@ public class Shell extends CommandInterpreter {
 
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     private Object readResolve() {
@@ -177,7 +175,7 @@ public class Shell extends CommandInterpreter {
         @Deprecated
         public String getShellOrDefault() {
             if (shell == null) {
-                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+                return Functions.isWindows() ? "sh" : "/bin/sh";
             }
             return shell;
         }
@@ -253,7 +251,7 @@ public class Shell extends CommandInterpreter {
 
             @Override
             public String call() throws IOException {
-                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+                return Functions.isWindows() ? "sh" : "/bin/sh";
             }
         }
 

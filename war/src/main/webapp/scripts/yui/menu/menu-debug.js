@@ -1729,7 +1729,7 @@ _initSubTree: function () {
         
                 /*
                     Apply the "first-of-type" class to the first UL to mimic 
-                    the ":first-of-type" CSS3 psuedo class.
+                    the ":first-of-type" CSS3 pseudo class.
                 */
         
                 if (this._aListElements[0]) {

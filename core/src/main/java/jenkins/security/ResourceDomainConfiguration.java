@@ -21,12 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
+import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.util.FormValidation;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import jenkins.diagnostics.RootUrlNotSetMonitor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -43,21 +58,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
-
 /**
  * Configure the resource root URL, an alternative root URL to serve resources from
  * to not need Content-Security-Policy headers, which mess with desired complex output.
@@ -67,7 +67,7 @@ import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
  *
  * @since 2.200, unrestricted since 2.203
  */
-@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
+@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL - 1) // sort just below the regular location config
 @Restricted(Beta.class)
 @Symbol("resourceRoot")
 public final class ResourceDomainConfiguration extends GlobalConfiguration {

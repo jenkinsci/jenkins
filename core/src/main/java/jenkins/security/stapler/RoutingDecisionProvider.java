@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
-import hudson.ExtensionPoint;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionPoint;
 
 public abstract class RoutingDecisionProvider implements ExtensionPoint {
     enum Decision {

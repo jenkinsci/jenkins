@@ -21,9 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
@@ -33,9 +40,9 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
@@ -49,7 +56,6 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
-
 
 /**
  * @author suren
@@ -88,7 +94,7 @@ public class SlaveComputerTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(authStrategy);
-        try(ACLContext context = ACL.as(User.getById(userAlice, true))) {
+        try (ACLContext context = ACL.as(User.getById(userAlice, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNull(path);
             Assert.assertNull(getRemoteFS(nodeA, userAlice));
@@ -97,7 +103,7 @@ public class SlaveComputerTest {
         //with auth
         String userBob = "bob";
         authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userBob);
-        try(ACLContext context = ACL.as(User.getById(userBob, true))) {
+        try (ACLContext context = ACL.as(User.getById(userBob, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNotNull(path);
             Assert.assertNotNull(getRemoteFS(nodeA, userBob));
@@ -124,6 +130,11 @@ public class SlaveComputerTest {
         // Both listeners should fire and not cause the other not to fire.
         Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
         Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+
+        // We should get the stack trace too.
+        assertThat(nodeA.getComputer().getLog(), allOf(
+                containsString("\tat " + IOExceptionOnOnlineListener.class.getName() + ".onOnline"),
+                containsString("\tat " + RuntimeExceptionOnOnlineListener.class.getName() + ".onOnline")));
     }
 
     @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")
@@ -132,7 +143,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) throws IOException {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOException("Something happened (the listener always throws this exception)");
@@ -146,7 +157,7 @@ public class SlaveComputerTest {
         static int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new RuntimeException("Something happened (the listener always throws this exception)");
@@ -156,8 +167,8 @@ public class SlaveComputerTest {
 
     @Test
     @Issue("JENKINS-57111")
-
     public void startupShouldFailOnErrorOnlineListener() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave nodeA = j.createSlave();
         Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
         int retries = 10;
@@ -177,10 +188,10 @@ public class SlaveComputerTest {
     @TestExtension(value = "startupShouldFailOnErrorOnlineListener")
     public static final class ErrorOnOnlineListener extends ComputerListener {
 
-        static int onOnlineCount = 0;
+        static volatile int onOnlineCount = 0;
 
         @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        public void onOnline(Computer c, TaskListener listener) {
             if (c instanceof SlaveComputer) {
                 onOnlineCount++;
                 throw new IOError(new Exception("Something happened (the listener always throws this exception)"));
@@ -191,7 +202,7 @@ public class SlaveComputerTest {
 
     /**
      * Get remote path through json api
-     * @param node slave node
+     * @param node agent node
      * @param user the user for webClient
      * @return remote path
      * @throws IOException in case of communication problem.
@@ -199,7 +210,7 @@ public class SlaveComputerTest {
      */
     private String getRemoteFS(Node node, String user) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        if(user != null) {
+        if (user != null) {
             wc.login(user);
         }
 
@@ -208,7 +219,7 @@ public class SlaveComputerTest {
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
 
         Object pathObj = json.get("absoluteRemotePath");
-        if(pathObj instanceof JSONNull) {
+        if (pathObj instanceof JSONNull) {
             return null; // the value is null in here
         } else {
             return pathObj.toString();

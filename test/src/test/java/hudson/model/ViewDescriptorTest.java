@@ -24,18 +24,17 @@
 
 package hudson.model;
 
-import java.util.Arrays;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
-import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.util.Arrays;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import net.sf.json.JSONObject;
 import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +43,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
-import net.sf.json.JSONObject;
 
 public class ViewDescriptorTest {
 
@@ -118,7 +116,7 @@ public class ViewDescriptorTest {
 
         //THEN the invisible property is not displayed on page
         assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
-                    editViewPage.asText().contains("CustomInvisibleProperty"));
+                    editViewPage.asNormalizedText().contains("CustomInvisibleProperty"));
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
@@ -127,7 +125,7 @@ public class ViewDescriptorTest {
 
         //Check that the description is updated on view
         Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
-                                                                        .asText()
+                                                                        .asNormalizedText()
                                                                         .contains("This list view is awesome !"));
 
 

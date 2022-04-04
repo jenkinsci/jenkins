@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -33,8 +34,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.Describable;
 import hudson.model.Saveable;
-
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +106,7 @@ public class PersistedList<T> extends AbstractList<T> {
 
     public <U extends T> U get(Class<U> type) {
         for (T t : data)
-            if(type.isInstance(t))
+            if (type.isInstance(t))
                 return type.cast(t);
         return null;
     }
@@ -115,7 +117,7 @@ public class PersistedList<T> extends AbstractList<T> {
     public <U extends T> List<U> getAll(Class<U> type) {
         List<U> r = new ArrayList<>();
         for (T t : data)
-            if(type.isInstance(t))
+            if (type.isInstance(t))
                 r.add(type.cast(t));
         return r;
     }
@@ -130,7 +132,7 @@ public class PersistedList<T> extends AbstractList<T> {
      */
     public void remove(Class<? extends T> type) throws IOException {
         for (T t : data) {
-            if(t.getClass()==type) {
+            if (t.getClass() == type) {
                 data.remove(t);
                 onModified();
                 return;
@@ -146,29 +148,29 @@ public class PersistedList<T> extends AbstractList<T> {
      */
     public void replace(T from, T to) throws IOException {
         List<T> copy = new ArrayList<>(data.getView());
-        for (int i=0; i<copy.size(); i++) {
+        for (int i = 0; i < copy.size(); i++) {
             if (copy.get(i).equals(from))
-                copy.set(i,to);
+                copy.set(i, to);
         }
         data.replaceBy(copy);
     }
 
     @Override
     public boolean remove(Object o) {
-        boolean b = data.remove((T)o);
+        boolean b = data.remove((T) o);
         if (b)  _onModified();
         return b;
     }
 
     public void removeAll(Class<? extends T> type) throws IOException {
-        boolean modified=false;
+        boolean modified = false;
         for (T t : data) {
-            if(t.getClass()==type) {
+            if (t.getClass() == type) {
                 data.remove(t);
-                modified=true;
+                modified = true;
             }
         }
-        if(modified)
+        if (modified)
             onModified();
     }
 
@@ -202,6 +204,7 @@ public class PersistedList<T> extends AbstractList<T> {
     // TODO until https://github.com/jenkinsci/jenkins-test-harness/pull/243 is widely adopted:
     private static final Set<String> IGNORED_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("org.jvnet.hudson.test.TestBuilder", "org.jvnet.hudson.test.TestNotifier")));
     // (SingleFileSCM & ExtractResourceWithChangesSCM would also be nice to suppress, but they are not kept in a PersistedList.)
+
     private static boolean ignoreSerializationErrors(Object o) {
         if (o != null) {
             for (Class<?> c = o.getClass(); c != Object.class; c = c.getSuperclass()) {
@@ -235,7 +238,7 @@ public class PersistedList<T> extends AbstractList<T> {
      * Gets all the {@link Describable}s in an array.
      */
     @Override
-    public <T> T[] toArray(T[] array) {
+    public <X> X[] toArray(X[] array) {
         return data.toArray(array);
     }
 
@@ -287,9 +290,13 @@ public class PersistedList<T> extends AbstractList<T> {
             CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
 
             try {
-                PersistedList r = (PersistedList)context.getRequiredType().newInstance();
+                PersistedList r = (PersistedList) context.getRequiredType().getDeclaredConstructor().newInstance();
                 r.data.replaceBy(core);
                 return r;
+            } catch (NoSuchMethodException e) {
+                NoSuchMethodError x = new NoSuchMethodError();
+                x.initCause(e);
+                throw x;
             } catch (InstantiationException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
@@ -298,6 +305,19 @@ public class PersistedList<T> extends AbstractList<T> {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
+            } catch (InvocationTargetException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else if (t instanceof IOException) {
+                    throw new UncheckedIOException((IOException) t);
+                } else if (t instanceof Exception) {
+                    throw new RuntimeException(t);
+                } else if (t instanceof Error) {
+                    throw (Error) t;
+                } else {
+                    throw new Error(e);
+                }
             }
         }
     }

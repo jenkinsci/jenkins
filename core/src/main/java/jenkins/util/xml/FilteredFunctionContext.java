@@ -22,19 +22,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util.xml;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import org.jaxen.Function;
 import org.jaxen.FunctionContext;
 import org.jaxen.UnresolvableException;
 import org.jaxen.XPathFunctionContext;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * {@link org.jaxen.FunctionContext} that removes some {@link org.dom4j.XPath}

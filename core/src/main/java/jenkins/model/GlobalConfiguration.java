@@ -1,13 +1,12 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient base class for extensions that contributes to the system configuration page but nothing
@@ -18,7 +17,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * implementing other extension points that need to expose some global configuration, you can do so
  * with {@code global.groovy} or {@code global.jelly} from your {@link Descriptor} instance. However
  * each {@code global.*} file will appear as its own section in the global configuration page.
- * 
+ *
  * <p>
  * An option to present a single section for your plugin in the Jenkins global configuration page is
  * to use this class to manage the configuration for your plugin and its extension points. To access

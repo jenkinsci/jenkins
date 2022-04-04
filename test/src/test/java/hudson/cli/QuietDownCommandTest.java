@@ -24,26 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Queue;
-import hudson.model.QueueTest;
-import hudson.util.OneShotEvent;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -53,6 +33,25 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
+
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Queue;
+import hudson.model.QueueTest;
+import hudson.util.OneShotEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -73,7 +72,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithoutAdministerPermission() throws Exception {
+    public void quietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
@@ -83,7 +82,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccess() throws Exception {
+    public void quietDownShouldSuccess() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
@@ -92,7 +91,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlock() throws Exception {
+    public void quietDownShouldSuccessWithBlock() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block");
@@ -101,7 +100,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithTimeout() throws Exception {
+    public void quietDownShouldSuccessWithTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout", "0");
@@ -110,7 +109,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithReason() throws Exception {
+    public void quietDownShouldSuccessWithReason() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-reason", TEST_REASON);
@@ -120,7 +119,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeout() throws Exception {
+    public void quietDownShouldSuccessWithBlockAndTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block", "-timeout", "0");
@@ -129,7 +128,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() throws Exception {
+    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block", "-timeout", "0", "-reason", TEST_REASON);
@@ -139,7 +138,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithEmptyTimeout() throws Exception {
+    public void quietDownShouldFailWithEmptyTimeout() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout");
@@ -149,7 +148,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() throws Exception {
+    public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
@@ -241,7 +240,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();
@@ -287,7 +286,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();
@@ -332,9 +331,9 @@ public class QuietDownCommandTest {
         beforeCli.block();
         assertJenkinsInQuietMode();
         try {
-            exec_task.get(2*TIMEOUT, TimeUnit.MILLISECONDS);
+            exec_task.get(2 * TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            fail("Blocking call didn't finish after timeout!");
+            throw new AssertionError("Blocking call didn't finish after timeout!", e);
         }
         assertThat(exec_task.isDone(), equalTo(true));
         finish.signal();
@@ -367,7 +366,7 @@ public class QuietDownCommandTest {
                 beforeCli.signal();
                 final CLICommandInvoker.Result result = command
                         .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", Integer.toString(2*TIMEOUT));
+                        .invokeWithArgs("-block", "-timeout", Integer.toString(2 * TIMEOUT));
                 fail("Blocking call shouldn't finish, should be killed by called thread!");
                 return null;
             }
@@ -381,7 +380,7 @@ public class QuietDownCommandTest {
         } catch (TimeoutException e) {
             timeoutOccurred = true;
         }
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
 
         finish.signal();
@@ -506,7 +505,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
@@ -516,7 +514,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is <strong>not</strong> in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)

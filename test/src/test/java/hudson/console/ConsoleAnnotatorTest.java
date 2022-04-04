@@ -1,5 +1,11 @@
 package hudson.console;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -29,11 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +59,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("---");
                 listener.getLogger().println("ooo");
                 listener.getLogger().println("ooo");
@@ -73,10 +74,10 @@ public class ConsoleAnnotatorTest {
         assertEquals(1, DomNodeUtil.selectNodes(rsp, "//B[@class='demo']").size());
 
         // make sure raw console output doesn't include the garbage
-        TextPage raw = (TextPage)r.createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
+        TextPage raw = (TextPage) r.createWebClient().goTo(b.getUrl() + "consoleText", "text/plain");
         System.out.println(raw.getContent());
         String nl = System.getProperty("line.separator");
-        assertTrue(raw.getContent().contains(nl+"---"+nl+"ooo"+nl+"ooo"+nl));
+        assertTrue(raw.getContent().contains(nl + "---" + nl + "ooo" + nl + "ooo" + nl));
 
         // there should be two 'ooo's
         String xml = rsp.asXml();
@@ -96,10 +97,11 @@ public class ConsoleAnnotatorTest {
 
     public static class DemoAnnotator extends ConsoleAnnotator<FreeStyleBuild> {
         private static final String ANNOTATE_TEXT = "ooo" + System.getProperty("line.separator");
+
         @Override
         public ConsoleAnnotator<FreeStyleBuild> annotate(FreeStyleBuild build, MarkupText text) {
             if (text.getText().equals(ANNOTATE_TEXT)) {
-                text.addMarkup(0,3,"<b class=demo>","</b>");
+                text.addMarkup(0, 3, "<b class=demo>", "</b>");
                 return null;
             }
             return this;
@@ -111,9 +113,9 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().print("abc\n");
-                listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/","def")+"\n");
+                listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/", "def") + "\n");
                 return true;
             }
         });
@@ -125,7 +127,7 @@ public class ConsoleAnnotatorTest {
         assertEquals(1, DomNodeUtil.selectNodes(rsp, "//A[@href='http://infradna.com/']").size());
 
         // make sure raw console output doesn't include the garbage
-        TextPage raw = (TextPage)r.createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
+        TextPage raw = (TextPage) r.createWebClient().goTo(b.getUrl() + "consoleText", "text/plain");
         assertThat(raw.getContent(), containsString("\nabc\ndef\n"));
     }
 
@@ -147,11 +149,11 @@ public class ConsoleAnnotatorTest {
         }
 
         String next() throws IOException {
-            WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml"+(start!=null?"?start="+start:"")));
+            WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml" + (start != null ? "?start=" + start : "")));
             req.setEncodingType(null);
             Map headers = new HashMap();
-            if (consoleAnnotator!=null)
-                headers.put("X-ConsoleAnnotator",consoleAnnotator);
+            if (consoleAnnotator != null)
+                headers.put("X-ConsoleAnnotator", consoleAnnotator);
             req.setAdditionalHeaders(headers);
 
             p = wc.getPage(req);
@@ -172,7 +174,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 lock.phase(0);
                 // make sure the build is now properly started
                 lock.phase(2);
@@ -188,16 +190,16 @@ public class ConsoleAnnotatorTest {
 
         lock.phase(1);
         FreeStyleBuild b = p.getBuildByNumber(1);
-        ProgressiveLogClient plc = new ProgressiveLogClient(wc,b);
+        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b);
         // the page should contain some output indicating the build has started why and etc.
         plc.next();
 
         lock.phase(3);
-        assertEquals("<b tag=1>line1</b>\r\n",plc.next());
+        assertEquals("<b tag=1>line1</b>\r\n", plc.next());
 
         // the new invocation should start from where the previous call left off
         lock.phase(5);
-        assertEquals("<b tag=2>line2</b>\r\n",plc.next());
+        assertEquals("<b tag=2>line2</b>\r\n", plc.next());
 
         lock.done();
 
@@ -214,12 +216,12 @@ public class ConsoleAnnotatorTest {
     };
 
     public static class StatefulAnnotator extends ConsoleAnnotator<Object> {
-        int n=1;
+        int n = 1;
 
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
-                text.addMarkup(0,5,"<b tag="+(n++)+">","</b>");
+                text.addMarkup(0, 5, "<b tag=" + n++ + ">", "</b>");
             return this;
         }
     }
@@ -259,14 +261,14 @@ public class ConsoleAnnotatorTest {
         // discard the initial header portion
         lock.phase(1);
         FreeStyleBuild b = p.getBuildByNumber(1);
-        ProgressiveLogClient plc = new ProgressiveLogClient(wc,b);
+        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b);
         plc.next();
 
         lock.phase(3);
-        assertEquals("abc$$$def\r\n",plc.next());
+        assertEquals("abc$$$def\r\n", plc.next());
 
         lock.phase(5);
-        assertEquals("123$$$456$$$789\r\n",plc.next());
+        assertEquals("123$$$456$$$789\r\n", plc.next());
 
         lock.done();
 
@@ -280,7 +282,7 @@ public class ConsoleAnnotatorTest {
     public static final class DollarMark extends ConsoleNote<Object> {
         @Override
         public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-            text.addMarkup(charPos,"$$$");
+            text.addMarkup(charPos, "$$$");
             return null;
         }
 
@@ -335,7 +337,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("<b>&amp;</b>");
                 return true;
             }
@@ -343,7 +345,7 @@ public class ConsoleAnnotatorTest {
 
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         HtmlPage html = r.createWebClient().getPage(b, "console");
-        String text = html.asText();
+        String text = html.asNormalizedText();
         System.out.println(text);
         assertTrue(text.contains("<b>&amp;</b>"));
         assertTrue(JenkinsRule.getLog(b).contains("<b>&amp;</b>"));
@@ -357,7 +359,7 @@ public class ConsoleAnnotatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setScm(new PollingSCM());
         SCMTrigger t = new SCMTrigger("@daily");
-        t.start(p,true);
+        t.start(p, true);
         p.addTrigger(t);
 
         r.buildAndAssertSuccess(p);
@@ -366,7 +368,7 @@ public class ConsoleAnnotatorTest {
         t.new Runner().run();
 
         HtmlPage log = r.createWebClient().getPage(p, "scmPollLog");
-        String text = log.asText();
+        String text = log.asNormalizedText();
         assertTrue(text, text.contains("$$$hello from polling"));
     }
 
@@ -376,7 +378,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @Override
-        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException {
             listener.annotate(new DollarMark());
             listener.getLogger().println("hello from polling");
             return new PollingResult(Change.NONE);

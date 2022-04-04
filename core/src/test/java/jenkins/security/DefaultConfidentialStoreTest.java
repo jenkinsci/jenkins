@@ -1,11 +1,5 @@
 package jenkins.security;
 
-import hudson.FilePath;
-import hudson.Functions;
-import java.io.File;
-import java.nio.charset.Charset;
-
-import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +7,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import hudson.FilePath;
+import hudson.Functions;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -31,14 +30,14 @@ public class DefaultConfidentialStoreTest {
 
         // basic roundtrip
         String str = "Hello world!";
-        store.store(key, str.getBytes());
-        assertEquals(str, new String(store.load(key)));
+        store.store(key, str.getBytes(StandardCharsets.UTF_8));
+        assertEquals(str, new String(store.load(key), StandardCharsets.UTF_8));
 
         // data storage should have some stuff
         assertTrue(new File(tmp, "test").exists());
         assertTrue(new File(tmp, "master.key").exists());
 
-        assertThat(FileUtils.readFileToString(new File(tmp, "test"), Charset.defaultCharset()), not(containsString("Hello"))); // the data shouldn't be a plain text, obviously
+        assertThat(FileUtils.readFileToString(new File(tmp, "test"), StandardCharsets.UTF_8), not(containsString("Hello"))); // the data shouldn't be a plain text, obviously
 
         if (!Functions.isWindows()) {
             assertEquals(0700, new FilePath(tmp).mode() & 0777); // should be read only

@@ -21,28 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.init.impl;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import hudson.init.Initializer;
-import jenkins.model.Jenkins;
-import hudson.model.Messages;
-import org.apache.commons.io.FileUtils;
 
+import hudson.Util;
+import hudson.init.Initializer;
+import hudson.model.Messages;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Prepares userContent folder and put a readme if it doesn't exist.
  * @author Kohsuke Kawaguchi
  */
 public class InitialUserContent {
-    @Initializer(after=JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) throws IOException {
         File userContentDir = new File(h.getRootDir(), "userContent");
-        if(!userContentDir.exists()) {
-            userContentDir.mkdirs();
-            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
+        if (!Files.isDirectory(Util.fileToPath(userContentDir))) {
+            Util.createDirectories(Util.fileToPath(userContentDir));
+            FileUtils.writeStringToFile(new File(userContentDir, "readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
         }
     }
 }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
@@ -31,14 +32,9 @@ import static org.junit.Assert.assertThrows;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -48,6 +44,9 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -99,8 +98,6 @@ public class RepeatableTest {
 
     /**
      * Test count of buttons in form
-     *
-     * @throws Exception
      */
     @Test
     public void testSimpleCheckNumberOfButtons() throws Exception {
@@ -115,11 +112,9 @@ public class RepeatableTest {
         waitForJavaScript(p);
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
-    
+
     /**
      * Test count of buttons in form
-     *
-     * @throws Exception
      */
     @Test
     public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
@@ -140,11 +135,13 @@ public class RepeatableTest {
     public static class Foo {
         public String txt;
         public boolean bool;
+
         @DataBoundConstructor
         public Foo(String txt, boolean bool) {
             this.txt = txt;
             this.bool = bool;
         }
+
         @Override public String toString() { return "foo:" + txt + ':' + bool; }
     }
 
@@ -196,7 +193,7 @@ public class RepeatableTest {
             + "{\"bool\":true,\"txt\":\"existing two\"},{\"bool\":false,\"txt\":\"new one\"}]",
             rootAction.formData.get("foos"));
     }
-    
+
     @Test
     public void testNoData() throws Exception {
         rootAction.list = null;
@@ -207,33 +204,33 @@ public class RepeatableTest {
         gotoAndSubmitConfig("defaultForItems");
         assertNull(rootAction.formData.get("list"));
     }
-    
+
     @Test
     public void testItemsWithDefaults() throws Exception {
         assertWithDefaults("defaultForItems");
-    }    
+    }
 
     @Test
     public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForItems");
-    }    
+    }
 
     @Test
     public void testFieldWithDefaults() throws Exception {
         assertWithDefaults("defaultForField");
-    }    
+    }
 
     @Test
     public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForField");
-    }    
+    }
 
     private void addDefaults() {
         rootAction.defaults = new ArrayList<>();
         rootAction.defaults.add(new Foo("default one", true));
         rootAction.defaults.add(new Foo("default two", false));
     }
-    
+
     private void assertWithDefaults(final String viewName) throws Exception {
         rootAction.list = null;
         addDefaults();
@@ -241,7 +238,7 @@ public class RepeatableTest {
         assertNotNull(rootAction.formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
                 rootAction.formData.get("list"));
-    }    
+    }
 
     private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
         addData();
@@ -251,7 +248,7 @@ public class RepeatableTest {
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
                 rootAction.formData.get("list"));
     }
-    
+
     private void gotoAndSubmitConfig(final String viewName) throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/" + viewName);
         HtmlForm f = p.getFormByName("config");
@@ -280,6 +277,7 @@ public class RepeatableTest {
 
     public static class FooRadio {
         public String txt, radio;
+
         public FooRadio(String txt, String radio) {
             this.txt = txt;
             this.radio = radio;
@@ -327,6 +325,7 @@ public class RepeatableTest {
 
     public static class Fruit implements ExtensionPoint, Describable<Fruit> {
         protected String name;
+
         private Fruit(String name) { this.name = name; }
 
         @Override
@@ -343,30 +342,39 @@ public class RepeatableTest {
 
     public static class Apple extends Fruit {
         private int seeds;
+
         @DataBoundConstructor public Apple(int seeds) {
             super("Apple");
             this.seeds = seeds;
         }
+
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Apple.class);
+
         @Override public String toString() { return name + " with " + seeds + " seeds"; }
     }
+
     public static class Banana extends Fruit {
         private boolean yellow;
+
         @DataBoundConstructor public Banana(boolean yellow) {
             super("Banana");
             this.yellow = yellow;
         }
+
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Banana.class);
+
         @Override public String toString() { return (yellow ? "Yellow" : "Green") + " " + name; }
     }
 
     public static class Fruity {
         public Fruit fruit;
         public String word;
+
         @DataBoundConstructor public Fruity(Fruit fruit, String word) {
             this.fruit = fruit;
             this.word = word;
         }
+
         @Override public String toString() { return fruit + " " + word; }
     }
 
@@ -381,7 +389,7 @@ public class RepeatableTest {
         getHtmlButton(f, "Add", false).click();
         waitForJavaScript(p);
         // select banana in 2nd select element:
-        ((HtmlSelect)f.getElementsByTagName("select").get(1)).getOption(1).click();
+        ((HtmlSelect) f.getElementsByTagName("select").get(1)).getOption(1).click();
         f.getInputsByName("yellow").get(1).click(); // checkbox
         f.getInputsByValue("").get(1).setValueAttribute("split"); // word
         String xml = f.asXml();
@@ -396,10 +404,12 @@ public class RepeatableTest {
     public static class FooList {
         public String title;
         public Foo[] list = new Foo[0];
+
         @DataBoundConstructor public FooList(String title, Foo[] foo) {
             this.title = title;
             this.list = foo;
         }
+
         @Override public String toString() {
             StringBuilder buf = new StringBuilder("FooList:" + title + ":[");
             for (int i = 0; i < list.length; i++) {
@@ -419,9 +429,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -446,9 +456,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -473,9 +483,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -500,9 +510,9 @@ public class RepeatableTest {
         try {
             clickButton(p, f, "Add", true);
             f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p,f,"Add Foo", true);
+            clickButton(p, f, "Add Foo", true);
             f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p,f,"Add Foo", false);
+            clickButton(p, f, "Add Foo", false);
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
@@ -581,7 +591,7 @@ public class RepeatableTest {
     }
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
-        assertEquals(JSONArray.fromObject(golden),jsonArray);
+        assertEquals(JSONArray.fromObject(golden), jsonArray);
     }
 
     /**
@@ -623,7 +633,10 @@ public class RepeatableTest {
      * @return list of buttons
      */
     private List<?> getButtonsList(HtmlForm form, String buttonCaption) {
-        return form.getByXPath("//button[text() = '" + buttonCaption + "']");
+        return form.getByXPath(
+                String.format("//button[text() = '%s'] | //button[@title = '%s']", buttonCaption, buttonCaption
+                )
+        );
     }
 
     @TestExtension

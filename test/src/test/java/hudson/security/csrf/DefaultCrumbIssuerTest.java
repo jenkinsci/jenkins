@@ -6,6 +6,15 @@
 
 package hudson.security.csrf;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -14,6 +23,9 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
@@ -26,24 +38,11 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
 
-import javax.servlet.http.HttpServletResponse;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * @author dty
  */
 public class DefaultCrumbIssuerTest {
-    
+
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Before public void setIssuer() {
@@ -54,7 +53,7 @@ public class DefaultCrumbIssuerTest {
         "10.2.3.1",
         "10.2.3.1,10.20.30.40",
         "10.2.3.1,10.20.30.41",
-        "10.2.3.3,10.20.30.40,10.20.30.41"
+        "10.2.3.3,10.20.30.40,10.20.30.41",
     };
     private static final String HEADER_NAME = "X-Forwarded-For";
 
@@ -75,7 +74,7 @@ public class DefaultCrumbIssuerTest {
         HtmlPage p = wc.goTo("configure");
 
         wc.removeRequestHeader(HEADER_NAME);
-        
+
         wc.setThrowExceptionOnFailingStatusCode(false);
         // The crumb should no longer match if we remove the proxy info
         Page page = r.submit(p.getFormByName("config"));
@@ -145,7 +144,7 @@ public class DefaultCrumbIssuerTest {
         WebClient wc = r.createWebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
         JSONObject jsonObject = JSONObject.fromObject(json);
-        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(),jsonObject.getString("crumbRequestField"));
+        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(), jsonObject.getString("crumbRequestField"));
         assertTrue(jsonObject.getString("crumb").matches("[0-9a-f]+"));
         wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
     }
@@ -157,7 +156,7 @@ public class DefaultCrumbIssuerTest {
                 .withThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo("quietDown");
-        assertEquals("expect HTTP 405 method not allowed", 
+        assertEquals("expect HTTP 405 method not allowed",
                 HttpURLConnection.HTTP_BAD_METHOD,
                 page.getWebResponse().getStatusCode());
 

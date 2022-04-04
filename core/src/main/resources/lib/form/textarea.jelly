@@ -58,12 +58,12 @@ THE SOFTWARE.
     <st:attribute name="checkMethod" use="optional" type="String">
       Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
       If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.TODO.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
       This attribute specifies the mode of CodeMirror, such as "text/x-java".
-      See http://codemirror.net/ for more details.
+      See https://codemirror.net/ for more details.
     </st:attribute>
     <st:attribute name="codemirror-config">
       Specifies additional key/value pairs in the JSON format (except the start and end bracket)
@@ -90,7 +90,7 @@ THE SOFTWARE.
   <f:possibleReadOnlyField>
       <textarea id="${attrs.id}" style="${attrs.style}"
                 name ="${name}"
-                class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
+                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
                 checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"

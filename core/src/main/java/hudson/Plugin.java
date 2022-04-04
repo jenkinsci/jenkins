@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,37 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
-import java.util.concurrent.TimeUnit;
-
+import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.model.Jenkins;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.Descriptor.FormException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.File;
-
-import net.sf.json.JSONObject;
-import com.thoughtworks.xstream.XStream;
-import hudson.init.Initializer;
-import hudson.init.Terminator;
-import java.net.URL;
-import java.util.Locale;
-import java.util.logging.Logger;
-import jenkins.model.GlobalConfiguration;
 
 /**
  * Base class of Hudson plugin.
@@ -59,8 +58,8 @@ import jenkins.model.GlobalConfiguration;
  * <p>
  * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
- * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
- * https://jenkins.io/redirect/developer/extension-points</a>.
+ * points, see <a href="https://www.jenkins.io/redirect/developer/extension-points">
+ * https://www.jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -268,7 +267,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      */
     protected void load() throws IOException {
         XmlFile xml = getConfigXml();
-        if(xml.exists())
+        if (xml.exists())
             xml.unmarshal(this);
     }
 
@@ -279,7 +278,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      */
     @Override
     public void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         XmlFile config = getConfigXml();
         config.write(this);
         SaveableListener.fireOnChange(this, config);
@@ -296,7 +295,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      */
     protected XmlFile getConfigXml() {
         return new XmlFile(Jenkins.XSTREAM,
-                new File(Jenkins.get().getRootDir(),wrapper.getShortName()+".xml"));
+                new File(Jenkins.get().getRootDir(), wrapper.getShortName() + ".xml"));
     }
 
     @Override
@@ -312,8 +311,8 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**
      * Dummy instance of {@link Plugin} to be used when a plugin didn't

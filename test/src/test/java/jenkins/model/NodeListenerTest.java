@@ -1,5 +1,11 @@
 package jenkins.model;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import hudson.ExtensionList;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -8,18 +14,12 @@ import hudson.cli.DeleteNodeCommand;
 import hudson.cli.GetNodeCommand;
 import hudson.cli.UpdateNodeCommand;
 import hudson.model.Node;
-import hudson.slaves.DumbSlave;
-import org.apache.tools.ant.filters.StringInputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class NodeListenerTest {
 
@@ -35,12 +35,12 @@ public class NodeListenerTest {
 
     @Test
     public void crud() throws Exception {
-        DumbSlave slave = j.createSlave();
-        String xml = cli(new GetNodeCommand()).invokeWithArgs(slave.getNodeName()).stdout();
-        cli(new UpdateNodeCommand()).withStdin(new StringInputStream(xml)).invokeWithArgs(slave.getNodeName());
-        cli(new DeleteNodeCommand()).invokeWithArgs(slave.getNodeName());
+        Node agent = j.createSlave();
+        String xml = cli(new GetNodeCommand()).invokeWithArgs(agent.getNodeName()).stdout();
+        cli(new UpdateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()))).invokeWithArgs(agent.getNodeName());
+        cli(new DeleteNodeCommand()).invokeWithArgs(agent.getNodeName());
 
-        cli(new CreateNodeCommand()).withStdin(new StringInputStream(xml)).invokeWithArgs("replica");
+        cli(new CreateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()))).invokeWithArgs("replica");
         j.jenkins.getComputer("replica").doDoDelete();
 
         verify(mock, times(2)).onCreated(any(Node.class));

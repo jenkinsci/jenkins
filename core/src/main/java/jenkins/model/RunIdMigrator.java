@@ -24,6 +24,13 @@
 
 package jenkins.model;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
@@ -55,8 +62,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -64,11 +69,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
-
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
 
 /**
  * Converts legacy {@code builds} directories to the current format.
@@ -85,14 +85,14 @@ public final class RunIdMigrator {
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
-    private static final Map<String,Integer> EMPTY = new TreeMap<>();
+    private static final Map<String, Integer> EMPTY = new TreeMap<>();
 
     /**
      * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
      */
     private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
-    private @NonNull Map<String,Integer> idToNumber = EMPTY;
+    private @NonNull Map<String, Integer> idToNumber = EMPTY;
 
     public RunIdMigrator() {}
 
@@ -123,8 +123,10 @@ public final class RunIdMigrator {
         File f = new File(dir, MAP_FILE);
         try (AtomicFileWriter w = new AtomicFileWriter(f)) {
             try {
-                for (Map.Entry<String,Integer> entry : idToNumber.entrySet()) {
-                    w.write(entry.getKey() + ' ' + entry.getValue() + '\n');
+                synchronized (this) {
+                    for (Map.Entry<String, Integer> entry : idToNumber.entrySet()) {
+                        w.write(entry.getKey() + ' ' + entry.getValue() + '\n');
+                    }
                 }
                 w.commit();
             } finally {
@@ -167,7 +169,7 @@ public final class RunIdMigrator {
         doMigrate(dir);
         save(dir);
         if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome))
-            LOGGER.log(WARNING, "Build record migration (https://jenkins.io/redirect/build-record-migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
+            LOGGER.log(WARNING, "Build record migration (https://www.jenkins.io/redirect/build-record-migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
         return true;
     }
 
@@ -192,6 +194,7 @@ public final class RunIdMigrator {
     }
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
+
     private void doMigrate(File dir) {
         idToNumber = new TreeMap<>();
         File[] kids = dir.listFiles();
@@ -283,7 +286,7 @@ public final class RunIdMigrator {
             Files.move(src.toPath(), dest.toPath());
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }
@@ -361,9 +364,11 @@ public final class RunIdMigrator {
             }
         }
     }
+
     private static final Pattern ID_ELT = Pattern.compile("(?m)^  <id>([0-9_-]+)</id>(\r?\n)");
     private static final Pattern TIMESTAMP_ELT = Pattern.compile("(?m)^  <timestamp>(\\d+)</timestamp>(\r?\n)");
     /** Inverse of {@link #doMigrate}. */
+
     private void unmigrateBuildsDir(File builds) throws Exception {
         File mapFile = new File(builds, MAP_FILE);
         if (!mapFile.isFile()) {

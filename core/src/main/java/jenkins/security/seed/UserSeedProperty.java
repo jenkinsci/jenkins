@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -30,6 +32,9 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.HttpResponses;
+import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.util.SystemProperties;
@@ -42,13 +47,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.Objects;
-
 /**
- * The seed stored in this property is used to have a revoke feature on the session 
+ * The seed stored in this property is used to have a revoke feature on the session
  * without having to hack the session management that depends on the application server used to run the instance.
  *
  * The seed is added to the session when a user just logged in and then for every request,
@@ -61,18 +61,18 @@ import java.util.Objects;
  */
 public class UserSeedProperty extends UserProperty {
     /**
-     * Escape hatch for User seed based revocation feature. 
+     * Escape hatch for User seed based revocation feature.
      * If we disable the seed, we can still use it to write / store information but not verifying the data using it.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean DISABLE_USER_SEED = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".disableUserSeed");
 
     /**
      * Hide the user seed section from the UI to prevent accidental use
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean HIDE_USER_SEED_SECTION = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".hideUserSeedSection");
 
     public static final String USER_SESSION_SEED = "_JENKINS_SESSION_SEED";
@@ -95,7 +95,7 @@ public class UserSeedProperty extends UserProperty {
 
         UserSeedChangeListener.fireUserSeedRenewed(this.user);
     }
-    
+
     private void renewSeedInternal() {
         String currentSeed = this.seed;
         String newSeed = currentSeed;
@@ -142,7 +142,7 @@ public class UserSeedProperty extends UserProperty {
                 if (lastGranted != null) {
                     lastGranted.invalidate();
                 }
-                
+
                 bc.commit();
             }
 

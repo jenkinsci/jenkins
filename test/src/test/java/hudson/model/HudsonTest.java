@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -42,8 +43,12 @@ import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
-import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BuildStep;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,11 +59,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -108,24 +108,24 @@ public class HudsonTest {
         assertEquals(5, j.jenkins.getQuietPeriod());
 
         List<JDK> jdks = j.jenkins.getJDKs();
-        assertEquals(3,jdks.size()); // Hudson adds one more
-        assertJDK(jdks.get(0),"jdk1","/tmp");
-        assertJDK(jdks.get(1),"jdk2","/tmp");
+        assertEquals(3, jdks.size()); // Hudson adds one more
+        assertJDK(jdks.get(0), "jdk1", "/tmp");
+        assertJDK(jdks.get(1), "jdk2", "/tmp");
 
         AntInstallation[] ants = j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
-        assertEquals(2,ants.length);
-        assertAnt(ants[0],"ant1","/tmp");
-        assertAnt(ants[1],"ant2","/tmp");
+        assertEquals(2, ants.length);
+        assertAnt(ants[0], "ant1", "/tmp");
+        assertAnt(ants[1], "ant2", "/tmp");
     }
 
     private void assertAnt(AntInstallation ant, String name, String home) {
-        assertEquals(ant.getName(),name);
-        assertEquals(ant.getHome(),home);
+        assertEquals(ant.getName(), name);
+        assertEquals(ant.getHome(), home);
     }
 
     private void assertJDK(JDK jdk, String name, String home) {
-        assertEquals(jdk.getName(),name);
-        assertEquals(jdk.getHome(),home);
+        assertEquals(jdk.getName(), name);
+        assertEquals(jdk.getHome(), home);
     }
 
     /**
@@ -141,7 +141,7 @@ public class HudsonTest {
 
         URL url = jobPage.getUrl();
         System.out.println(url);
-        assertTrue(url.getPath().endsWith("/job/"+p.getName()+"/"));
+        assertTrue(url.getPath().endsWith("/job/" + p.getName() + "/"));
     }
 
     /**
@@ -155,35 +155,35 @@ public class HudsonTest {
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void computerConfigureLink() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("computer/(master)/configure");
+        HtmlPage page = j.createWebClient().goTo("computer/(built-in)/configure");
         j.submit(page.getFormByName("config"));
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
-        HtmlPage page = wc.goTo("computer/(master)/");
+        HtmlPage page = wc.goTo("computer/(built-in)/");
         for (HtmlAnchor a : page.getAnchors()) {
             assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
         }
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "computer/(built-in)/doDelete"), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 
-        // the master computer object should be still here
-        page = wc.goTo("computer/(master)/");
+        // the built-in computer object should be still here
+        page = wc.goTo("computer/(built-in)/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
     }
 
@@ -192,7 +192,7 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
-    public void legacyDescriptorLookup() throws Exception {
+    public void legacyDescriptorLookup() {
         Descriptor dummy = new Descriptor(HudsonTest.class) {};
 
         BuildStep.PUBLISHERS.addRecorder(dummy);

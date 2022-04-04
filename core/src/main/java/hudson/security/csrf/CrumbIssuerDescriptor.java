@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2008-2009 Yahoo! Inc. 
- * All rights reserved. 
+ * Copyright (c) 2008-2009 Yahoo! Inc.
+ * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import hudson.Util;
@@ -11,7 +12,7 @@ import hudson.model.Descriptor;
 /**
  * Describes global configuration for crumb issuers. Create subclasses to specify
  * additional global configuration for custom crumb issuers.
- * 
+ *
  * @author dty
  */
 public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descriptor<CrumbIssuer> {
@@ -39,7 +40,6 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
 
     /**
      * Set the salt value. Must not be null.
-     * @param salt
      */
     public void setCrumbSalt(String salt) {
         if (Util.fixEmptyAndTrim(salt) == null) {
@@ -59,8 +59,6 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
 
     /**
      * Set the request parameter name. Must not be null.
-     *
-     * @param requestField
      */
     public void setCrumbRequestField(String requestField) {
         if (Util.fixEmptyAndTrim(requestField) == null) {

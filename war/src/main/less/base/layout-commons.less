@@ -4,12 +4,11 @@ html {
   position: relative;
   height: 100%;
   box-sizing: border-box;
-  min-height: none;
 }
 
 body {
-  height: 100%;
   margin: 0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--background);
@@ -23,8 +22,8 @@ body {
 
 /* --------------- header --------------- */
 
-#header .logo {
-  margin-left: 16px;
+#page-header .logo {
+  margin-left: 1.2rem;
   display: inline-flex;
   align-items: center;
   position: relative;
@@ -44,15 +43,10 @@ body {
   margin-left: 0.25rem;
 }
 
-#breadcrumbBar,
-#footer-container,
-.top-sticker-inner {
+#footer-container {
   background-color: var(--breadcrumbs-bg);
 }
 
-.top-sticker-inner {
-  border-bottom: 1px solid --var(breadcrumbs-border);
-}
 
 /* -------------------------------------- */
 
@@ -69,14 +63,11 @@ body {
 }
 
 #side-panel {
-  padding: 1rem 0 2.5rem 0;
-  width: 300px;
   flex-shrink: 0;
-  border-right: 1px solid var(--panel-border-color);
 }
 
 #main-panel {
-  padding: 15px 15px 40px 15px;
+  padding: 2rem;
   display: inline-block;
   width: 100%;
 }
@@ -125,10 +116,15 @@ body.full-screen #main-panel {
 /* -------------------------------------- */
 
 h1.build-caption.page-headline {
-    max-width: 1200px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+}
+
+h1.build-caption.page-headline > span {
+  max-width: 1200px;
+  overflow: hidden;
+  line-height: 2.4rem;
+  text-overflow: ellipsis;
 }
 
 // Clearfixes extracted from responsive-grid.css as they essential

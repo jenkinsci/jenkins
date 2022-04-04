@@ -21,14 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
+import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,28 +48,33 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Oleg Nenashev
  */
 public class ParameterizedJobMixInTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void doBuild_shouldFailWhenInvokingDisabledProject() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.doDisable();
-        
+
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.assertFails(project.getUrl() + "build", HttpServletResponse.SC_CONFLICT);
     }
-    
+
     @Test
     @Issue("JENKINS-36193")
     public void doBuildWithParameters_shouldFailWhenInvokingDisabledProject() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", "BAR")));
         project.doDisable();
-        
+
         final JenkinsRule.WebClient webClient = j.createWebClient();
-        webClient.assertFails(project.getUrl() + "buildWithParameters", HttpServletResponse.SC_CONFLICT);
+
+        FailingHttpStatusCodeException fex = assertThrows(
+                "should fail when invoking disabled project",
+                FailingHttpStatusCodeException.class,
+                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
+        assertThat("Should fail with conflict", fex.getStatusCode(), is(409));
     }
 
     @Test
@@ -73,7 +86,7 @@ public class ParameterizedJobMixInTest {
         project.setQuietPeriod(projectQuietPeriodInSeconds);
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
-        webClient.goTo(project.getUrl() + "build", "");
+        webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build"), HttpMethod.POST)));
         long triggerTime = System.currentTimeMillis();
 
         Queue.Item item = Jenkins.get().getQueue().getItem(1);
@@ -81,7 +94,7 @@ public class ParameterizedJobMixInTest {
         Assert.assertTrue(item.task instanceof FreeStyleProject);
 
         Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
-        Assert.assertTrue((waitingItem.timestamp.getTimeInMillis() - triggerTime) > 45000);
+        Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);
 
         Jenkins.get().getQueue().doCancelItem(1);
     }

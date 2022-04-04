@@ -24,5 +24,7 @@ THE SOFTWARE.
 
  <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <th tooltip="${%Weather report showing aggregated status of recent builds}"><j:out value="${h.nbspIndent(iconSize)}"/>${%W}</th>
+    <th class="jenkins-table__cell--tight" tooltip="${%Weather report showing aggregated status of recent builds}">
+        ${%W}
+    </th>
  </j:jelly>

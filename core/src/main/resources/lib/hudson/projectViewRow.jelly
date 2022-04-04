@@ -34,8 +34,5 @@ THE SOFTWARE.
     <j:forEach var="col" items="${columnExtensions}">
       <st:include page="column.jelly" it="${col}"/>
     </j:forEach>
-    <td>
-      <st:nbsp/>
-    </td>
   </tr>
 </j:jelly>

@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt, Alan Harder
  *
@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,8 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -32,14 +34,12 @@ import hudson.model.listeners.ItemListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,17 +54,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-
+import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -86,8 +82,8 @@ public class ListView extends View implements DirectlyModifiableView {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
-    
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
@@ -96,12 +92,12 @@ public class ListView extends View implements DirectlyModifiableView {
      * Include regex string.
      */
     private String includeRegex;
-    
+
     /**
      * Whether to recurse in ItemGroups
      */
     private boolean recurse;
-    
+
     /**
      * Compiled include pattern from the includeRegex string.
      */
@@ -110,7 +106,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Deprecated see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     private transient Boolean statusFilter;
@@ -141,7 +137,7 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     protected Object readResolve() {
-        if(includeRegex!=null) {
+        if (includeRegex != null) {
             try {
                 includePattern = Pattern.compile(includeRegex);
             } catch (PatternSyntaxException x) {
@@ -149,9 +145,9 @@ public class ListView extends View implements DirectlyModifiableView {
                 OldDataMonitor.report(this, Collections.singleton(x));
             }
         }
-        synchronized(this) {
+        synchronized (this) {
             if (jobNames == null) {
-                jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+                jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
             }
         }
         initColumns();
@@ -178,11 +174,11 @@ public class ListView extends View implements DirectlyModifiableView {
      * Used to determine if we want to display the Add button.
      */
     public boolean hasJobFilterExtensions() {
-    	return !ViewJobFilter.all().isEmpty();
+        return !ViewJobFilter.all().isEmpty();
     }
 
     public DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> getJobFilters() {
-    	return jobFilters;
+        return jobFilters;
     }
 
     @Override
@@ -190,7 +186,7 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
-    public Set<String> getJobNames() {
+    public synchronized Set<String> getJobNames() {
         return Collections.unmodifiableSet(jobNames);
     }
 
@@ -268,7 +264,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         // for sanity, trim off duplicates
         items = new ArrayList<>(new LinkedHashSet<>(items));
-        
+
         return items;
     }
 
@@ -285,7 +281,7 @@ public class ListView extends View implements DirectlyModifiableView {
     public boolean contains(TopLevelItem item) {
       return getItems().contains(item);
     }
-    
+
     public synchronized boolean jobNamesContains(TopLevelItem item) {
         if (item == null) return false;
         return jobNames.contains(item.getRelativeNameFrom(getOwner().getItemGroup()));
@@ -338,7 +334,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
-     * Status filter is now controlled via a JobViewFilter, see {@link StatusFilter}
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     public Boolean getStatusFilter() {
@@ -353,7 +349,7 @@ public class ListView extends View implements DirectlyModifiableView {
     @Restricted(NoExternalUse.class) // called from newJob_button-bar view
     @SuppressWarnings("unused") // called from newJob_button-bar view
     public boolean isAddToCurrentView() {
-        synchronized(this) {
+        synchronized (this) {
             return !jobNames.isEmpty() || // There are already items in this view specified by name
                     (jobFilters.isEmpty() && includePattern == null) // No other way to include items is used
                     ;
@@ -377,8 +373,8 @@ public class ListView extends View implements DirectlyModifiableView {
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup) {
-            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
-            if (item!=null) {
+            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>) ig).doCreateItem(req, rsp);
+            if (item != null) {
                 if (needToAddToCurrentView(req)) {
                     synchronized (this) {
                         jobNames.add(item.getRelativeNameFrom(getOwner().getItemGroup()));
@@ -395,7 +391,7 @@ public class ListView extends View implements DirectlyModifiableView {
     @RequirePOST
     public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
-        if(name==null)
+        if (name == null)
             throw new Failure("Query parameter 'name' is required");
 
         TopLevelItem item = resolveName(name);
@@ -414,11 +410,11 @@ public class ListView extends View implements DirectlyModifiableView {
     @RequirePOST
     public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
-        if(name==null)
+        if (name == null)
             throw new Failure("Query parameter 'name' is required");
 
         TopLevelItem item = resolveName(name);
-        if (item==null)
+        if (item == null)
             throw new Failure("Query parameter 'name' does not correspond to a known and readable item");
 
         if (remove(item))
@@ -455,7 +451,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
             for (TopLevelItem item : items) {
                 String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
-                if(req.getParameter(relativeNameFrom)!=null) {
+                if (req.getParameter(relativeNameFrom) != null) {
                     jobNames.add(relativeNameFrom);
                 }
             }
@@ -469,14 +465,14 @@ public class ListView extends View implements DirectlyModifiableView {
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
 
         if (jobFilters == null) {
-        	jobFilters = new DescribableList<>(this);
+            jobFilters = new DescribableList<>(this);
         }
         jobFilters.rebuildHetero(req, json, ViewJobFilter.all(), "jobFilters");
 
         String filter = Util.fixEmpty(req.getParameter("statusFilter"));
         statusFilter = filter != null ? "1".equals(filter) : null;
     }
-    
+
     /** @since 1.526 */
     @DataBoundSetter
     public void setIncludeRegex(String includeRegex) {
@@ -493,8 +489,7 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     /**
-     * Deprecated see, {@link StatusFilter}
-     * @param statusFilter
+     * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
     @DataBoundSetter
@@ -512,7 +507,7 @@ public class ListView extends View implements DirectlyModifiableView {
         /**
          * Checks if the include regular expression is valid.
          */
-        public FormValidation doCheckIncludeRegex( @QueryParameter String value ) throws IOException, ServletException, InterruptedException  {
+        public FormValidation doCheckIncludeRegex(@QueryParameter String value) throws IOException, ServletException, InterruptedException  {
             String v = Util.fixEmpty(value);
             if (v != null) {
                 try {
@@ -543,6 +538,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 locationChanged(oldFullName, newFullName);
             }
         }
+
         private void locationChanged(String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             locationChanged(jenkins, oldFullName, newFullName);
@@ -552,6 +548,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
             }
         }
+
         private void locationChanged(ViewGroup vg, String oldFullName, String newFullName) {
             for (View v : vg.getViews()) {
                 if (v instanceof ListView) {
@@ -588,6 +585,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 deleted(item);
             }
         }
+
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.get();
             deleted(jenkins, item);
@@ -597,6 +595,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
             }
         }
+
         private void deleted(ViewGroup vg, Item item) {
             for (View v : vg.getViews()) {
                 if (v instanceof ListView) {

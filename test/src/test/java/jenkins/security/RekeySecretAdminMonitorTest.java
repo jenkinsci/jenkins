@@ -8,23 +8,15 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
 import hudson.util.SecretHelper;
-import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.JenkinsRecipe;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
-
-import javax.crypto.Cipher;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -33,11 +25,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.crypto.Cipher;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -92,12 +89,12 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml,"<foo>" + encryptOld(TEST_KEY) + "</foo>");
+        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
     }
 
     private void verifyRewrite(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
+        Pattern pattern = Pattern.compile("<foo>" + plain_regex_match + "</foo>");
         MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
@@ -112,14 +109,14 @@ public class RekeySecretAdminMonitorTest {
         // one should see the warning. try scheduling it
         assertFalse(monitor.isScanOnBoot());
         HtmlForm form = getRekeyForm(wc);
-        submit(wc, form, "schedule");
+        j.submit(form, "schedule");
         assertTrue(monitor.isScanOnBoot());
         form = getRekeyForm(wc);
         assertTrue(getButton(form, 1).isDisabled());
 
         // run it now
         assertFalse(monitor.getLogFile().exists());
-        submit(wc, form, "background");
+        j.submit(form, "background");
         assertTrue(monitor.getLogFile().exists());
 
         // should be no warning/error now
@@ -134,24 +131,13 @@ public class RekeySecretAdminMonitorTest {
         // dismiss and the message will be gone
         assertTrue(monitor.isEnabled());
         form = getRekeyForm(wc);
-        submit(wc, form, "dismiss");
+        j.submit(form, "dismiss");
         assertFalse(monitor.isEnabled());
         assertThrows(ElementNotFoundException.class, () -> getRekeyForm(wc));
     }
 
     private HtmlForm getRekeyForm(JenkinsRule.WebClient wc) throws IOException, SAXException {
         return wc.goTo("manage").getFormByName("rekey");
-    }
-
-    private void submit(JenkinsRule.WebClient wc, HtmlForm form, String name) throws IOException {
-        WebRequest request = form.getWebRequest(null);
-        /*
-         * TODO There is a long-undiagnosed issue with the test harness not being compatible with
-         * message.groovy's f.submit. Work around this by matching the behavior of a real browser
-         * (adding the desired button to the request as a parameter).
-         */
-        request.getRequestParameters().add(new NameValuePair(name, ""));
-        wc.getPage(request);
     }
 
     private HtmlButton getButton(HtmlForm form, int index) {
@@ -163,7 +149,7 @@ public class RekeySecretAdminMonitorTest {
         if (index > 0) {
             buttonStream = buttonStream.skip(index);
         }
-        
+
         return buttonStream
                 .findFirst()
                 .orElse(null);
@@ -191,7 +177,7 @@ public class RekeySecretAdminMonitorTest {
     private static String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8))));
+        return Base64.getEncoder().encodeToString(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8)));
     }
 
     private String encryptNew(String str) {
