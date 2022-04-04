@@ -62,8 +62,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 case "button":
                     var element
                     // Modern buttons aren't wrapped in spans
-                    // hetero-list-add/repeatable-add buttons are still wrapped in spans for compatability, so ignore them
-                    if ((e.classList.contains('jenkins-button') || e.classList.contains('repeatable-delete')) && !e.classList.contains('hetero-list-add') && !e.classList.contains('repeatable-add')) {
+                    if (e.classList.contains('jenkins-button') || e.classList.contains('repeatable-delete')) {
                         p = findParent(e);
                         element = e
                     } else {
