@@ -230,7 +230,7 @@ public class SlaveComputer extends Computer {
     public String getIconClassName() {
         Future<?> l = lastConnectActivity;
         if (l != null && !l.isDone())
-            return "icon-computer";
+            return "symbol-computer";
         return super.getIconClassName();
     }
 

@@ -73,15 +73,8 @@ THE SOFTWARE.
         <dd>
          <p>
            Access the same data as Python for Python clients. This can be parsed into Python
-           object as <code>eval(urllib.urlopen("...").read())</code> and the resulting object
-           tree is identical to that of JSON.
-
-           However, when you do this, beware of the security implication. If you are connecting
-           to a non-trusted Jenkins, the server can send you malicious Python programs. 
-         </p>
-         <p>
-           In Python 2.6 or later you can safely parse this output using 
-           <code>ast.literal_eval(urllib.urlopen("...").read())</code>
+           objects as <code>ast.literal_eval(urllib.urlopen("...").read())</code>
+           and the resulting object tree is identical to that of JSON.
          </p>
         </dd>
       </dl>
