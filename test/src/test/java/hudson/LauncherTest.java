@@ -21,7 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.LineTransformationOutputStream;
@@ -48,20 +56,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeFalse;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -90,18 +89,18 @@ public class LauncherTest {
         ;
         project.getBuildersList().add(script);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("aaa aaaccc ccc", build);
     }
-    
+
     @Issue("JENKINS-19926")
     @Test
     public void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
         Slave slave = rule.createSlave(new EnvVars(env));
-        
+
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
         final CommandInterpreter script = Functions.isWindows()
@@ -111,7 +110,7 @@ public class LauncherTest {
         project.getBuildersList().add(script);
         project.setAssignedNode(slave.getComputer().getNode());
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
         rule.assertLogContains("original value and new value", build);
     }
@@ -131,44 +130,54 @@ public class LauncherTest {
             rule.assertLogNotContains(windows ? "cmd /c" : "sh -xe", runOn(p, n));
         }
     }
+
     private FreeStyleBuild runOn(FreeStyleProject p, Node n) throws Exception {
         p.setAssignedNode(n);
         FreeStyleBuild b = rule.buildAndAssertSuccess(p);
         rule.assertLogContains("printed text", b);
         return b;
     }
+
     private static final class QuietLauncher extends Launcher.DecoratedLauncher {
         QuietLauncher(Launcher inner) {
             super(inner);
         }
+
         @Override public Proc launch(ProcStarter starter) throws IOException {
             return super.launch(starter.quiet(true));
         }
     }
+
     private static final class QuietShell extends Shell {
         QuietShell(String command) {
             super(command);
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
             return super.perform(build, new QuietLauncher(launcher), listener);
         }
+
         @Extension public static final class DescriptorImpl extends Shell.DescriptorImpl {
             @Override public String getDisplayName() {
                 return "QuietShell";
             }
         }
     }
+
     private static final class QuietBatchFile extends BatchFile {
         QuietBatchFile(String command) {
             super(command);
         }
-        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
             return super.perform(build, new QuietLauncher(launcher), listener);
         }
+
         @Extension public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @Override public String getDisplayName() {
                 return "QuietBatchFile";
             }
+
             @SuppressWarnings("rawtypes")
             @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
@@ -191,6 +200,7 @@ public class LauncherTest {
             containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                            "[master → slave0] hello"));
     }
+
     private static class RemotableBuildListener implements BuildListener {
         private static final long serialVersionUID = 1;
         /** location of log file streamed to by multiple sources */
@@ -198,13 +208,16 @@ public class LauncherTest {
         /** records allocation & deserialization history; e.g., {@code master → agentName} */
         private final String id;
         private transient PrintStream logger;
+
         RemotableBuildListener(File logFile) {
             this(logFile, "master");
         }
+
         private RemotableBuildListener(File logFile, String id) {
             this.logFile = logFile;
             this.id = id;
         }
+
         @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
@@ -223,6 +236,7 @@ public class LauncherTest {
             }
             return logger;
         }
+
         private Object writeReplace() {
             Thread.dumpStack();
             String name = Channel.current().getName();
@@ -255,10 +269,12 @@ public class LauncherTest {
             }, true);
         }
     }
+
     @FunctionalInterface
     private interface ProcStarterCustomizer {
-        void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener) throws Exception;
+        void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener);
     }
+
     private void assertMultipleStdioCalls(String message, Node node, boolean emitStderr, ProcStarterCustomizer psCustomizer, boolean outputIn2) throws Exception {
         message = node.getDisplayName() + ": " + message;
         Launcher launcher = node.createLauncher(StreamTaskListener.fromStderr());
@@ -271,15 +287,15 @@ public class LauncherTest {
         }
         ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-        TaskListener listener = new StreamTaskListener(baos2);
+        TaskListener listener = new StreamTaskListener(baos2, Charset.defaultCharset());
         psCustomizer.run(ps, baos1, baos2, listener);
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
-            assertThat(message, baos2.toString(), containsString("hello"));
-            assertThat(message, baos1.toString(), is(emptyString()));
+            assertThat(message, baos2.toString(Charset.defaultCharset().name()), containsString("hello"));
+            assertThat(message, baos1.toString(Charset.defaultCharset().name()), is(emptyString()));
         } else {
-            assertThat(message, baos1.toString(), containsString("hello"));
-            assertThat(message, baos2.toString(), is(emptyString()));
+            assertThat(message, baos1.toString(Charset.defaultCharset().name()), containsString("hello"));
+            assertThat(message, baos2.toString(Charset.defaultCharset().name()), is(emptyString()));
         }
     }
 

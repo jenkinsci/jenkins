@@ -26,6 +26,7 @@ THE SOFTWARE.
   <f:section title="${descriptor.displayName}">
     <d:taglib uri="local">
       <d:tag name="section">
+        <j:set var="escapeEntryTitleAndDescription" value="true"/>
         <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
                         add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}" enableTopButton="true"

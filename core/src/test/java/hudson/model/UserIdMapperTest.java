@@ -21,23 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThrows;
+
+import java.io.File;
+import java.io.IOException;
 import jenkins.model.IdStrategy;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.IOException;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 public class UserIdMapperTest {
 
     @Rule
-    public TestName name= new TestName();
+    public TestName name = new TestName();
 
     @Test
     public void testNonexistentFileLoads() throws IOException {
@@ -287,9 +294,9 @@ public class UserIdMapperTest {
         assertThat(directory1.getName(), startsWith("abcdef_"));
     }
 
-    @Test(expected = IOException.class)
-    public void testXmlFileCorrupted() throws IOException {
-        UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
+    @Test
+    public void testXmlFileCorrupted() {
+        assertThrows(IOException.class, () -> createUserIdMapper(IdStrategy.CASE_INSENSITIVE));
     }
 
     @Test

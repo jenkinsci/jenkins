@@ -24,35 +24,33 @@
 
 package hudson.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.Stapler;
-import org.springframework.dao.DataAccessException;
-
-import javax.servlet.http.HttpSession;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class WhoAmITest {
 
@@ -81,7 +79,7 @@ public class WhoAmITest {
 
         assertThat(sessionId, not(nullValue()));
 
-        // dangerous stuff in Regular Login mode: 
+        // dangerous stuff in Regular Login mode:
         /*
          * <td>Details:</td>
          * <td>org.acegisecurity.ui.WebAuthenticationDetails@12afc: RemoteIpAddress: 127.0.0.1; SessionId: node0gbmv9ly0f3h517eppoupykq6n0</td>
@@ -122,7 +120,7 @@ public class WhoAmITest {
 
         assertThat(sessionId, not(nullValue()));
 
-        // dangerous stuff in Regular Login mode with the api/json call: 
+        // dangerous stuff in Regular Login mode with the api/json call:
         /*
          * {
          *    "_class": "hudson.security.WhoAmI",
@@ -131,7 +129,10 @@ public class WhoAmITest {
          *    "authorities": [],
          *    "details": "org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0",
          *    "name": "user",
-         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a: Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true; Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0; Granted Authorities: "
+         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a:
+         *        Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true;
+         *        Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0;
+         *        Granted Authorities: "
          * }
          */
         assertThat(content, not(anyOf(
@@ -155,7 +156,7 @@ public class WhoAmITest {
         HtmlPage whoAmIPage = wc.goTo("whoAmI");
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
-        // dangerous stuff in Basic mode: 
+        // dangerous stuff in Basic mode:
         /*
          * <td>toString:</td>
          * <td>org.acegisecurity.providers.UsernamePasswordAuthenticationToken@e8fd00a7: Username: [toString()=S3cr3t];
@@ -190,7 +191,7 @@ public class WhoAmITest {
         HtmlPage whoAmIPage = wc.goTo("whoAmI");
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
-        // dangerous stuff in API Token mode: 
+        // dangerous stuff in API Token mode:
         /*
          * <td rowspan="1">Authorization</td>
          * <td>Basic dXNlcjoxMTRiNGRmMWNhZTVkNDQ2MjgxZTJkZWEzMDY1NTEyZDBi</td>
@@ -205,15 +206,15 @@ public class WhoAmITest {
     private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return createUserDetails(username);
         }
 
-        @Override public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        @Override public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             return createUserDetails(username);
         }
 
-        @Override public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        @Override public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             return null;
         }
 
@@ -229,8 +230,8 @@ public class WhoAmITest {
                     return "[toString()=S3cr3t]";
                 }
 
-                @Override public GrantedAuthority[] getAuthorities() {
-                    return new GrantedAuthority[0];
+                @Override public Collection<? extends GrantedAuthority> getAuthorities() {
+                    return Collections.emptySet();
                 }
 
                 @Override public String getPassword() {

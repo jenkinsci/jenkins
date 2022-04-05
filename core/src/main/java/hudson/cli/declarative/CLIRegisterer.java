@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
+import static java.util.logging.Level.SEVERE;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
@@ -32,20 +36,6 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.ExtensionRefreshException;
-import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.jvnet.hudson.annotation_indexer.Index;
-import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.CmdLineException;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -59,11 +49,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import static java.util.logging.Level.SEVERE;
-
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionRefreshException;
+import jenkins.model.Jenkins;
+import org.jvnet.hudson.annotation_indexer.Index;
+import org.jvnet.localizer.ResourceBundleHolder;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Discover {@link CLIMethod}s and register them as {@link CLICommand} implementations.
@@ -78,9 +78,10 @@ public class CLIRegisterer extends ExtensionFinder {
         return ExtensionComponentSet.EMPTY;
     }
 
+    @Override
     public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
-        if (type==CLICommand.class)
-            return (List)discover(jenkins);
+        if (type == CLICommand.class)
+            return (List) discover(jenkins);
         else
             return Collections.emptyList();
     }
@@ -90,9 +91,9 @@ public class CLIRegisterer extends ExtensionFinder {
      */
     private Method findResolver(Class type) throws IOException {
         List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.get().getPluginManager().uberClassLoader), Method.class);
-        for ( ; type!=null; type=type.getSuperclass())
+        for ( ; type != null; type = type.getSuperclass())
             for (Method m : resolvers)
-                if (m.getReturnType()==type)
+                if (m.getReturnType() == type)
                     return m;
         return null;
     }
@@ -102,13 +103,13 @@ public class CLIRegisterer extends ExtensionFinder {
         List<ExtensionComponent<CLICommand>> r = new ArrayList<>();
 
         try {
-            for ( final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader),Method.class)) {
+            for (final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader), Method.class)) {
                 try {
                     // command name
                     final String name = m.getAnnotation(CLIMethod.class).name();
 
                     final ResourceBundleHolder res = loadMessageBundle(m);
-                    res.format("CLI."+name+".shortDescription");   // make sure we have the resource, to fail early
+                    res.format("CLI." + name + ".shortDescription");   // make sure we have the resource, to fail early
 
                     r.add(new ExtensionComponent<>(new CloneableCLICommand() {
                         @Override
@@ -202,13 +203,14 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
+                                // TODO this could probably use ACL.as; why is it calling SecurityContext.setAuthentication rather than SecurityContextHolder.setContext?
                                 SecurityContext sc = SecurityContextHolder.getContext();
                                 Authentication old = sc.getAuthentication();
                                 try {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = getTransportAuthentication();
+                                    Authentication auth = getTransportAuthentication2();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 
@@ -270,16 +272,17 @@ public class CLIRegisterer extends ExtensionFinder {
                             printError(errorMessage);
                         }
 
+                        @Override
                         protected int run() throws Exception {
                             throw new UnsupportedOperationException();
                         }
                     }));
                 } catch (ClassNotFoundException | MissingResourceException e) {
-                    LOGGER.log(SEVERE,"Failed to process @CLIMethod: "+m,e);
+                    LOGGER.log(SEVERE, "Failed to process @CLIMethod: " + m, e);
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(SEVERE, "Failed to discover @CLIMethod",e);
+            LOGGER.log(SEVERE, "Failed to discover @CLIMethod", e);
         }
 
         return r;

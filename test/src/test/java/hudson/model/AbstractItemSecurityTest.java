@@ -24,22 +24,21 @@
 
 package hudson.model;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.io.StringReader;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
-import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.io.IOException;
+import java.io.StringReader;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class AbstractItemSecurityTest {
 
@@ -47,7 +46,7 @@ public class AbstractItemSecurityTest {
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -61,7 +60,7 @@ public class AbstractItemSecurityTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.setDescription("Wibble");
         try {
-            project.updateByXml((Source)new StreamSource(new StringReader(xml)));
+            project.updateByXml((Source) new StreamSource(new StringReader(xml)));
             // if we didn't fail JAXP has thrown away the entity.
             assertThat(project.getDescription(), emptyOrNullString());
         } catch (IOException ex) {
@@ -73,7 +72,7 @@ public class AbstractItemSecurityTest {
 
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +

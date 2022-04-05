@@ -1,23 +1,20 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.ClassLoaderReflectionToolkit;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.Enumeration;
 
 /**
  * Serves files located in the {@code /assets} classpath directory via the Jenkins core ClassLoader.
@@ -83,41 +80,26 @@ public class AssetManager implements UnprotectedRootAction {
             return null;
         }
 
-        try {
-            if (path.contains("..")) // crude avoidance of directory traversal attack
-                throw new IllegalArgumentException(path);
+        if (path.contains("..")) // crude avoidance of directory traversal attack
+            throw new IllegalArgumentException(path);
 
-            String name;
-            if (path.charAt(0) == '/') {
-                name = "assets" + path;
-            } else {
-                name = "assets/" + path;
-            }
-
-            ClassLoader cl = Jenkins.class.getClassLoader();
-            URL url = (URL) $findResource.invoke(cl, name);
-            if (url==null) {
-                // pick the last one, which is the one closest to the leaf of the classloader tree.
-                Enumeration<URL> e = cl.getResources(name);
-                while (e.hasMoreElements()) {
-                    url = e.nextElement();
-                }
-            }
-            return url;
-        } catch (InvocationTargetException|IllegalAccessException e) {
-            throw new Error(e);
+        String name;
+        if (path.charAt(0) == '/') {
+            name = "assets" + path;
+        } else {
+            name = "assets/" + path;
         }
+
+        ClassLoader cl = Jenkins.class.getClassLoader();
+        URL url = ClassLoaderReflectionToolkit._findResource(cl, name);
+        if (url == null) {
+            // pick the last one, which is the one closest to the leaf of the classloader tree.
+            Enumeration<URL> e = cl.getResources(name);
+            while (e.hasMoreElements()) {
+                url = e.nextElement();
+            }
+        }
+        return url;
     }
 
-    private static final Method $findResource = init();
-
-    private static Method init() {
-        try {
-            Method m = ClassLoader.class.getDeclaredMethod("findResource", String.class);
-            m.setAccessible(true);
-            return m;
-        } catch (NoSuchMethodException e) {
-            throw (Error)new NoSuchMethodError().initCause(e);
-        }
-    }
 }

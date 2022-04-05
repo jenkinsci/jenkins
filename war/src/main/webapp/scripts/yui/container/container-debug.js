@@ -4895,7 +4895,7 @@ version: 2.9.0
     * @final
     * @type String
     */
-    Tooltip.CSS_TOOLTIP = "yui-tt";
+    Tooltip.CSS_TOOLTIP = "jenkins-tooltip";
 
     function restoreOriginalWidth(sOriginalWidth, sForcedWidth) {
 

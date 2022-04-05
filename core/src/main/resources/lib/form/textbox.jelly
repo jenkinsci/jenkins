@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
-    Generates an input field <tt>&lt;input type="text" ... /></tt> to be
+    Generates an input field <code>&lt;input type="text" ... /></code> to be
     used inside &lt;f:entry/>
 
     For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
@@ -55,6 +55,9 @@ THE SOFTWARE.
       Additional CSS class(es) to add (such as client-side validation clazz="required",
       "number" or "positive-number"; these may be combined, as clazz="required number").
     </st:attribute>
+    <st:attribute name="placeholder">
+      Placeholder text for the text box
+    </st:attribute>
     <st:attribute name="checkMessage">
       Override the default error message when client-side validation fails,
       as with clazz="required", etc.
@@ -67,8 +70,9 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'post' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a GET to a POST.
-      If any other value is specified then requests will use GET.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
+      If any other value is specified then requests will use POST.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
     <st:attribute name="autoCompleteDelimChar">
       A single character that can be used as a delimiter for autocompletion. Normal
@@ -87,10 +91,11 @@ THE SOFTWARE.
 
   <f:possibleReadOnlyField>
       <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-               class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+               class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
                name="${name}"
                value="${value}"
                type="text"
+               placeholder="${placeholder}"
                ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
   </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">

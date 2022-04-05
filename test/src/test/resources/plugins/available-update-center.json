@@ -1,0 +1,42 @@
+updateCenter.post(
+{"connectionCheckUrl":"http://www.google.com/", // has to be here because updateDirectly sniffs only very limited formats
+    "core": {
+        "buildDate": "Dec 31, 1969",
+        "name": "core",
+        "url": "jenkins.war",
+        "version": "23"
+    },
+    "id": "default",
+    "plugins": {
+        "dummy2": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [],
+            "excerpt": "…",
+            "name": "dummy2",
+            "wiki": "https://plugins.jenkins.io/dummy",
+            "requiredCore": "1.100",
+            "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "ALowTitle",
+            "url": "http://nowhere.net/dummy2.hpi",
+            "version": "1.0",
+            "popularity": "1.0"
+        },
+        "dummy": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [],
+            "excerpt": "…",
+            "name": "dummy",
+            "wiki": "https://plugins.jenkins.io/dummy",
+            "requiredCore": "1.100",
+            "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "TheHighTitle",
+            "url": "http://nowhere.net/dummy.hpi",
+            "version": "1.0",
+            "popularity": "1.0"
+        }
+    },
+    "updateCenterVersion": 1
+}
+);

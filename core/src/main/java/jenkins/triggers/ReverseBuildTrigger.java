@@ -24,6 +24,8 @@
 
 package jenkins.triggers;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -55,7 +57,6 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -65,17 +66,14 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * Like {@link BuildTrigger} but defined on the downstream project.
@@ -97,6 +95,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     /**
      * Legacy constructor used before {@link #threshold} was moved to a {@code @DataBoundSetter}. Kept around for binary
      * compatibility.
+     * @deprecated use {@link #ReverseBuildTrigger(String)} and {@link #setThreshold(Result)}
      */
     @Deprecated
     public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
@@ -111,7 +110,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     /**
      * Gets the upstream projects.
-     * 
+     *
      * @return Upstream projects or empty("") if upstream projects is null.
      */
     public String getUpstreamProjects() {
@@ -144,19 +143,19 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             downstreamDiscoverable = true;
         }
 
-        Authentication originalAuth = Jenkins.getAuthentication();
+        Authentication originalAuth = Jenkins.getAuthentication2();
         Job upstream = upstreamBuild.getParent();
-        Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
+        Authentication auth = Tasks.getAuthenticationOf2((Queue.Task) job);
 
         Item authUpstream = null;
-        try (ACLContext ctx = ACL.as(auth)) {
+        try (ACLContext ctx = ACL.as2(auth)) {
             authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } catch (AccessDeniedException ade) {
             // Fails because of missing Item.READ but downstream user has Item.DISCOVER
         }
 
-        if(authUpstream != upstream) {
+        if (authUpstream != upstream) {
             if (downstreamVisible) {
                 // TODO ModelHyperlink
                 listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(),
@@ -210,9 +209,9 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             if (!project.hasPermission(Item.CONFIGURE)) {
                 return FormValidation.ok();
             }
-            StringTokenizer tokens = new StringTokenizer(Util.fixNull(value),",");
+            StringTokenizer tokens = new StringTokenizer(Util.fixNull(value), ",");
             boolean hasProjects = false;
-            while(tokens.hasMoreTokens()) {
+            while (tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
                     Job item = Jenkins.get().getItem(projectName, project, Job.class);
@@ -239,14 +238,14 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             return ExtensionList.lookupSingleton(RunListenerImpl.class);
         }
 
-        private Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger;
+        private Map<Job, Collection<ReverseBuildTrigger>> upstream2Trigger;
 
         synchronized void invalidateCache() {
             upstream2Trigger = null;
         }
 
-        private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+        private Map<Job, Collection<ReverseBuildTrigger>> calculateCache() {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
                 for (Job<?, ?> downstream : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
@@ -261,7 +260,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
                             continue; // handled specially
                         }
-                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new LinkedList<>());
+                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new ArrayList<>());
                         triggers.remove(trigger);
                         triggers.add(trigger);
                     }
@@ -307,7 +306,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     public static class ItemListenerImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {

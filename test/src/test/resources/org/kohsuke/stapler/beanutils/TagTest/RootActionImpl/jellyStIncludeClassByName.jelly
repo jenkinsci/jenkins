@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:contentType value="text/html"/>
+    <!-- expected to fail since no conversion is taking place -->
+    <st:include page="_included" class="org.kohsuke.stapler.beanutils.TagTest" />
+</j:jelly>

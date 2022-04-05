@@ -24,53 +24,36 @@
 
 package hudson.security.csrf;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
-
-import java.io.IOException;
-import java.net.URL;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
+import java.io.IOException;
+import java.net.URL;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.containsString;
-
-import jenkins.security.SuspiciousRequestFilter;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.verb.POST;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 public class CrumbExclusionTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
-
-    @BeforeClass
-    public static void prepare() {
-        SuspiciousRequestFilter.allowSemicolonsInPath = true;
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        SuspiciousRequestFilter.allowSemicolonsInPath = false;
-    }
 
     @Issue("SECURITY-1774")
     @Test
@@ -81,8 +64,16 @@ public class CrumbExclusionTest {
             try {
                 fail(path + " should have been rejected: " + r.createWebClient().login("admin").getPage(new WebRequest(new URL(r.getURL(), path + "?script=11*11"), HttpMethod.POST)).getWebResponse().getContentAsString());
             } catch (FailingHttpStatusCodeException x) {
-                assertEquals("status code using " + path, 403, x.getStatusCode());
-                assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
+                switch (x.getStatusCode()) {
+                case 403:
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
+                    break;
+                case 400: // from Jetty
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("Ambiguous path parameter"));
+                    break;
+                default:
+                    fail("unexpected error code");
+                }
             }
         }
     }
@@ -98,16 +89,19 @@ public class CrumbExclusionTest {
 
         public boolean posted = false;
 
+        @Override
         @CheckForNull
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getUrlName() {
             return "root";

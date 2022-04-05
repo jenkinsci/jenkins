@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks._maven;
 
 import hudson.Extension;
@@ -28,9 +29,8 @@ import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleNote;
-import org.jenkinsci.Symbol;
-
 import java.util.regex.Pattern;
+import org.jenkinsci.Symbol;
 
 /**
  * Marks the log line that reports that Maven3 is executing a mojo.
@@ -54,16 +54,17 @@ public class Maven3MojoNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        text.addMarkup(7,text.length(),"<b class=maven-mojo>","</b>");
+        text.addMarkup(7, text.length(), "<b class=maven-mojo>", "</b>");
         return null;
     }
 
     @Extension @Symbol("maven3Mojos")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Maven 3 Mojos";
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] --- .+-plugin:[^:]+:[^ ]+ \\(.+\\) @ .+ ---");
+    public static final Pattern PATTERN = Pattern.compile("\\[INFO\\] --- .+-plugin:[^:]+:[^ ]+ \\(.+\\) @ .+ ---");
 }

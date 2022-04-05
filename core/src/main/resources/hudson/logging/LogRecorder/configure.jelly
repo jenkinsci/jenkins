@@ -27,10 +27,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permission="${app.ADMINISTER}" title="${%Configure Log Recorder}">
+<l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}">
+  <l:app-bar title="${%Configure log recorder}">
+    <t:help href="https://www.jenkins.io/redirect/log-recorders" tooltip="${%Additional information on log levels}" />
+  </l:app-bar>
+
   <st:include page="sidepanel.jelly" />
+
   <l:main-panel>
-    <h1>${%Configure log recorder} <t:help iconSize="large" href="https://jenkins.io/redirect/log-recorders" /></h1>
     <p>
       ${%Enter the name of the logger you want to enable}.
     </p>
@@ -47,7 +51,7 @@ THE SOFTWARE.
                description="${%List of loggers and the log levels to record}"
                help="/help/LogRecorder/logger.html">
         <j:set var="instance" value="${null}" />
-        <f:repeatable var="instance" items="${it.targets}" name="targets">
+        <f:repeatable var="instance" items="${it.loggers}" name="loggers">
           <table width="100%">
             <tr>
               <th style="white-space:nowrap;">

@@ -21,36 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
-import hudson.model.Descriptor;
-import hudson.model.Describable;
-import hudson.model.Hudson;
-import jenkins.ExtensionComponentSet;
-import jenkins.model.Jenkins;
-import hudson.model.ViewDescriptor;
-import hudson.model.Descriptor.FormException;
-import hudson.util.AdaptedIterator;
-import hudson.util.Iterators.FlattenIterator;
-import hudson.slaves.NodeDescriptor;
-import hudson.tasks.Publisher;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.CopyOnWriteArrayList;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
+import hudson.model.ViewDescriptor;
+import hudson.slaves.NodeDescriptor;
+import hudson.tasks.Publisher;
+import hudson.util.AdaptedIterator;
+import hudson.util.Iterators.FlattenIterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.ExtensionComponentSet;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
-import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * {@link ExtensionList} for holding a set of {@link Descriptor}s, which is a group of descriptors for
@@ -73,8 +72,8 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * Creates a new instance.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T extends Describable<T>,D extends Descriptor<T>>
-    DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
+    public static <T extends Describable<T>, D extends Descriptor<T>>
+    DescriptorExtensionList<T, D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
         if (describableType == Publisher.class) {
             return (DescriptorExtensionList) new Publisher.DescriptorExtensionListImpl(jenkins);
         }
@@ -86,9 +85,9 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      *      Use {@link #create(Jenkins, Class)}
      */
     @Deprecated
-    public static <T extends Describable<T>,D extends Descriptor<T>>
-    DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
-        return (DescriptorExtensionList)createDescriptorList((Jenkins)hudson,describableType);
+    public static <T extends Describable<T>, D extends Descriptor<T>>
+    DescriptorExtensionList<T, D> createDescriptorList(Hudson hudson, Class<T> describableType) {
+        return (DescriptorExtensionList) createDescriptorList((Jenkins) hudson, describableType);
     }
 
     /**
@@ -102,11 +101,11 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @Deprecated
     protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
-        this((Jenkins)hudson,describableType);
+        this((Jenkins) hudson, describableType);
     }
 
     protected DescriptorExtensionList(Jenkins jenkins, Class<T> describableType) {
-        super(jenkins, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
+        super(jenkins, (Class) Descriptor.class, (CopyOnWriteArrayList) getLegacyDescriptors(describableType));
         this.describableType = describableType;
     }
 
@@ -119,7 +118,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @Deprecated
     public D find(String fqcn) {
-        return Descriptor.find(this,fqcn);
+        return Descriptor.find(this, fqcn);
     }
 
     /**
@@ -128,7 +127,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public D find(Class<? extends T> type) {
         for (D d : this)
-            if (d.clazz==type)
+            if (d.clazz == type)
                 return d;
         return null;
     }
@@ -143,10 +142,10 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @CheckForNull
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
-        if(config.isNullObject())
+        if (config.isNullObject())
             return null;    // none was selected
         int idx = config.getInt("value");
-        return get(idx).newInstance(Stapler.getCurrentRequest(),config);
+        return get(idx).newInstance(Stapler.getCurrentRequest(), config);
     }
 
     /**
@@ -173,12 +172,13 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public @CheckForNull D findByName(String id) {
         for (D d : this)
-            if(d.getId().equals(id))
+            if (d.getId().equals(id))
                 return d;
         return null;
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean add(D d) {
         boolean r = super.add(d);
         getDescriptorExtensionList().add(d);
@@ -220,11 +220,11 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
 
     private List<ExtensionComponent<D>> _load(Iterable<ExtensionComponent<Descriptor>> set) {
         List<ExtensionComponent<D>> r = new ArrayList<>();
-        for( ExtensionComponent<Descriptor> c : set ) {
+        for (ExtensionComponent<Descriptor> c : set) {
             Descriptor d = c.getInstance();
             try {
-                if(d.getT()==describableType)
-                    r.add((ExtensionComponent)c);
+                if (d.getT() == describableType)
+                    r.add((ExtensionComponent) c);
             } catch (IllegalStateException e) {
                 LOGGER.log(Level.SEVERE, d.getClass() + " doesn't extend Descriptor with a type parameter", e); // skip this one
             }
@@ -243,7 +243,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
+    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor>> getLegacyDescriptors(Class<T> type) {
         return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
     }
 
@@ -252,14 +252,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static Iterable<Descriptor> listLegacyInstances() {
         return new Iterable<Descriptor>() {
+            @Override
             public Iterator<Descriptor> iterator() {
-                return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
-                    new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                return new AdaptedIterator<ExtensionComponent<Descriptor>, Descriptor>(
+                    new FlattenIterator<ExtensionComponent<Descriptor>, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                        @Override
                         protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
                             return v.iterator();
                         }
                     }) {
 
+                    @Override
                     protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
                         return item.getInstance();
                     }

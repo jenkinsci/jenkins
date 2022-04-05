@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,24 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
+import hudson.model.Computer;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.User;
+import hudson.model.View;
 import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Controls authorization throughout Hudson.
@@ -55,7 +64,7 @@ import java.util.Collections;
  * The corresponding {@link Describable} instance will be asked to create a new {@link AuthorizationStrategy}
  * every time the system configuration is updated. Implementations that keep more state in ACL beyond
  * the system configuration should use {@link jenkins.model.Jenkins#getAuthorizationStrategy()} to talk to the current
- * instance to carry over the state. 
+ * instance to carry over the state.
  *
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
@@ -75,12 +84,12 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *      Override {@link #getACL(Job)} instead.
      */
     @Deprecated
-    public @NonNull ACL getACL(@NonNull AbstractProject<?,?> project) {
-    	return getACL((Job)project);
+    public @NonNull ACL getACL(@NonNull AbstractProject<?, ?> project) {
+        return getACL((Job) project);
     }
 
-    public @NonNull ACL getACL(@NonNull Job<?,?> project) {
-    	return getRootACL();
+    public @NonNull ACL getACL(@NonNull Job<?, ?> project) {
+        return getRootACL();
     }
 
     /**
@@ -94,18 +103,18 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @since 1.220
      */
     public @NonNull ACL getACL(final @NonNull View item) {
-        return ACL.lambda((a, permission) -> {
+        return ACL.lambda2((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
-                boolean hasPermission = base.hasPermission(a, permission);
+                boolean hasPermission = base.hasPermission2(a, permission);
                 if (!hasPermission && permission == View.READ) {
-                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                    return base.hasPermission2(a, View.CONFIGURE) || !item.getItems().isEmpty();
                 }
 
                 return hasPermission;
         });
     }
-    
+
     /**
      * Implementation can choose to provide different ACL for different items.
      * This can be used as a basis for more fine-grained access control.
@@ -171,7 +180,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * If such enumeration is impossible, do the best to list as many as possible, then
      * return it. In the worst case, just return an empty list. Doing so would prevent
-     * users from using role names as group names (see HUDSON-2716 for such one such report.)
+     * users from using role names as group names (see JENKINS-2716 for such one such report.)
      *
      * @return
      *      never null.
@@ -181,7 +190,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
     /**
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
-    public static @NonNull DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
+    public static @NonNull DescriptorExtensionList<AuthorizationStrategy, Descriptor<AuthorizationStrategy>> all() {
         return Jenkins.get().getDescriptorList(AuthorizationStrategy.class);
     }
 
@@ -193,7 +202,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      */
     @Deprecated
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<>(AuthorizationStrategy.class);
-    
+
     /**
      * {@link AuthorizationStrategy} that implements the semantics
      * of unsecured Hudson where everyone has full control.
@@ -221,7 +230,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             return Collections.emptySet();
         }
 
-        private static final ACL UNSECURED_ACL = ACL.lambda((a, p) -> true);
+        private static final ACL UNSECURED_ACL = ACL.lambda2((a, p) -> true);
 
         @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {

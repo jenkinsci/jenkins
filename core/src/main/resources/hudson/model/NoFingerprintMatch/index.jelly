@@ -25,8 +25,7 @@ THE SOFTWARE.
 <!-- used when fingerprint had no match -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout>
-    <l:header title="${%No matching record found}" />
+  <l:layout title="${%No matching record found}">
     <l:side-panel>
       <l:tasks>
         <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
@@ -34,8 +33,7 @@ THE SOFTWARE.
     </l:side-panel>
     <l:main-panel>
       <h1>
-        <l:icon class="icon-fingerprint icon-xlg"/>
-        ${%No matching record found}
+        ${title}
       </h1>
 
       <p>

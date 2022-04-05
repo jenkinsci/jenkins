@@ -24,24 +24,22 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.WorkspaceList;
 import hudson.util.StreamTaskListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
 import jenkins.MasterToSlaveFileCallable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +61,7 @@ public class WorkspaceCleanupThreadTest {
         FilePath ws1 = createOldWorkspaceOn(r.createOnlineSlave(), p);
 
         p.setAssignedNode(r.jenkins);
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         assertEquals(r.jenkins, b.getBuiltOn());
         FilePath ws2 = b.getWorkspace();
 
@@ -191,7 +189,7 @@ public class WorkspaceCleanupThreadTest {
 
     private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {
         p.setAssignedNode(slave);
-        FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         assertEquals(slave, b1.getBuiltOn());
         FilePath ws = b1.getWorkspace();
         assertNotNull(ws);
@@ -205,14 +203,15 @@ public class WorkspaceCleanupThreadTest {
 
     private static final class VetoSCM extends NullSCM {
         private final boolean answer;
-        public VetoSCM(boolean answer) {
+
+        VetoSCM(boolean answer) {
             this.answer = answer;
         }
 
         @Override
         public boolean processWorkspaceBeforeDeletion(
                 Job<?, ?> project, FilePath workspace, Node node
-        ) throws IOException, InterruptedException {
+        ) {
             return answer;
         }
     }
@@ -221,11 +220,11 @@ public class WorkspaceCleanupThreadTest {
         private static final long serialVersionUID = 1L;
         private final long time;
 
-        public Touch(long time) {
+        Touch(long time) {
             this.time = time;
         }
 
-        @Override public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        @Override public Void invoke(File f, VirtualChannel channel) {
             Assume.assumeTrue("failed to reset lastModified on " + f, f.setLastModified(time));
             return null;
         }

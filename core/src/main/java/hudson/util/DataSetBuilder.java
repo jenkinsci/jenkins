@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
 
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
+package hudson.util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
  * Builds {@link CategoryDataset}.
@@ -42,13 +42,13 @@ import java.util.TreeSet;
  * @param <Column>
  *      X-axis.
  */
-public final class DataSetBuilder<Row extends Comparable,Column extends Comparable> {
+public final class DataSetBuilder<Row extends Comparable, Column extends Comparable> {
 
     private List<Number> values = new ArrayList<>();
     private List<Row> rows = new ArrayList<>();
     private List<Column> columns = new ArrayList<>();
 
-    public void add( Number value, Row rowKey, Column columnKey ) {
+    public void add(Number value, Row rowKey, Column columnKey) {
         values.add(value);
         rows.add(rowKey);
         columns.add(columnKey);
@@ -69,8 +69,8 @@ public final class DataSetBuilder<Row extends Comparable,Column extends Comparab
         for (Comparable c : _cols)
             ds.setValue(null, _rows[0], c);
 
-        for( int i=0; i<values.size(); i++ )
-            ds.addValue( values.get(i), rows.get(i), columns.get(i) );
+        for (int i = 0; i < values.size(); i++)
+            ds.addValue(values.get(i), rows.get(i), columns.get(i));
         return ds;
     }
 }

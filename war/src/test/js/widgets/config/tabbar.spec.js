@@ -46,60 +46,6 @@ describe("tabbar-spec tests", function () {
         jest.resetModules();
     });
 
-    it("- test section count", function (done) {
-        jsTest.onPage(function() {
-            document.documentElement.innerHTML = htmlConfigTabbedContent;
-
-            var tabbars = getConfigTabbar();
-            var firstTableMetadata = tabbars.tabs[0];
-
-            expect(firstTableMetadata.configTable.find('.section-header-row').length).toBe(4);
-            expect(firstTableMetadata.sectionCount()).toBe(4);
-            expect($('.tabBar .tab').size()).toBe(4);
-
-            expect(firstTableMetadata.sectionIds()).toEqual([
-                'config_general',
-                'config__advanced_project_options',
-                'config__build_triggers',
-                'config__build'
-            ])
-
-            done();
-        }, htmlConfigTabbedContent);
-    });
-
-    // This test may not be deterministic, as it breaks if jest.resetModules is called on afterEach
-    it("- test section activation", function (done) {
-        jsTest.onPage(function() {
-            document.documentElement.innerHTML = htmlConfigTabbedContent;
-
-            var tabbars = getConfigTabbar();
-            var firstTableMetadata = tabbars.tabs[0];
-
-            // The first section ("General") should be active by default
-            expect(firstTableMetadata.activeSection().id).toBe('config_general');
-            expect(firstTableMetadata.activeSectionCount()).toBe(1);
-
-            firstTableMetadata.onShowSection(function() {
-                expect(this.id).toBe('config__build');
-
-                expect(firstTableMetadata.activeSectionCount()).toBe(1);
-                var activeSection = firstTableMetadata.activeSection();
-                expect(activeSection.id).toBe('config__build');
-                expect(activeSection.activeRowCount()).toBe(2);
-                expect(firstTableMetadata.getTopRows().filter('.active').size()).toBe(1); // should be activeSection.activeRowCount() - 1
-
-                done();
-            });
-
-            // Mimic the user clicking on one of the tabs. Should make that section active,
-            // with all of the rows in that section having an "active" class.
-            firstTableMetadata.activateSection('config__build');
-            // above 'firstTableMetadata.onShowSection' handler should get called now
-
-        }, htmlConfigTabbedContent);
-    });
-
     it("- test row-group modeling", function (done) {
         jsTest.onPage(function() {
             document.documentElement.innerHTML = htmlConfigTabbedContent;
@@ -133,11 +79,11 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             // All tabs should be visible...
-            expect($('.tab', tabBar).size()).toBe(4);
-            expect($('.tab.hidden', tabBar).size()).toBe(0);
+            expect($('.tab', tabBar).length).toBe(4);
+            expect($('.tab.hidden', tabBar).length).toBe(0);
 
             var finder = configTabBar.findInput;
-            expect(finder.size()).toBe(1);
+            expect(finder.length).toBe(1);
 
             // Find sections that have the text "trigger" in them...
             keydowns('trigger', finder);
@@ -145,13 +91,13 @@ describe("tabbar-spec tests", function () {
             // Need to wait for the change to happen ... there's a 300ms delay.
             // We could just call configTabBar.showSections(), but ...
             setTimeout(function() {
-                expect($('.tab.hidden', tabBar).size()).toBe(3);
-                expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
+                expect($('.tab.hidden', tabBar).length).toBe(3);
+                expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
                 var activeSection = configTabBar.activeSection();
-                expect(textCleanup(activeSection.title)).toBe('#Build Triggers');
+                expect(textCleanup(activeSection.title)).toBe('General');
 
-                expect($('.highlight-split .highlight').text()).toBe('Trigger');
+                expect($('.highlight-split .highlight').text()).toBe('TriggerTrigger');
 
                 done();
             }, 600);
@@ -167,11 +113,11 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('quiet period');
-            expect($('.tab.hidden', tabBar).size()).toBe(3);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Build Triggers|#Build');
+            expect($('.tab.hidden', tabBar).length).toBe(3);
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
-            expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
+            expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
         }, htmlConfigTabbedContent);
@@ -186,8 +132,8 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('Strategy');
-            expect($('.tab.hidden', tabBar).size()).toBe(3);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Advanced Project Options|#Build Triggers|#Build');
+            expect($('.tab.hidden', tabBar).length).toBe(3);
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
             expect(textCleanup(activeSection.title)).toBe('General');
@@ -210,15 +156,13 @@ describe("tabbar-spec tests", function () {
 
             // Only 3 tabs should be visible
             // (used to be 4 before the merge/adopt)...
-            expect($('.tab', tabBar).size()).toBe(3);
-            expect(textCleanup($('.tab', tabBar).text())).toBe('General|#Build Triggers|#Build');
+            expect(textCleanup($('.tab', tabBar).text())).toBe('GeneralAdvanced Project OptionsBuild TriggersBuild');
 
             // And if we try to use the finder now to find something
             // that was in the advanced section, it should now appear in the
             // General section ...
             configTabBar.showSections('quiet period');
-            expect($('.tab.hidden', tabBar).size()).toBe(2);
-            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Build Triggers|#Build');
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('Advanced Project OptionsBuild TriggersBuild');
 
             var activeSection = configTabBar.activeSection();
             expect(textCleanup(activeSection.title)).toBe('General');
@@ -234,13 +178,12 @@ describe("tabbar-spec tests", function () {
             var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
 
-            // console.log('**** ' + configTabBar.sectionIds());
             // config_general,config__advanced_project_options,config__build_triggers,config__build
 
             var config_general = configTabBar.getSection('config_general');
-            var config__advanced_project_options = configTabBar.getSection('config__advanced_project_options');
-            var config__build_triggers = configTabBar.getSection('config__build_triggers');
-            var config__build = configTabBar.getSection('config__build');
+            var config__advanced_project_options = configTabBar.getSection('config_advanced_project_options');
+            var config__build_triggers = configTabBar.getSection('config_build_triggers');
+            var config__build = configTabBar.getSection('config_build');
 
             expect(config_general.getSibling(-1)).toBeUndefined();
             expect(config_general.getSibling(0)).toBe(config_general);

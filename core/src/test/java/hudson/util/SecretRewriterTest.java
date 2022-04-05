@@ -1,10 +1,13 @@
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -14,9 +17,6 @@ import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -49,18 +49,19 @@ public class SecretRewriterTest {
     }
 
     private String roundtrip(String before) throws Exception {
-        SecretRewriter sr = new SecretRewriter(null);
+        SecretRewriter sr = new SecretRewriter();
         File f = File.createTempFile("test", "xml", tmp.getRoot());
         FileUtils.write(f, before, Charset.defaultCharset());
-        sr.rewrite(f, null);
+        sr.rewrite(f);
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
         return FileUtils.readFileToString(f, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
+    @SuppressWarnings("deprecation")
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes(StandardCharsets.UTF_8))));
+        return Base64.getEncoder().encodeToString(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes(StandardCharsets.UTF_8)));
     }
 
     private String encryptNew(String str) {
@@ -86,11 +87,7 @@ public class SecretRewriterTest {
         for (String p : dirs) {
             File d = new File(t, p);
             d.mkdir();
-            try {
-                FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
-            } catch (IOException x) {
-                assert false : x;
-            }
+            FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
         }
 
         // stuff outside

@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:if test="${it.enabled}">
+    <st:adjunct includes="jenkins.formelementpath.form-element-path"/>
+  </j:if>
+</j:jelly>

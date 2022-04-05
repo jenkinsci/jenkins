@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout title="Max Validation for f:number">
+        <l:main-panel>
+            <f:form name="number">
+                <f:entry title="max-70">
+                    <f:number clazz="number" name="max-70" max="70"/>
+                </f:entry>
+                <f:entry title="max-wow">
+                    <f:number clazz="number" name="max-wow" max="wow"/>
+                </f:entry>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

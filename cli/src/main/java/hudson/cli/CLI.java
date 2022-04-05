@@ -21,16 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
+
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.parse;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.client.Messages;
+import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
 import java.io.DataInputStream;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,11 +55,11 @@ import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.*;
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.Session;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
@@ -78,15 +81,16 @@ public class CLI {
      * @throws NotTalkingToJenkinsException when connection is not made to Jenkins service.
      */
     /*package*/ static void verifyJenkinsConnection(URLConnection c) throws IOException {
-        if (c.getHeaderField("X-Hudson")==null && c.getHeaderField("X-Jenkins")==null)
+        if (c.getHeaderField("X-Hudson") == null && c.getHeaderField("X-Jenkins") == null)
             throw new NotTalkingToJenkinsException(c);
     }
+
     /*package*/ static final class NotTalkingToJenkinsException extends IOException {
-        public NotTalkingToJenkinsException(String s) {
+        NotTalkingToJenkinsException(String s) {
             super(s);
         }
 
-        public NotTalkingToJenkinsException(URLConnection c) {
+        NotTalkingToJenkinsException(URLConnection c) {
             super("There's no Jenkins running at " + c.getURL().toString());
         }
     }
@@ -104,16 +108,17 @@ public class CLI {
         }
     }
 
-    private enum Mode {HTTP, SSH, WEB_SOCKET}
+    private enum Mode { HTTP, SSH, WEB_SOCKET }
+
     public static int _main(String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
         PrivateKeyProvider provider = new PrivateKeyProvider();
 
         String url = System.getenv("JENKINS_URL");
 
-        if (url==null)
+        if (url == null)
             url = System.getenv("HUDSON_URL");
-        
+
         boolean noKeyAuth = false;
 
         // TODO perhaps allow mode to be defined by environment variable too (assuming $JENKINS_USER_ID can be used for -user)
@@ -128,10 +133,10 @@ public class CLI {
 
         boolean strictHostKey = false;
 
-        while(!args.isEmpty()) {
+        while (!args.isEmpty()) {
             String head = args.get(0);
             if (head.equals("-version")) {
-                System.out.println("Version: "+computeVersion());
+                System.out.println("Version: " + computeVersion());
                 return 0;
             }
             if (head.equals("-http")) {
@@ -165,9 +170,9 @@ public class CLI {
                 printUsage("-remoting mode is no longer supported");
                 return -1;
             }
-            if(head.equals("-s") && args.size()>=2) {
+            if (head.equals("-s") && args.size() >= 2) {
                 url = args.get(1);
-                args = args.subList(2,args.size());
+                args = args.subList(2, args.size());
                 continue;
             }
             if (head.equals("-noCertificateCheck")) {
@@ -177,20 +182,21 @@ public class CLI {
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
                 // bypass host name check, too.
                 HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    @Override
                     @SuppressFBWarnings(value = "WEAK_HOSTNAME_VERIFIER", justification = "User set parameter to skip verifier.")
                     public boolean verify(String s, SSLSession sslSession) {
                         return true;
                     }
                 });
-                args = args.subList(1,args.size());
+                args = args.subList(1, args.size());
                 continue;
             }
             if (head.equals("-noKeyAuth")) {
-            	noKeyAuth = true;
-            	args = args.subList(1,args.size());
-            	continue;
+                noKeyAuth = true;
+                args = args.subList(1, args.size());
+                continue;
             }
-            if(head.equals("-i") && args.size()>=2) {
+            if (head.equals("-i") && args.size() >= 2) {
                 File f = getFileFromArguments(args);
                 if (!f.exists()) {
                     printUsage(Messages.CLI_NoSuchFileExists(f));
@@ -199,7 +205,7 @@ public class CLI {
 
                 provider.readFrom(f);
 
-                args = args.subList(2,args.size());
+                args = args.subList(2, args.size());
                 continue;
             }
             if (head.equals("-strictHostKey")) {
@@ -236,7 +242,7 @@ public class CLI {
             break;
         }
 
-        if(url==null) {
+        if (url == null) {
             printUsage(Messages.CLI_NoURL());
             return -1;
         }
@@ -260,7 +266,7 @@ public class CLI {
             url += '/';
         }
 
-        if(args.isEmpty())
+        if (args.isEmpty())
             args = Collections.singletonList("help"); // default to help
 
         if (mode == null) {
@@ -335,6 +341,7 @@ public class CLI {
             @Override
             public void onOpen(Session session, EndpointConfig config) {}
         }
+
         class Authenticator extends ClientEndpointConfig.Configurator {
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
@@ -343,6 +350,7 @@ public class CLI {
                 }
             }
         }
+
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
         client.getProperties().put(ClientProperties.REDIRECT_ENABLED, true); // https://tyrus-project.github.io/documentation/1.13.1/index/tyrus-proprietary-config.html#d0e1775
         Session session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(new Authenticator()).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
@@ -351,6 +359,7 @@ public class CLI {
             public void send(byte[] data) throws IOException {
                 session.getBasicRemote().sendBinary(ByteBuffer.wrap(data));
             }
+
             @Override
             public void close() throws IOException {
                 session.close();
@@ -372,7 +381,7 @@ public class CLI {
     private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
         FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
-        try (final ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
+        try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();
             if (is.read() != 0) { // cf. FullDuplexHttpService
@@ -420,10 +429,14 @@ public class CLI {
                 public void run() {
                     try {
                         final OutputStream stdin = streamStdin();
-                        int c;
-                        // TODO check available to avoid sending lots of one-byte frames
-                        while (!complete && (c = System.in.read()) != -1) {
-                           stdin.write(c);
+                        byte[] buf = new byte[60_000]; // less than 64Kb frame size for WS
+                        while (!complete) {
+                            int len = System.in.read(buf);
+                            if (len == -1) {
+                                break;
+                            } else {
+                                stdin.write(buf, 0, len);
+                            }
                         }
                         sendEndStdin();
                     } catch (IOException x) {
@@ -472,7 +485,7 @@ public class CLI {
         Properties props = new Properties();
         try {
             InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
-            if(is!=null) {
+            if (is != null) {
                 try {
                     props.load(is);
                 } finally {
@@ -482,7 +495,7 @@ public class CLI {
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
         }
-        return props.getProperty("version","?");
+        return props.getProperty("version", "?");
     }
 
     /**
@@ -513,7 +526,7 @@ public class CLI {
     }
 
     private static void printUsage(String msg) {
-        if(msg!=null)   System.out.println(msg);
+        if (msg != null)   System.out.println(msg);
         System.err.println(usage());
     }
 

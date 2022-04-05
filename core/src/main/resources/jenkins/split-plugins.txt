@@ -31,3 +31,9 @@ jaxb 2.163 2.3.0 11
 
 #JENKINS-43610 Split Trilead out from Core
 trilead-api 2.184 1.0.4
+
+# JENKINS-64107
+sshd 2.281 3.0.1
+
+javax-activation-api 2.330 1.2.0-2
+javax-mail-api 2.330 1.6.2-5

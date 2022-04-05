@@ -16,7 +16,7 @@
 
 .page-header__brand {
     display: inline-block;
-    height: 100%;
+    height: 3.5rem;
     position: relative;
     flex: 1; // push controls to the end of the block
 }
@@ -50,8 +50,8 @@ a.page-header__brand-link {
     align-items: center;
 }
 
-.page-header__hyperlinks A {
-    display: inline-block;
+.page-header__hyperlinks a {
+    --text-color: var(--header-link-color);
     display: inline-flex;
     align-items: center;
 
@@ -83,13 +83,6 @@ a.page-header__brand-link {
     }
 }
 
-// This could probably be colocated with the rest of the AM CSS,
-// But we put it here to take advantage of the: variables
-#visible-am-container.visible #visible-am-button {
-    background-color: var(--header-link-bg-classic-active);
-    text-decoration: none;
-}
-
 .page-header__hyperlinks a span {
     font-weight: bold;
 
@@ -105,7 +98,6 @@ a.page-header__brand-link {
 #searchform {
     position: relative;
     font-family: var(--font-family-sans);
-    display: inline-block;
     display: inline-flex;
     height: 2.5rem;
 }
@@ -120,27 +112,28 @@ a.page-header__brand-link {
     line-height: var(--line-height-base);
     font-weight: bold;
     color: var(--search-input-color);
-    border-radius: var(--header-item-border-radius);
-    border: 3px solid var(--header-search-border);
+    border-radius: var(--form-input-border-radius);
+    border: 2px solid var(--header-search-border);
     outline: none;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
 
     &::placeholder {
         font-weight: normal;
     }
 
-    &:focus {
-        border-color: var(--header-link-outline);
+    &:active, &:focus {
+        border-color: var(--focus-input-border);
+        box-shadow: 0 0 0 5px var(--focus-input-glow);
     }
 }
 
 .main-search__icon-leading,
 .main-search__icon-trailing {
     position: absolute;
-    display: inline-block;
     display: inline-flex;
     height: 2.5rem;
     width: 2.5rem;
-    padding: 0.5rem;
     justify-content: center;
     align-items: center;
     background: transparent;
@@ -149,6 +142,11 @@ a.page-header__brand-link {
 .main-search__icon-leading {
     left: 0;
     pointer-events: none;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 .main-search__icon-trailing {
@@ -168,6 +166,11 @@ a.page-header__brand-link {
     &:active {
         fill: var(--header-link-bg-classic-active);
     }
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 #search-box-completion {
@@ -177,14 +180,14 @@ a.page-header__brand-link {
     z-index: 1000;
 }
 
-#search-box-completion UL {
+#search-box-completion ul {
     padding: 0.75rem 0;
     width: 100%;
     margin: 0 0;
     list-style: none;
 }
 
-#search-box-completion LI {
+#search-box-completion li {
     white-space: nowrap;
     padding: 0.25rem 1.25rem;
     font-size: var(--font-size-base);

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,32 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import java.util.concurrent.TimeUnit;
-import hudson.util.NoOverlapCategoryAxis;
 import hudson.util.ChartUtil;
-
+import hudson.util.NoOverlapCategoryAxis;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.io.IOException;
-import java.awt.*;
 import java.util.Locale;
-
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.chart.JFreeChart;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.ServletException;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
@@ -54,8 +56,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import javax.servlet.ServletException;
 
 /**
  * Maintains several {@link TimeSeries} with different update frequencies to satisfy three goals;
@@ -74,17 +74,17 @@ public class MultiStageTimeSeries implements Serializable {
     public final Color color;
 
     /**
-     * Updated every 10 seconds. Keep data up to 1 hour.
+     * Updated every 10 seconds. Keep data up to 6 hours.
      */
     @Exported
     public final TimeSeries sec10;
     /**
-     * Updated every 1 min. Keep data up to 1 day.
+     * Updated every 1 min. Keep data up to 2 days.
      */
     @Exported
     public final TimeSeries min;
     /**
-     * Updated every 1 hour. Keep data up to 4 weeks.
+     * Updated every 1 hour. Keep data up to 8 weeks.
      */
     @Exported
     public final TimeSeries hour;
@@ -108,17 +108,17 @@ public class MultiStageTimeSeries implements Serializable {
      */
     @Deprecated
     public MultiStageTimeSeries(float initialValue, float decay) {
-        this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Color.WHITE, initialValue,decay);
+        this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Color.WHITE, initialValue, decay);
     }
 
     /**
      * Call this method every 10 sec and supply a new data point.
      */
     public void update(float f) {
-        counter = (counter+1)%360;   // 1hour/10sec = 60mins/10sec=3600secs/10sec = 360
+        counter = (counter + 1) % 360;   // 1hour/10sec = 60mins/10sec=3600secs/10sec = 360
         sec10.update(f);
-        if(counter%6==0)    min.update(f);
-        if(counter==0)      hour.update(f);
+        if (counter % 6 == 0)    min.update(f);
+        if (counter == 0)      hour.update(f);
     }
 
     /**
@@ -169,7 +169,7 @@ public class MultiStageTimeSeries implements Serializable {
         public DateFormat createDateFormat() {
             switch (this) {
             case HOUR:  return new SimpleDateFormat("MMM/dd HH");
-            case MIN:   return new SimpleDateFormat("HH:mm");
+            case MIN:   return new SimpleDateFormat("E HH:mm");
             case SEC10: return new SimpleDateFormat("HH:mm:ss");
             default:    throw new AssertionError();
             }
@@ -179,7 +179,7 @@ public class MultiStageTimeSeries implements Serializable {
          * Parses the {@link TimeScale} from the query parameter.
          */
         public static TimeScale parse(String type) {
-            if(type==null)   return TimeScale.MIN;
+            if (type == null)   return TimeScale.MIN;
             return Enum.valueOf(TimeScale.class, type.toUpperCase(Locale.ENGLISH));
         }
     }
@@ -211,18 +211,18 @@ public class MultiStageTimeSeries implements Serializable {
 
             int dataLength = dataPoints[0].length;
             for (float[] dataPoint : dataPoints)
-                assert dataLength ==dataPoint.length;
+                assert dataLength == dataPoint.length;
 
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
 
             DateFormat format = timeScale.createDateFormat();
 
-            Date dt = new Date(System.currentTimeMillis()-timeScale.tick*dataLength);
-            for (int i = dataLength-1; i>=0; i--) {
-                dt = new Date(dt.getTime()+timeScale.tick);
+            Date dt = new Date(System.currentTimeMillis() - timeScale.tick * dataLength);
+            for (int i = dataLength - 1; i >= 0; i--) {
+                dt = new Date(dt.getTime() + timeScale.tick);
                 String l = format.format(dt);
-                for(int j=0; j<dataPoints.length; j++)
-                    ds.addValue(dataPoints[j][i],series.get(j).title.toString(),l);
+                for (int j = 0; j < dataPoints.length; j++)
+                    ds.addValue(dataPoints[j][i], series.get(j).title.toString(), l);
             }
             return ds;
         }
@@ -297,13 +297,14 @@ public class MultiStageTimeSeries implements Serializable {
         /**
          * Renders this object as an image.
          */
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             ChartUtil.generateGraph(req, rsp, createChart(), 500, 400);
         }
     }
 
     public static TrendChart createTrendChart(TimeScale scale, MultiStageTimeSeries... data) {
-        return new TrendChart(scale,data);
+        return new TrendChart(scale, data);
     }
 
     private static final long serialVersionUID = 1L;

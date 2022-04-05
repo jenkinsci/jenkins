@@ -1,45 +1,66 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
-
 
 /**
  *
  *
  * @author Kohsuke Kawaguchi
  */
-public class AdvancedButtonTest extends HudsonTestCase {
-    public void testNestedOptionalBlock() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/testNestedOptionalBlock");
-        HtmlForm f = p.getFormByName("config");
-        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
-        f.getInputByName("c").click();
-        submit(f);
-    }
+public class AdvancedButtonTest {
 
-    public FormValidation doSubmitNestedOptionalBlock(StaplerRequest req) throws Exception {
-        JSONObject f = req.getSubmittedForm();
-        System.out.println(f);
-        assertEquals("avalue",f.getString("a"));
-        assertEquals("bvalue",f.getString("b"));
-        JSONObject c = f.getJSONObject("c");
-        assertEquals("dvalue",c.getString("d"));
-        return FormValidation.ok();
+    @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void testNestedOptionalBlock() throws Exception {
+        HtmlPage page = j.createWebClient().goTo("self/testNestedOptionalBlock");
+        HtmlForm form = page.getFormByName("config");
+        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        form.getInputByName("c").click();
+
+        j.submit(form);
     }
 
     @Issue("JENKINS-14632")
+    @Test
     public void testSectionInsideOfAdvanced() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/testSectionInsideOfAdvanced");
-        HtmlForm f = p.getFormByName("config");
-        assertFalse(f.getInputByName("b").isDisplayed());
-        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
-        assertTrue(f.getInputByName("b").isDisplayed());
+        HtmlPage page = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
+        HtmlForm form = page.getFormByName("config");
+        assertFalse(form.getInputByName("b").isDisplayed());
+        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        assertTrue(form.getInputByName("b").isDisplayed());
+    }
+
+    @TestExtension
+    public static final class RootActionImpl extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "self";
+        }
+
+        public FormValidation doSubmitNestedOptionalBlock(StaplerRequest req) throws Exception {
+            JSONObject f = req.getSubmittedForm();
+            assertEquals("avalue", f.getString("a"));
+            assertEquals("bvalue", f.getString("b"));
+            JSONObject c = f.getJSONObject("c");
+            assertEquals("dvalue", c.getString("d"));
+            return FormValidation.ok();
+        }
     }
 }

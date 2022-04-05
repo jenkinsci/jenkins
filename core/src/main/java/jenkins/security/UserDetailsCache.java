@@ -21,34 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.security.UserMayOrMayNotExistException;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.dao.DataAccessException;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.security.UserMayOrMayNotExistException2;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.cache.CacheBuilder.newBuilder;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Cache layer for {@link org.acegisecurity.userdetails.UserDetails} lookup.
- *
- * @since 2.15
+ * Cache layer for {@link UserDetails} lookup.
  */
+@Restricted(NoExternalUse.class)
 @Extension
 public final class UserDetailsCache {
 
@@ -57,7 +55,7 @@ public final class UserDetailsCache {
      * Nr of seconds before a value expires after being cached, note full GC will also clear the cache.
      * Should be able to set this value in script and then reload from disk to change in runtime.
      */
-    private static /*not final*/ Integer EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
+    private static /*not final*/ Integer EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int) TimeUnit.MINUTES.toSeconds(2));
     private final Cache<String, UserDetails> detailsCache;
     private final Cache<String, Boolean> existenceCache;
 
@@ -65,17 +63,20 @@ public final class UserDetailsCache {
      * Constructor intended to be instantiated by Jenkins only.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for script console")
     public UserDetailsCache() {
-        if (EXPIRE_AFTER_WRITE_SEC == null || EXPIRE_AFTER_WRITE_SEC <= 0) {
+        Integer expireAfterWriteSec = EXPIRE_AFTER_WRITE_SEC;
+        if (expireAfterWriteSec == null || expireAfterWriteSec <= 0) {
             //just in case someone is trying to trick us
-            EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
-            if (EXPIRE_AFTER_WRITE_SEC <= 0) {
+            expireAfterWriteSec = SystemProperties.getInteger(SYS_PROP_NAME, (int) TimeUnit.MINUTES.toSeconds(2));
+            if (expireAfterWriteSec <= 0) {
                 //The property could also be set to a negative value
-                EXPIRE_AFTER_WRITE_SEC = (int)TimeUnit.MINUTES.toSeconds(2);
+                expireAfterWriteSec = (int) TimeUnit.MINUTES.toSeconds(2);
             }
+            EXPIRE_AFTER_WRITE_SEC = expireAfterWriteSec;
         }
-        detailsCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
-        existenceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
+        detailsCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
+        existenceCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
     }
 
     /**
@@ -99,7 +100,7 @@ public final class UserDetailsCache {
     public UserDetails getCached(String idOrFullName) throws UsernameNotFoundException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if (exists != null && !exists) {
-            throw new UserMayOrMayNotExistException(String.format("\"%s\" does not exist", idOrFullName));
+            throw new UserMayOrMayNotExistException2(String.format("\"%s\" does not exist", idOrFullName));
         } else {
             return detailsCache.getIfPresent(idOrFullName);
         }
@@ -107,29 +108,26 @@ public final class UserDetailsCache {
 
     /**
      * Locates the user based on the username, by first looking in the cache and then delegate to
-     * {@link hudson.security.SecurityRealm#loadUserByUsername(String)}.
+     * {@link hudson.security.SecurityRealm#loadUserByUsername2(String)}.
      *
      * @param idOrFullName the username
      * @return the details
      *
-     * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException})
+     * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException2})
      *              if the user could not be found or the user has no GrantedAuthority
-     * @throws DataAccessException if user could not be found for a repository-specific reason
      * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval
      */
     @NonNull
-    public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, DataAccessException, ExecutionException {
+    public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, ExecutionException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
-        if(exists != null && !exists) {
+        if (exists != null && !exists) {
             throw new UsernameNotFoundException(String.format("\"%s\" does not exist", idOrFullName));
         } else {
             try {
                 return detailsCache.get(idOrFullName, new Retriever(idOrFullName));
             } catch (ExecutionException | UncheckedExecutionException e) {
                 if (e.getCause() instanceof UsernameNotFoundException) {
-                    throw ((UsernameNotFoundException)e.getCause());
-                } else if (e.getCause() instanceof DataAccessException) {
-                    throw ((DataAccessException)e.getCause());
+                    throw (UsernameNotFoundException) e.getCause();
                 } else {
                     throw e;
                 }
@@ -169,7 +167,7 @@ public final class UserDetailsCache {
         public UserDetails call() throws Exception {
             try {
                 Jenkins jenkins = Jenkins.get();
-                UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername(idOrFullName);
+                UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername2(idOrFullName);
                 if (userDetails == null) {
                     existenceCache.put(this.idOrFullName, Boolean.FALSE);
                     throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
@@ -179,9 +177,6 @@ public final class UserDetailsCache {
                 return userDetails;
             } catch (UsernameNotFoundException e) {
                 existenceCache.put(this.idOrFullName, Boolean.FALSE);
-                throw e;
-            } catch (DataAccessException e) {
-                existenceCache.invalidate(this.idOrFullName);
                 throw e;
             }
         }

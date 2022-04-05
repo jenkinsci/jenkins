@@ -21,20 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
-import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
-import jenkins.model.Jenkins;
+import groovy.lang.GroovyShell;
 import hudson.Extension;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Executes the specified groovy script.
@@ -48,27 +49,28 @@ public class GroovyCommand extends CLICommand {
         return Messages.GroovyCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SCRIPT",usage="Script to be executed. Only '=' (to represent stdin) is supported.")
+    @Argument(metaVar = "SCRIPT", usage = "Script to be executed. Only '=' (to represent stdin) is supported.")
     public String script;
 
     /**
      * Remaining arguments.
      */
-    @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
+    @Argument(metaVar = "ARGUMENTS", index = 1, usage = "Command line arguments to pass into script.")
     public List<String> remaining = new ArrayList<>();
 
+    @Override
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
-        binding.setProperty("out",new PrintWriter(stdout,true));
-        binding.setProperty("stdin",stdin);
-        binding.setProperty("stdout",stdout);
-        binding.setProperty("stderr",stderr);
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true));
+        binding.setProperty("stdin", stdin);
+        binding.setProperty("stdout", stdout);
+        binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[0]));
+        groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }
 
@@ -76,7 +78,7 @@ public class GroovyCommand extends CLICommand {
      * Loads the script from the argument.
      */
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
-        if(script==null)
+        if (script == null)
             throw new CmdLineException(null, "No script is specified");
         if (script.equals("="))
             return IOUtils.toString(stdin);
@@ -85,4 +87,3 @@ public class GroovyCommand extends CLICommand {
         return null; // never called
     }
 }
-

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import static org.junit.Assert.assertEquals;
@@ -32,14 +33,14 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Collection;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -51,37 +52,44 @@ public class WideExecutionTest {
 
     @TestExtension
     public static class Contributor extends SubTaskContributor {
+        @Override
         public Collection<? extends SubTask> forProject(final AbstractProject<?, ?> p) {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
-                public Executable createExecutable() throws IOException {
+                @Override
+                public Executable createExecutable() {
                     return new Executable() {
+                        @Override
                         public SubTask getParent() {
                             return outer;
                         }
 
+                        @Override
                         public void run() {
                             WorkUnitContext wuc = Executor.currentExecutor().getCurrentWorkUnit().context;
-                            AbstractBuild b = (AbstractBuild)wuc.getPrimaryWorkUnit().getExecutable();
+                            AbstractBuild b = (AbstractBuild) wuc.getPrimaryWorkUnit().getExecutable();
                             try {
                                 b.setDescription("I was here");
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                throw new UncheckedIOException(e);
                             }
                         }
 
+                        @Override
                         public long getEstimatedDuration() {
                             return 0;
                         }
                     };
                 }
 
+                @Override
                 public Task getOwnerTask() {
                     return p;
                 }
 
+                @Override
                 public String getDisplayName() {
-                    return "Company of "+p.getDisplayName();
+                    return "Company of " + p.getDisplayName();
                 }
             });
         }
@@ -90,7 +98,7 @@ public class WideExecutionTest {
     @Test
     public void run() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         assertEquals("I was here", b.getDescription());
     }
 }

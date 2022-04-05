@@ -13,21 +13,19 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/computer/", title:_("Manage Nodes"))
+            l.task(icon:"symbol-settings", href:"${rootURL}/computer/", title:_("Manage Nodes"))
         }
     }
+    l.app_bar(title: my.displayName)
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-health-40to59 icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
-        }
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()
-            div(class:"behavior-loading", _("LOADING"))
+            div(class:"behavior-loading") {
+                l.spinner(text: _("LOADING"))
+            }
 
-            f.form(method:"post",name:"config",action:"configure") {
+            f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
                 f.block {
                     if (app.clouds.size() == 0 && !h.hasPermission(app.ADMINISTER)) {
                         p(_("No clouds have been configured."))

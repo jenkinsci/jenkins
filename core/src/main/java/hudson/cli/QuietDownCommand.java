@@ -25,10 +25,9 @@
 package hudson.cli;
 
 import hudson.Extension;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Option;
-
-import java.util.logging.Logger;
 
 /**
  * Quiet down Jenkins - preparation for a restart
@@ -41,11 +40,14 @@ public class QuietDownCommand extends CLICommand {
 
     private static final Logger LOGGER = Logger.getLogger(QuietDownCommand.class.getName());
 
-    @Option(name="-block",usage="Block until the system really quiets down and no builds are running")
+    @Option(name = "-block", usage = "Block until the system really quiets down and no builds are running")
     public boolean block = false;
 
-    @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds")
+    @Option(name = "-timeout", usage = "If non-zero, only block up to the specified number of milliseconds")
     public int timeout = 0;
+
+    @Option(name = "-reason", usage = "Reason for quiet down that will be visible to users")
+    public String reason = null;
 
     @Override
     public String getShortDescription() {
@@ -54,7 +56,7 @@ public class QuietDownCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.get().doQuietDown(block, timeout);
+        Jenkins.get().doQuietDown(block, timeout, reason);
         return 0;
     }
 }

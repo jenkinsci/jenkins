@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
-import com.google.common.collect.Lists;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -45,11 +46,11 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
@@ -77,8 +78,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <p>
  * Proxy authentication (including NTLM) is implemented by setting a default
  * {@link Authenticator} which provides a {@link PasswordAuthentication}
- * (as described in the Java 6 tech note 
- * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
+ * (as described in the Java 8 tech note
+ * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  *
  * @see jenkins.model.Jenkins#proxy
@@ -89,8 +90,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", (int)TimeUnit.SECONDS.toMillis(20));
-    
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", (int) TimeUnit.SECONDS.toMillis(20));
+
     public final String name;
     public final int port;
 
@@ -114,7 +115,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * encrypted password
      */
     private Secret secretPassword;
-    
+
     private String testUrl;
 
     private transient Authenticator authenticator;
@@ -123,15 +124,15 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     @DataBoundConstructor
     public ProxyConfiguration(String name, int port) {
-        this(name,port,null,null);
+        this(name, port, null, null);
     }
 
     public ProxyConfiguration(String name, int port, String userName, String password) {
-        this(name,port,userName,password,null);
+        this(name, port, userName, password, null);
     }
 
     public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost) {
-        this(name,port,userName,password,noProxyHost,null);
+        this(name, port, userName, password, noProxyHost, null);
     }
 
     public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost, String testUrl) {
@@ -176,14 +177,14 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     /**
+     * @return the encrypted proxy password
+     *
      * @deprecated
      *      Use {@link #getSecretPassword()}
-     *
-     * @return the encrypted proxy password
      */
     @Deprecated
     public String getEncryptedPassword() {
-        return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
+        return secretPassword == null ? null : secretPassword.getEncryptedValue();
     }
 
     public String getTestUrl() {
@@ -213,11 +214,11 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Returns the list of properly formatted no proxy host names.
      */
     public static List<Pattern> getNoProxyHostPatterns(String noProxyHost) {
-        if (noProxyHost==null)  return Collections.emptyList();
+        if (noProxyHost == null)  return Collections.emptyList();
 
-        List<Pattern> r = Lists.newArrayList();
+        List<Pattern> r = new ArrayList<>();
         for (String s : noProxyHost.split("[ \t\n,|]+")) {
-            if (s.length()==0)  continue;
+            if (s.length() == 0)  continue;
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;
@@ -257,17 +258,18 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     public static Proxy createProxy(String host, String name, int port, String noProxyHost) {
-        if (host!=null && noProxyHost!=null) {
+        if (host != null && noProxyHost != null) {
             for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
                 if (p.matcher(host).matches())
                     return Proxy.NO_PROXY;
             }
         }
-        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(name,port));
+        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(name, port));
     }
 
+    @Override
     public void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        if (BulkChange.contains(this))   return;
         XmlFile config = getXmlFile();
         config.write(this);
         SaveableListener.fireOnChange(this, config);
@@ -288,7 +290,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public static ProxyConfiguration load() throws IOException {
         XmlFile f = getXmlFile();
-        if(f.exists())
+        if (f.exists())
             return (ProxyConfiguration) f.read();
         else
             return null;
@@ -299,24 +301,24 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     public static URLConnection open(URL url) throws IOException {
         final ProxyConfiguration p = get();
-        
+
         URLConnection con;
-        if(p==null) {
+        if (p == null) {
             con = url.openConnection();
         } else {
             Proxy proxy = p.createProxy(url.getHost());
             con = url.openConnection(proxy);
-            if(p.getUserName()!=null) {
+            if (p.getUserName() != null) {
                 // Add an authenticator which provides the credentials for proxy authentication
                 Authenticator.setDefault(p.authenticator);
                 p.jenkins48775workaround(proxy, url);
             }
         }
-        
-        if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
+
+        if (DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
             con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         }
-        
+
         if (JenkinsJVM.isJenkinsJVM()) { // this code may run on an agent
             decorate(con);
         }
@@ -343,7 +345,6 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
      * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
-     * @param proxy
      * @param url the actual URL being opened.
      */
     private void jenkins48775workaround(Proxy proxy, URL url) {
@@ -362,7 +363,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 }
             }
             authCacheSeeded = true;
-        } else if ("https".equals(url.getProtocol())){
+        } else if ("https".equals(url.getProtocol())) {
             // if we access any http url using a proxy then the auth cache will have been seeded
             authCacheSeeded = authCacheSeeded || proxy != Proxy.NO_PROXY;
         }
@@ -445,8 +446,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : (int)TimeUnit.SECONDS.toMillis(30));
-                
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : (int) TimeUnit.SECONDS.toMillis(30));
+
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
@@ -454,7 +455,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
-                
+
                 int code = client.executeMethod(method);
                 if (code != HttpURLConnection.HTTP_OK) {
                     return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
@@ -466,12 +467,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                     method.releaseConnection();
                 }
             }
-            
+
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
         }
 
         private boolean isNoProxyHost(String host, String noProxyHost) {
-            if (host!=null && noProxyHost!=null) {
+            if (host != null && noProxyHost != null) {
                 for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
                     if (p.matcher(host).matches()) {
                         return true;
@@ -482,7 +483,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         private Credentials createCredentials(String userName, String password) {
-            if (userName.indexOf('\\') >= 0){
+            if (userName.indexOf('\\') >= 0) {
                 final String domain = userName.substring(0, userName.indexOf('\\'));
                 final String user = userName.substring(userName.indexOf('\\') + 1);
                 return new NTCredentials(user, Secret.fromString(password).getPlainText(), "", domain);

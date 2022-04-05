@@ -70,8 +70,8 @@ THE SOFTWARE.
       to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
     <st:attribute name="titleClassMethod">
-      If set to an item of the form <tt>className#classMethod</tt>, it will be used
-      to call <tt>className.classMethod(descriptor)</tt> to calculate each item title.
+      If set to an item of the form <code>className#classMethod</code>, it will be used
+      to call <code>className.classMethod(descriptor)</code> to calculate each item title.
     </st:attribute>
     <st:attribute name="disableDragAndDrop" type="java.lang.Boolean">
       If true the drag and drop will not be activated. This just removes the drag and
@@ -80,33 +80,28 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div style="width:100%">
+      <div class="help-sibling" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
-        <j:if test="${hasHeader}">
-          <div class="tr help-sibling">
-            <div colspan="3">
-              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
-                <b>${descriptor.displayName}</b>
-                <f:helpLink url="${help}"/>
-              </div>
-            </div>
-          </div>
-          <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
-          <j:if test="${help!=null}">
-            <f:helpArea />
-          </j:if>
-        </j:if>
 
-        <d:invokeBody/>
+        <div class="repeated-chunk__header">
+          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
+
+          ${descriptor.displayName}
+
+          <f:helpLink url="${help}"/>
+
+          <j:if test="${!readOnlyMode}">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </j:if>
+        </div>
+
+        <j:if test="${help!=null}">
+          <f:helpArea />
+        </j:if>
 
         <f:class-entry descriptor="${descriptor}" />
-        <j:if test="${!readOnlyMode}">
-          <f:block>
-            <div align="right">
-              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-            </div>
-          </f:block>
-        </j:if>
+
+        <d:invokeBody/>
       </div>
     </d:tag>
   </d:taglib>
@@ -114,7 +109,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />

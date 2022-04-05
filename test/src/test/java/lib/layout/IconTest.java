@@ -21,101 +21,145 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.is;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.collect.Lists;
 import hudson.model.BallColor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import hudson.model.StatusIcon;
 import hudson.model.StockStatusIcon;
-import jenkins.util.NonLocalizable;
-import org.jvnet.hudson.test.HudsonTestCase;
-
+import java.io.StringWriter;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
-import java.util.List;
+import jenkins.util.NonLocalizable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class IconTest extends HudsonTestCase  {
+public class IconTest  {
 
-    // Tried using JenkinsRule etc in this test but there must be some magic
-    // that I missed... I was getting 404s and other errors.
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
+    @Test
     public void testIcons() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/01_testIcons");
+        HtmlPage p = j.createWebClient().goTo("testIcons");
         DomElement iconsBlock = p.getElementById("iconsBlock");
-        List<DomElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
+        List<DomElement> icons = StreamSupport
+            .stream(iconsBlock.getChildElements().spliterator(), false)
+            .collect(Collectors.toList());
 
-        assertIconToImageOkay(icons.get(0), "/images/16x16/aborted.png", "icon-aborted icon-sm");
-        assertIconToImageOkay(icons.get(1), "/images/24x24/aborted.png", "icon-aborted icon-md");
-        assertIconToImageOkay(icons.get(2), "/images/32x32/aborted.png", "icon-aborted icon-lg");
-        assertIconToImageOkay(icons.get(3), "/images/48x48/aborted.png", "icon-aborted icon-xlg");
+        assertIconToImageOkay(icons.get(0), "/images/16x16/empty.png", "icon-empty icon-sm");
+        assertIconToImageOkay(icons.get(1), "/images/24x24/empty.png", "icon-empty icon-md");
+        assertIconToImageOkay(icons.get(2), "/images/32x32/empty.png", "icon-empty icon-lg");
+        assertIconToImageOkay(icons.get(3), "/images/48x48/empty.png", "icon-empty icon-xlg");
 
         // class specs not in "normal" order...
-        assertIconToImageOkay(icons.get(4), "/images/16x16/aborted.png");
-        assertIconToImageOkay(icons.get(5), "/images/24x24/aborted.png");
+        assertIconToImageOkay(icons.get(4), "/images/16x16/empty.png");
+        assertIconToImageOkay(icons.get(5), "/images/24x24/empty.png");
 
         // src attribute...
         assertIconToImageOkay(icons.get(6), "/plugin/xxx/icon.png");
     }
 
+    @TestExtension("testIcons")
+    public static class TestIcons extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "testIcons";
+        }
+    }
+
+    @Test
     public void testBallColorTd() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/02_testBallColorTd");
+        HtmlPage p = j.createWebClient().goTo("testBallColorTd");
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
-        List<DomElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
-        assertIconToImageOkay(ballIcons.get(0), "/images/32x32/aborted.png", "icon-aborted icon-lg");
+        List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
+        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted");
 
         DomElement statusIcons = p.getElementById("statusIcons");
-        List<DomElement> statusIconsList = Lists.newArrayList(statusIcons.getChildElements());
-        assertIconToImageOkay(statusIconsList.get(0), "/images/32x32/folder.png", "icon-folder icon-lg");
+        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
+        assertIconToSvgOkay(statusIconsList.get(0).getFirstElementChild().getNextElementSibling(), "icon-user icon-xlg");
+
+        assertIconToImageOkay(statusIconsList.get(1).getFirstElementChild(), "/plugin/12345/icons/s2.png");
     }
 
+    @TestExtension("testBallColorTd")
+    public static class TestBallColorTd extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "testBallColorTd";
+        }
+
+        public BallColor getBallColorAborted() {
+            return BallColor.ABORTED;
+        }
+
+        public StatusIcon getStatusIcon1() {
+            return new StockStatusIcon("user.svg", new NonLocalizable("A User"));
+        }
+
+        public StatusIcon getStatusIcon2() {
+            return new StatusIcon() {
+                @Override
+                public String getImageOf(String size) {
+                    return "/plugin/12345/icons/s2.png";
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Unknown icon";
+                }
+            };
+        }
+    }
+
+    @Test
     public void testTasks() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/03_testTask");
+        HtmlPage p = j.createWebClient().goTo("testTasks");
 
         DomElement tasksDiv = p.getElementById("tasks");
-        List<DomElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
+        List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
-        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
-        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
-        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
-        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
+        assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").get(0));
+        // this is loading the png from cloudbees-folder plugin
+        // when this is swapped to an SVG and the dep updated this test will need to change
+        assertIconToSvgOkay(taskDivs.get(1).getElementsByTagName("svg").get(0), "icon-folder icon-md");
+        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
+        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
+        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
+        assertIconToSymbolOkay(taskDivs.get(5).getElementsByTagName("svg").get(0));
 
-        assertIconToImageOkay(taskDivs.get(5).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
         assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
+        assertIconToImageOkay(taskDivs.get(7).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
     }
 
-    public BallColor getBallColorAborted() {
-        return BallColor.ABORTED;
-    }
-
-    public StatusIcon getStatusIcon1() {
-        return new StockStatusIcon("folder.png", new NonLocalizable("A Folder"));
-    }
-
-    public StatusIcon getStatusIcon2() {
-        return new StatusIcon() {
-            @Override
-            public String getImageOf(String size) {
-                return "/plugin/12345/icons/s2.png";
-            }
-            @Override
-            public String getDescription() {
-                return "Unknown icon";
-            }
-        };
+    @TestExtension("testTasks")
+    public static class TestTasks extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "testTasks";
+        }
     }
 
     private void assertIconToImageOkay(DomElement icon, String imgPath) {
@@ -123,11 +167,30 @@ public class IconTest extends HudsonTestCase  {
     }
 
     private void assertIconToImageOkay(DomElement icon, String imgPath, String classSpec) {
-        assertEquals("img", icon.getTagName());
-        assertTrue(icon.getAttribute("src").endsWith(imgPath));
+        assertThat(icon.getTagName(), is("img"));
+        assertThat(icon.getAttribute("src"), endsWith(imgPath));
         if (classSpec != null) {
-            assertEquals(classSpec, icon.getAttribute("class"));
+            assertThat(icon.getAttribute("class"), is(classSpec));
         }
+    }
+
+    private void assertIconToSvgOkay(DomElement icon, String classSpec) {
+        assertThat(icon.getTagName(), is("svg"));
+
+        if (classSpec != null) {
+            assertThat(icon.getAttribute("class"), endsWith(classSpec));
+        }
+    }
+
+    private void assertIconToSvgIconOkay(DomElement icon, String classSpec) {
+        assertThat(icon.getTagName(), is("span"));
+        if (classSpec != null) {
+            assertThat(icon.getAttribute("class"), endsWith(classSpec));
+        }
+    }
+
+    private void assertIconToSymbolOkay(DomElement icon) {
+        assertThat("svg", is(icon.getTagName()));
     }
 
     private void dump(HtmlElement element) throws TransformerException {

@@ -24,6 +24,8 @@
 
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -45,8 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -73,7 +73,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * Otherwise, {@link #setUp(Context, Run, TaskListener, EnvVars)} applies.
      *
      * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
-     * @since TODO
+     * @since 2.258
      */
     public boolean requiresWorkspace() {
         return true;
@@ -96,7 +96,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
-    public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
         if (!this.requiresWorkspace()) {
             this.setUp(context, build, listener, initialEnvironment);
@@ -119,9 +119,9 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IllegalStateException if this wrapper requires a workspace context
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
-     * @since TODO
+     * @since 2.258
      */
-    public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public void setUp(Context context, Run<?, ?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this wrapper requires a workspace, this is the wrong method to call.
         if (this.requiresWorkspace()) {
             throw new IllegalStateException("This build wrapper requires a workspace context, but none was provided.");
@@ -145,7 +145,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public static final class Context {
         private Disposer disposer;
-        private final Map<String,String> env = new HashMap<>();
+        private final Map<String, String> env = new HashMap<>();
         private final @CheckForNull Boolean wrapperRequiresWorkspace;
 
         /**
@@ -185,7 +185,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             return disposer;
         }
 
-        public @NonNull Map<String,String> getEnv() {
+        public @NonNull Map<String, String> getEnv() {
             return env;
         }
 
@@ -208,7 +208,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * An optional callback to run at the end of the wrapped block.
      * Must be safely serializable, so it receives runtime context comparable to that of the original setup.
      */
-    public static abstract class Disposer implements Serializable {
+    public abstract static class Disposer implements Serializable {
 
         @CheckForNull
         private Boolean wrapperRequiresWorkspace;
@@ -221,7 +221,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Otherwise, {@link #tearDown(Run, TaskListener)} applies.
          *
          * @return {@code true} when this end-of-wrapped-block callback requires a workspace context; {@code false} otherwise.
-         * @since TODO
+         * @since 2.258
          */
         @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
         public final boolean requiresWorkspace() {
@@ -243,7 +243,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
-        public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
             if (!this.requiresWorkspace()) {
                 this.tearDown(build, listener);
@@ -264,9 +264,9 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IllegalStateException if this end-of-wrapped-block callback requires a workspace
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
-         * @since TODO
+         * @since 2.258
          */
-        public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
+        public void tearDown(Run<?, ?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.
             if (this.requiresWorkspace()) {
                 throw new IllegalStateException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
@@ -307,17 +307,20 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     private class EnvironmentWrapper extends Environment {
         private final Context c;
         private final Launcher launcher;
+
         EnvironmentWrapper(Context c, Launcher launcher) {
             this.c = c;
             this.launcher = launcher;
         }
-        @Override public void buildEnvVars(Map<String,String> env) {
+
+        @Override public void buildEnvVars(Map<String, String> env) {
             if (env instanceof EnvVars) {
                 ((EnvVars) env).overrideAll(c.env);
             } else { // ?
                 env.putAll(c.env);
             }
         }
+
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
                 c.disposer.tearDown(build, build.getWorkspace(), launcher, listener);
@@ -332,7 +335,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return a filter which ignores its {@code build} parameter and is {@link Serializable}; or null (the default)
      * @since 1.608
      */
-    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@NonNull Run<?,?> build) {
+    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@NonNull Run<?, ?> build) {
         return null;
     }
 
@@ -360,7 +363,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * <p>{@inheritDoc}
      * @since 1.608
      */
-    @Override public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+    @Override public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
         super.makeBuildVariables(build, variables);
     }
 

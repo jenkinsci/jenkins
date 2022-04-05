@@ -1,10 +1,9 @@
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import java.net.URL;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -12,14 +11,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Show "About Jenkins" link.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension @Symbol("about")
 public class AboutJenkins extends ManagementLink {
     @Override
     public String getIconFileName() {
-        return "help.png";
+        return "symbol-jenkins";
     }
 
     @Override
@@ -27,6 +26,7 @@ public class AboutJenkins extends ManagementLink {
         return "about";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.AboutJenkins_DisplayName();
     }

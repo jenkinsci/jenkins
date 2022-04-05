@@ -21,18 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import hudson.cli.CLICommand;
 import hudson.util.ListBoxModel.Option;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.kohsuke.args4j.Argument;
-
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.METHOD;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
 
 /**
  * Annotates methods on model objects to expose them as CLI commands.
@@ -59,11 +60,11 @@ import java.lang.annotation.Target;
  */
 @Indexed
 @Retention(RUNTIME)
-@Target({METHOD})
+@Target(METHOD)
 @Documented
 public @interface CLIMethod {
     /**
-     * CLI command name. Used as {@link CLICommand#getName()} 
+     * CLI command name. Used as {@link CLICommand#getName()}
      */
     String name();
 

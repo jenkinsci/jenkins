@@ -36,6 +36,7 @@ THE SOFTWARE.
               <form method="post" action="toggleOffline">
                 <f:submit value="${%submit.temporarilyOffline}"  />
               </form>
+              <br/>
               <form method="post" action="setOfflineCause">
               <f:submit value="${%submit.updateOfflineCause}"  />
               </form>
@@ -52,7 +53,9 @@ THE SOFTWARE.
       </div>
 
       <h1>
-        <l:icon class="${it.iconClassName} icon-xlg" />
+        <span class="icon-lg">
+          <l:icon src="${it.iconClassName}" />
+        </span>
         ${it.caption}
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>

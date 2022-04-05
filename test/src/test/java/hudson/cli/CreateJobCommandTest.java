@@ -26,14 +26,16 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.Item;
 import hudson.model.User;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -55,11 +57,59 @@ public class CreateJobCommandTest {
             grant(Jenkins.READ).everywhere().toAuthenticated().
             grant(Item.READ).onItems(d).toAuthenticated(). // including alice
             grant(Item.CREATE).onItems(d).to("bob"));
-        cmd.setTransportAuth(User.getOrCreateByIdOrFullName("alice").impersonate());
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("alice").impersonate2());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), failedWith(6));
-        cmd.setTransportAuth(User.getOrCreateByIdOrFullName("bob").impersonate());
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("bob").impersonate2());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));
     }
 
+    @Issue("SECURITY-2424")
+    @Test public void cannotCreateJobWithTrailingDot_withoutOtherJob() {
+        CLICommand cmd = new CreateJobCommand();
+        CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
+
+        CLICommandInvoker.Result result = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1.");
+        assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
+        assertThat(result, failedWith(1));
+
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
+    }
+
+    @Issue("SECURITY-2424")
+    @Test public void cannotCreateJobWithTrailingDot_withExistingJob() {
+        CLICommand cmd = new CreateJobCommand();
+        CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1"), succeededSilently());
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
+
+        CLICommandInvoker.Result result = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1.");
+        assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
+        assertThat(result, failedWith(1));
+
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
+    }
+
+    @Issue("SECURITY-2424")
+    @Test public void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            CLICommand cmd = new CreateJobCommand();
+            CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
+            assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
+            assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1."), succeededSilently());
+            assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
+        }
+        finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
+        }
+    }
 }

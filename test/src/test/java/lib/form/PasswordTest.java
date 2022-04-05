@@ -21,7 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -29,12 +40,24 @@ import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
-import hudson.model.*;
-import hudson.tasks.BuildStep;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Computer;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.RootAction;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -47,24 +70,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.tasks.SimpleBuildStep;
-import org.acegisecurity.Authentication;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -76,9 +86,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import org.springframework.security.core.Authentication;
 
 public class PasswordTest {
 
@@ -89,9 +97,9 @@ public class PasswordTest {
     public void secretNotPlainText() throws Exception {
         SecretNotPlainText.secret = Secret.fromString("secret");
         HtmlPage p = j.createWebClient().goTo("secretNotPlainText");
-        String value = ((HtmlInput)p.getElementById("password")).getValueAttribute();
+        String value = ((HtmlInput) p.getElementById("password")).getValueAttribute();
         assertNotEquals("password shouldn't be plain text", "secret", value);
-        assertEquals("secret",Secret.fromString(value).getPlainText());
+        assertEquals("secret", Secret.fromString(value).getPlainText());
     }
 
     @TestExtension("secretNotPlainText")
@@ -164,14 +172,14 @@ public class PasswordTest {
             assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
             // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
             GetJobCommand getJobCommand = new GetJobCommand();
-            Authentication adminAuth = User.get("admin").impersonate();
-            getJobCommand.setTransportAuth(adminAuth);
+            Authentication adminAuth = User.get("admin").impersonate2();
+            getJobCommand.setTransportAuth2(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
             getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             CopyJobCommand copyJobCommand = new CopyJobCommand();
-            copyJobCommand.setTransportAuth(adminAuth);
+            copyJobCommand.setTransportAuth2(adminAuth);
             String pAdminName = pName + "-admin";
             assertEquals(0, copyJobCommand.main(Arrays.asList(pName, pAdminName), Locale.ENGLISH, System.in, System.out, System.err));
             FreeStyleProject pAdmin = j.jenkins.getItemByFullName(pAdminName, FreeStyleProject.class);
@@ -180,7 +188,7 @@ public class PasswordTest {
             assertEquals(p.getConfigFile().asString(), pAdmin.getConfigFile().asString());
 
             // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
-            wc.withBasicApiToken(dev);
+            wc.withBasicApiToken(User.getById("dev", false));
             configure = wc.getPage(p, "configure");
             assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(false));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
@@ -188,13 +196,13 @@ public class PasswordTest {
             assertThat(xml_regex_pattern.matcher(xmlDev).find(), is(false));
             assertEquals(xmlAdmin.replaceAll(xml_regex_match, "********"), xmlDev);
             getJobCommand = new GetJobCommand();
-            Authentication devAuth = User.get("dev").impersonate();
-            getJobCommand.setTransportAuth(devAuth);
+            Authentication devAuth = User.get("dev").impersonate2();
+            getJobCommand.setTransportAuth2(devAuth);
             baos = new ByteArrayOutputStream();
             getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             copyJobCommand = new CopyJobCommand();
-            copyJobCommand.setTransportAuth(devAuth);
+            copyJobCommand.setTransportAuth2(devAuth);
             String pDevName = pName + "-dev";
             assertThat(copyJobCommand.main(Arrays.asList(pName, pDevName), Locale.ENGLISH, System.in, System.out, System.err), not(0));
             assertNull(j.jenkins.getItemByFullName(pDevName, FreeStyleProject.class));
@@ -227,14 +235,17 @@ public class PasswordTest {
 
     public static class VulnerableProperty extends JobProperty<FreeStyleProject> {
         public final Secret secret;
+
         @DataBoundConstructor
         public VulnerableProperty(Secret secret) {
             this.secret = secret;
         }
+
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
             static String incomingURL;
             static String checkedSecret;
+
             public FormValidation doCheckSecret(@QueryParameter String value) {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 incomingURL = req.getRequestURIWithQueryString();
@@ -328,7 +339,7 @@ public class PasswordTest {
         }
 
         public void setStringWithSecretGetterAndSetter(Secret stringWithSecretGetterAndSetter) {
-            this.stringWithSecretGetterAndSetter = stringWithSecretGetterAndSetter == null? null : stringWithSecretGetterAndSetter.getPlainText();
+            this.stringWithSecretGetterAndSetter = stringWithSecretGetterAndSetter == null ? null : stringWithSecretGetterAndSetter.getPlainText();
         }
 
         public static PasswordHolderConfiguration getInstance() {
@@ -414,7 +425,8 @@ public class PasswordTest {
         // confirm the Secret getter/setter will not change encrypted value (keeps IV)
         assertEquals(secretWithSecretGetterSecretSetter.getEncryptedValue(), buildStep.secretWithSecretGetterSecretSetter.getEncryptedValue());
 
-        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work, but if they getter returns #getEncrytedValue (as implemented in the build step here), it does
+        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work,
+        // but if the getter returns #getEncrytedValue (as implemented in the build step here), it does.
         // While clever, would recommend fixing mismatched getters/setters here
         assertEquals(secretWithStringGetterSecretSetter.getEncryptedValue(), buildStep.secretWithStringGetterSecretSetter.getEncryptedValue());
 
@@ -513,7 +525,7 @@ public class PasswordTest {
 
         @DataBoundSetter
         public void setStringWithStringGetterSecretSetter(Secret stringWithStringGetterSecretSetter) {
-            this.stringWithStringGetterSecretSetter = stringWithStringGetterSecretSetter == null? null : stringWithStringGetterSecretSetter.getPlainText();
+            this.stringWithStringGetterSecretSetter = stringWithStringGetterSecretSetter == null ? null : stringWithStringGetterSecretSetter.getPlainText();
         }
 
         public Secret getStringWithSecretGetterSecretSetter() {
@@ -522,11 +534,11 @@ public class PasswordTest {
 
         @DataBoundSetter
         public void setStringWithSecretGetterSecretSetter(Secret stringWithSecretGetterSecretSetter) {
-            this.stringWithSecretGetterSecretSetter = stringWithSecretGetterSecretSetter == null? null : stringWithSecretGetterSecretSetter.getPlainText();
+            this.stringWithSecretGetterSecretSetter = stringWithSecretGetterSecretSetter == null ? null : stringWithSecretGetterSecretSetter.getPlainText();
         }
 
         @Override
-        public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+        public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
             // do nothing
         }
 
@@ -597,7 +609,7 @@ public class PasswordTest {
         }
 
         @Override
-        public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+        public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
             // do nothing
         }
 
@@ -626,7 +638,7 @@ public class PasswordTest {
         }
 
         final MockAuthorizationStrategy a = new MockAuthorizationStrategy();
-        a.grant(Jenkins.READ, Job.READ, Job.EXTENDED_READ).everywhere().toEveryone();
+        a.grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().toEveryone();
         j.jenkins.setAuthorizationStrategy(a);
 
         /* Now go to the page without Item/Configure and expect asterisks */
@@ -647,9 +659,9 @@ public class PasswordTest {
             return Job.class;
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public Collection<? extends Action> createFor(@Nonnull Job target) {
+        public Collection<? extends Action> createFor(@NonNull Job target) {
             return Collections.singletonList(new ActionImpl());
         }
     }
@@ -706,17 +718,17 @@ public class PasswordTest {
 
         {
             wc.login(READONLY);
-            HtmlPage page = wc.goTo("computer/(master)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
-            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            String value = ((HtmlInput) page.getElementById("password")).getValueAttribute();
             assertThat(value, is("********"));
         }
 
         {
             wc.login(ADMIN);
-            HtmlPage page = wc.goTo("computer/(master)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
-            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            String value = ((HtmlInput) page.getElementById("password")).getValueAttribute();
             assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));
         }
     }

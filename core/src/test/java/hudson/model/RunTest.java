@@ -24,7 +24,18 @@
 
 package hudson.model;
 
-import java.io.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.console.AnnotatedLargeText;
+import java.io.File;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
@@ -34,13 +45,6 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.console.AnnotatedLargeText;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.XMLOutput;
 import org.junit.Rule;
@@ -51,7 +55,6 @@ import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.mockito.Mockito;
 
-
 public class RunTest {
     private static final String SAMPLE_BUILD_OUTPUT = "Sample build output abc123.\n";
 
@@ -59,7 +62,8 @@ public class RunTest {
 
     @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test public void timezoneOfID() throws Exception {
+    @Test
+    public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();
         try {
             final Run r;
@@ -68,14 +72,14 @@ public class RunTest {
             ExecutorService svc = Executors.newSingleThreadExecutor();
             try {
                 r = svc.submit(new Callable<Run>() {
-                    @Override public Run call() throws Exception {
+                    @Override public Run call() {
                         return new Run(new StubJob(), 1234567890) {};
                     }
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
                 assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() throws Exception {
+                    @Override public String call() {
                         return r.getId();
                     }
                 }).get());
@@ -88,7 +92,7 @@ public class RunTest {
                 assertEquals(id, r.getId());
                 assertEquals(id, svc.submit(new Callable<String>() {
                     @Override
-                    public String call() throws Exception {
+                    public String call() {
                         return r.getId();
                     }
                 }).get());
@@ -101,7 +105,7 @@ public class RunTest {
     }
 
 
-    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
+    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) {
         Run r = new Run(new StubJob(), 0) {};
         Run.ArtifactList list = r.new ArtifactList();
         for (String p : paths) {
@@ -114,30 +118,30 @@ public class RunTest {
     @Test
     public void artifactListDisambiguation1() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "j.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("g.xml", a.get(1).getDisplayPath());
+        assertEquals("j.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation2() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "i/g.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("f/g.xml", a.get(1).getDisplayPath());
+        assertEquals("i/g.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation3() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(), "a.xml");
-        assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
+        assertEquals("a.xml", a.get(0).getDisplayPath());
+        assertEquals("a/a.xml", a.get(1).getDisplayPath());
     }
 
     @Issue("JENKINS-26777")
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     @Test
-    public void getDurationString() throws IOException {
+    public void getDurationString() {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
       try {
         // This test expects English texts.
@@ -163,6 +167,7 @@ public class RunTest {
     }
 
     @Issue("JENKINS-27441")
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -178,6 +183,7 @@ public class RunTest {
         assertTrue(logLines.isEmpty());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnRightOrder() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -196,12 +202,13 @@ public class RunTest {
         assertFalse(logLines.isEmpty());
 
         for (int i = 1; i < 10; i++) {
-            assertEquals("dummy" + (10+i), logLines.get(i));
+            assertEquals("dummy" + (10 + i), logLines.get(i));
         }
-        int truncatedCount = 10* ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
-        assertEquals("[...truncated "+truncatedCount+" B...]", logLines.get(0));
+        int truncatedCount = 10 * ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
+        assertEquals("[...truncated " + truncatedCount + " B...]", logLines.get(0));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAllLines() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -225,10 +232,11 @@ public class RunTest {
     @Test
     public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final Jenkins group = Mockito.mock(Jenkins.class);
+        Mockito.when(group.getFullName()).thenReturn("j");
         final Job j = Mockito.mock(Job.class);
 
         Mockito.when(j.getParent()).thenReturn(group);
-        Mockito.when(group.getFullName()).thenReturn("j");
+        Mockito.when(j.getFullName()).thenReturn("Mock job");
         Mockito.when(j.assignBuildNumber()).thenReturn(1, 2);
 
         Run r1 = new Run(j) {};
@@ -239,7 +247,7 @@ public class RunTest {
         treeSet.add(r2);
 
         assertTrue(r1.compareTo(r2) < 0);
-        assertTrue(treeSet.size() == 2);
+        assertEquals(2, treeSet.size());
     }
 
     @Issue("JENKINS-42319")
@@ -250,7 +258,9 @@ public class RunTest {
         final Job j1 = Mockito.mock(Job.class);
         final Job j2 = Mockito.mock(Job.class);
         Mockito.when(j1.getParent()).thenReturn(group1);
+        Mockito.when(j1.getFullName()).thenReturn("Mock job");
         Mockito.when(j2.getParent()).thenReturn(group2);
+        Mockito.when(j2.getFullName()).thenReturn("Mock job2");
         Mockito.when(group1.getFullName()).thenReturn("g1");
         Mockito.when(group2.getFullName()).thenReturn("g2");
         Mockito.when(j1.assignBuildNumber()).thenReturn(1);
@@ -263,8 +273,8 @@ public class RunTest {
         treeSet.add(r1);
         treeSet.add(r2);
 
-        assertTrue(r1.compareTo(r2) != 0);
-        assertTrue(treeSet.size() == 2);
+        assertNotEquals(0, r1.compareTo(r2));
+        assertEquals(2, treeSet.size());
     }
 
     @Test
@@ -302,7 +312,7 @@ public class RunTest {
 
                 @NonNull
                 @Override
-                public InputStream getLogInputStream() throws IOException {
+                public InputStream getLogInputStream() {
                     return buf.newInputStream();
                 }
             };

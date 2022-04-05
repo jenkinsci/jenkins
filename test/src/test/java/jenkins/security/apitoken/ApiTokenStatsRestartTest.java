@@ -21,7 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.xml.HasXPath.hasXPath;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -32,53 +43,38 @@ import com.gargoylesoftware.htmlunit.html.HtmlSpan;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
-import jenkins.security.ApiTokenProperty;
-import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runners.model.Statement;
-import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import jenkins.security.ApiTokenProperty;
+import net.sf.json.JSONObject;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 @For(ApiTokenStats.class)
 public class ApiTokenStatsRestartTest {
-    
+
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
-    
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+
     @Test
     @Issue("SECURITY-1072")
-    public void roundtripWithRestart() {
+    public void roundtripWithRestart() throws Throwable {
         AtomicReference<String> tokenValue = new AtomicReference<>();
         AtomicReference<String> tokenUuid = new AtomicReference<>();
         String TOKEN_NAME = "New Token Name";
         int NUM_CALL_WITH_TOKEN = 5;
-        
-        rr.addStep(new Statement() {
-               @Override
-               public void evaluate() throws Throwable {
-                   JenkinsRule j = rr.j;
+
+        sessions.then(j -> {
                    j.jenkins.setCrumbIssuer(null);
                    j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-                   
+
                    User u = User.getById("foo", true);
 
                    ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
@@ -123,51 +119,46 @@ public class ApiTokenStatsRestartTest {
 
                    File apiTokenStatsFile = new File(u.getUserFolder(), "apiTokenStats.xml");
                    assertTrue("apiTokenStats.xml file should exist", apiTokenStatsFile.exists());
-               }
            });
-    
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                JenkinsRule j = rr.j;
+
+        sessions.then(j -> {
                 j.jenkins.setCrumbIssuer(null);
-                
+
                 User u = User.getById("foo", false);
                 assertNotNull(u);
-    
+
                 WebClient wc = j.createWebClient().login(u.getId());
                 checkUserIsConnected(wc, u.getId());
-    
+
                 HtmlPage config = wc.goTo(u.getUrl() + "/configure");
                 assertEquals(200, config.getWebResponse().getStatusCode());
                 assertThat(config.getWebResponse().getContentAsString(), containsString(tokenUuid.get()));
                 assertThat(config.getWebResponse().getContentAsString(), containsString(TOKEN_NAME));
                 HtmlSpan useCounterSpan = config.getDocumentElement().getOneHtmlElementByAttribute("span", "class", "token-use-counter");
                 assertThat(useCounterSpan.getTextContent(), containsString("" + NUM_CALL_WITH_TOKEN));
-                
-                revokeToken(wc, u.getId(), tokenUuid.get());
-                
+
+                revokeToken(j, wc, u.getId(), tokenUuid.get());
+
                 // token is no more valid
                 WebClient restWc = j.createWebClient().withBasicCredentials(u.getId(), tokenValue.get());
                 checkUserIsNotConnected(restWc);
-                
+
                 HtmlPage configWithoutToken = wc.goTo(u.getUrl() + "/configure");
                 assertEquals(200, configWithoutToken.getWebResponse().getStatusCode());
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(tokenUuid.get())));
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(TOKEN_NAME)));
-            }
         });
     }
-    
-    private void checkUserIsConnected(WebClient wc, String username) throws Exception {
+
+    private static void checkUserIsConnected(WebClient wc, String username) throws Exception {
         XmlPage xmlPage = wc.goToXml("whoAmI/api/xml");
         assertThat(xmlPage, hasXPath("//name", is(username)));
         assertThat(xmlPage, hasXPath("//anonymous", is("false")));
         assertThat(xmlPage, hasXPath("//authenticated", is("true")));
         assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
     }
-    
-    private void checkUserIsNotConnected(WebClient wc) throws Exception {
+
+    private static void checkUserIsNotConnected(WebClient wc) throws Exception {
         try {
             wc.goToXml("whoAmI/api/xml");
             fail();
@@ -175,10 +166,10 @@ public class ApiTokenStatsRestartTest {
             assertEquals(401, e.getStatusCode());
         }
     }
-    
-    private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
+
+    private static void revokeToken(JenkinsRule j, WebClient wc, String login, String tokenUuid) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(rr.j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);

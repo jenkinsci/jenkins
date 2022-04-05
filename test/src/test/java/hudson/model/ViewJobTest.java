@@ -24,10 +24,11 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -49,7 +50,7 @@ public class ViewJobTest {
     }
 
     @SuppressWarnings({"rawtypes", "deprecation"})
-    public static final class J extends ViewJob<J,R> implements TopLevelItem {
+    public static final class J extends ViewJob<J, R> implements TopLevelItem {
 
         public J(ItemGroup parent, String name) {
             super(parent, name);
@@ -84,7 +85,7 @@ public class ViewJobTest {
 
     }
 
-    public static final class R extends Run<J,R> {
+    public static final class R extends Run<J, R> {
 
         public R(J j) throws IOException {
             super(j);

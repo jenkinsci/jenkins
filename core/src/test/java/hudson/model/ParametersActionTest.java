@@ -1,24 +1,19 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+
 import hudson.EnvVars;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildWrapper;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
-
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ParametersActionTest {
 
     private ParametersAction baseParamsAB;
@@ -89,35 +84,35 @@ public class ParametersActionTest {
 
         assertNotSame(baseParamsAB, params);
     }
-    
+
     @Test
     @Issue("JENKINS-15094")
     public void checkNullParameterValues() {
         SubTask subtask = mock(SubTask.class);
         Build build = mock(Build.class);
-                   
+
         // Prepare parameters Action
         StringParameterValue A = new StringParameterValue("A", "foo");
         StringParameterValue B = new StringParameterValue("B", "bar");
         ParametersAction parametersAction = new ParametersAction(A, null, B);
-        ParametersAction parametersAction2 = new ParametersAction(A,null);
-        
+        ParametersAction parametersAction2 = new ParametersAction(A, null);
+
         // Non existent parameter
-        assertNull(parametersAction.getParameter("C"));   
+        assertNull(parametersAction.getParameter("C"));
         assertNull(parametersAction.getAssignedLabel(subtask));
-        
+
         // Interaction with build
         EnvVars vars = new EnvVars();
         parametersAction.buildEnvironment(build, vars);
-        assertEquals(2, vars.size());   
+        assertEquals(2, vars.size());
         parametersAction.createVariableResolver(build);
-        
-        LinkedList<BuildWrapper> wrappers = new LinkedList<>();
+
+        List<BuildWrapper> wrappers = new ArrayList<>();
         parametersAction.createBuildWrappers(build, wrappers);
         assertEquals(0, wrappers.size());
-        
+
         // Merges and overrides
         assertEquals(3, parametersAction.createUpdated(parametersAction2.getParameters()).getParameters().size());
-        assertEquals(3, parametersAction.merge(parametersAction2).getParameters().size());        
+        assertEquals(3, parametersAction.merge(parametersAction2).getParameters().size());
     }
 }

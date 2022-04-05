@@ -52,8 +52,9 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'post' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a GET to a POST.
-      If any other value is specified then requests will use GET.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
+      If any other value is specified then requests will use POST.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
   </st:documentation>
 
@@ -62,14 +63,16 @@ THE SOFTWARE.
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
-  <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
-         name="${attrs.name ?: '_.'+attrs.field}"
-         value="${value}"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz">
-    <j:if test="${value!=null}">
-      <option value="${value}">${value}</option>
-    </j:if>
-  </m:select>
+  <div class="jenkins-select">
+    <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+              class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
+              name="${attrs.name ?: '_.'+attrs.field}"
+              value="${value}"
+              ATTRIBUTES="${attrs}" EXCEPT="field clazz">
+      <j:if test="${value!=null}">
+        <option value="${value}">${value}</option>
+      </j:if>
+    </m:select>
+  </div>
   <!-- TODO consider customizedFields -->
 </j:jelly>

@@ -21,24 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
 import hudson.cli.CLICommand;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.FieldSetter;
-import org.kohsuke.args4j.spi.Setter;
-import org.kohsuke.args4j.spi.OptionHandler;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Binds method parameters to CLI arguments and parameters via args4j.
@@ -52,10 +53,7 @@ class MethodBinder {
     private final Method method;
     private final Object[] arguments;
 
-    /**
-     * @param method
-     */
-    public MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
+    MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
         this.command = command;
 
@@ -70,14 +68,17 @@ class MethodBinder {
 
             // TODO: collection and map support
             Setter setter = new Setter() {
+                @Override
                 public void addValue(Object value) throws CmdLineException {
                     arguments[index] = value;
                 }
 
+                @Override
                 public Class getType() {
                     return p.type();
                 }
 
+                @Override
                 public boolean isMultiValued() {
                     return false;
                 }
@@ -93,15 +94,15 @@ class MethodBinder {
                 }
             };
             Option option = p.annotation(Option.class);
-            if (option!=null) {
-                parser.addOption(setter,option);
+            if (option != null) {
+                parser.addOption(setter, option);
             }
             Argument arg = p.annotation(Argument.class);
-            if (arg!=null) {
-                if (bias>0) arg = new ArgumentImpl(arg,bias);
-                parser.addArgument(setter,arg);
+            if (arg != null) {
+                if (bias > 0) arg = new ArgumentImpl(arg, bias);
+                parser.addArgument(setter, arg);
             }
-            if (p.type()==CLICommand.class)
+            if (p.type() == CLICommand.class)
                 arguments[index] = command;
 
             if (p.type().isPrimitive())
@@ -111,7 +112,7 @@ class MethodBinder {
 
     public Object call(Object instance) throws Exception {
         try {
-            return method.invoke(instance,arguments);
+            return method.invoke(instance, arguments);
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
             if (t instanceof Exception)
@@ -123,7 +124,7 @@ class MethodBinder {
     /**
      * {@link Argument} implementation that adds a bias to {@link #index()}.
      */
-    @SuppressWarnings({"ClassExplicitlyAnnotation"})
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     private static final class ArgumentImpl implements Argument {
         private final Argument base;
         private final int bias;
@@ -133,30 +134,37 @@ class MethodBinder {
             this.bias = bias;
         }
 
+        @Override
         public String usage() {
             return base.usage();
         }
 
+        @Override
         public String metaVar() {
             return base.metaVar();
         }
 
+        @Override
         public boolean required() {
             return base.required();
         }
 
+        @Override
         public Class<? extends OptionHandler> handler() {
             return base.handler();
         }
 
+        @Override
         public int index() {
-            return base.index()+bias;
+            return base.index() + bias;
         }
 
+        @Override
         public boolean multiValued() {
             return base.multiValued();
         }
 
+        @Override
         public Class<? extends Annotation> annotationType() {
             return base.annotationType();
         }
@@ -164,6 +172,23 @@ class MethodBinder {
         @Override
         public boolean hidden() {
             return base.hidden();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ArgumentImpl)) {
+                return false;
+            }
+            ArgumentImpl argument = (ArgumentImpl) o;
+            return Objects.equals(base, argument.base) && bias == argument.bias;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(base, bias);
         }
     }
 }

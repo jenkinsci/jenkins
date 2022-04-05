@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import antlr.ANTLRException;
@@ -36,6 +37,7 @@ import hudson.model.Messages;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -44,7 +46,7 @@ import jenkins.model.labels.LabelValidator;
 
 /**
  * Boolean expression of labels.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since  1.372
  */
@@ -62,7 +64,7 @@ public abstract class LabelExpression extends Label {
         public final Label base;
 
         public Not(Label base) {
-            super('!'+paren(LabelOperatorPrecedence.NOT,base));
+            super('!' + paren(LabelOperatorPrecedence.NOT, base));
             this.base = base;
         }
 
@@ -89,7 +91,7 @@ public abstract class LabelExpression extends Label {
         public final Label base;
 
         public Paren(Label base) {
-            super('('+base.getExpression()+')');
+            super('(' + base.getExpression() + ')');
             this.base = base;
         }
 
@@ -113,22 +115,22 @@ public abstract class LabelExpression extends Label {
      * Puts the label name into a parenthesis if the given operator will have a higher precedence.
      */
     static String paren(LabelOperatorPrecedence op, Label l) {
-        if (op.compareTo(l.precedence())<0)
-            return '('+l.getExpression()+')';
+        if (op.compareTo(l.precedence()) < 0)
+            return '(' + l.getExpression() + ')';
         return l.getExpression();
     }
 
-    public static abstract class Binary extends LabelExpression {
-        public final Label lhs,rhs;
+    public abstract static class Binary extends LabelExpression {
+        public final Label lhs, rhs;
 
-        public Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
+        protected Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
             super(combine(lhs, rhs, op));
             this.lhs = lhs;
             this.rhs = rhs;
         }
 
         private static String combine(Label lhs, Label rhs, LabelOperatorPrecedence op) {
-            return paren(op,lhs)+op.str+paren(op,rhs);
+            return paren(op, lhs) + op.str + paren(op, rhs);
         }
 
         /**
@@ -137,7 +139,7 @@ public abstract class LabelExpression extends Label {
          */
         @Override
         public boolean matches(VariableResolver<Boolean> resolver) {
-            return op(lhs.matches(resolver),rhs.matches(resolver));
+            return op(lhs.matches(resolver), rhs.matches(resolver));
         }
 
         protected abstract boolean op(boolean a, boolean b);
@@ -285,8 +287,15 @@ public abstract class LabelExpression extends Label {
         }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
-        if (l.isEmpty()) {
-            for (LabelAtom a : l.listAtoms()) {
+        if (l == null || l.isEmpty()) {
+            final LabelAtom masterLabel = LabelAtom.get("master");
+            final Set<LabelAtom> labelAtoms = (l == null ? Collections.emptySet() : l.listAtoms());
+            if (!masterLabel.equals(Jenkins.get().getSelfLabel()) && labelAtoms.contains(masterLabel) && masterLabel.isEmpty()) {
+                // Show a warning if this expression's lack of nodes and clouds is likely caused by the built-in node name migration.
+                // This can probably be done better (e.g. also when `!l.isEmpty()`), but it's a start.
+                return FormValidation.warningWithMarkup(Messages.LabelExpression_ObsoleteMasterLabel());
+            }
+            for (LabelAtom a : labelAtoms) {
                 if (a.isEmpty()) {
                     LabelAtom nearest = LabelAtom.findNearest(a.getName());
                     return FormValidation.warning(Messages.LabelExpression_NoMatch_DidYouMean(a.getName(), nearest.getDisplayName()));

@@ -1,21 +1,21 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
 public class ItemsTest {
 
-    private static ItemGroup root;
-    private static ItemGroup foo;
-    private static ItemGroup foo_bar;
+    private static ItemGroup<?> root;
+    private static ItemGroup<?> foo;
+    private static ItemGroup<?> foo_bar;
 
     @BeforeClass
     public static void itemGroups() {
@@ -27,7 +27,6 @@ public class ItemsTest {
 
         foo_bar = mock(ItemGroup.class);
         when(foo_bar.getFullName()).thenReturn("foo/bar");
-
     }
 
     @Test
@@ -42,41 +41,29 @@ public class ItemsTest {
         assertEquals("foo/bar/baz/qux", Items.getCanonicalName(foo_bar, "baz/qux"));
         assertEquals("foo/baz/qux", Items.getCanonicalName(foo_bar, "../baz/qux"));
 
-        try {
-            Items.getCanonicalName(root, "..");
-            fail();
-        } catch (IllegalArgumentException ex) {
-            assertEquals("Illegal relative path '..' within context ''", ex.getMessage());
-        }
+        final IllegalArgumentException ex0 = assertThrows(IllegalArgumentException.class, () -> Items.getCanonicalName(root, ".."));
+        assertEquals("Illegal relative path '..' within context ''", ex0.getMessage());
 
-        try {
-            Items.getCanonicalName(foo, "../..");
-            fail();
-        } catch (IllegalArgumentException ex) {
-            assertEquals("Illegal relative path '../..' within context 'foo'", ex.getMessage());
-        }
+        final IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> Items.getCanonicalName(foo, "../.."));
+        assertEquals("Illegal relative path '../..' within context 'foo'", ex1.getMessage());
 
-        try {
-            Items.getCanonicalName(root, "foo/../..");
-            fail();
-        } catch (IllegalArgumentException ex) {
-            assertEquals("Illegal relative path 'foo/../..' within context ''", ex.getMessage());
-        }
+        final IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> Items.getCanonicalName(root, "foo/../.."));
+        assertEquals("Illegal relative path 'foo/../..' within context ''", ex2.getMessage());
     }
 
     @Test
     public void computeRelativeNamesAfterRenaming() {
-        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root ));
-        assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar ));
-        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo ));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root));
+        assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo));
 
-        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", root ));
-        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", foo_bar ));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", root));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", foo_bar));
 
-        assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo ));
-        assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar ));
+        assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo));
+        assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar));
 
-        assertEquals("foo-renamed,foo_bar", Items.computeRelativeNamesAfterRenaming("foo", "foo-renamed", "foo,foo_bar", root ));
+        assertEquals("foo-renamed,foo_bar", Items.computeRelativeNamesAfterRenaming("foo", "foo-renamed", "foo,foo_bar", root));
 
         // Handle moves too:
         assertEquals("../nue/dir/j", Items.computeRelativeNamesAfterRenaming("dir", "nue/dir", "../dir/j", foo));

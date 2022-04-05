@@ -21,23 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
-import hudson.EnvVars.OverrideOrderCalculator;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.EnvVars.OverrideOrderCalculator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
-
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * @author Kohsuke Kawaguchi
@@ -46,9 +45,9 @@ public class EnvVarsTest {
 
     @Test
     public void caseInsensitive() {
-        EnvVars ev = new EnvVars(Collections.singletonMap("Path","A:B:C"));
+        EnvVars ev = new EnvVars(Collections.singletonMap("Path", "A:B:C"));
         assertTrue(ev.containsKey("PATH"));
-        assertEquals("A:B:C",ev.get("PATH"));
+        assertEquals("A:B:C", ev.get("PATH"));
     }
 
     @Test
@@ -141,7 +140,7 @@ public class EnvVarsTest {
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
         assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
-        assertEquals(Sets.newHashSet("E", "D"), new HashSet<>(order.subList(3, order.size())));
+        assertThat(new HashSet<>(order.subList(3, order.size())), containsInAnyOrder("E", "D"));
     }
 
     @Test

@@ -19,11 +19,9 @@ var radioBlockSupport = {
         }
         while((n = n.next()) != blockEnd) {
             if (show) {
-                n.style.visibility = "visible";
-                n.style.position = "static";
+                n.classList.remove("form-container--hidden")
             } else {
-                n.style.visibility = "hidden";
-                n.style.position = "absolute";
+                n.classList.add("form-container--hidden")
             }
         }
         layoutUpdateCallback.call();
@@ -33,6 +31,7 @@ var radioBlockSupport = {
 // this needs to happen before TR.row-set-end rule kicks in.
 Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
         r.id = "radio-block-"+(iota++);
+        r.nextSibling.setAttribute("for", r.id);
 
         // when one radio button is clicked, we need to update foldable block for
         // other radio buttons with the same name. To do this, group all the

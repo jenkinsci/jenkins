@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import hudson.Extension;
@@ -73,8 +74,8 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
     }
 
     public static <T> String get(Message<T> text, T context, String defaultValue) {
-        String s = get(text,context);
-        return s!=null ? s : defaultValue;
+        String s = get(text, context);
+        return s != null ? s : defaultValue;
     }
 
     /**
@@ -84,7 +85,7 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
     public static <T> String get(Message<T> text, T context) {
         for (AlternativeUiTextProvider p : all()) {
             String s = p.getText(text, context);
-            if (s!=null)
+            if (s != null)
                 return s;
         }
         return null;
@@ -102,9 +103,9 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
         /**
          * Assists pattern matching in the {@link AlternativeUiTextProvider} implementation.
          */
-        @SuppressWarnings({"unchecked"})
+        @SuppressWarnings("unchecked")
         public T cast(Object context) {
-            return (T)context;
+            return (T) context;
         }
     }
 }
