@@ -663,7 +663,7 @@ public class SlaveComputer extends Computer {
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
             if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
                 taskListener.fatalError(
-                        "Rejecting connection because the Remoting version is older than the minimum required version (%s).%n",
+                        "Rejecting connection because the Remoting version is older than the minimum required version (%s). To allow the connection anyway, set the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions system property to true.%n",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
                 return;
