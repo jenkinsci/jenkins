@@ -86,6 +86,7 @@ public class PluginManagerTest {
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
         assertThat(ex.getCause().getMessage(), containsString("DOCTYPE"));
+        assertThat(ex.getCause().getMessage(), containsString("http://apache.org/xml/features/disallow-doctype-decl"));
     }
 
     @Test
