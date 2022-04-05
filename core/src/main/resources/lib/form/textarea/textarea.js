@@ -57,6 +57,7 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
                 text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
             }
             var render = function(txt) {
+                $(showPreview).hide();
                 $(hidePreview).show();
                 $(previewDiv).show();
                 previewDiv.innerHTML = txt;
@@ -78,6 +79,7 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
         }
 
         hidePreview.onclick = function() {
+            $(showPreview).show();
             $(hidePreview).hide();
             $(previewDiv).hide();
         };
