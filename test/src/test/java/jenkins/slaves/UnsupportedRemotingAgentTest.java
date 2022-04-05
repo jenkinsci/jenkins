@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 
@@ -37,6 +38,7 @@ public class UnsupportedRemotingAgentTest {
         FileUtils.copyURLToFile(UnsupportedRemotingAgentTest.class.getResource("/old-remoting/remoting-unsupported.jar"), agentJar);
     }
 
+    @Issue("JENKINS-50211")
     @Test
     public void shouldNotBeAbleToConnectAgentWithUnsupportedVersion() throws Exception {
         Slave agent = j.createSlave();

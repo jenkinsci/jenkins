@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.jvnet.hudson.test.FlagRule;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 
@@ -45,6 +46,7 @@ public class UnsupportedRemotingAgentEscapeHatchTest {
         FileUtils.copyURLToFile(UnsupportedRemotingAgentEscapeHatchTest.class.getResource("/old-remoting/remoting-unsupported.jar"), agentJar);
     }
 
+    @Issue("JENKINS-50211")
     @Test
     public void shouldBeAbleToConnectAgentWithUnsupportedVersionWithEscapeHatch() throws Exception {
         Slave agent = j.createOnlineSlave();
