@@ -21,14 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
+
+import hudson.model.User;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class ApiTokenTestHelper {
     /**
-     * Reconfigure the instance to use legacy behavior
-     * When the jenkins-test-harness will support this, we will be able to remove this method.
+     * @deprecated No longer needed just to use {@link JenkinsRule.WebClient#withBasicApiToken(User)}.
      */
-    public static void enableLegacyBehavior(){
+    @Deprecated
+    public static void enableLegacyBehavior() {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setTokenGenerationOnCreationEnabled(true);
         config.setCreationOfLegacyTokenEnabled(true);

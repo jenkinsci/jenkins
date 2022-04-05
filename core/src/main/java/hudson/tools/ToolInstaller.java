@@ -28,14 +28,12 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-
 import java.io.File;
 import java.io.IOException;
-
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -130,6 +128,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
     }
 
+    @Override
     public ToolInstallerDescriptor<?> getDescriptor() {
         return (ToolInstallerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -170,7 +169,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
          * @param name the name of the release
          * @param url the URL of thr release
          */
-        public ToolInstallerEntry (String id, String name, String url) {
+        public ToolInstallerEntry(String id, String name, String url) {
             this.id = id;
             this.name = name;
             this.url = url;

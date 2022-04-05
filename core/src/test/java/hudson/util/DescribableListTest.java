@@ -24,18 +24,19 @@
 
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 
 public class DescribableListTest {
 
     @Issue("JENKINS-49054")
     @Test
-    public void exceptionDuringUnmarshalling() throws Exception {
+    public void exceptionDuringUnmarshalling() {
         Data data = new Data();
         data.list.add(new Datum(1));
         data.list.add(new Datum(2));
@@ -49,7 +50,7 @@ public class DescribableListTest {
 
     private static final class Data {
 
-        final DescribableList<Datum,Descriptor<Datum>> list = new DescribableList<>();
+        final DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>();
 
         @Override
         public String toString() {

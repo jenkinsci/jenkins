@@ -1,17 +1,16 @@
 package jenkins;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -23,11 +22,9 @@ public class RemotingJarSignatureTest {
     @Test
     public void testSignature() throws Exception {
         File jar = Which.jarFile(Channel.class);
-//        File jar = new File("/home/kohsuke/.m2/repository/org/jenkins-ci/main/remoting/1.421/remoting-1.421.jar");
-//        File jar = new File("/home/kohsuke/.m2/repository/org/jenkins-ci/main/remoting/2.0/remoting-2.0.jar");
-        System.out.println("Verifying "+jar);
+        System.out.println("Verifying " + jar);
 
-        JarFile myJar = new JarFile(jar,true);
+        JarFile myJar = new JarFile(jar, true);
 
         Enumeration<JarEntry> entries = myJar.entries();
         while (entries.hasMoreElements()) {
@@ -42,10 +39,8 @@ public class RemotingJarSignatureTest {
             if (name.startsWith("META-INF/") && name.endsWith(".DSA")) continue;
 
             // make sure bits are signed
-            IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
-            if (entry.getCodeSigners()==null) {
-                fail("No signature for " + name);
-            }
+            IOUtils.copy(myJar.getInputStream(entry), NullOutputStream.NULL_OUTPUT_STREAM);
+            assertNotNull("No signature for " + name, entry.getCodeSigners());
         }
     }
 }

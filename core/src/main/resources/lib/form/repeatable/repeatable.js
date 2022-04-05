@@ -1,5 +1,3 @@
-// @include lib.form.dragdrop.dragdrop
-
 var repeatableSupport = {
     // set by the inherited instance to the insertion point DIV
     insertionPoint: null,
@@ -33,7 +31,8 @@ var repeatableSupport = {
             this.enableTopButton = false;
         }
         this.update();
-        this.withDragDrop = initContainerDD(container);
+        // Initialize drag & drop for this component
+        this.withDragDrop = registerSortableDragDrop(container);
     },
 
     // insert one more block at the insertion position
@@ -57,7 +56,8 @@ var repeatableSupport = {
             });
             this.container.insertBefore(nc, children[0]);
         }
-        if (this.withDragDrop) prepareDD(nc);
+        // Initialize drag & drop for this element
+        if (this.withDragDrop) registerSortableDragDrop(nc);
 
         new YAHOO.util.Anim(nc, {
             opacity: { to:1 }
@@ -121,8 +121,10 @@ var repeatableSupport = {
         a.onComplete.subscribe(function() {
             var p = n.parentNode;
             p.removeChild(n);
-            if (p.tag)
+            if (p.tag) {
                 p.tag.update();
+            }
+            layoutUpdateCallback.call();
         });
         a.animate();
     },
@@ -145,6 +147,7 @@ var repeatableSupport = {
                 updateOptionalBlock(input, false);
             }
         }
+        layoutUpdateCallback.call();
     }
 };
 
@@ -155,7 +158,7 @@ Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
-        var ip = $(e.lastChild);
+        var ip = $(e.lastElementChild);
         while (!ip.hasClassName("repeatable-insertion-point"))
             ip = ip.previous();
         // set up the logic
@@ -170,22 +173,34 @@ Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
         e = null; // avoid memory leak
     });
 
-Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
-        var b = makeButton(e,function(e) {
-            repeatableSupport.onDelete(e.target);
-        });
-        var be = $(b.get("element"));
-        be.on("mouseover",function() {
-            $(this).up(".repeated-chunk").addClassName("hover");
-        });
-        be.on("mouseout",function() {
-            $(this).up(".repeated-chunk").removeClassName("hover");
-        });
+/**
+ * Converts markup for plugins that aren't using the repeatableDeleteButton tag
+ */
+Behaviour.specify('input.repeatable-delete', 'repeatable-button-fallbacks', 0, function (input) {
+  var button = document.createElement("button");
+  for (var index = input.attributes.length - 1; index >= 0; --index) {
+    button.attributes.setNamedItem(input.attributes[index].cloneNode());
+  }
+  if (input.value) {
+    button.setAttribute("tooltip", input.value);
+    button.removeAttribute("value");
+  }
 
-        e = be = null; // avoid memory leak
+  button.classList.add('danger');
+
+  button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>'
+  input.parentNode.replaceChild(button, input);
+  console.warn('Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin', button)
+});
+
+
+Behaviour.specify("BUTTON.repeatable-delete, INPUT.repeatable-delete", 'repeatable', 1, function(e) {
+        e.addEventListener("click", function() {
+            repeatableSupport.onDelete(e);
+        })
     });
 
-    // radio buttons in repeatable content
+// radio buttons in repeatable content
 // Needs to run before the radioBlock behavior so that names are already unique.
 Behaviour.specify("DIV.repeated-chunk", 'repeatable', -200, function(d) {
         var inputs = d.getElementsByTagName('INPUT');

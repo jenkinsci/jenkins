@@ -68,8 +68,7 @@
             { "name": "gitlab-plugin" },
             { "name": "p4" },
             { "name": "repo" },
-            { "name": "subversion" },
-            { "name": "tfs" }
+            { "name": "subversion" }
         ]
     },
     {
@@ -97,7 +96,6 @@
             { "name": "email-ext", "suggested": true },
             { "name": "emailext-template" },
             { "name": "mailer", "suggested": true },
-            { "name": "publish-over-ssh" },
             { "name": "ssh" }
         ]
     },

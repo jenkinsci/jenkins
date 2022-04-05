@@ -6,12 +6,12 @@
 </p>
 <p>
     If the resource root URL is defined, Jenkins will instead redirect requests for user-created resource files to URLs starting with the URL configured here.
-    These URLs will not set the CSP header, allowing Javascript and similar features to work.
+    These URLs will not set the CSP header, allowing JavaScript and similar features to work.
     For this option to work as expected, the following constraints and considerations apply:
 </p>
 <ul>
-    <li>The resource root URL must be a valid alternative choice for the Jenkins root URL for requests to be processed correctly.</li>
-    <li>The Jenkins root URL must be set and it must be different from this resource root URL (in fact, a different host name is required).</li>
+    <li>The resource root URL must be a valid alternative choice for the Jenkins URL for requests to be processed correctly.</li>
+    <li>The Jenkins URL must be set and it must be different from this resource root URL (in fact, a different host name is required).</li>
     <li>
         Once set, Jenkins will only serve resource URL requests via the resource root URL.
         All other requests will get <em>HTTP 404 Not Found</em> responses.

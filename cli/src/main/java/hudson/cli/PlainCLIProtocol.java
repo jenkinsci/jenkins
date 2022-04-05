@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -36,8 +37,6 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadPendingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.CountingInputStream;
@@ -74,6 +73,7 @@ class PlainCLIProtocol {
         STDERR(false);
         /** True if sent from the client to the server; false if sent from the server to the client. */
         final boolean clientSide;
+
         Op(boolean clientSide) {
             this.clientSide = clientSide;
         }
@@ -174,7 +174,7 @@ class PlainCLIProtocol {
         }
     }
 
-    static abstract class EitherSide implements Closeable {
+    abstract static class EitherSide implements Closeable {
 
         private final Output out;
 
@@ -234,10 +234,12 @@ class PlainCLIProtocol {
                 public void write(int b) throws IOException {
                     send(op, new byte[] {(byte) b});
                 }
+
                 @Override
                 public void write(@NonNull byte[] b, int off, int len) throws IOException {
                     send(op, b, off, len);
                 }
+
                 @Override
                 public void write(@NonNull byte[] b) throws IOException {
                     send(op, b);
@@ -252,7 +254,7 @@ class PlainCLIProtocol {
 
     }
 
-    static abstract class ServerSide extends EitherSide {
+    abstract static class ServerSide extends EitherSide {
 
         ServerSide(Output out) {
             super(out);
@@ -311,7 +313,7 @@ class PlainCLIProtocol {
 
     }
 
-    static abstract class ClientSide extends EitherSide {
+    abstract static class ClientSide extends EitherSide {
 
         ClientSide(Output out) {
             super(out);

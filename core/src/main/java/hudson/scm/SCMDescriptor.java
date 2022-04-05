@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,23 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
+
+import static java.util.logging.Level.WARNING;
 
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Job;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import static java.util.logging.Level.WARNING;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link Descriptor} for {@link SCM}.
@@ -52,9 +52,9 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * If this SCM has corresponding {@link RepositoryBrowser},
      * that type. Otherwise this SCM will not have any repository browser.
      */
-    public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
-    
-    private transient final AtomicInteger atomicGeneration = new AtomicInteger(1);
+    public final transient Class<? extends RepositoryBrowser> repositoryBrowser;
+
+    private final transient AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -80,7 +80,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public int getGeneration() {
         return atomicGeneration.get();
     }
@@ -90,25 +90,25 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public void incrementGeneration() {
         atomicGeneration.incrementAndGet();
     }
 
-    // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
+    // work around JENKINS-4514. The repositoryBrowser field was marked as non-transient until 1.325,
     // causing the field to be persisted and overwritten on the load method.
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;
         super.load();
-        if (repositoryBrowser!=rb) { // XStream may overwrite even the final field.
+        if (repositoryBrowser != rb) { // XStream may overwrite even the final field.
             try {
                 Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
                 f.setAccessible(true);
-                f.set(this,rb);
+                f.set(this, rb);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
+                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field", e);
             }
         }
     }
@@ -164,7 +164,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      *      can be empty but never null.
      */
     public List<Descriptor<RepositoryBrowser<?>>> getBrowserDescriptors() {
-        if(repositoryBrowser==null)     return Collections.emptyList();
+        if (repositoryBrowser == null)     return Collections.emptyList();
         return RepositoryBrowsers.filter(repositoryBrowser);
     }
 

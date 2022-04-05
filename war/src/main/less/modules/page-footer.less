@@ -20,7 +20,7 @@
   flex-wrap: wrap;
 }
 
-.page-footer__flex-row > * {
+.page-footer__flex-row > *:not(script) {
   padding: 0.5rem 1.25rem;
   display: flex;
   align-items: center;
@@ -43,5 +43,6 @@
 
 .page-footer a {
   .link-dark();
+
   font-weight: 600;
 }

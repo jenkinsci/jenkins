@@ -21,28 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util.xstream;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.basic.URLConverter;
 import hudson.remoting.URLDeserializationHelper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Wrap the URL handler during deserialization into a specific one that does not generate DNS query on the hostname
- * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}. 
+ * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}.
  * Required to protect against SECURITY-637
- * 
+ *
  * @since 2.121.3
  */
 @Restricted(NoExternalUse.class)
 public class SafeURLConverter extends URLConverter {
-    
+
     @Override
     public Object fromString(String str) {
         URL url = (URL) super.fromString(str);

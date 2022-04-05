@@ -6,28 +6,43 @@
 
 package hudson.security.csrf;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.User;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
-
-import java.net.HttpURLConnection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author dty
  */
 public class DefaultCrumbIssuerTest {
-    
+
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Before public void setIssuer() {
@@ -38,7 +53,7 @@ public class DefaultCrumbIssuerTest {
         "10.2.3.1",
         "10.2.3.1,10.20.30.40",
         "10.2.3.1,10.20.30.41",
-        "10.2.3.3,10.20.30.40,10.20.30.41"
+        "10.2.3.3,10.20.30.40,10.20.30.41",
     };
     private static final String HEADER_NAME = "X-Forwarded-For";
 
@@ -59,7 +74,7 @@ public class DefaultCrumbIssuerTest {
         HtmlPage p = wc.goTo("configure");
 
         wc.removeRequestHeader(HEADER_NAME);
-        
+
         wc.setThrowExceptionOnFailingStatusCode(false);
         // The crumb should no longer match if we remove the proxy info
         Page page = r.submit(p.getFormByName("config"));
@@ -129,7 +144,7 @@ public class DefaultCrumbIssuerTest {
         WebClient wc = r.createWebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
         JSONObject jsonObject = JSONObject.fromObject(json);
-        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(),jsonObject.getString("crumbRequestField"));
+        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(), jsonObject.getString("crumbRequestField"));
         assertTrue(jsonObject.getString("crumb").matches("[0-9a-f]+"));
         wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
     }
@@ -141,7 +156,7 @@ public class DefaultCrumbIssuerTest {
                 .withThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo("quietDown");
-        assertEquals("expect HTTP 405 method not allowed", 
+        assertEquals("expect HTTP 405 method not allowed",
                 HttpURLConnection.HTTP_BAD_METHOD,
                 page.getWebResponse().getStatusCode());
 
@@ -151,4 +166,183 @@ public class DefaultCrumbIssuerTest {
         assertTrue("quieting down", r.jenkins.isQuietingDown());
     }
 
+    @Test
+    @Issue("SECURITY-626")
+    public void crumbOnlyValidForOneSession() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);
+        r.jenkins.setCrumbIssuer(issuer);
+
+        User.getById("foo", true);
+
+        DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
+        compareDifferentSessions_tokenAreEqual(true);
+
+        DefaultCrumbIssuer.EXCLUDE_SESSION_ID = false;
+        compareDifferentSessions_tokenAreEqual(false);
+    }
+
+    private void compareDifferentSessions_tokenAreEqual(boolean areEqual) throws Exception {
+        WebClient wc = r.createWebClient();
+        wc.login("foo");
+
+        HtmlPage p = wc.goTo("configure");
+        String crumb1 = p.getElementByName("Jenkins-Crumb").getAttribute("value");
+        r.submit(p.getFormByName("config"));
+
+        wc.goTo("logout");
+        wc.login("foo");
+
+        p = wc.goTo("configure");
+        String crumb2 = p.getElementByName("Jenkins-Crumb").getAttribute("value");
+        r.submit(p.getFormByName("config"));
+
+        assertEquals(crumb1.equals(crumb2), areEqual);
+
+        if (areEqual) {
+            r.submit(p.getFormByName("config"));
+        } else {
+            replaceAllCrumbInPageBy(p, crumb1);
+            try {
+                // submit the form with previous session crumb
+                r.submit(p.getFormByName("config"));
+                fail();
+            } catch (FailingHttpStatusCodeException e) {
+                assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getStatusCode());
+                assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
+            }
+        }
+    }
+
+    private void replaceAllCrumbInPageBy(HtmlPage page, String newCrumb) {
+        for (DomElement el : page.getElementsByName("Jenkins-Crumb")) {
+            el.setAttribute("value", newCrumb);
+        }
+    }
+
+
+    @Test
+    @Issue("SECURITY-1491")
+    public void sessionIncludedEvenForAnonymousCall() throws Exception {
+        boolean previousValue = DefaultCrumbIssuer.EXCLUDE_SESSION_ID;
+
+        try {
+            r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+
+            // let anonymous user have read access
+            MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+            authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
+            r.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
+            DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
+            r.jenkins.setCrumbIssuer(issuer);
+
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
+            sameCrumbUsedOnDifferentAnonymousRequest_tokenAreEqual(true, "job_noSession");
+
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = false;
+            sameCrumbUsedOnDifferentAnonymousRequest_tokenAreEqual(false, "job_session");
+        } finally {
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = previousValue;
+        }
+    }
+
+    private void sameCrumbUsedOnDifferentAnonymousRequest_tokenAreEqual(boolean areEqual, String namePrefix) throws Exception {
+        String responseForCrumb = r.createWebClient().goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain")
+                .getWebResponse().getContentAsString();
+        // responseForCrumb = Jenkins-Crumb=xxxx
+        String crumb1 = responseForCrumb.substring(CrumbIssuer.DEFAULT_CRUMB_NAME.length() + "=".length());
+
+        String jobName1 = namePrefix + "-test1";
+        String jobName2 = namePrefix + "-test2";
+
+        WebRequest request1 = createRequestForJobCreation(jobName1);
+        try {
+            r.createWebClient().getPage(request1);
+            fail();
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getStatusCode());
+            assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
+        }
+        // cannot create new job due to missing crumb
+        assertNull(r.jenkins.getItem(jobName1));
+
+        WebRequest request2 = createRequestForJobCreation(jobName2);
+        request2.setAdditionalHeader(CrumbIssuer.DEFAULT_CRUMB_NAME, crumb1);
+        if (areEqual) {
+            r.createWebClient().getPage(request2);
+
+            assertNotNull(r.jenkins.getItem(jobName2));
+        } else {
+            try {
+                r.createWebClient().getPage(request2);
+                fail("Should have failed due to invalid crumb");
+            } catch (FailingHttpStatusCodeException e) {
+                assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+                // cannot create new job due to invalid crumb
+                assertNull(r.jenkins.getItem(jobName2));
+            }
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-1491")
+    public void twoRequestsWithoutSessionGetDifferentCrumbs() throws Exception {
+        String responseForCrumb = r.createWebClient().goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain")
+                .getWebResponse().getContentAsString();
+        // responseForCrumb = Jenkins-Crumb=xxxx
+        String crumb1 = responseForCrumb.substring(CrumbIssuer.DEFAULT_CRUMB_NAME.length() + "=".length());
+
+        responseForCrumb = r.createWebClient().goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain")
+                .getWebResponse().getContentAsString();
+        // responseForCrumb = Jenkins-Crumb=xxxx
+        String crumb2 = responseForCrumb.substring(CrumbIssuer.DEFAULT_CRUMB_NAME.length() + "=".length());
+
+        Assert.assertNotEquals("should be different crumbs", crumb1, crumb2);
+    }
+
+    private WebRequest createRequestForJobCreation(String jobName) throws Exception {
+        WebRequest req = new WebRequest(new URL(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        req.setRequestBody("<project/>");
+        return req;
+    }
+
+    @Test
+    public void anonCanStillPostRequestUsingBrowsers() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
+        r.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
+        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
+        r.jenkins.setCrumbIssuer(issuer);
+
+        HtmlPage p = r.createWebClient().goTo("configure");
+        r.submit(p.getFormByName("config"));
+    }
+
+    @Test
+    @Issue("SECURITY-1704")
+    public void custom_notExposedToIFrame() throws Exception {
+        ensureXmlIsNotExposedToIFrame("crumbIssuer/");
+        ensureJsonIsNotExposedToIFrame("crumbIssuer/");
+        ensurePythonIsNotExposedToIFrame("crumbIssuer/");
+    }
+
+    private void ensureXmlIsNotExposedToIFrame(String itemUrl) throws Exception {
+        WebResponse response = r.createWebClient().goTo(itemUrl + "api/xml", "application/xml").getWebResponse();
+        assertThat(response.getResponseHeaderValue("X-Frame-Options"), equalTo("deny"));
+    }
+
+    private void ensureJsonIsNotExposedToIFrame(String itemUrl) throws Exception {
+        WebResponse response = r.createWebClient().goTo(itemUrl + "api/json", "application/json").getWebResponse();
+        assertThat(response.getResponseHeaderValue("X-Frame-Options"), equalTo("deny"));
+    }
+
+    private void ensurePythonIsNotExposedToIFrame(String itemUrl) throws Exception {
+        WebResponse response = r.createWebClient().goTo(itemUrl + "api/python", "text/x-python").getWebResponse();
+        assertThat(response.getResponseHeaderValue("X-Frame-Options"), equalTo("deny"));
+    }
 }

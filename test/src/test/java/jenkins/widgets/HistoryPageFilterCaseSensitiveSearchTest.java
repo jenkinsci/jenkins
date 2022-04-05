@@ -1,21 +1,7 @@
 package jenkins.widgets;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableList;
 import hudson.model.Job;
 import hudson.model.ModelObject;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
@@ -23,6 +9,16 @@ import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**
  * TODO: Code partially duplicated with HistoryPageFilterTest in core
@@ -65,17 +61,17 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         UsernamePasswordAuthenticationToken testUserAuthentication = new UsernamePasswordAuthenticationToken(TEST_USER_NAME, "any");
-        try (ACLContext ignored = ACL.as(testUserAuthentication)) {
-            User.get(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
+        try (ACLContext ignored = ACL.as2(testUserAuthentication)) {
+            User.getOrCreateByIdOrFullName(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
 
             //test logic
-            final List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+            final Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
             assertNoMatchingBuildsForGivenSearchStringAndRunItems(searchString, runs, assertionOnSearchResults);
         }
 
     }
 
-    private void assertNoMatchingBuildsForGivenSearchStringAndRunItems(String searchString, List<ModelObject> runs,
+    private void assertNoMatchingBuildsForGivenSearchStringAndRunItems(String searchString, Iterable<ModelObject> runs,
                                                                        SearchResultAssertFunction assertionOnSearchResults) {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = new HistoryPageFilter<>(5);
@@ -83,7 +79,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         historyPageFilter.setSearchString(searchString);
 
         //when
-        historyPageFilter.add(runs, Collections.<Queue.Item>emptyList());
+        historyPageFilter.add(runs, Collections.emptyList());
 
         //then
         assertionOnSearchResults.doAssertion(historyPageFilter);
@@ -93,12 +89,12 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
     private static class MockRun extends Run {
         private final long queueId;
 
-        public MockRun(long queueId) throws IOException {
+        MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
         }
 
-        public MockRun(long queueId, Result result) throws IOException {
+        MockRun(long queueId, Result result) throws IOException {
             this(queueId);
             this.result = result;
         }

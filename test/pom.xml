@@ -37,9 +37,13 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
-    <jacocoSurefireArgs /><!-- empty by default -->
+    <!-- empty by default -->
+    <jacocoSurefireArgs />
+    <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
+    <jenkins.insaneHook />
   </properties>
 
   <dependencyManagement>
@@ -51,20 +55,37 @@ THE SOFTWARE.
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.13</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps via mailer and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.6</version>
+      </dependency>
+      <dependency>
+        <!-- requireUpperBoundDeps via matrix-project and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>script-security</artifactId>
+        <version>1145.vb_cf6cf6ed960</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- For maven-hpi-plugin -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-war</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
-      <type>executable-war</type>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.63</version>
+      <version>1731.v383b_5d6c3393</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -76,163 +97,98 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness-tools</artifactId>
-      <version>2.0</version>
+      <version>2.2</version>
       <scope>test</scope>
-    </dependency>
-     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>6.3</version>
-      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-test-harness</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>2.14</version>
-      <exclusions>
-        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.inject</groupId>
-          <artifactId>guice</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.ant</groupId>
-          <artifactId>ant</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!-- maven-plugin 2.14 (above) pulls in mailer 1.7, but then HelpCommandTest fails due to moved localized resources -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mailer</artifactId>
-      <version>1.23</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-auth</artifactId>
-      <version>${matrix-auth.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>antisamy-markup-formatter</artifactId>
-      <version>1.0</version>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <type>executable-war</type>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-project</artifactId>
-      <version>${matrix-project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>junit</artifactId>
-      <version>1.29</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-mail-api</artifactId>
+      <version>1.6.2-5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <version>1.20</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.2.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- requireUpperBounds via matrix-project and junit -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>script-security</artifactId>
-      <version>1.75</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.mock-javamail</groupId>
-      <artifactId>mock-javamail</artifactId>
-      <version>1.7</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.mail</groupId>
-          <artifactId>mail</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>2.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.714.v79e858ef76a_2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.58</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>408.vd726a_1130320</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>758.v7a_ea_491852f3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>1.24</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>netx</artifactId>
       <version>0.5-hudson-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <version>2.4</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.reflections</groupId>
-      <artifactId>reflections</artifactId>
-      <version>0.9.9</version>
-      <exclusions>
-        <exclusion> <!-- TODO requests 15; apparently works well enough with the 11 we bundle -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion> <!-- pick up from Stapler -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.geb</groupId>
-      <artifactId>geb-implicit-assertions</artifactId>
-      <version>0.7.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.javassist</groupId>
-      <artifactId>javassist</artifactId>
-      <version>3.19.0-GA</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.objenesis</groupId>
-      <artifactId>objenesis</artifactId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -242,7 +198,17 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>test-runtime</id>
+            <goals>
+              <goal>test-runtime</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
@@ -252,14 +218,15 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <id>old-remoting-for-test</id>
-            <phase>generate-test-resources</phase>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
               <goal>copy</goal>
             </goals>
+            <phase>generate-test-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -280,43 +247,44 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <argLine>${jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
-              <!-- use AntClassLoader that supports predictable file handle release -->
-              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
-              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
-              <buildDirectory>${project.build.directory}</buildDirectory>
+            <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+            <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
         </configuration>
+        <executions>
+          <!-- Unbind the default execution so that it does not run before test-runtime. -->
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+          <!-- Bind a new execution which, by virtue of being declared after test-runtime, will also run after it. -->
+          <execution>
+            <id>functional-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin> <!-- TODO pending JENKINS-45271 fix, would be best to finish moving MavenModuleSet-specific tests to maven-plugin and delete the test dep here -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <configuration>
-          <rules>
-            <requireUpperBoundDeps>
-              <excludes combine.children="append">
-                <exclude>org.apache.maven:maven-embedder</exclude>
-                <exclude>org.codehaus.plexus:plexus-classworlds</exclude>
-                <exclude>org.apache.maven:maven-core</exclude>
-                <exclude>org.apache.maven:maven-aether-provider</exclude>
-                <exclude>org.codehaus.plexus:plexus-utils</exclude>
-              </excludes>
-            </requireUpperBoundDeps>
-          </rules>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <fork>true</fork>
         </configuration>
@@ -339,6 +307,7 @@ THE SOFTWARE.
         <plugins>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
               <groups>org.jvnet.hudson.test.SmokeTest</groups>
             </configuration>
@@ -366,7 +335,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.3.201306030806</version>
+            <version>0.8.7</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which
@@ -389,10 +358,10 @@ THE SOFTWARE.
               -->
               <execution>
                 <id>post-unit-test</id>
-                <phase>test</phase>
                 <goals>
                   <goal>report</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
                   <!-- Sets the path to the file which contains the execution data. -->
                   <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
@@ -404,6 +373,31 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>jdk-8-and-below</id>
+      <activation>
+        <jdk>(,1.8]</jdk>
+      </activation>
+      <properties>
+        <!--
+          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+        -->
+        <jenkins.addOpens />
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk-9-and-above</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <!--
+          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+          Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
+        -->
+        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
+      </properties>
     </profile>
   </profiles>
 </project>

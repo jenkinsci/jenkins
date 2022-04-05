@@ -21,17 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.util.Secret;
+import java.util.Objects;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
@@ -47,13 +52,14 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     private Secret defaultValue;
 
     @Deprecated
-    public PasswordParameterDefinition(String name, String defaultValue, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull String defaultValue, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
+    // TODO consider switching @DataBoundConstructor to a PasswordParameterDefinition(String) overload
     @DataBoundConstructor
-    public PasswordParameterDefinition(String name, Secret defaultValueAsSecret, String description) {
+    public PasswordParameterDefinition(@NonNull String name, @CheckForNull Secret defaultValueAsSecret, @CheckForNull String description) {
         super(name, description);
         this.defaultValue = defaultValueAsSecret;
     }
@@ -88,6 +94,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         return new PasswordParameterValue(getName(), getDefaultValue(), getDescription());
     }
 
+    @NonNull
     public String getDefaultValue() {
         return Secret.toString(defaultValue);
     }
@@ -102,8 +109,35 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
-    @Extension @Symbol({"password"})
-    public final static class ParameterDescriptorImpl extends ParameterDescriptor {
+    @Override
+    public int hashCode() {
+        if (PasswordParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription(), defaultValue);
+    }
+
+    @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
+    public boolean equals(Object obj) {
+        if (PasswordParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PasswordParameterDefinition other = (PasswordParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        return Objects.equals(defaultValue, other.defaultValue);
+    }
+
+    @Extension @Symbol("password")
+    public static final class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.PasswordParameterDefinition_DisplayName();

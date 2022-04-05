@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,19 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.ArrayUtils;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.ServletException;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Wraps commons file-upload and handles a "multipart/form-data" form submission
@@ -43,12 +43,12 @@ import java.util.HashMap;
  */
 public class MultipartFormDataParser implements AutoCloseable {
     private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-    private final Map<String,FileItem> byName = new HashMap<>();
+    private final Map<String, FileItem> byName = new HashMap<>();
 
     public MultipartFormDataParser(HttpServletRequest request) throws ServletException {
         try {
-            for( FileItem fi : upload.parseRequest(request))
-                byName.put(fi.getFieldName(),fi);
+            for (FileItem fi : upload.parseRequest(request))
+                byName.put(fi.getFieldName(), fi);
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
@@ -56,7 +56,7 @@ public class MultipartFormDataParser implements AutoCloseable {
 
     public String get(String key) {
         FileItem fi = byName.get(key);
-        if(fi==null)    return null;
+        if (fi == null)    return null;
         return fi.getString();
     }
 

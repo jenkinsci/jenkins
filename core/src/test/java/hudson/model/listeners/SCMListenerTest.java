@@ -24,6 +24,8 @@
 
 package hudson.model.listeners;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -32,7 +34,6 @@ import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
@@ -40,7 +41,7 @@ import org.mockito.Mockito;
 public class SCMListenerTest {
 
     @Issue("JENKINS-23522")
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings("rawtypes")
     @Test public void onChangeLogParsed() throws Exception {
         SCM scm = Mockito.mock(SCM.class);
         BuildListener bl = Mockito.mock(BuildListener.class);
@@ -68,25 +69,25 @@ public class SCMListenerTest {
         l.onChangeLogParsed(r, scm, tl, cls);
         assertEquals("cannot handle this", 0, l.cnt);
     }
-    
+
     private static class L extends SCMListener {
         int cnt;
     }
 
     private static class L1 extends L {
-        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(AbstractBuild<?, ?> build, BuildListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }
 
     private static class L2 extends L {
-        @Override public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(Run<?, ?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }
 
     private static class L3 extends L {
-        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(AbstractBuild<?, ?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
             cnt++;
             super.onChangeLogParsed(build, listener, changelog);
         }

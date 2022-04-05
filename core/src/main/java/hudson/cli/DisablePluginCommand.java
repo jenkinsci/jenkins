@@ -27,12 +27,11 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.lifecycle.RestartNotSupportedException;
+import java.io.PrintStream;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-
-import java.io.PrintStream;
-import java.util.List;
 
 /**
  * Disable one or more installed plugins.
@@ -83,7 +82,15 @@ public class DisablePluginCommand extends CLICommand {
         try {
             strategyToUse = PluginWrapper.PluginDisableStrategy.valueOf(strategy.toUpperCase());
         } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(hudson.cli.Messages.DisablePluginCommand_NoSuchStrategy(strategy, String.format("%s, %s, %s", PluginWrapper.PluginDisableStrategy.NONE, PluginWrapper.PluginDisableStrategy.MANDATORY, PluginWrapper.PluginDisableStrategy.ALL)));
+            throw new IllegalArgumentException(
+                    hudson.cli.Messages.DisablePluginCommand_NoSuchStrategy(
+                            strategy,
+                            String.format(
+                                    "%s, %s, %s",
+                                    PluginWrapper.PluginDisableStrategy.NONE,
+                                    PluginWrapper.PluginDisableStrategy.MANDATORY,
+                                    PluginWrapper.PluginDisableStrategy.ALL)),
+                    iae);
         }
 
         // disable...
@@ -214,13 +221,13 @@ public class DisablePluginCommand extends CLICommand {
      */
     private int getResultCode(PluginWrapper.PluginDisableResult result) {
         int returnCode = 0;
-        switch (result.getStatus()){
+        switch (result.getStatus()) {
             case NOT_DISABLED_DEPENDANTS:
                 returnCode = RETURN_CODE_NOT_DISABLED_DEPENDANTS;
                 break;
             case NO_SUCH_PLUGIN:
                 returnCode = RETURN_CODE_NO_SUCH_PLUGIN;
-                break; 
+                break;
             default:
                 for (PluginWrapper.PluginDisableResult oneDependentResult : result.getDependentsDisableStatus()) {
                     returnCode = getResultCode(oneDependentResult);

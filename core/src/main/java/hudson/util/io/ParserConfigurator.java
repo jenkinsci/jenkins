@@ -21,20 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
- 
+
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
-import jenkins.model.Jenkins;
-import jenkins.security.SlaveToMasterCallable;
-import org.dom4j.io.SAXReader;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.Jenkins;
+import jenkins.security.SlaveToMasterCallable;
+import org.dom4j.io.SAXReader;
 
 /**
  * Configures XML parsers to be used for various XML parsing activities inside Jenkins.
@@ -77,17 +77,19 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
         Collection<ParserConfigurator> all = Collections.emptyList();
 
-        if (Jenkins.getInstanceOrNull()==null) {
+        if (Jenkins.getInstanceOrNull() == null) {
             Channel ch = Channel.current();
-            if (ch!=null)
+            if (ch != null)
                 all = ch.call(new GetParserConfigurators());
         } else
             all = all();
         for (ParserConfigurator pc : all)
-            pc.configure(reader,context);
+            pc.configure(reader, context);
     }
+
     private static class GetParserConfigurators extends SlaveToMasterCallable<Collection<ParserConfigurator>, IOException> {
         private static final long serialVersionUID = -2178106894481500733L;
+
         @Override
         public Collection<ParserConfigurator> call() throws IOException {
             return new ArrayList<>(all());

@@ -21,24 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.security.Permission;
+import java.io.IOException;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.IOException;
 
 /**
  * Configures global SCM retry count default.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=395) @Symbol("scmRetryCount")
+@Extension(ordinal = 395) @Symbol("scmRetryCount")
 public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
     public int getScmCheckoutRetryCount() {
         return Jenkins.get().getScmCheckoutRetryCount();
@@ -51,7 +51,7 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
             Jenkins.get().setScmCheckoutRetryCount(json.getInt("scmCheckoutRetryCount"));
             return true;
         } catch (IOException e) {
-            throw new FormException(e,"quietPeriod");
+            throw new FormException(e, "quietPeriod");
         } catch (JSONException e) {
             throw new FormException(e.getMessage(), "quietPeriod");
         }

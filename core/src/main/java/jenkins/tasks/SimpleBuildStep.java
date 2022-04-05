@@ -24,6 +24,7 @@
 
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -46,10 +47,9 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -139,7 +139,7 @@ public interface SimpleBuildStep extends BuildStep {
      * @throws IllegalStateException if this step requires a workspace context
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
-     * @since TODO
+     * @since 2.258
      */
     default void perform(@NonNull Run<?, ?> run, @NonNull EnvVars env, @NonNull TaskListener listener) throws InterruptedException, IOException {
         // If this step requires a workspace, this is the wrong method to call.
@@ -157,7 +157,7 @@ public interface SimpleBuildStep extends BuildStep {
      * applies. Otherwise, {@link #perform(Run, EnvVars, TaskListener)} applies.
      *
      * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
-     * @since TODO
+     * @since 2.258
      */
     default boolean requiresWorkspace() {
         return true;
@@ -194,7 +194,7 @@ public interface SimpleBuildStep extends BuildStep {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Job j) {
-            List<Action> actions = new LinkedList<>();
+            List<Action> actions = new ArrayList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {
                 for (LastBuildAction a : r.getActions(LastBuildAction.class)) {

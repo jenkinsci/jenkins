@@ -1,23 +1,23 @@
 package hudson.model.queue;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
-import hudson.model.labels.LabelExpression;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 
 public class MaintainCanTakeStrengtheningTest {
     @Rule
@@ -29,7 +29,7 @@ public class MaintainCanTakeStrengtheningTest {
     private QueueTaskFuture scheduleBuild(String name, String label) throws Exception {
         FreeStyleProject project = r.createFreeStyleProject(name);
 
-        project.setAssignedLabel(LabelExpression.get(label));
+        project.setAssignedLabel(Label.get(label));
         return project.scheduleBuild2(0);
     }
 
@@ -37,11 +37,11 @@ public class MaintainCanTakeStrengtheningTest {
     @Test
     public void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
-        DumbSlave faultyAgent = r.createOnlineSlave(LabelExpression.get("faulty"));
+        DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
 
         // A good agent
-        r.createOnlineSlave(LabelExpression.get("good"));
+        r.createOnlineSlave(Label.get("good"));
 
         // Only the good ones will be run and the latest doesn't get hung because of the second
         QueueTaskFuture[] taskFuture = new QueueTaskFuture[3];
@@ -66,7 +66,7 @@ public class MaintainCanTakeStrengtheningTest {
      * A node property throwing an exception to cause the canTake method fails.
      */
     @TestExtension
-    public static class FaultyNodeProperty extends hudson.slaves.NodeProperty<Node> {
+    public static class FaultyNodeProperty extends NodeProperty<Node> {
         @Override
         public CauseOfBlockage canTake(Queue.BuildableItem item) {
             throw new ArrayIndexOutOfBoundsException();

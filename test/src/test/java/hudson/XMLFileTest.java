@@ -1,15 +1,16 @@
 package hudson;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class XMLFileTest {
 
@@ -20,7 +21,7 @@ public class XMLFileTest {
     @LocalData
     public void canStartWithXml_1_1_ConfigsTest() {
 
-        assertThat(j.jenkins.getLabelString(),is("LESS_TERMCAP_mb=\u001B[01;31m"));
+        assertThat(j.jenkins.getLabelString(), is("LESS_TERMCAP_mb=\u001B[01;31m"));
 
     }
 
@@ -39,9 +40,8 @@ public class XMLFileTest {
         File configFile = new File(j.jenkins.getRootDir(), "config.xml");
         assertThat(configFile.exists(), is(true));
 
-        try (BufferedReader config = new BufferedReader(new FileReader(configFile))) {
+        try (BufferedReader config = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
             assertThat(config.readLine(), is("<?xml version='1.1' encoding='UTF-8'?>"));
-            config.close();
         }
     }
 }

@@ -24,14 +24,18 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,13 +80,13 @@ public class CopyJobCommandTest {
             grant(Item.READ).onItems(d1, p, d2).to("bob", "charlie", "debbie").
             grant(Item.CREATE).onItems(d2).to("charlie", "debbie").
             grant(Item.EXTENDED_READ).onItems(p).to("debbie"));
-        copyJobCommand.setTransportAuth(User.get("alice").impersonate());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("alice").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
-        copyJobCommand.setTransportAuth(User.get("bob").impersonate());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("bob").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
-        copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("charlie").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
-        copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
+        copyJobCommand.setTransportAuth2(User.getOrCreateByIdOrFullName("debbie").impersonate2());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));
     }
@@ -97,10 +101,46 @@ public class CopyJobCommandTest {
 
         assertThat(result, succeededSilently());
 
-        FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
+        FreeStyleProject p2 = (FreeStyleProject) j.jenkins.getItem(copiedProjectName);
 
         assertNotNull(p2);
         assertTrue(p2.isBuildable());
     }
 
+    @Issue("SECURITY-2424")
+    @Test public void cannotCopyJobWithTrailingDot_regular() throws Exception {
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(0));
+        j.createFreeStyleProject("job1");
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+
+        CLICommandInvoker.Result result = command.invokeWithArgs("job1", "job1.");
+        assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
+        assertThat(result, failedWith(1));
+
+        assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+    }
+
+    @Issue("SECURITY-2424")
+    @Test public void cannotCopyJobWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(0));
+            j.createFreeStyleProject("job1");
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("job1", "job1.");
+            assertThat(result, succeededSilently());
+
+            assertThat(j.jenkins.getItems(), Matchers.hasSize(2));
+        }
+        finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
+        }
+    }
 }

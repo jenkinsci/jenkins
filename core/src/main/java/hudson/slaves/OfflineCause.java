@@ -24,20 +24,18 @@
 
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.User;
-
-import jenkins.model.Jenkins;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.export.Exported;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.Date;
+import jenkins.model.Jenkins;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a cause that puts a {@linkplain Computer#isOffline() computer offline}.
@@ -88,14 +86,14 @@ public abstract class OfflineCause {
             this.description = description;
         }
 
-        @Exported(name="description") @Override
+        @Exported(name = "description") @Override
         public String toString() {
             return description.toString();
         }
     }
 
     public static OfflineCause create(Localizable d) {
-        if (d==null)    return null;
+        if (d == null)    return null;
         return new SimpleOfflineCause(d);
     }
 
@@ -147,7 +145,7 @@ public abstract class OfflineCause {
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS.getName(), message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
             this.userId = userId;
         }
 
@@ -190,7 +188,7 @@ public abstract class OfflineCause {
      * @since 1.644
      */
     public static class IdleOfflineCause extends SimpleOfflineCause {
-        public IdleOfflineCause () {
+        public IdleOfflineCause() {
             super(hudson.slaves.Messages._RetentionStrategy_Demand_OfflineIdle());
         }
     }

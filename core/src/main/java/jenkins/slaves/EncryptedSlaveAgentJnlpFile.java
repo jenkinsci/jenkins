@@ -1,16 +1,18 @@
 package jenkins.slaves;
 
+import hudson.Util;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.slaves.SlaveComputer;
 import hudson.util.Secret;
-
-import hudson.Util;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.ResponseImpl;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -20,14 +22,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.ResponseImpl;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Serves the JNLP file.
@@ -41,6 +39,7 @@ import java.util.logging.Logger;
 public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
 
     private static final Logger LOG = Logger.getLogger(EncryptedSlaveAgentJnlpFile.class.getName());
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * The object that owns the Jelly view that renders JNLP file.
@@ -76,21 +75,22 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         if ("true".equals(req.getParameter("encrypt"))) {
             final CapturingServletOutputStream csos = new CapturingServletOutputStream();
             StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
-                @Override public ServletOutputStream getOutputStream() throws IOException {
+                @Override public ServletOutputStream getOutputStream() {
                     return csos;
                 }
-                @Override public PrintWriter getWriter() throws IOException {
+
+                @Override public PrintWriter getWriter() {
                     throw new IllegalStateException();
                 }
             });
             view.forward(req, temp);
 
-            byte[] iv = new byte[128/8];
-            new SecureRandom().nextBytes(iv);
+            byte[] iv = new byte[128 / 8];
+            RANDOM.nextBytes(iv);
 
             byte[] jnlpMac;
-            if(it instanceof SlaveComputer) {
-                jnlpMac = Util.fromHexString(((SlaveComputer)it).getJnlpMac());
+            if (it instanceof SlaveComputer) {
+                jnlpMac = Util.fromHexString(((SlaveComputer) it).getJnlpMac());
             } else {
                 jnlpMac = JnlpAgentReceiver.SLAVE_SECRET.mac(slaveName.getBytes(StandardCharsets.UTF_8));
             }
@@ -116,7 +116,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
     /**
      * A {@link ServletOutputStream} that captures all the data rather than writing to a client.
      */
-    private static class CapturingServletOutputStream extends ServletOutputStream { 
+    private static class CapturingServletOutputStream extends ServletOutputStream {
 
         private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -140,18 +140,18 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         public void write(int b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             baos.write(b, off, len);
         }
-        
-        /** 
+
+        /**
          * Get the data that has been written to this ServletOutputStream.
          * @return the data that has been written to this ServletOutputStream.
          */

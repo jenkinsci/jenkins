@@ -10,10 +10,11 @@ import jenkins.security.MasterToSlaveCallable;
  */
 public class SUTester {
     public static void main(String[] args) throws Throwable {
-        SU.execute(StreamTaskListener.fromStdout(),"kohsuke","bogus", new TouchingCallable());
+        SU.execute(StreamTaskListener.fromStdout(), "kohsuke", "bogus", new TouchingCallable());
     }
 
     private static class TouchingCallable extends MasterToSlaveCallable<Object, Throwable> {
+        @Override
         public Object call() throws Throwable {
             System.out.println("Touching /tmp/x");
             Files.newOutputStream(new File("/tmp/x").toPath()).close();

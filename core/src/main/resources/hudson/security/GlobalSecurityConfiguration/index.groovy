@@ -12,16 +12,22 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
-    l.main_panel {
-        h1 {
-            l.icon(class: 'icon-secure icon-xlg')
-            text(my.displayName)
+    l.side_panel {
+        l.tasks {
+            l.task(icon: "icon-up icon-md", href: rootURL + '/', title: _("Back to Dashboard"))
+            l.task(icon: "icon-gear icon-md", href: "${rootURL}/manage", title: _("Manage Jenkins"))
         }
+    }
+    l.app_bar(title: my.displayName)
+
+    l.main_panel {
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
-        div(class:"behavior-loading", _("LOADING"))
-        f.form(method:"post",name:"config",action:"configure") {
+        div(class:"behavior-loading") {
+            l.spinner(text: _("LOADING"))
+        }
+        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             set("instance",my)
             set("descriptor", my.descriptor)
 
@@ -29,20 +35,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                 f.entry() {
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
-
-                f.entry(title:_("Security Realm")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
-                    }
-                }
-            }
-
-            f.section(title:_("Authorization")) {
-                f.entry(title:_("Strategy")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
-                    }
-                }
+                f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
+                f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
             f.section(title: _("Markup Formatter")) {
@@ -66,7 +60,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
                         def agentProtocols = my.agentProtocols
-                        table(width:"100%") {
+                        div() {
                             for (AgentProtocol p : AgentProtocol.all()) {
                                 if (p.name != null && !p.required) {
                                     f.block() {
@@ -75,9 +69,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                                                 checked: agentProtocols.contains(p.name),
                                                 json: p.name)
                                     }
-                                    tr() {
-                                        td(colspan:"2")
-                                        td(class:"setting-description"){
+                                    div(class: "tr") {
+                                        div(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true)
                                             if (p.deprecated) {
                                               br()
@@ -85,7 +78,6 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                                               st.include(from:p, page: "deprecationCause", optional:true)
                                             }
                                         }
-                                        td()
                                     }
                                 }
                             }

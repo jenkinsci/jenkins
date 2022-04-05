@@ -1,1 +1,1 @@
-$ac.getACL().hasPermission($a, $p) :: $ac instanceof hudson.security.AccessControlled && $a instanceof org.acegisecurity.Authentication && $p instanceof hudson.security.Permission => $ac.hasPermission($a, $p);;
+$ac.getACL().hasPermission($a, $p) :: $ac instanceof hudson.security.AccessControlled && $p instanceof hudson.security.Permission => $ac.hasPermission($a, $p);;

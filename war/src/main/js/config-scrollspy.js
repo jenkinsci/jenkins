@@ -44,6 +44,12 @@ $(function() {
         page.onWinScroll(function () {
             stickTabbar(tabBar);
         });
+
+        // Manually trigger a repaint, otherwise Folder forms will not position
+        // the buttons correctly. This is caused by upgrading jQuery to 3.5.x,
+        // and probably has something to do with event listeners running in
+        // different order.
+        layoutUpdateCallback.call()
     }, {trackSectionVisibility: true});
 });
 
@@ -91,7 +97,7 @@ function autoActivateTabs(tabBar) {
         if (!section.isVisible()) {
             return;
         }
-        
+
         // each section enters the viewport at its distance down the page, less the height of
         // the toolbar, which hangs down the page. Or it is zero if the section doesn't
         // match or was removed...

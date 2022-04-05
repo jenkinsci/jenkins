@@ -24,7 +24,15 @@
 
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
@@ -35,25 +43,15 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Saveable;
-import hudson.model.User;
 import hudson.security.ACL;
-
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
-
 import jenkins.model.Jenkins;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -64,26 +62,23 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-
 public class RobustReflectionConverterTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Issue("JENKINS-21024")
     @LocalData
-    @Test public void randomExceptionsReported() throws Exception {
+    @Test public void randomExceptionsReported() {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);
         assertNotNull(p);
         assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
-        Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
         String text = data.values().iterator().next().extra;
-        assertTrue(text, text.contains("Could not call hudson.triggers.TimerTrigger.readResolve"));
+        assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
     }
-    
+
     // Testing describable object to demonstrate what is expected with RobustReflectionConverter#addCriticalField
     // This should be configured with a specific keyword,
     // and should reject configurations with other keywords.
@@ -93,22 +88,22 @@ public class RobustReflectionConverterTest {
     public static class AcceptOnlySpecificKeyword extends AbstractDescribableImpl<AcceptOnlySpecificKeyword> {
         public static final String ACCEPT_KEYWORD = "accept";
         private final String keyword;
-        
+
         @DataBoundConstructor
         public AcceptOnlySpecificKeyword(String keyword) {
             this.keyword = keyword;
         }
-        
+
         public String getKeyword() {
             return keyword;
         }
-        
+
         public boolean isAcceptable() {
             return ACCEPT_KEYWORD.equals(keyword);
         }
-        
+
         private Object readResolve() throws Exception {
-            if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
+            if (!ACL.SYSTEM2.equals(Jenkins.getAuthentication2())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
                     // Reject invalid configuration via REST / CLI.
@@ -117,14 +112,14 @@ public class RobustReflectionConverterTest {
             }
             return this;
         }
-        
+
         @TestExtension
         public static class DescriptorImpl extends Descriptor<AcceptOnlySpecificKeyword> {
             @Override
             public String getDisplayName() {
                 return "AcceptOnlySpecificKeyword";
             }
-            
+
             @Override
             public AcceptOnlySpecificKeyword newInstance(StaplerRequest req, JSONObject formData)
                     throws FormException {
@@ -136,31 +131,31 @@ public class RobustReflectionConverterTest {
             }
         }
     }
-    
-    public static class KeywordProperty extends JobProperty<Job<?,?>> {
+
+    public static class KeywordProperty extends JobProperty<Job<?, ?>> {
         private final AcceptOnlySpecificKeyword nonCriticalField;
         private final AcceptOnlySpecificKeyword criticalField;
-        
+
         public KeywordProperty(AcceptOnlySpecificKeyword nonCriticalField, AcceptOnlySpecificKeyword criticalField) {
             this.nonCriticalField = nonCriticalField;
             this.criticalField = criticalField;
         }
-        
+
         public AcceptOnlySpecificKeyword getNonCriticalField() {
             return nonCriticalField;
         }
-        
+
         public AcceptOnlySpecificKeyword getCriticalField() {
             return criticalField;
         }
-        
+
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
             @Override
             public String getDisplayName() {
                 return "KeywordProperty";
             }
-            
+
             @Override
             public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData)
                     throws FormException {
@@ -175,7 +170,7 @@ public class RobustReflectionConverterTest {
             }
         }
     }
-    
+
     private static final String CONFIGURATION_TEMPLATE =
             "<?xml version='1.1' encoding='UTF-8'?>"
             + "<project>"
@@ -190,14 +185,10 @@ public class RobustReflectionConverterTest {
             +     "</hudson.util.RobustReflectionConverterTest_-KeywordProperty>"
             + "</properties>"
             + "</project>";
-    
+
     @Test
     public void testRestInterfaceFailure() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
-
-        User test = User.getById("test", true);
 
         // without addCriticalField. This is accepted.
         {
@@ -207,28 +198,28 @@ public class RobustReflectionConverterTest {
                     new AcceptOnlySpecificKeyword(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD)
             ));
             p.save();
-            
+
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.withBasicApiToken(test);
+            wc.withBasicApiToken("test");
             WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
-            
+
             // AcceptOnlySpecificKeyword with bad value is not instantiated for rejected with readResolve,
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
-            
+
             // but save to the disk.
             r.jenkins.reload();
-            
+
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
         }
-        
+
         // with addCriticalField. This is not accepted.
         {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -237,36 +228,36 @@ public class RobustReflectionConverterTest {
                     new AcceptOnlySpecificKeyword(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD)
             ));
             p.save();
-            
+
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
-            wc.withBasicApiToken(test);
+            wc.withBasicApiToken("test");
             WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
-            
+
             Page page = wc.getPage(req);
-            assertEquals("Submitting unacceptable configuration via REST should fail.", 
+            assertEquals("Submitting unacceptable configuration via REST should fail.",
                     HttpURLConnection.HTTP_INTERNAL_ERROR,
                     page.getWebResponse().getStatusCode());
-            
+
             // Configuration should not be updated for a failure of the critical field,
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
-            
+
             r.jenkins.reload();
-            
+
             // rejected configuration is not saved
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
         }
     }
-    
+
     @Test
     public void testCliFailure() throws Exception {
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
-        
+
         // without addCriticalField. This is accepted.
         {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -275,31 +266,31 @@ public class RobustReflectionConverterTest {
                     new AcceptOnlySpecificKeyword(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD)
             ));
             p.save();
-            
+
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-            
+
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )
                     .invoke();
-            
+
             assertEquals(0, ret.returnCode());
-            
+
             // AcceptOnlySpecificKeyword with bad value is not instantiated for rejected with readResolve,
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
-            
+
             // but save to the disk.
             r.jenkins.reload();
-            
+
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
         }
-        
+
         // with addCriticalField. This is not accepted.
         {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -308,23 +299,23 @@ public class RobustReflectionConverterTest {
                     new AcceptOnlySpecificKeyword(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD)
             ));
             p.save();
-            
+
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )
                     .invoke();
             assertNotEquals(0, ret.returnCode());
-            
+
             // Configuration should not be updated for a failure of the critical field,
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
-            
+
             r.jenkins.reload();
-            
+
             // rejected configuration is not saved
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());

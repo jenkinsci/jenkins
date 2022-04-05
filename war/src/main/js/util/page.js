@@ -19,7 +19,7 @@ function onload(selector, callback, contextEl) {
     }
     function scan() {
         var elements = $(selector, contextEl).not(loadedClass);
-        if (elements.size() > 0) {
+        if (elements.length > 0) {
             elements.addClass(loadedClass);
             if (callback(elements) === true) {
                 registerRescan();
@@ -41,35 +41,11 @@ function onWinScroll(callback) {
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-head');
+    return elementHeight('#page-header') + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
     return elementHeight('#breadcrumbBar');
-}
-
-function fireBottomStickerAdjustEvent() {
-    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
-}
-
-// YUI Drag widget does not like to work on elements with a relative position.
-// This tells the element to switch to static position at the start of the drag, so it can work.
-function fixDragEvent(handle) {
-    var isReady = false;
-    var $handle = $(handle);
-    var $chunk = $handle.closest('.repeated-chunk');
-    $handle.add('#ygddfdiv')
-	.mousedown(function(){
-	    isReady = true;
-	})
-	.mousemove(function(){
-	    if(isReady && !$chunk.hasClass('dragging')){
-		$chunk.addClass('dragging');
-	    }
-	}).mouseup(function(){
-	    isReady = false;
-	    $chunk.removeClass('dragging');
-	});
 }
 
 function removeTextHighlighting(selector) {
@@ -90,7 +66,5 @@ export default {
     onWinScroll,
     pageHeaderHeight,
     breadcrumbBarHeight,
-    fireBottomStickerAdjustEvent,
-    fixDragEvent,
     removeTextHighlighting
 }

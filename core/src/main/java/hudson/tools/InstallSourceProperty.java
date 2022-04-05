@@ -21,17 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.Extension;
-import hudson.util.DescribableList;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
+import hudson.util.DescribableList;
+import java.io.IOException;
+import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.List;
-import java.io.IOException;
 
 /**
  * {@link ToolProperty} that shows auto installation options.
@@ -58,12 +58,14 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
             installer.setTool(t);
     }
 
+    @Override
     public Class<ToolInstallation> type() {
         return ToolInstallation.class;
     }
 
     @Extension @Symbol("installSource")
     public static class DescriptorImpl extends ToolPropertyDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }

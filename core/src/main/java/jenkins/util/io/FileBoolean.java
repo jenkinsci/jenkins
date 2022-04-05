@@ -1,13 +1,13 @@
 package jenkins.util.io;
 
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.model.Jenkins;
-
+import hudson.Util;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Uses a presence/absence of a file as a persisted boolean storage.
@@ -29,44 +29,53 @@ public class FileBoolean {
     }
 
     public FileBoolean(Class owner, String name) {
-        this(new File(Jenkins.get().getRootDir(),owner.getName().replace('$','.')+'/'+name));
+        this(new File(Jenkins.get().getRootDir(), owner.getName().replace('$', '.') + '/' + name));
     }
 
     /**
      * Gets the current state. True if the file exists, false if it doesn't.
      */
     public boolean get() {
-        return state=file.exists();
+        return state = file.exists();
     }
 
     /**
      * Like {@link #get()} except instead of checking the actual file, use the result from the last {@link #get()} call.
      */
     public boolean fastGet() {
-        if (state==null)    return get();
+        if (state == null)    return get();
         return state;
     }
 
     public boolean isOn() { return get(); }
+
     public boolean isOff() { return !get(); }
 
     public void set(boolean b) {
-        if (b) on(); else off();
+        if (b) {
+            on();
+        } else {
+            off();
+        }
     }
 
     public void on() {
         try {
-            file.getParentFile().mkdirs();
+            Util.createDirectories(file.getParentFile().toPath());
             Files.newOutputStream(file.toPath()).close();
             get();  // update state
         } catch (IOException | InvalidPathException e) {
-            LOGGER.log(Level.WARNING, "Failed to touch "+file);
+            LOGGER.log(Level.WARNING, "Failed to touch " + file);
         }
     }
 
     public void off() {
-        file.delete();
-        get();  // update state
+        try {
+            Files.deleteIfExists(file.toPath());
+            get();  // update state
+        } catch (IOException | InvalidPathException e) {
+            LOGGER.log(Level.WARNING, "Failed to delete " + file);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(FileBoolean.class.getName());

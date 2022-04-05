@@ -1,5 +1,13 @@
 package hudson.diagnosis;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -10,16 +18,6 @@ import hudson.model.ListView;
 import hudson.model.View;
 import java.io.IOException;
 import java.net.URL;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +34,7 @@ public class TooManyJobsButNoViewTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     private TooManyJobsButNoView mon;
 
-    @Before public void setUp() throws Exception {
+    @Before public void setUp() {
         mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
     }
 
@@ -61,7 +59,7 @@ public class TooManyJobsButNoViewTest {
      * Once we have enough jobs, it should kick in
      */
     @Test public void activated() throws Exception {
-        for( int i=0; i<=TooManyJobsButNoView.THRESHOLD; i++ )
+        for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
             r.createFreeStyleProject();
 
         HtmlPage p = r.createWebClient().goTo("manage");
@@ -69,8 +67,8 @@ public class TooManyJobsButNoViewTest {
         assertNotNull(f);
 
         // this should take us to the new view page
-        URL url = r.submit(f,"yes").getUrl();
-        assertTrue(url.toExternalForm(),url.toExternalForm().endsWith("/newView"));
+        URL url = r.submit(f, "yes").getUrl();
+        assertTrue(url.toExternalForm(), url.toExternalForm().endsWith("/newView"));
 
         // since we didn't create a view, if we go back, we should see the warning again
         p = r.createWebClient().goTo("manage");
@@ -81,7 +79,7 @@ public class TooManyJobsButNoViewTest {
 
         verifyNoForm();
     }
-    
+
     @Test
     public void systemReadNoViewAccessVerifyNoForm() throws Exception {
         final String READONLY = "readonly";
@@ -106,7 +104,7 @@ public class TooManyJobsButNoViewTest {
         DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
         assertThat(adminMonitorDiv, is(nullValue()));
     }
-    
+
     @Test
     public void systemReadVerifyForm() throws Exception {
         final String READONLY = "readonly";
@@ -134,5 +132,5 @@ public class TooManyJobsButNoViewTest {
         assertThat(adminMonitorDiv, is(notNullValue()));
         assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
-    
+
 }

@@ -25,22 +25,18 @@
 package hudson.util.io;
 
 import hudson.Functions;
-import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
 import org.apache.commons.compress.utils.BoundedInputStream;
-
 
 /**
  * {@link FileVisitor} that creates a tar archive.
@@ -65,10 +61,10 @@ final class TarArchiver extends Archiver {
             if (mode != -1) {
                 e.setMode(mode);
             }
-        } catch (PosixException x) {
+        } catch (IOException x) {
             // ignore
         }
-        
+
         e.setLinkName(target);
 
         tar.putArchiveEntry(e);
@@ -81,15 +77,16 @@ final class TarArchiver extends Archiver {
         return true;
     }
 
+    @Override
     public void visit(File file, String relativePath) throws IOException {
-        if(Functions.isWindows())
-            relativePath = relativePath.replace('\\','/');
+        if (Functions.isWindows())
+            relativePath = relativePath.replace('\\', '/');
 
-        if(file.isDirectory())
-            relativePath+='/';
+        if (file.isDirectory())
+            relativePath += '/';
         TarArchiveEntry te = new TarArchiveEntry(relativePath);
         int mode = IOUtils.mode(file);
-        if (mode!=-1)   te.setMode(mode);
+        if (mode != -1)   te.setMode(mode);
         te.setModTime(file.lastModified());
         long size = 0;
 
@@ -111,7 +108,7 @@ final class TarArchiver extends Archiver {
                         while ((len = in.read(buf)) >= 0) {
                             tar.write(buf, 0, len);
                         }
-                    } catch (IOException | InvalidPathException e) {// log the exception in any case
+                    } catch (IOException | InvalidPathException e) { // log the exception in any case
                         throw new IOException("Error writing to tar file from: " + file, e);
                     }
                 }
@@ -122,6 +119,7 @@ final class TarArchiver extends Archiver {
         entriesWritten++;
     }
 
+    @Override
     public void close() throws IOException {
         tar.close();
     }

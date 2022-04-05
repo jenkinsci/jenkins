@@ -1,12 +1,12 @@
 <div>
-  Esegue uno script shell (per impostazione predefinita <tt>sh</tt>, ma il
+  Esegue uno script shell (per impostazione predefinita <code>sh</code>, ma il
   parametro è configurabile) per compilare il progetto. Lo script sarà
   eseguito impostando la directory dello spazio di lavoro come directory
   corrente. Immettere i contenuti dello script shell. Se lo script shell non
-  ha una riga di intestazione come <tt>#!/bin/sh</tt>, sarà utilizzata la
+  ha una riga di intestazione come <code>#!/bin/sh</code>, sarà utilizzata la
   shell configurata a livello di sistema, ma è anche possibile utilizzare la
   riga di intestazione per scrivere lo script in un altro linguaggio (ad
-  esempio <tt>#!/bin/perl</tt>) o per controllare le opzioni utilizzate dalla
+  esempio <code>#!/bin/perl</code>) o per controllare le opzioni utilizzate dalla
   shell.
 
   <p>
@@ -14,12 +14,12 @@
   questo modo tutti i comandi saranno stampati prima di essere eseguiti e la
   compilazione sarà considerata non riuscita se uno qualunque dei comandi esce
   con un codice di uscita diverso da zero. Ancora una volta, si aggiunga la
-  riga <tt>#!/bin/...</tt> per modificare questo comportamento.
+  riga <code>#!/bin/...</code> per modificare questo comportamento.
 
   <p>
   Come procedura consigliata, non si tenti di immettere uno script shell
   corposo qui. Si consideri piuttosto l'aggiunta dello script shell al sistema
   di gestione del codice sorgente, quindi semplicemente lo si richiami da
-  Jenkins (tramite <tt>bash -ex mioscript.sh</tt> o un'invocazione simile),
+  Jenkins (tramite <code>bash -ex mioscript.sh</code> o un'invocazione simile),
   in modo da poter tracciare le modifiche al proprio script shell.
 </div>

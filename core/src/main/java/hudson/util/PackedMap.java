@@ -21,13 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -54,56 +55,62 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"unchecked"})
-public final class PackedMap<K,V> extends AbstractMap<K,V> {
-    private Object[] kvpairs;
+public final class PackedMap<K, V> extends AbstractMap<K, V> {
+    private final Object[] kvpairs;
 
     /**
      *
      * @param src
      *      Map to copy contents from. Iteration order is preserved.
      */
-    public static <K,V> PackedMap<K,V> of(Map<? extends K,? extends V> src) {
+    public static <K, V> PackedMap<K, V> of(Map<? extends K, ? extends V> src) {
         return new PackedMap<>(src);
     }
 
-    private PackedMap(Map<? extends K,? extends V> src) {
-        kvpairs = new Object[src.size()*2];
-        int i=0;
+    private PackedMap(Map<? extends K, ? extends V> src) {
+        kvpairs = new Object[src.size() * 2];
+        int i = 0;
         for (Entry<? extends K, ? extends V> e : src.entrySet()) {
             kvpairs[i++] = e.getKey();
             kvpairs[i++] = e.getValue();
         }
     }
 
-    private final Set<Entry<K,V>> entrySet = new AbstractSet<Entry<K, V>>() {
+    private final Set<Entry<K, V>> entrySet = new AbstractSet<Entry<K, V>>() {
+        @NonNull
         @Override
         public Iterator<Entry<K, V>> iterator() {
             return new Iterator<Entry<K, V>>() {
-                int index=0;
+                int index = 0;
+                @Override
                 public boolean hasNext() {
-                    return index<kvpairs.length;
+                    return index < kvpairs.length;
                 }
 
-                @SuppressWarnings({"unchecked"})
+                @Override
+                @SuppressWarnings("unchecked")
                 public Entry<K, V> next() {
-                    final K k = (K)kvpairs[index++];
-                    final V v = (V)kvpairs[index++];
+                    final K k = (K) kvpairs[index++];
+                    final V v = (V) kvpairs[index++];
                     return new Entry<K, V>() {
+                        @Override
                         public K getKey() {
                             return k;
                         }
 
+                        @Override
                         public V getValue() {
                             return v;
                         }
 
+                        @Override
                         public V setValue(V value) {
                             throw new UnsupportedOperationException();
                         }
                     };
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
@@ -112,7 +119,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
         @Override
         public int size() {
-            return kvpairs.length/2;
+            return kvpairs.length / 2;
         }
     };
 
@@ -123,26 +130,29 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
     @Override
     public boolean containsKey(Object key) {
-        for (int i=0; i<kvpairs.length; i+=2)
+        for (int i = 0; i < kvpairs.length; i += 2)
             if (key.equals(kvpairs[i]))
                 return true;
         return false;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V get(Object key) {
-        for (int i=0; i<kvpairs.length; i+=2)
+        for (int i = 0; i < kvpairs.length; i += 2)
             if (key.equals(kvpairs[i]))
-                return (V)kvpairs[i+1];
+                return (V) kvpairs[i + 1];
         return null;
     }
 
+    @NonNull
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<V> values() {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {
-                return (V)kvpairs[index*2];
+                return (V) kvpairs[index * 2];
             }
 
             @Override
@@ -162,17 +172,17 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
 
         @Override
         public boolean canConvert(Class type) {
-            return type==PackedMap.class;
+            return type == PackedMap.class;
         }
 
         @Override
         protected Object createCollection(Class type) {
-            return new LinkedHashMap<String,String>();
+            return new LinkedHashMap<String, String>();
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            return PackedMap.of((Map)super.unmarshal(reader, context));
+            return PackedMap.of((Map<?, ?>) super.unmarshal(reader, context));
         }
     }
 }

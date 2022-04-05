@@ -44,11 +44,14 @@ THE SOFTWARE.
         <l:header>
             <!-- for screen resolution detection -->
             <l:yui module="cookie" />
-            <script>
-              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
-                path: "/"
-              });
-            </script>
+                <script id="screenResolution-script" data-use-secure-cookie="${request.secure}">
+                  var selfScript = document.querySelector('#screenResolution-script');
+                  var secureCookie = selfScript.getAttribute('data-use-secure-cookie');
+                  YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
+                    path: "/",
+                    secure: secureCookie === 'true'
+                  });
+                </script>
         </l:header>
     </l:layout>
 </st:compress>

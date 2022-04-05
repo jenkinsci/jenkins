@@ -21,30 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
-import hudson.model.UnprotectedRootAction;
-import jenkins.model.Jenkins;
-
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
 import hudson.Extension;
+import hudson.model.UnprotectedRootAction;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -54,16 +38,29 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
-import org.acegisecurity.Authentication;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 
 /**
  * Shows usage of CLI and commands.
@@ -76,16 +73,19 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(CLIAction.class.getName());
 
-    private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return "Jenkins CLI";
     }
 
+    @Override
     public String getUrlName() {
         return "cli";
     }
@@ -118,22 +118,28 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         if (!WebSockets.isSupported()) {
             return HttpResponses.notFound();
         }
-        Authentication authentication = Jenkins.getAuthentication();
+        Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {
             ServerSideImpl connection;
+            long sentBytes, sentCount, receivedBytes, receivedCount;
             class OutputImpl implements PlainCLIProtocol.Output {
                 @Override
                 public void send(byte[] data) throws IOException {
                     sendBinary(ByteBuffer.wrap(data));
+                    sentBytes += data.length;
+                    sentCount++;
                 }
+
                 @Override
                 public void close() throws IOException {
                     doClose();
                 }
             }
+
             private void doClose() {
                 close();
             }
+
             @Override
             protected void opened() {
                 try {
@@ -154,21 +160,27 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                     }
                 }, "CLI handler for " + authentication.getName()).start();
             }
+
             @Override
             protected void binary(byte[] payload, int offset, int len) {
                 try {
                     connection.handle(new DataInputStream(new ByteArrayInputStream(payload, offset, len)));
+                    receivedBytes += len;
+                    receivedCount++;
                 } catch (IOException x) {
                     error(x);
                 }
             }
+
             @Override
             protected void error(Throwable cause) {
                 LOGGER.log(Level.WARNING, null, cause);
             }
+
             @Override
             protected void closed(int statusCode, String reason) {
                 LOGGER.fine(() -> "closed: " + statusCode + ": " + reason);
+                LOGGER.fine(() -> "received " + receivedCount + " packets of " + receivedBytes + " bytes; sent " + sentCount + " packets of " + sentBytes + " bytes");
                 connection.handleClose();
             }
         });
@@ -177,7 +189,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     @Override
     public Object getTarget() {
         StaplerRequest req = Stapler.getCurrentRequest();
-        if (req.getRestOfPath().length()==0 && "POST".equals(req.getMethod())) {
+        if (req.getRestOfPath().length() == 0 && "POST".equals(req.getMethod())) {
             // CLI connection request
             if ("false".equals(req.getParameter("remoting"))) {
                 throw new PlainCliEndpointResponse();
@@ -199,15 +211,18 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         private final PipedInputStream stdin = new PipedInputStream();
         private final PipedOutputStream stdinMatch = new PipedOutputStream();
         private final Authentication authentication;
+
         ServerSideImpl(PlainCLIProtocol.Output out, Authentication authentication) throws IOException {
             super(out);
             stdinMatch.connect(stdin);
             this.authentication = authentication;
         }
+
         @Override
         protected void onArg(String text) {
             args.add(text);
         }
+
         @Override
         protected void onLocale(String text) {
             for (Locale _locale : Locale.getAvailableLocales()) {
@@ -218,6 +233,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             }
             LOGGER.log(Level.WARNING, "unknown client locale {0}", text);
         }
+
         @Override
         protected void onEncoding(String text) {
             try {
@@ -226,18 +242,22 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 LOGGER.log(Level.WARNING, "unknown client charset {0}", text);
             }
         }
+
         @Override
         protected void onStart() {
             ready();
         }
+
         @Override
         protected void onStdin(byte[] chunk) throws IOException {
             stdinMatch.write(chunk);
         }
+
         @Override
         protected void onEndStdin() throws IOException {
             stdinMatch.close();
         }
+
         @Override
         protected void handleClose() {
             ready();
@@ -245,10 +265,12 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 runningThread.interrupt();
             }
         }
+
         private synchronized void ready() {
             ready = true;
             notifyAll();
         }
+
         void run() throws IOException, InterruptedException {
             synchronized (this) {
                 while (!ready) {
@@ -269,7 +291,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 sendExit(2);
                 return;
             }
-            command.setTransportAuth(authentication);
+            command.setTransportAuth2(authentication);
             command.setClientCharset(encoding);
             CLICommand orig = CLICommand.setCurrent(command);
             try {
@@ -303,7 +325,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             return new FullDuplexHttpService(uuid) {
                 @Override
                 protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
-                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication())) {
+                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication2())) {
                         new PlainCLIProtocol.FramedReader(connection, upload).start();
                         connection.run();
                     }

@@ -2,18 +2,18 @@
 
 # About
 
-[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://jenkins.io/changelog)
-[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://jenkins.io/changelog-stable)
+[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://www.jenkins.io/changelog)
+[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://www.jenkins.io/changelog-stable)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
-Built with Java, it provides over 1700 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
-so that humans can actually spend their time doing things machines cannot.
+Built with Java, it provides over 1,700 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
+so that humans can spend their time doing things machines cannot.
 
 # What to Use Jenkins for and When to Use It
 
-Use Jenkins to automate your development workflow so you can focus on work that matters most. Jenkins is commonly used for:
+Use Jenkins to automate your development workflow, so you can focus on work that matters most. Jenkins is commonly used for:
 
 - Building projects
 - Running tests to detect bugs and other issues as soon as they are introduced
@@ -35,8 +35,8 @@ For all distributions Jenkins offers two release lines:
   Older release line which gets periodically updated via bug fix backports.
 
 Latest releases:
-[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://jenkins.io/changelog)
-[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://jenkins.io/changelog-stable)
+[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://www.jenkins.io/changelog)
+[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://www.jenkins.io/changelog-stable)
 
 
 # Source
@@ -69,8 +69,8 @@ See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins
 Jenkins is **licensed** under the **[MIT License]**.
 
 
-[ButlerImage]: https://jenkins.io/sites/default/files/jenkins_logo.png
+[ButlerImage]: https://www.jenkins.io/sites/default/files/jenkins_logo.png
 [MIT License]: https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt
 [Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
-[website]: https://jenkins.io/
+[website]: https://www.jenkins.io/

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
 import java.util.AbstractList;
@@ -37,7 +38,7 @@ import java.util.List;
 class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     private List<T> data;
 
-    public SortedList(List<T> data) {
+    SortedList(List<T> data) {
         this.data = new ArrayList<>(data);
         assert isSorted();
     }
@@ -55,9 +56,10 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
 
     @Override
     public boolean contains(Object o) {
-        return find((T)o)>=0;
+        return find((T) o) >= 0;
     }
 
+    @Override
     public T get(int idx) {
         return data.get(idx);
     }
@@ -118,7 +120,7 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     }
 
     public boolean isInRange(int idx) {
-        return 0<=idx && idx<data.size();
+        return 0 <= idx && idx < data.size();
     }
 
     private boolean isSorted() {

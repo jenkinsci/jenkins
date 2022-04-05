@@ -21,29 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
+import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
 import java.io.OutputStream;
-
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
+import jenkins.model.Jenkins;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 public class SecurityRealmTest {
 
@@ -59,7 +65,7 @@ public class SecurityRealmTest {
         WebResponse response = j.createWebClient()
                 .goTo("securityRealm/captcha", "")
                 .getWebResponse();
-        assertEquals(response.getContentAsString(), "");
+        assertEquals("", response.getContentAsString());
 
         securityRealm.setCaptchaSupport(new DummyCaptcha());
 
@@ -79,12 +85,12 @@ public class SecurityRealmTest {
         }
 
         @Override
-        public void generateImage(String id, OutputStream ios) throws IOException {
+        public void generateImage(String id, OutputStream ios) {
         }
     }
 
     static void addSessionCookie(CookieManager manager, String domain, String path, Date date) {
-        manager.addCookie(new Cookie(domain, "JSESSIONID."+Integer.toHexString(new Random().nextInt()),
+        manager.addCookie(new Cookie(domain, "JSESSIONID." + Integer.toHexString(new Random().nextInt()),
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 path,
                 date,
@@ -135,7 +141,70 @@ public class SecurityRealmTest {
                 }
             }
         }
-        System.err.println(builder.toString());
+        System.err.println(builder);
         assertThat(unexpectedSessionCookies, is(0));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void getPostLogOutUrl() throws Exception {
+        OldSecurityRealm osr = new OldSecurityRealm();
+        j.jenkins.setSecurityRealm(osr);
+        j.executeOnServer(() -> {
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            osr.special = true;
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            return null;
+        });
+    }
+
+    @SuppressWarnings("deprecation")
+    public static final class OldSecurityRealm extends SecurityRealm {
+        boolean special;
+
+        @DataBoundConstructor public OldSecurityRealm() {}
+
+        @Override
+        public SecurityRealm.SecurityComponents createSecurityComponents() {
+            return new SecurityComponents();
+        }
+
+        @Override
+        protected String getPostLogOutUrl(StaplerRequest req, org.acegisecurity.Authentication auth) {
+            return special ? req.getContextPath() + "/custom" : super.getPostLogOutUrl(req, auth);
+        }
+
+        @TestExtension("getPostLogOutUrl")
+        public static final class DescriptorImpl extends Descriptor<SecurityRealm> {}
+    }
+
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithoutJellyTrace() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage htmlPage = wc.goTo("configureSecurity");
+        HtmlForm configForm = htmlPage.getFormByName("config");
+        j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * Ensure the form is still working when using {@link org.kohsuke.stapler.jelly.JellyFacet#TRACE}=true
+     */
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithJellyTrace() throws Exception {
+        boolean currentValue = JellyFacet.TRACE;
+        try {
+            JellyFacet.TRACE = true;
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            HtmlPage htmlPage = wc.goTo("configureSecurity");
+            HtmlForm configForm = htmlPage.getFormByName("config");
+            j.assertGoodStatus(j.submit(configForm));
+        } finally {
+            JellyFacet.TRACE = currentValue;
+        }
     }
 }

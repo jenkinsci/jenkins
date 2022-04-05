@@ -24,15 +24,14 @@
 
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 public class AssetManagerTest {
 
@@ -45,14 +44,5 @@ public class AssetManagerTest {
         URL url = new URL(j.getURL() + "assets");
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());
-    }
-
-    @Test
-    @Issue("JENKINS-9598")
-    public void jqueryLoad() throws Exception {
-        // webclient does not work because it tries to parse the jquery2.js and there is a missing comma
-        URL url = new URL(j.getURL() + "assets/jquery-detached/jsmodules/jquery2.js");
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        assertEquals(HttpURLConnection.HTTP_OK, httpCon.getResponseCode());
     }
 }

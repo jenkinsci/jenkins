@@ -25,7 +25,6 @@
 package hudson.util.io;
 
 import hudson.util.FileVisitor;
-
 import java.io.Closeable;
 
 /**
@@ -35,7 +34,7 @@ import java.io.Closeable;
  * @see ArchiverFactory
  */
 public abstract class Archiver extends FileVisitor implements Closeable {
-    protected int entriesWritten =0;
+    protected int entriesWritten = 0;
 
     /**
      * Number of files/directories archived.

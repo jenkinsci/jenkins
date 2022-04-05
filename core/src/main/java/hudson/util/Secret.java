@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * Copyright (c) 2016, CloudBees Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,33 +22,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import jenkins.util.SystemProperties;
-import java.util.Arrays;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
-import jenkins.security.CryptoConfidentialKey;
-import org.kohsuke.stapler.Stapler;
-
-import javax.crypto.Cipher;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.crypto.Cipher;
+import jenkins.security.CryptoConfidentialKey;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
@@ -95,7 +96,7 @@ public final class Secret implements Serializable {
     @Deprecated
     public String toString() {
         final String from = new Throwable().getStackTrace()[1].toString();
-        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://jenkins.io/redirect/hudson.util.Secret/");
+        LOGGER.warning("Use of toString() on hudson.util.Secret from " + from + ". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://www.jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
@@ -111,7 +112,7 @@ public final class Secret implements Serializable {
 
     @Override
     public boolean equals(Object that) {
-        return that instanceof Secret && value.equals(((Secret)that).value);
+        return that instanceof Secret && value.equals(((Secret) that).value);
     }
 
     @Override
@@ -122,7 +123,7 @@ public final class Secret implements Serializable {
     /**
      * Encrypts {@link #value} and returns it in an encoded printable form.
      *
-     * @see #toString() 
+     * @see #toString()
      */
     public String getEncryptedValue() {
         try {
@@ -137,18 +138,18 @@ public final class Secret implements Serializable {
             int pos = 0;
             // For PAYLOAD_V1 we use this byte shifting model, V2 probably will need DataOutput
             payload[pos++] = PAYLOAD_V1;
-            payload[pos++] = (byte)(iv.length >> 24);
-            payload[pos++] = (byte)(iv.length >> 16);
-            payload[pos++] = (byte)(iv.length >> 8);
-            payload[pos++] = (byte)(iv.length);
-            payload[pos++] = (byte)(encrypted.length >> 24);
-            payload[pos++] = (byte)(encrypted.length >> 16);
-            payload[pos++] = (byte)(encrypted.length >> 8);
-            payload[pos++] = (byte)(encrypted.length);
+            payload[pos++] = (byte) (iv.length >> 24);
+            payload[pos++] = (byte) (iv.length >> 16);
+            payload[pos++] = (byte) (iv.length >> 8);
+            payload[pos++] = (byte) iv.length;
+            payload[pos++] = (byte) (encrypted.length >> 24);
+            payload[pos++] = (byte) (encrypted.length >> 16);
+            payload[pos++] = (byte) (encrypted.length >> 8);
+            payload[pos++] = (byte) encrypted.length;
             System.arraycopy(iv, 0, payload, pos, iv.length);
-            pos+=iv.length;
+            pos += iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
-            return "{"+new String(Base64.getEncoder().encode(payload))+"}";
+            return "{" + Base64.getEncoder().encodeToString(payload) + "}";
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -169,12 +170,12 @@ public final class Secret implements Serializable {
      */
     @CheckForNull
     public static Secret decrypt(@CheckForNull String data) {
-        if(!isValidData(data))      return null;
+        if (!isValidData(data))      return null;
 
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
             try {
-                payload = Base64.getDecoder().decode(data.substring(1, data.length()-1));
+                payload = Base64.getDecoder().decode(data.substring(1, data.length() - 1));
             } catch (IllegalArgumentException e) {
                 return null;
             }
@@ -194,7 +195,7 @@ public final class Secret implements Serializable {
                         return null;
                     }
                     byte[] iv = Arrays.copyOfRange(payload, 9, 9 + ivLength);
-                    byte[] code = Arrays.copyOfRange(payload, 9+ivLength, payload.length);
+                    byte[] code = Arrays.copyOfRange(payload, 9 + ivLength, payload.length);
                     String text;
                     try {
                         text = new String(KEY.decrypt(iv).doFinal(code), UTF_8);
@@ -221,7 +222,7 @@ public final class Secret implements Serializable {
         if (data == null || "{}".equals(data) || "".equals(data.trim())) return false;
 
         if (data.startsWith("{") && data.endsWith("}")) {
-            return !"".equals(data.substring(1, data.length()-1).trim());
+            return !"".equals(data.substring(1, data.length() - 1).trim());
         }
 
         return true;
@@ -249,7 +250,7 @@ public final class Secret implements Serializable {
     public static Secret fromString(@CheckForNull String data) {
         data = Util.fixNull(data);
         Secret s = decrypt(data);
-        if(s==null) s=new Secret(data);
+        if (s == null) s = new Secret(data);
         return s;
     }
 
@@ -260,22 +261,25 @@ public final class Secret implements Serializable {
      */
     @NonNull
     public static String toString(@CheckForNull Secret s) {
-        return s==null ? "" : s.value;
+        return s == null ? "" : s.value;
     }
 
     public static final class ConverterImpl implements Converter {
         public ConverterImpl() {
         }
 
+        @Override
         public boolean canConvert(Class type) {
-            return type==Secret.class;
+            return type == Secret.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Secret src = (Secret) source;
             writer.setValue(src.getEncryptedValue());
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return fromString(reader.getValue());
         }
@@ -285,7 +289,7 @@ public final class Secret implements Serializable {
      * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
-    private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
+    private static final String PROVIDER = SystemProperties.getString(Secret.class.getName() + ".provider");
 
     /**
      * For testing only.
@@ -305,10 +309,12 @@ public final class Secret implements Serializable {
     public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
 
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+            @Override
             public Secret convert(Class type, Object value) {
                 if (value == null) {
                     return null;
@@ -321,6 +327,7 @@ public final class Secret implements Serializable {
         }, Secret.class);
         if (AUTO_ENCRYPT_PASSWORD_CONTROL) {
             Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+                @Override
                 public String convert(Class type, Object value) {
                     if (value == null) {
                         return null;

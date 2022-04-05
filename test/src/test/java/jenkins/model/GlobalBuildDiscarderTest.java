@@ -31,7 +31,7 @@ public class GlobalBuildDiscarderTest {
         final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders = GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders();
         Assert.assertEquals(2, configuredBuildDiscarders.size());
         Assert.assertNotNull(configuredBuildDiscarders.get(JobGlobalBuildDiscarderStrategy.class));
-        Assert.assertEquals(5, ((LogRotator)configuredBuildDiscarders.get(SimpleGlobalBuildDiscarderStrategy.class).getDiscarder()).getNumToKeep());
+        Assert.assertEquals(5, ((LogRotator) configuredBuildDiscarders.get(SimpleGlobalBuildDiscarderStrategy.class).getDiscarder()).getNumToKeep());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class GlobalBuildDiscarderTest {
             j.buildAndAssertSuccess(p1);
             j.buildAndAssertSuccess(p1);
             j.buildAndAssertSuccess(p1);
-            Assert.assertArrayEquals("job with 5 builds", p1.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7,6,5,4,3,2,1});
+            Assert.assertArrayEquals("job with 5 builds", p1.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7, 6, 5, 4, 3, 2, 1});
             p1.setBuildDiscarder(new LogRotator(null, "5", null, null));
 
             FreeStyleProject p2 = j.createFreeStyleProject();
@@ -106,7 +106,7 @@ public class GlobalBuildDiscarderTest {
             j.buildAndAssertSuccess(p2);
             j.buildAndAssertSuccess(p2);
             j.buildAndAssertSuccess(p2);
-            Assert.assertArrayEquals("job with 3 builds", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{6,5,4,3,2,1});
+            Assert.assertArrayEquals("job with 3 builds", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{6, 5, 4, 3, 2, 1});
             p2.setBuildDiscarder(new LogRotator(null, "3", null, null));
 
             GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new SimpleGlobalBuildDiscarderStrategy(new LogRotator(null, "4", null, null)));
@@ -122,7 +122,7 @@ public class GlobalBuildDiscarderTest {
 
             { // job 2 with more aggressive local build discarder
                 j.buildAndAssertSuccess(p2);
-                Assert.assertArrayEquals("job 1 discards down to 3", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7,6,5});
+                Assert.assertArrayEquals("job 1 discards down to 3", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7, 6, 5});
             }
         }
     }

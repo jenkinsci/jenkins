@@ -24,10 +24,10 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -39,9 +39,10 @@ public class SystemInfoLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "computer.png";
+        return "symbol-server";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.SystemInfoLink_DisplayName();
     }

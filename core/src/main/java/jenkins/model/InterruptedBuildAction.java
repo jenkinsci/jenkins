@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
-import com.google.common.collect.ImmutableList;
 import hudson.model.InvisibleAction;
 import hudson.model.Run;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Action added to {@link Run} to record the cause of interruption.
@@ -43,11 +44,11 @@ public class InterruptedBuildAction extends InvisibleAction {
     private final List<CauseOfInterruption> causes;
 
     public InterruptedBuildAction(Collection<? extends CauseOfInterruption> causes) {
-        this.causes = ImmutableList.copyOf(causes);
+        this.causes = new ArrayList<>(causes);
     }
 
     @Exported
     public List<CauseOfInterruption> getCauses() {
-        return causes;
+        return Collections.unmodifiableList(causes);
     }
 }

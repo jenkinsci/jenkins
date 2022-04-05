@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Job;
@@ -33,17 +35,16 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.util.HttpResponses;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.springframework.security.core.Authentication;
 
 /**
  * Display an administrative monitor if we expect {@link QueueItemAuthenticator} to be a useful security measure,
@@ -67,10 +68,16 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
         return !isQueueItemAuthenticatorPresent() || !isQueueItemAuthenticatorConfigured() || isAnyBuildLaunchedAsSystemWithAuthenticatorPresent();
     }
 
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     @RequirePOST
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static so that it can be written to by the static QueueListenerImpl class")
     public HttpResponse doAct(@QueryParameter String redirect, @QueryParameter String dismiss, @QueryParameter String reset) throws IOException {
         if (redirect != null) {
-            return HttpResponses.redirectTo("https://jenkins.io/redirect/queue-item-security");
+            return HttpResponses.redirectTo("https://www.jenkins.io/redirect/queue-item-security");
         }
         if (dismiss != null) {
             this.disable(true);
@@ -92,7 +99,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
     }
 
     public boolean isAnyBuildLaunchedAsSystemWithAuthenticatorPresent() {
-        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM
+        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM2
         return anyBuildLaunchedAsSystemWithAuthenticatorPresent;
     }
 
@@ -127,8 +134,8 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
             }
 
             // TODO this is probably not intended to be used as a getter -- seems potentially unstable
-            Authentication buildAuthentication = li.authenticate();
-            boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM;
+            Authentication buildAuthentication = li.authenticate2();
+            boolean buildRunsAsSystem = buildAuthentication.equals(ACL.SYSTEM2);
             if (!buildRunsAsSystem) {
                 LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
                 return;

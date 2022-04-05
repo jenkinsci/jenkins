@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
-import com.google.common.collect.ImmutableSet;
 import hudson.model.Build;
 import hudson.model.Computer;
 import hudson.model.Item;
@@ -32,9 +32,11 @@ import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
-import jenkins.model.Jenkins;
-
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import jenkins.model.Jenkins;
 
 /**
  * Represents the model class {@link Permission} acts on and scoped to.
@@ -69,7 +71,7 @@ public final class PermissionScope {
 
     public PermissionScope(Class<? extends ModelObject> modelClass, PermissionScope... containers) {
         this.modelClass = modelClass;
-        this.containers = ImmutableSet.copyOf(containers);
+        this.containers = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(containers)));
     }
 
     /**
@@ -79,7 +81,7 @@ public final class PermissionScope {
      * A scope always contains itself.
      */
     public boolean isContainedBy(PermissionScope s) {
-        if (this==s)    return true;
+        if (this == s)    return true;
         for (PermissionScope c : containers) {
             if (c.isContainedBy(s))
                 return true;
@@ -99,20 +101,20 @@ public final class PermissionScope {
     /**
      * Permissions scoped to containers of {@link Item}s.
      */
-    public static final PermissionScope ITEM_GROUP = new PermissionScope(ItemGroup.class,JENKINS);
+    public static final PermissionScope ITEM_GROUP = new PermissionScope(ItemGroup.class, JENKINS);
 
     /**
      * Permissions scoped to {@link Item}s (including {@link Job}s and other subtypes)
      */
-    public static final PermissionScope ITEM = new PermissionScope(Item.class,ITEM_GROUP);
+    public static final PermissionScope ITEM = new PermissionScope(Item.class, ITEM_GROUP);
 
     /**
      * Permissions scoped to {@link Run}s (including {@link Build}s and other subtypes)
      */
-    public static final PermissionScope RUN = new PermissionScope(Run.class,ITEM);
+    public static final PermissionScope RUN = new PermissionScope(Run.class, ITEM);
 
     /**
      * Permissions scoped to {@link Node}s or {@link Computer}s (generally interchangeably).
      */
-    public static final PermissionScope COMPUTER = new PermissionScope(Computer.class,JENKINS);
+    public static final PermissionScope COMPUTER = new PermissionScope(Computer.class, JENKINS);
 }

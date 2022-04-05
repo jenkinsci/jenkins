@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins;
 
-import hudson.ExtensionPoint;
+package jenkins;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionPoint;
 import java.net.URL;
 
 /**
@@ -40,7 +40,6 @@ public interface PluginLocaleDrivenResourceProvider extends ExtensionPoint {
      *
      * @see org.kohsuke.stapler.LocaleDrivenResourceProvider
      *
-     * @param s
      * @return URL to the localized resource, or {@code null} if inapplicable.
      */
     @CheckForNull

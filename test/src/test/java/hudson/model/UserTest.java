@@ -22,7 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -31,16 +47,17 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import hudson.ExtensionList;
-
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.GroupDetails;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import hudson.tasks.MailAddressResolver;
 import java.io.File;
 import java.io.IOException;
@@ -49,32 +66,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-
 import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -85,6 +80,12 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Category(SmokeTest.class)
 public class UserTest {
@@ -109,14 +110,17 @@ public class UserTest {
             return descriptorImpl;
         }
 
+        @Override
         public String getIconFileName() {
           return "/images/24x24/gear.png";
         }
 
+        @Override
         public String getDisplayName() {
           return "UserPropertyImpl";
         }
 
+        @Override
         public String getUrlName() {
           return "userpropertyimpl";
         }
@@ -155,7 +159,7 @@ public class UserTest {
         j.assertAllImageLoadSuccessfully(page);
     }
 
-    @Test public void getAuthorities() throws Exception {
+    @Test public void getAuthorities() {
         JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
         realm.addGroups("administrator", "admins");
         realm.addGroups("alice", "users");
@@ -168,12 +172,12 @@ public class UserTest {
         SecurityContext seccon = SecurityContextHolder.getContext();
         Authentication orig = seccon.getAuthentication();
         try {
-            seccon.setAuthentication(User.get("administrator").impersonate());
+            seccon.setAuthentication(User.get("administrator").impersonate2());
             assertEquals("[admins]", User.get("administrator").getAuthorities().toString());
             assertEquals("[users]", User.get("alice").getAuthorities().toString());
             assertEquals("[lpadmin, users]", User.get("bob").getAuthorities().toString());
             assertEquals("[]", User.get("MasterOfXaos").getAuthorities().toString());
-            seccon.setAuthentication(User.get("alice").impersonate());
+            seccon.setAuthentication(User.get("alice").impersonate2());
             assertEquals("[]", User.get("alice").getAuthorities().toString());
             assertEquals("[]", User.get("bob").getAuthorities().toString());
         } finally {
@@ -194,7 +198,7 @@ public class UserTest {
         User user3 = User.get("John Smith");
         user3.setFullName("Alice Smith");
         assertEquals("What was this asserting exactly?", "John Smith", user3.getId());
-        User user4 = User.get("Marie",false, Collections.EMPTY_MAP);
+        User user4 = User.get("Marie", false, Collections.EMPTY_MAP);
         assertNull("User should not be created because Marie does not exists.", user4);
         }
     }
@@ -232,10 +236,12 @@ public class UserTest {
 
     private static class IdStrategySpecifyingSecurityRealm extends HudsonPrivateSecurityRealm {
         private final IdStrategy idStrategy;
+
         IdStrategySpecifyingSecurityRealm(IdStrategy idStrategy) {
             super(true, false, null);
             this.idStrategy = idStrategy;
         }
+
         @Override
         public IdStrategy getUserIdStrategy() {
             return idStrategy;
@@ -263,7 +269,7 @@ public class UserTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.get("John Smith");
         assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertEquals("User John Smith should be the current user.", user.getId(), User.current().getId());
     }
 
@@ -377,8 +383,8 @@ public class UserTest {
         j.jenkins.reload();
         {
          boolean contained = false;
-         for(User u: User.getAll()){
-             if(u.getId().equals("John Smith")){
+         for (User u : User.getAll()) {
+             if (u.getId().equals("John Smith")) {
                  contained = true;
                  break;
              }
@@ -399,21 +405,13 @@ public class UserTest {
         user2.save();
         auth.add(Jenkins.ADMINISTER, user.getId());
         auth.add(Jenkins.READ, user2.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
-        try{
-            user.doConfigSubmit(null, null);
-            fail("User should not have permission to configure another user.");
-        }
-        catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
-               fail("AccessDeniedException should be thrown.");
-            }
-        }
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
+        assertThrows("User should not have permission to configure another user.", AccessDeniedException3.class, () -> user.doConfigSubmit(null, null));
         form = j.createWebClient().withBasicCredentials(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
 
         form.getInputByName("_.fullName").setValueAttribute("John");
@@ -435,7 +433,7 @@ public class UserTest {
         user2.save();
         auth.add(Jenkins.ADMINISTER, user.getId());
         auth.add(Jenkins.READ, user2.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/delete").getFormByName("delete");
         j.submit(form);
         assertFalse("User should be deleted from memory.", User.getAll().contains(user2));
@@ -443,13 +441,13 @@ public class UserTest {
         User.reload();
         assertNull("Deleted user should not be loaded.", User.get(user2.getId(),false, Collections.EMPTY_MAP));
         user2 = realm.createAccount("John Smith2", "password");
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try{
             user.doDoDelete(null, null);
             fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if (!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         }
@@ -476,14 +474,14 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","password");
+        User user = realm.createAccount("John Smith", "password");
         User user2 = realm.createAccount("John Smith2", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
         assertTrue("Current user should always have permission read to himself.", user.hasPermission(Permission.READ));
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user2.hasPermission(Permission.READ));
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
         user2 = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user2.hasPermission(Permission.READ));
     }
@@ -495,17 +493,17 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","password");
-        User user2 = realm.createAccount("John Smith2","password");
+        User user = realm.createAccount("John Smith", "password");
+        User user2 = realm.createAccount("John Smith2", "password");
         user2.save();
 
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Ordinary user cannot delete somebody else", user2.canDelete());
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Administrator can delete anybody else", user2.canDelete());
         assertFalse("User (even admin) cannot delete himself", user.canDelete());
 
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         auth.add(Jenkins.ADMINISTER, user2.getId());
         User user3 = User.get("Random Somebody");
         assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
@@ -517,7 +515,7 @@ public class UserTest {
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -531,29 +529,23 @@ public class UserTest {
         auth.add(Jenkins.ADMINISTER, admin.getId());
 
         // Admin can change everyone's token
-        SecurityContextHolder.getContext().setAuthentication(admin.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(admin.impersonate2());
         admin.getProperty(ApiTokenProperty.class).changeApiToken();
         alice.getProperty(ApiTokenProperty.class).changeApiToken();
 
         // User can change only own token
-        SecurityContextHolder.getContext().setAuthentication(bob.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(bob.impersonate2());
         bob.getProperty(ApiTokenProperty.class).changeApiToken();
-        try {
-            alice.getProperty(ApiTokenProperty.class).changeApiToken();
-            fail("Bob should not be authorized to change alice's token");
-        } catch (AccessDeniedException expected) { }
+        assertThrows("Bob should not be authorized to change alice's token", AccessDeniedException3.class, () -> alice.getProperty(ApiTokenProperty.class).changeApiToken());
 
-        // ANONYMOUS can not change any token
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
-        try {
-            alice.getProperty(ApiTokenProperty.class).changeApiToken();
-            fail("Anonymous should not be authorized to change alice's token");
-        } catch (AccessDeniedException expected) { }
+        // ANONYMOUS2 can not change any token
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
+        assertThrows("Anonymous should not be authorized to change alice's token", AccessDeniedException3.class, () -> alice.getProperty(ApiTokenProperty.class).changeApiToken());
     }
 
     @Issue("SECURITY-243")
     @Test
-    public void resolveByIdThenName() throws Exception{
+    public void resolveByIdThenName() throws Exception {
         j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null));
 
         User u1 = User.get("user1");
@@ -598,14 +590,14 @@ public class UserTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void resolveByUnloadedIdThenName() throws Exception {
+    public void resolveByUnloadedIdThenName() {
         j.jenkins.setSecurityRealm(new ExternalSecurityRealm());
         // do *not* call this here: User.get("victim");
         User attacker1 = User.get("attacker1");
         attacker1.setFullName("victim1");
         User victim1 = User.get("victim1");
         assertEquals("victim1 is a real user ID, we must ignore the attacker1’s fullName", "victim1", victim1.getId());
-        assertEquals("a recursive call to User.get was OK", null, victim1.getProperty(MyViewsProperty.class).getPrimaryViewName());
+        assertNull("a recursive call to User.get was OK", victim1.getProperty(MyViewsProperty.class).getPrimaryViewName());
         assertEquals("(though the realm mistakenly added metadata to the attacker)", "victim1", attacker1.getProperty(MyViewsProperty.class).getPrimaryViewName());
         User.get("attacker2").setFullName("nonexistent");
         assertEquals("but if we cannot find such a user ID, allow the fullName", "attacker2", User.get("nonexistent").getId());
@@ -618,11 +610,11 @@ public class UserTest {
 
     private static class ExternalSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             if (username.equals("nonexistent")) {
                 throw new UsernameNotFoundException(username);
             } else if (username.equals("unknown")) {
-                throw new UserMayOrMayNotExistException(username);
+                throw new UserMayOrMayNotExistException2(username);
             } else {
                 String canonicalName = username.toLowerCase(Locale.ENGLISH);
                 try {
@@ -630,15 +622,17 @@ public class UserTest {
                 } catch (IOException x) {
                     throw new RuntimeException(x);
                 }
-                return new org.acegisecurity.userdetails.User(canonicalName, "", true, true, true, true, new GrantedAuthority[] {AUTHENTICATED_AUTHORITY});
+                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY2));
             }
         }
+
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-            return loadUserByUsername(username); // irrelevant
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+            return loadUserByUsername2(username); // irrelevant
         }
+
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname); // irrelevant
         }
     }
@@ -783,4 +777,26 @@ public class UserTest {
         assertThat(failingResources, empty());
     }
 
+    @Test
+    public void legacyCallerGetsUserMayOrMayNotExistException() {
+        final SecurityRealm realm = new NonEnumeratingAcegiSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm.loadUserByUsername("unknown"));
+
+        final SecurityRealm realm2 = new NonEnumeratingSpringSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm2.loadUserByUsername("unknown"));
+    }
+
+    private static class NonEnumeratingAcegiSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException(username + " not found");
+        }
+    }
+
+    private static class NonEnumeratingSpringSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException2(username + " not found");
+        }
+    }
 }
