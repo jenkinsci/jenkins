@@ -237,6 +237,14 @@ THE SOFTWARE.
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-minimal-supported.jar</destFileName>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>3.13</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-unsupported.jar</destFileName>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>

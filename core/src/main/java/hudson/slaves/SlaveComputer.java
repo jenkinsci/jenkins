@@ -1159,7 +1159,8 @@ public class SlaveComputer extends Computer {
      * Escape hatch for allowing connections from agents with unsupported Remoting versions.
      */
     @Restricted(NoExternalUse.class)
-    static /* not final */ boolean ALLOW_UNSUPPORTED_REMOTING_VERSIONS = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedRemotingVersions");
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final */ boolean ALLOW_UNSUPPORTED_REMOTING_VERSIONS = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedRemotingVersions");
 
     // use RingBufferLogHandler class name to configure for backward compatibility
     private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
