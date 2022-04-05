@@ -32,7 +32,7 @@ THE SOFTWARE.
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <f:form method="post" action="configSubmit" name="config">
+      <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
         <j:set var="instance" value="${it.node}" />
         <j:set var="descriptor" value="${instance.descriptor}" />
 
