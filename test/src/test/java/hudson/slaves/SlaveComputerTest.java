@@ -71,7 +71,7 @@ public class SlaveComputerTest {
         Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
         Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
         Assert.assertTrue(log.contains("Communication Protocol: Standard in/out"));
-        Assert.assertTrue(log.contains("This is a Unix agent"));
+        Assert.assertTrue(log.contains(String.format("This is a %s agent", Functions.isWindows() ? "Windows" : "Unix")));
     }
 
     @Test
