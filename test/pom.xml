@@ -335,7 +335,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.7</version>
+            <version>0.8.8</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which
