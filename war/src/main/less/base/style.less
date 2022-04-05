@@ -58,6 +58,10 @@ dt {
   font-weight: bold;
 }
 
+::selection {
+  background: var(--selection-color);
+}
+
 .fixed-width {
   font-family: monospace;
 }
@@ -122,6 +126,18 @@ td.center-align {
 
 a {
   .link();
+}
+
+.jenkins-link--with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-color) !important;
+  }
 }
 
 p a {
@@ -219,13 +235,21 @@ td.tab {
 }
 
 pre {
-    white-space: pre-wrap;       /* css-3 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
-    margin: 0;
-}
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0 0 var(--section-padding);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+  color: var(--pre-color) !important;
+  font-family: var(--font-family-mono) !important;
+  font-weight: 500 !important;
+  line-height: 1.66 !important;
 
-pre a {
+  a {
+    font-weight: inherit;
     word-wrap: break-word;
+  }
 }
 
 pre.console {
@@ -256,10 +280,6 @@ pre.console {
 
 .setting-checkbox {
   font-weight: 500;
-}
-
-.setting-main {
-  width: 100%; /* try to make this column as big as possible. */
 }
 
 .setting-help {
@@ -322,10 +342,6 @@ pre.console {
 /* div that looks like a hyperlink */
 .pseudoLink {
   cursor: pointer;
-}
-
-.advancedLink {
-  text-align: right;
 }
 
 .advancedBody {
@@ -397,10 +413,15 @@ pre.console {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
-  padding: 4px;
-  white-space: normal;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
 }
 
 .disabledJob {
@@ -449,34 +470,78 @@ div.behavior-loading {
   }
 }
 
-label.attach-previous {
-    margin-left: 0.5em;
-}
-
 .bottom-sticker,
 #bottom-sticker {
-    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+  position: sticky;
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: -2rem;
+  width: calc(100% + 4rem);   /* it needs to occupy the entire width or else the underlying content will see through */
+  z-index: 999;
 }
 
 .bottom-sticker-inner {
+  position: relative;
+  padding: 1em 2rem;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
     background: var(--background);
-    padding: 1em 0;
+    opacity: 0;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(to right, transparent, white 2rem, white calc(100% - 2rem), transparent);
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  .yui-button {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
 }
 
 .top-sticker,
 #top-sticker {
     width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
-}
-
-.top-sticker-inner {
-    padding: 1em;
-}
-
-.top-sticker-edge {
-    height: 16px;
-    background-image: url("../../images/top-sticker-bottom-edge.png");
-    background-repeat: repeat-x;
 }
 
 .top-sticker.noedge > .top-sticker-edge {
@@ -524,13 +589,25 @@ label.attach-previous {
 }
 
 .info {
-    color: var(--text-color);
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    background-image: url("../../images/16x16/go-next.png"); /* TODO: get a better icon */
-    background-position: left center;
-    background-repeat: no-repeat;
+  position: relative;
+  color: var(--text-color);
+  font-weight: bold;
+  min-height: 16px;
+  padding-left: 30px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EArrow Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M268 112l144 144-144 144M392 256H100'/%3E%3C/svg%3E");
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+  }
 }
 
 .icon16x16 {
@@ -716,7 +793,14 @@ table.parameters > tbody:hover {
 
   table {
     border-radius: 0;
-    min-width: 450px;
+    width: 450px;
+    margin-bottom: 0;
+    box-sizing: content-box;
+    padding-bottom: 2px;
+
+    * {
+      box-sizing: border-box;
+    }
   }
 }
 
@@ -760,6 +844,11 @@ table.parameters > tbody:hover {
 #buildHistory .build-rss-all-icon,
 #buildHistory .build-rss-failed-icon {
   margin-right: 0.25rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 #buildHistoryPage {
@@ -917,26 +1006,67 @@ table.parameters > tbody:hover {
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
-  border: 1px solid #000;
-  overflow: visible;
-  background-color: white;
-  color: black;
+  overflow-y: scroll;
+  color: var(--text-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(black, 0.15);
+  margin-top: 8px;
+  margin-left: 3px;
+  max-height: 300px;
+  z-index: 1000;
+  background: var(--background);
+  padding: 0.3rem;
 }
 
-.comboBoxSelectedItem {
-  background-color: Highlight;
-  color: HighlightText;
+.comboBoxItem {
+  position: relative;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--text-color);
+    border-radius: 10px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    z-index: -1;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.1;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+  }
 }
 
 .combobox-values {
   display: none;
 }
 
-
 /* ========================= directory tree ========================= */
-.parentPath {
-  font-size: var(--font-size-base);
-  font-weight: bold;
+.parentPath form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .jenkins-input {
+    display: inline-flex;
+    width: 300px;
+  }
 }
 
 .dirTree li {
@@ -948,18 +1078,20 @@ table.parameters > tbody:hover {
 }
 
 table.fileList {
-  margin-left: 2em;
   padding: 0;
 }
 
-table.fileList td {
-  padding: 0;
+table.fileList td:not(:first-of-type) {
+  padding: 0 1rem 0 0;
+  color: var(--text-color-secondary);
+
+  svg {
+    color: var(--link-color) !important;
+  }
 }
 
 table.fileList td.fileSize {
-  padding-left: 2em;
   text-align: right;
-  color: #888;
 }
 
 
@@ -1008,65 +1140,50 @@ table.fingerprint-in-build td {
   padding-right: 1em;
 }
 
-/* ========================= repeatable elements ========================= */
+.radioBlock-container {
+  margin-bottom: calc(var(--section-padding) / 3);
 
-.repeated-chunk {
-    border: 2px dashed transparent;
-    padding-left: 1.5rem;
-}
-
-.repeated-chunk.hover {
-    border-color: var(--medium-grey);
-}
-
-.repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
-
-/*
-    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
-    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
-    when the user does "Add".
-*/
-div.to-be-removed { display: none; }
-
-/* ========================= Other form related CSS ========================= */
-
-.form-container {
-  max-width: 100%;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .optionalBlock-container > .form-container,
 .radioBlock-container > .form-container,
 .dropdownList-container {
-  margin-left: 0.25rem;
-  border-left: 2px dashed rgba(0, 0, 0, 0.33);
-  padding-left: 1rem;
+  position: relative;
+  padding-left: 32px;
+  transition: var(--standard-transition);
+  margin-top: calc(var(--section-padding) / 3);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    bottom: 0;
+    width: 2px;
+    background: var(--input-border);
+    border-radius: 2px;
+    transition: var(--standard-transition);
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.dropdownList-container {
+  margin-bottom: var(--section-padding);
+}
+
+.form-container--hidden {
+  visibility: hidden !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
+  overflow: hidden;
 }
 
 .row-set-end { display: none; }
@@ -1095,50 +1212,6 @@ div.textarea-handle {
 
 textarea.rich-editor {
   visibility: hidden;
-}
-
-/* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container .has-help .dd-handle {
-    flex: 1;
-}
-
-.hetero-list-container .dd-handle,
-.repeated-container .dd-handle {
-    cursor: move;
-    background-image: url(../../images/grip.png);
-    background-repeat: repeat-y;
-    padding-left: 20px;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk,
-.repeated-container.with-drag-drop .repeated-chunk {
-    padding: 0.5em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    padding-left: 1.5rem;
-}
-
-.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
-.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
-  margin-left: -1.25rem;
-}
-
-// SortableJS drag & drop classes
-.repeated-chunk--sortable-ghost {
-  height: 100px;
-  width: 100%;
-  overflow: hidden;
-}
-.repeated-chunk--sortable-chosen {
-  height: 100px;
-  width: 100%;
-  background-color: transparent;
-  border: 2px solid var(--primary);
-
-  & > * {
-    display: none;
-  }
 }
 
 /*
@@ -1334,9 +1407,30 @@ table.progress-bar.red td.progress-bar-done {
 .textarea-preview {
     background-color: var(--very-light-grey);
     padding: 0.5em;
+    border-radius: 10px;
 }
 
 /* ========================= logRecords.jelly ================== */
+
+.logrecord-container {
+  border-radius: 10px;
+  overflow: hidden;
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+}
 
 .logrecord-metadata {
     font-size: var(--font-size-xs);
@@ -1468,7 +1562,7 @@ body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
 
-body.no-decoration #page-head,
+body.no-decoration #page-header,
 body.no-decoration #side-panel,
 body.no-decoration footer {
     display: none;
@@ -1483,24 +1577,48 @@ body.no-sticker #bottom-sticker {
 svg.icon-sm {
     width: 16px;
     height: 16px;
+    vertical-align: top;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .icon-md,
 svg.icon-md {
     width: 24px;
     height: 24px;
+    vertical-align: top;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .icon-lg,
 svg.icon-lg {
     width: 32px;
     height: 32px;
+    vertical-align: top;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .icon-xlg,
 svg.icon-xlg {
     width: 48px;
     height: 48px;
+    vertical-align: top;
+
+  svg {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* -------------------------------------- */
@@ -1535,6 +1653,17 @@ svg.icon-xlg {
 /* used by elements that are hidden by default but revealed throught JavaScript */
 .default-hidden {
   display: none;
+}
+
+.app-summary {
+  & > td:first-of-type {
+    img,
+    svg {
+      width: 48px !important;
+      height: 48px !important;
+      margin-right: 1rem;
+    }
+  }
 }
 
 /* -------------------------------------- */

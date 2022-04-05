@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <j:if test="${mode=='breadcrumbs'}">
     <li id="${attrs.id}" class="item">
-      <a href="${attrs.href}" class="model-link inside">
+      <a href="${attrs.href}">
         ${attrs.title}
       </a>
     </li>

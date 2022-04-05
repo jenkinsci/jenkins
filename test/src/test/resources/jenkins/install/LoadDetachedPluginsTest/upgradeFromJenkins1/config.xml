@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <hudson>
   <disabledAdministrativeMonitors/>
-  <version>1.550</version>
+  <version>1.490</version>
   <numExecutors>2</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>

@@ -13,8 +13,11 @@ import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewTest.CompositeView;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -156,8 +159,16 @@ public class ListJobsCommandTest {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
+                Charset charset;
                 try {
-                    return item.toString(command.getClientCharset().name()).isEmpty();
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    return item.toString(charset.name()).isEmpty();
                 } catch (UnsupportedEncodingException e) {
                     throw new AssertionError(e);
                 }
@@ -179,8 +190,16 @@ public class ListJobsCommandTest {
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
                 Set<String> jobs;
+                Charset charset;
                 try {
-                    jobs = new HashSet<>(Arrays.asList(item.toString(command.getClientCharset().name()).split(System.getProperty("line.separator"))));
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    jobs = new HashSet<>(Arrays.asList(item.toString(charset.name()).split(System.getProperty("line.separator"))));
                 } catch (UnsupportedEncodingException e) {
                     throw new AssertionError(e);
                 }

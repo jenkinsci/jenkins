@@ -38,7 +38,7 @@ THE SOFTWARE.
         ${act.displayName}
       </t:summary>
     </j:forEach>
-    <t:summary icon="folder.png" href="ws/" permission="${it.WORKSPACE}">
+    <t:summary icon="symbol-folder" href="ws/" permission="${it.WORKSPACE}">
       ${%Workspace}
     </t:summary>
 
@@ -46,7 +46,7 @@ THE SOFTWARE.
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
         permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
 
-    <t:summary icon="notepad.png" href="changes">
+    <t:summary icon="symbol-changes" href="changes">
       ${%Recent Changes}
     </t:summary>
 

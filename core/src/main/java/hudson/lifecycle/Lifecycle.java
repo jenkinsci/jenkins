@@ -304,7 +304,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * @param timeout The amount by which to extend the timeout.
      * @param unit The time unit of the timeout argument.
      *
-     * @since TODO
+     * @since 2.335
      */
     public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
 

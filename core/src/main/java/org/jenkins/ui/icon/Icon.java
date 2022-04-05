@@ -221,7 +221,11 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        return "icon-" + toNormalizedIconName(string);
+        String iconName = toNormalizedIconName(string);
+        if (iconName.startsWith("icon-")) {
+            return iconName;
+        }
+        return "icon-" + iconName;
     }
 
     /**

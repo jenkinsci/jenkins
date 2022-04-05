@@ -27,7 +27,6 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${%title(it)}
       </h1>
 
