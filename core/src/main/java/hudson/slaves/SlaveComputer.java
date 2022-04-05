@@ -665,7 +665,7 @@ public class SlaveComputer extends Computer {
                 taskListener.fatalError(
                         "Rejecting connection because the Remoting version is older than the minimum required version (%s).%n",
                         RemotingVersionInfo.getMinimumSupportedVersion());
-                disconnect(new OfflineCause.ChannelTermination(new Exception("terminate")));
+                disconnect(new OfflineCause.LaunchFailed());
                 return;
             } else {
                 taskListener.error(
