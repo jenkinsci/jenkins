@@ -143,12 +143,6 @@ public class SlaveComputer extends Computer {
     private transient int numRetryAttempt;
 
     /**
-     * Escape hatch for rejecting connections from agents with unsupported Remoting versions
-     */
-    @Restricted(NoExternalUse.class)
-    private static boolean REJECT_CONNECTION = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedAgentConnection");
-
-    /**
      * Tracks the status of the last launch operation, which is always asynchronous.
      * This can be used to wait for the completion, or cancel the launch activity.
      */
@@ -667,7 +661,7 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            if (REJECT_CONNECTION) {
+            if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
                 taskListener.fatalError(
                         "Rejecting connection because the Remoting version is older than the minimum required version (%s).%n",
                         RemotingVersionInfo.getMinimumSupportedVersion());
@@ -1155,6 +1149,12 @@ public class SlaveComputer extends Computer {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
         }
     }
+
+    /**
+     * Escape hatch for allowing connections from agents with unsupported Remoting versions.
+     */
+    @Restricted(NoExternalUse.class)
+    static /* not final */ boolean ALLOW_UNSUPPORTED_REMOTING_VERSIONS = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedRemotingVersions");
 
     // use RingBufferLogHandler class name to configure for backward compatibility
     private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
