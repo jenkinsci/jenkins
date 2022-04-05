@@ -50,6 +50,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.CommandTransport;
+import hudson.remoting.Engine;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -665,6 +666,13 @@ public class SlaveComputer extends Computer {
                     RemotingVersionInfo.getMinimumSupportedVersion());
         }
 
+        log.println("Launcher: " + getLauncher().getClass().getSimpleName());
+
+        String communicationProtocol = channel.call(new CommunicationProtocol());
+        if (communicationProtocol != null) {
+            log.println("Communication Protocol: " + communicationProtocol);
+        }
+
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix ? hudson.model.Messages.Slave_UnixSlave() : hudson.model.Messages.Slave_WindowsSlave());
 
@@ -1002,6 +1010,22 @@ public class SlaveComputer extends Computer {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older agent.jar won't have VERSION
+        }
+    }
+
+    private static final class CommunicationProtocol extends MasterToSlaveCallable<String, IOException> {
+        @Override
+        public String call() throws IOException {
+            try {
+                Engine engine = Engine.current();
+                if (engine != null) {
+                    return engine.getProtocolName();
+                }
+                return Launcher.getCommunicationProtocolName();
+            } catch (NoSuchMethodError ex) {
+                // Remoting does not support this feature
+                return null;
+            }
         }
     }
 
