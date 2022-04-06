@@ -673,7 +673,7 @@ public class SlaveComputer extends Computer {
             } else {
                 taskListener.error(
                         "The Remoting version is older than the minimum required version (%s)."
-                            + " The connection will not be rejected, but compatibility is NOT"
+                            + " The connection will be allowed, but compatibility is NOT"
                             + " guaranteed.%n",
                         RemotingVersionInfo.getMinimumSupportedVersion());
             }
