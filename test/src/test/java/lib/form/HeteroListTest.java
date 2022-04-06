@@ -191,22 +191,6 @@ public class HeteroListTest {
         // "delete" then "add" makes us coming back in scenario covered by xssUsingToolInstallationRepeatableAdd
     }
 
-    @Test
-    @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_repeatableDelete() throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        HtmlPage page = wc.goTo("configureTools/");
-
-        // we could also re-use the same method as used in xssUsingToolInstallationRepeatableAdd
-        page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].click()");
-
-        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.tooltip.includes('Delete XSS'))[0].innerHTML").getJavaScriptResult();
-        assertThat(result, instanceOf(String.class));
-        String resultString = (String) result;
-        assertThat(resultString, not(containsString("<img")));
-    }
-
     public static class TestItemDescribable implements Describable<TestItemDescribable> {
         @Override
         public Descriptor<TestItemDescribable> getDescriptor() {

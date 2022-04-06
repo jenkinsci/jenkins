@@ -24,22 +24,13 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.ArtifactArchiver;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.Builder;
-import hudson.tasks.Fingerprinter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
@@ -112,60 +103,6 @@ public class RunTest  {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.delete();
         assertTrue(Mgr.deleted.get());
-    }
-
-    @Issue("SECURITY-1902")
-    @Test public void preventXssInBadgeTooltip() throws Exception {
-        j.jenkins.setQuietPeriod(0);
-        /*
-         * The scenario to trigger is to have a build protected from deletion because of an upstream protected build.
-         * Once we have that condition, we need to ensure the upstream project has a dangerous name
-         */
-        FreeStyleProject up = j.createFreeStyleProject("up");
-        up.getBuildersList().add(new WriteFileStep());
-        up.getPublishersList().add(new Fingerprinter("**/*"));
-
-        FullNameChangingProject down = j.createProject(FullNameChangingProject.class, "down");
-        down.getBuildersList().add(new WriteFileStep());
-        down.getPublishersList().add(new Fingerprinter("**/*"));
-        // protected field, we are in the same package
-        down.keepDependencies = true;
-
-        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false));
-
-        j.jenkins.rebuildDependencyGraph();
-
-        FreeStyleBuild upBuild = j.buildAndAssertSuccess(up);
-        j.waitUntilNoActivity();
-        CustomBuild downBuild = down.getBuilds().getLastBuild();
-        assertNotNull("The down build must exist, otherwise the up's one is not protected.", downBuild);
-
-        // updating the name before the build is problematic under Windows
-        // so we are updating internal stuff manually
-        String newName = "Down<img src=x onerror=alert(123)>Project";
-        down.setVirtualName(newName);
-        Fingerprint f = upBuild.getAction(Fingerprinter.FingerprintAction.class).getFingerprints().get("test.txt");
-        f.add(newName, 1);
-
-        // keeping the minimum to validate it's working and it's not exploitable as there are some modifications
-        // like adding double quotes
-        ensureXssIsPrevented(up, "Down", "<img");
-    }
-
-    private void ensureXssIsPrevented(FreeStyleProject upProject, String validationPart, String dangerousPart) throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-        HtmlPage htmlPage = wc.goTo(upProject.getUrl());
-
-        // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge img')._tippy.show()");
-        wc.waitForBackgroundJavaScript(500);
-        ScriptResult result = htmlPage.executeJavaScript("document.querySelector('#tippy-4').innerHTML;");
-        Object jsResult = result.getJavaScriptResult();
-        assertThat(jsResult, instanceOf(String.class));
-        String jsResultString = (String) jsResult;
-
-        assertThat("The tooltip does not work as expected", jsResultString, containsString(validationPart));
-        assertThat("XSS not prevented", jsResultString, not(containsString(dangerousPart)));
     }
 
     public static class WriteFileStep extends Builder {

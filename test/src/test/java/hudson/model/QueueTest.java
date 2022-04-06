@@ -1261,19 +1261,6 @@ public class QueueTest {
         assertThat(tooltip, containsString(expectedLabel.substring(1, expectedLabel.length() - 1)));
     }
 
-    @Test
-    @Issue("SECURITY-1537")
-    public void preventXssInCauseOfBlocking() throws Exception {
-        FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedLabel(Label.get("\"<img/src='x' onerror=alert(123)>xss\""));
-
-        p.scheduleBuild2(0);
-
-        String tooltip = buildAndExtractTooltipAttribute();
-        assertThat(tooltip, not(containsString("<img")));
-        assertThat(tooltip, containsString("&lt;"));
-    }
-
     private String buildAndExtractTooltipAttribute() throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
 
