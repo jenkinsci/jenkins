@@ -51,7 +51,7 @@ public class UnsupportedRemotingAgentEscapeHatchTest {
     public void shouldBeAbleToConnectAgentWithUnsupportedVersionWithEscapeHatch() throws Exception {
         Slave agent = j.createOnlineSlave();
         assertThat(agent.toComputer().getLog(), containsString("The Remoting version is older than the minimum required version"));
-        assertThat(agent.toComputer().getLog(), containsString("The connection will not be rejected, but compatibility is NOT guaranteed"));
+        assertThat(agent.toComputer().getLog(), containsString("The connection will be allowed, but compatibility is NOT guaranteed"));
 
         // Ensure we are able to run something on the agent
         FreeStyleProject project = j.createFreeStyleProject("foo");
