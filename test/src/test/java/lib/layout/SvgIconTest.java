@@ -26,16 +26,12 @@ package lib.layout;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -76,47 +72,6 @@ public class SvgIconTest  {
                 containsString(expectedTooltip),
                 not(containsString(pristineTooltip))
         ));
-    }
-
-    @Test
-    @Issue("SECURITY-1955")
-    public void preventXssFromTooltip() throws Exception {
-        TestRootAction testRootAction = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
-
-        String desiredTooltip = "Tooltip with <img src=x onerror=alert(123)> payload included";
-        testRootAction.tooltipContent = desiredTooltip;
-
-        ensureXssIsPrevented(testRootAction, "Tooltip with", "<img");
-    }
-
-    private void ensureXssIsPrevented(TestRootAction testRootAction, String validationPart, String dangerousPart) throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        AtomicBoolean alertTriggered = new AtomicBoolean(false);
-        wc.setAlertHandler((p, s) -> {
-            alertTriggered.set(true);
-        });
-
-        HtmlPage page = wc.goTo(testRootAction.getUrlName());
-
-        // now it's a regular title, but without the correction, the tooltip will be triggered
-
-        // title field is modified by Yahoo tooltip, title attribute is set by the new code
-        ScriptResult controlResult = page.executeJavaScript("var s = document.querySelector('#test-panel svg'); s.title || s.getAttribute('title');");
-        Object jsControlResult = controlResult.getJavaScriptResult();
-        assertThat(jsControlResult, instanceOf(String.class));
-        String jsControlString = (String) jsControlResult;
-        assertThat("The title attribute is not populated", jsControlString, containsString(validationPart));
-
-        page.executeJavaScript("document.querySelector('#test-panel svg').dispatchEvent(new Event('mouseover'));");
-        wc.waitForBackgroundJavaScript(1000);
-        ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");
-        Object jsResult = result.getJavaScriptResult();
-        assertThat(jsResult, instanceOf(String.class));
-        String jsResultString = (String) jsResult;
-
-        assertThat("XSS not prevented (content)", jsResultString, not(containsString(dangerousPart)));
-        assertFalse("XSS not prevented (alert)", alertTriggered.get());
     }
 
     @TestExtension
