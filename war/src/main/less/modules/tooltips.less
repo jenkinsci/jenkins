@@ -1,14 +1,31 @@
 .tippy-box[data-theme~='tooltip'] {
-  background: var(--tooltip-background);
   color: var(--tooltip-color);
   padding: 0.55rem 0.8rem;
   border-radius: 10px;
   box-shadow: var(--tooltip-box-shadow);
   font-weight: 500;
   font-size: 0.75rem;
-  backdrop-filter: saturate(2) blur(15px);
   max-width: unset !important;
   white-space: pre-line;
+  z-index: 0;
+
+  // The @supports can be removed when Firefox supports backdrop-filter
+  @supports (backdrop-filter: blur(15px)) {
+    backdrop-filter: saturate(2) blur(15px);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--tooltip-background);
+    z-index: -1;
+    border-radius: inherit;
+
+    @supports (backdrop-filter: blur(15px)) {
+      opacity: 0.55;
+    }
+  }
 
   .tippy-content {
     padding: 0;
