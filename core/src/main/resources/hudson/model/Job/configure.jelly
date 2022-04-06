@@ -49,7 +49,7 @@ THE SOFTWARE.
         <div class="jenkins-app-bar">
           <div class="jenkins-app-bar__content">
             <h2>
-              <div class="jenkins-visually-hidden">
+              <div class="jenkins-hidden">
                 <l:icon src="symbol-settings" />
               </div>
               <span>${%General}</span>
@@ -76,8 +76,8 @@ THE SOFTWARE.
 
         <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
           <f:bottomButtonBar>
-            <f:submit value="${%Save}" large="true"/>
-            <f:apply value="${%Apply}" large="true" />
+            <f:submit value="${%Save}" />
+            <f:apply value="${%Apply}" />
           </f:bottomButtonBar>
         </j:if>
       </f:form>

@@ -31,6 +31,9 @@ THE SOFTWARE.
       The section header text.
       If null is given, the entire &lt;f:section> tag becomes no-op.
     </st:attribute>
+    <st:attribute name="icon">
+      Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js
+    </st:attribute>
     <st:attribute name="name">
       Optional attribute to create a JSON object from this section.
     </st:attribute>
@@ -42,6 +45,9 @@ THE SOFTWARE.
     <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
+          <div class="jenkins-hidden">
+            <l:icon src="${icon}" />
+          </div>
           ${title}
         </div>
       </j:if>
