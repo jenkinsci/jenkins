@@ -62,6 +62,7 @@ public class RingBufferLogHandler extends Handler {
 
     public RingBufferLogHandler(int ringSize) {
         records = new LogRecordRef[ringSize];
+        new LogRecordRef(new LogRecord(Level.INFO, "just forcing class loading")).get();
     }
 
     /**
