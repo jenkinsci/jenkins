@@ -54,6 +54,23 @@ THE SOFTWARE.
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- force spring core version - CRITICAL CVE-2022-22965 -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>5.3.18</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.18</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>5.3.18</version>
+      </dependency>
+
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
@@ -154,7 +171,7 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
-        <!-- 
+        <!--
               "[0]" is a range that must be exactly 0
               this is different to "0" which is hint to use version 0.
               therefore unless anyone else uses ranges (they should not) this version will always win
