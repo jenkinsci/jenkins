@@ -38,11 +38,8 @@ import hudson.model.User;
 import hudson.remoting.Launcher;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -66,8 +63,7 @@ public class SlaveComputerTest {
     @Test
     public void testAgentLogs() throws Exception {
         DumbSlave node = j.createOnlineSlave();
-        File logFile = node.getComputer().getLogFile();
-        String log = new String(Files.readAllBytes(logFile.toPath()), Charset.defaultCharset());
+        String log = node.getComputer().getLog();
         Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
         Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
         Assert.assertTrue(log.contains("Communication Protocol: Standard in/out"));
