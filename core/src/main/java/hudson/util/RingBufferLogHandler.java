@@ -24,9 +24,11 @@
 
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -36,6 +38,9 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(
+        value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+        justification = "to guard against potential future compiler optimizations")
 public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
@@ -44,6 +49,13 @@ public class RingBufferLogHandler extends Handler {
         LogRecordRef(LogRecord referent) {
             super(referent);
         }
+    }
+
+    static {
+        // Preload the LogRecordRef class to avoid an ABBA deadlock between agent class loading and logging.
+        LogRecord r = new LogRecord(Level.INFO, "<preloading>");
+        // We call Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(new LogRecordRef(r).get());
     }
 
     private int start = 0;
