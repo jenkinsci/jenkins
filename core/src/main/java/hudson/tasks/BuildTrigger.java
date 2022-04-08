@@ -356,6 +356,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
