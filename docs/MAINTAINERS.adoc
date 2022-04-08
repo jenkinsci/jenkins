@@ -95,6 +95,7 @@ Also, not every change needs to be merged into the core.
 Many features would be better introduced as plugins that have separate release cycles and allow delivering changes faster.
 We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
 but we try to keep the core as minimal as possible in terms of dependencies.
+When the motivation of the pull request is unclear, incomplete, or not entirely cogent, the pull request needs to be labeled with `needs-justification`.
 
 ==== Ensuring Compatibility
 
@@ -131,6 +132,7 @@ and we do not enforce a single code style across the codebase at the moment.
   We have a semi-automated process that is based on pull request summaries and labels.
   Core maintainers are expected to validate the entries as a part of the pull request review/merge process.
   See the checklist below in the _Merge process_ section.
+* When the proposed change lacks sufficient documentation, use the `needs-docs` label on the pull request.
 
 ==== Building consensus
 
@@ -140,6 +142,7 @@ but sometimes the changes go straight to the pull requests.
 And we are fine with that, especially for small patches.
 Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
 We are fine with that as well.
+The pull request can be marked with `needs-more-review` to get more eyes on the change.
 If there is no consensus about the feasibility and implementation,
 code reviewers are expected to suggest proper channels for contributors to discuss their contributions.
 
@@ -155,6 +158,9 @@ Code reviews do NOT pursue the following goals:
   Not everything is going to be merged, and reviewers are expected to focus on the Jenkins ecosystem integrity first.
   We guide contributors and help them to get their changes integrated, but it needs cooperation on both sides.
   It is **fine** to close invalid and inactive pull requests if there is no activity by a submitter or other contributors.
+  When a pull request remains inactive for a month, it can be marked with the label `stalled`.
+  If the pull request remains inactive or without consensus for yet another month, the pull request can be marked as `proposed-for-close`.
+  The pull request should then be closed in approximately a week if this state persists.
 * Enforcing a particular coding style.
   Jenkins core has a complex codebase created by many contributors, and different files have different designs.
   Our main goal is to firstly have the code readable by other contributors.

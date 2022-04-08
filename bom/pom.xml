@@ -38,7 +38,7 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.2</asm.version>
+    <asm.version>9.3</asm.version>
     <slf4jVersion>1.7.36</slf4jVersion>
     <stapler.version>1669.v95a_4b_919a_b_a_2</stapler.version>
     <groovy.version>2.4.21</groovy.version>
@@ -50,6 +50,13 @@ THE SOFTWARE.
         <groupId>com.google.inject</groupId>
         <artifactId>guice-bom</artifactId>
         <version>5.0.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>5.3.18</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -242,7 +249,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
