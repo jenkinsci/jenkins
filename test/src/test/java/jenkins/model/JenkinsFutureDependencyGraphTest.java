@@ -28,7 +28,8 @@ public class JenkinsFutureDependencyGraphTest {
         Jenkins jenkins = j.jenkins;
 
         DependencyGraph resultingGraph = jenkins.getFutureDependencyGraph().get();
-        assertThat("Completed future dependency graph should be empty, but wasn't.", resultingGraph, is(DependencyGraph.EMPTY));
+        // If no dependency graph was calculated asynchronously, jenkins should return the synchronously calculated dependency graph.
+        assertThat("The asynchronously calculated dependency graph should be equal to the synchronously calculated dependency graph but wasn't.", resultingGraph, is(jenkins.getDependencyGraph()));
     }
 
 

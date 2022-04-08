@@ -499,7 +499,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient volatile DependencyGraph dependencyGraph;
     private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
-    private transient Future<DependencyGraph> calculatingFutureDependencyGraph = CompletableFuture.completedFuture(DependencyGraph.EMPTY);
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
     private transient Object dependencyGraphLock = new Object();
 
     /**
@@ -4922,8 +4922,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (scheduledFutureDependencyGraph != null) {
                 return scheduledFutureDependencyGraph;
             }
+
             //Calculating future will be the most recent one --> Return
-            return calculatingFutureDependencyGraph;
+            if (calculatingFutureDependencyGraph != null) {
+                return calculatingFutureDependencyGraph;
+            }
+
+            //No scheduled or calculating future --> Already completed dependency graph is the most recent one
+            return CompletableFuture.completedFuture(dependencyGraph);
+
         }
     }
 
@@ -4962,10 +4969,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
-            //Wait for the currently running calculation to finish
-            calculatingFutureDependencyGraph.get();
 
             synchronized (dependencyGraphLock) {
+                //Wait for the currently running calculation to finish
+                if (calculatingFutureDependencyGraph != null) {
+                    calculatingFutureDependencyGraph.get();
+                }
+
                 // Scheduled future becomes the currently calculating future
                 calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
                 scheduledFutureDependencyGraph = null;
