@@ -529,17 +529,14 @@ public class UpdateSite {
 
     /**
      * Is this the legacy default update center site?
+     * @deprecated
+     *      Will be removed, currently returns always false.
+     * @since TODO
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
     public boolean isLegacyDefault() {
-        return isHudsonCI() || isUpdatesFromHudsonLabs();
-    }
-
-    private boolean isHudsonCI() {
-        return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
-    }
-
-    private boolean isUpdatesFromHudsonLabs() {
-        return url != null && url.startsWith("http://updates.hudson-labs.org/");
+        return false;
     }
 
     /**

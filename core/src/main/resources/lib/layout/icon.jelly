@@ -67,8 +67,9 @@ THE SOFTWARE.
       <j:invokeStatic var="icon" className="org.jenkins.ui.icon.IconSet" method="getSymbol">
         <j:arg value="${iconSrc.substring(7)}" />
         <j:arg value="${alt ?: ''}" />
-        <j:arg value="${tooltip ?: ''}" />
+        <j:arg value="${attrs.tooltip ?: ''}" />
         <j:arg value="${iconMetadata.classSpec ?: ''}" />
+        <j:arg value="${h.extractPluginNameFromIconSrc(iconSrc)}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>

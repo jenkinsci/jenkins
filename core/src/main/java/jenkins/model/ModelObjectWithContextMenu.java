@@ -164,7 +164,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * Add a separator row (no icon, no URL, no text).
          *
-         * @since TODO - Provide version
+         * @since 2.340
          */
         public ContextMenu addSeparator() {
             final MenuItem item = new MenuItem();
@@ -319,7 +319,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * The type of menu item
-         * @since TODO
+         * @since 2.340
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")

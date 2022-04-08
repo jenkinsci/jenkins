@@ -105,7 +105,7 @@ THE SOFTWARE.
     <!-- resize handle -->
     <div class="textarea-handle"/>
   </f:possibleReadOnlyField>
-  <j:if test="${attrs.previewEndpoint!=null}">
+  <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
     <div class="textarea-preview-container">
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
         [${app.markupFormatter.descriptor.displayName}]<st:nbsp/>
