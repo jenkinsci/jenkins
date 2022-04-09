@@ -24,66 +24,65 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-import hudson.ExtensionList;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class QueueRestartTest {
 
-    @Rule
-    public RestartableJenkinsRule j = new RestartableJenkinsRule();
+    @Rule public RealJenkinsRule rr = new RealJenkinsRule();
 
+    @LocalData("quietDown")
     @Test
-    public void persistQueueOnRestart() {
-        j.addStep(new Statement() {
-            @Override public void evaluate() throws Throwable {
-                Queue.Saver.DELAY_SECONDS = 24 * 60 * 60; // Avoid period save as we are after the explicit one
-                scheduleSomeBuild();
-                assertBuildIsScheduled();
-            }
-        });
-        j.addStep(new Statement() {
-            @Override public void evaluate() {
-                assertBuildIsScheduled();
-            }
-        });
+    public void persistQueueOnRestart() throws Throwable {
+        // Avoid periodic save in order to test that the cleanup process saves the queue.
+        rr.javaOptions("-Dhudson.model.Queue.Saver.DELAY_SECONDS=" + TimeUnit.DAYS.toSeconds(1));
+
+        rr.then(QueueRestartTest::queueBuild);
+        rr.then(QueueRestartTest::assertBuildFinishes);
     }
 
+    @LocalData("quietDown")
     @Test
-    public void persistQueueOnCrash() {
-        j.addStepWithDirtyShutdown(new Statement() {
-            @Override public void evaluate() throws Throwable {
-                Queue.Saver.DELAY_SECONDS = 0; // Call Queue#save() on every queue modification simulating time has passed before crash
-                scheduleSomeBuild();
-                assertBuildIsScheduled();
+    public void persistQueueOnConsecutiveRestarts() throws Throwable {
+        // Avoid periodic save in order to test that the cleanup process saves the queue.
+        rr.javaOptions("-Dhudson.model.Queue.Saver.DELAY_SECONDS=" + TimeUnit.DAYS.toSeconds(1));
 
-                // Save have no delay though is not synchronous
-                ExtensionList.lookup(Queue.Saver.class).get(0).getNextSave().get(3, TimeUnit.SECONDS);
-
-                assertTrue("queue.xml does not exist", j.j.jenkins.getQueue().getXMLQueueFile().exists());
-            }
-        });
-        j.addStep(new Statement() {
-            @Override public void evaluate() {
-                assertBuildIsScheduled();
-            }
-        });
+        rr.then(QueueRestartTest::queueBuild);
+        rr.then(QueueRestartTest::assertBuildIsScheduled);
+        rr.then(QueueRestartTest::assertBuildFinishes);
     }
 
-    private void assertBuildIsScheduled() {
-        assertEquals(1, j.j.jenkins.getQueue().getItems().length);
-    }
-
-    private void scheduleSomeBuild() throws IOException {
-        FreeStyleProject p = j.j.createFreeStyleProject();
-        p.setAssignedLabel(Label.get("waitforit"));
+    private static void queueBuild(JenkinsRule j) throws IOException {
+        FreeStyleProject p = j.createFreeStyleProject("p");
         p.scheduleBuild2(0);
+        assertBuildIsScheduled(j);
+
+        // Ensure the queue has not been saved in order to test that the cleanup process saves
+        // the queue.
+        assertFalse(new File(j.jenkins.getRootDir(), "queue.xml").exists());
+    }
+
+    private static void assertBuildFinishes(JenkinsRule j) throws Exception {
+        assertBuildIsScheduled(j);
+        j.jenkins.doCancelQuietDown();
+        FreeStyleProject p = j.jenkins.getItemByFullName("p", FreeStyleProject.class);
+        FreeStyleBuild b;
+        while ((b = p.getLastBuild()) == null) {
+            Thread.sleep(100);
+        }
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
+    }
+
+    private static void assertBuildIsScheduled(JenkinsRule j) {
+        j.jenkins.getQueue().maintain();
+        assertFalse(j.jenkins.getQueue().isEmpty());
     }
 }
