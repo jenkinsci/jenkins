@@ -272,7 +272,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 if (req == null) { // being called from some other context
                     return message;
                 }
-                return "<div class=" + kind.name().toLowerCase(Locale.ENGLISH) + ">" +
+                return "<div class=\"" + kind.name().toLowerCase(Locale.ENGLISH) + "\">" +
                         message + "</div>";
             }
 

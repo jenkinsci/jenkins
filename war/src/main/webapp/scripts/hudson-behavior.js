@@ -500,6 +500,28 @@ var tooltip;
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
+
+
+/**
+ * Updates the validation area for a form element
+ * @param {HTMLElement} validationArea The validation area for a given form element
+ * @param {string} content The content to update the validation area with
+ */
+function updateValidationArea(validationArea, content) {
+  validationArea.classList.add("validation-error-area--visible");
+
+  if (content === "<div/>") {
+    validationArea.classList.remove("validation-error-area--visible");
+    validationArea.style.height = "0px";
+  } else {
+    // Only change content if different, causes an unnecessary animation otherwise
+    if (validationArea.innerHTML !== content) {
+      validationArea.innerHTML = content;
+    }
+    validationArea.style.height = validationArea.children[0].offsetHeight + "px";
+  }
+}
+
 function registerValidator(e) {
 
     // Retrieve the validation error area
@@ -546,19 +568,13 @@ function registerValidator(e) {
     }
 
     var checker = function() {
-        var target = this.targetElement;
+        const validationArea = this.targetElement;
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
-            onComplete : function(x) {
-                if (x.status == 200) {
-                    // All FormValidation responses are 200
-                    target.innerHTML = x.responseText;
-                } else {
-                    // Content is taken from FormValidation#_errorWithMarkup
-                    // TODO Add i18n support
-                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
-                }
-                Behaviour.applySubtree(target);
+            onComplete: function({status, responseText}) {
+              // TODO Add i18n support
+              const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+              updateValidationArea(validationArea, status === 200 ? responseText : errorMessage);
             }
         });
     }
@@ -599,9 +615,11 @@ function registerRegexpValidator(e,regexp,message) {
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "<div/>";
+            if (!set) {
+                updateValidationArea(this.targetElement, `<div/>`)
+            }
         } else {
-            this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
+            updateValidationArea(this.targetElement, `<div class="error">${message}</div>`);
             set = true;
         }
         return set;
@@ -641,29 +659,35 @@ function registerMinMaxValidator(e) {
 
                 if (min <= max) {  // Add the validator if min <= max
                     if (parseInt(min) > parseInt(this.value) || parseInt(this.value) > parseInt(max)) {  // The value is out of range
-                        this.targetElement.innerHTML = "<div class=error>This value should be between " + min + " and " + max + "</div>";
+                        updateValidationArea(this.targetElement, `<div class="error">This value should be between ${min} and ${max}</div>`);
                         set = true;
                     } else {
-                        if (!set) this.targetElement.innerHTML = "<div/>";  // The value is valid
+                        if (!set) {
+                          updateValidationArea(this.targetElement, `<div/>`)
+                        }
                     }
                 }
 
             } else if ((min !== null && isInteger(min)) && (max === null || !isInteger(max))) {  // There is only 'min' available
 
                 if (parseInt(min) > parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be larger than " + min + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be larger than ${min}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
 
             } else if ((min === null || !isInteger(min)) && (max !== null && isInteger(max))) {  // There is only 'max' available
 
                 if (parseInt(max) < parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be less than " + max + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be less than ${max}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
             }
         }
@@ -2401,8 +2425,8 @@ function validateButton(checkUrl,paramList,button) {
 }
 
 function applyErrorMessage(elt, rsp) {
-    if (rsp.status == 200) {
-        elt.innerHTML = rsp.responseText;
+    if (rsp.status === 200) {
+        updateValidationArea(elt, rsp.responseText);
     } else {
         var id = 'valerr' + (iota++);
         elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
