@@ -32,10 +32,7 @@ module.exports = (env, argv) => ({
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
-
-    // New UI CSS files
-    "base-styles-v2": [path.join(__dirname, "src/main/less/base-styles-v2.less")],
-    "ui-refresh-overrides": [path.join(__dirname, "src/main/less/ui-refresh-overrides.less")],
+    "styles": [path.join(__dirname, "src/main/less/styles.less")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
@@ -78,7 +75,7 @@ module.exports = (env, argv) => ({
               url: (url, resourcePath) => {
                 // ignore the URLS on the base styles as they are picked
                 // from the src/main/webapp/images dir
-                if (resourcePath.includes('base-styles-v2.less')) {
+                if (resourcePath.includes('styles.less')) {
                   return false;
                 }
 
