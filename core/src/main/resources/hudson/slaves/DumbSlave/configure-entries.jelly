@@ -66,7 +66,7 @@ THE SOFTWARE.
   <!-- pointless to show this if there's only one option, which is the default -->
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
   <j:if test="${retentionStrategies.size() gt 1}">
-    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" />
+    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" descriptors="retentionStrategies"/>
   </j:if>
 
   <f:descriptorList title="${%Node Properties}"
