@@ -55,7 +55,6 @@ THE SOFTWARE.
           <j:if test="${output!=null}">
             <h2>
               ${%Result}
-              <st:nbsp/>
               <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
             </h2>
             <pre><st:out value="${output}"/></pre>
