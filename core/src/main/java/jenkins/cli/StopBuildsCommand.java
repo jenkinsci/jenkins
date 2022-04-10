@@ -56,6 +56,7 @@ public class StopBuildsCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
+        // Deduplicate job names, but preserve the order specified by the user.
         final Set<String> names = new LinkedHashSet<>(jobNames);
 
         final List<Job> jobsToStop = new ArrayList<>();
