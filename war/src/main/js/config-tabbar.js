@@ -17,10 +17,6 @@ $(function() {
         }
 
         tabBarWidget.addFinderToggle(tabBar);
-        tabBar.onShowSection(function() {
-            // Hook back into hudson-behavior.js
-            page.fireBottomStickerAdjustEvent();
-        });
 
         if (tabBar.hasSections()) {
             var tabBarLastSectionKey = 'config:' + tabBar.configForm.attr('name') + ':last-tab';
