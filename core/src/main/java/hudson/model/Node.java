@@ -527,13 +527,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return NodeProperty.for_(this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     @Override
-    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
+    public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
         if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
