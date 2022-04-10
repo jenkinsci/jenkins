@@ -303,6 +303,7 @@ public abstract class Slave extends Node implements Serializable {
         this.mode = mode;
     }
 
+    @NonNull
     @Override
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
         assert nodeProperties != null;
