@@ -57,22 +57,27 @@ THE SOFTWARE.
     <l:isAdmin>
       <h2>${%Adjust Levels}</h2>
       <form action="configLogger" method="post" name="configLogger">
-        ${%Name}: <input type="text" name="name" width="40" />
-        ${%Level}:
-        <select name="level">
-          <option>inherit</option>
-          <option>off</option>
-          <option>severe</option>
-          <option>warning</option>
-          <option>info</option>
-          <option>config</option>
-          <option>fine</option>
-          <option>finer</option>
-          <option>finest</option>
-          <option>all</option>
-        </select>
-        <st:nbsp/>
-        <f:submit />
+        <div class="jenkins-form-item">
+          <label class="jenkins-form-label" for="name">${%Name}</label><input id="name" type="text" class="jenkins-input" name="name" width="40" />
+          <label class="jenkins-form-label" for="level">${%Level}</label>
+          <div class="jenkins-select">
+            <select id="level" name="level" class="jenkins-select__input">
+              <option>inherit</option>
+              <option>off</option>
+              <option>severe</option>
+              <option>warning</option>
+              <option>info</option>
+              <option>config</option>
+              <option>fine</option>
+              <option>finer</option>
+              <option>finest</option>
+              <option>all</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <f:submit value="${%Save}" />
+        </div>
       </form>
     </l:isAdmin>
   </l:main-panel>
