@@ -232,7 +232,7 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                applyErrorMessage(next.target, x);
+                updateValidationArea(next.target, x.responseText);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
                 layoutUpdateCallback.call();
@@ -517,8 +517,17 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
+      validationArea.style.height = validationArea.children[0].offsetHeight + "px";
+
+      // Only include the notice in the validation-error-area, move all other elements out
+      if (validationArea.children.length > 1) {
+        [...validationArea.children].slice(1).forEach((element) => {
+          validationArea.after(element);
+        })
+      }
+
+      Behaviour.applySubtree(validationArea.parentNode);
     }
-    validationArea.style.height = validationArea.children[0].offsetHeight + "px";
   }
 }
 
@@ -2404,15 +2413,16 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = $(button).up("DIV").next();
-  var target = spinner.next();
+  var spinner = button.up("DIV").children[0];
+  var target = spinner.next().next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          applyErrorMessage(target, rsp);
+          target.innerHTML = `<div class="validation-error-area" />`;
+          updateValidationArea(target.children[0], rsp.responseText);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           try {
@@ -2422,26 +2432,6 @@ function validateButton(checkUrl,paramList,button) {
           }
       }
   });
-}
-
-function applyErrorMessage(elt, rsp) {
-    if (rsp.status === 200) {
-        updateValidationArea(elt, rsp.responseText);
-    } else {
-        var id = 'valerr' + (iota++);
-        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
-        + '\').style.display=\'block\';return false">ERROR</a><div id="'
-        + id + '" style="display:none">' + rsp.responseText + '</div>';
-        var error = document.getElementById('error-description'); // cf. oops.jelly
-        if (error) {
-            var div = document.getElementById(id);
-            while (div.firstElementChild) {
-                div.removeChild(div.firstElementChild);
-            }
-            div.appendChild(error);
-        }
-    }
-    Behaviour.applySubtree(elt);
 }
 
 // create a combobox.

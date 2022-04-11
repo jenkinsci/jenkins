@@ -198,7 +198,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if (e == null)    return _errorWithMarkup(Util.escape(message), kind);
 
         return _errorWithMarkup(Util.escape(message) +
-            " <a href='#' class='showDetails'>"
+            " </div><div><a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
             + Util.escape(Functions.printThrowable(e)) +
