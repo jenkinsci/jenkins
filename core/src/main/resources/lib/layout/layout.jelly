@@ -113,7 +113,7 @@ THE SOFTWARE.
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
 
-    <link rel="stylesheet" href="${resURL}/jsbundles/base-styles-v2.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/styles.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
       <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
