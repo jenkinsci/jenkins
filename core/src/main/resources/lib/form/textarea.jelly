@@ -111,7 +111,6 @@ THE SOFTWARE.
         [${app.markupFormatter.descriptor.displayName}]<st:nbsp/>
       </j:if>
       <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
-      <st:nbsp/>
       <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
       <div class="textarea-preview">
         <!-- div for preview -->
