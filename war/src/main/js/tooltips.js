@@ -45,7 +45,16 @@ function registerTooltips(container = document) {
       .replace("<br/>", "\n")
       .replace("\\n", "\n"),
     container: container,
-    ...TOOLTIP_BASE
+    ...TOOLTIP_BASE,
+    onCreate(instance) {
+      instance.reference.setAttribute("title", instance.props.content);
+    },
+    onShow(instance) {
+      instance.reference.removeAttribute("title");
+    },
+    onHidden(instance) {
+      instance.reference.setAttribute("title", instance.props.content);
+    }
   })
 
   tippy(container.querySelectorAll("[html-tooltip]"), {
