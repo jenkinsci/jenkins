@@ -43,6 +43,7 @@ function registerTooltips(container = document) {
     content: element => element.getAttribute("tooltip")
       .replace("<br>", "\n")
       .replace("<br/>", "\n")
+      .replace("<br />", "\n")
       .replace("\\n", "\n"),
     container: container,
     ...TOOLTIP_BASE,
