@@ -133,7 +133,7 @@ public class ArtifactArchiverTest {
 
     @Test
     @Issue("JENKINS-51913")
-    public void testFilePathNoMaskFoundException() throws Exception {
+    public void testFileMaskNoMatchesFoundException() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         String pattern = "dir/**";
         ArtifactArchiver aa = new ArtifactArchiver(pattern);
