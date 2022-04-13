@@ -3061,6 +3061,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *
      * @see ArtifactArchiver
      */
+    @Restricted(NoExternalUse.class)
     public static class FileMaskNoMatchesFoundException extends InterruptedException {
         private FileMaskNoMatchesFoundException(String message) {
             super(message);
