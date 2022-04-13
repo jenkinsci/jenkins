@@ -270,6 +270,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                         if (msg != null) {
                             listener.getLogger().println(msg);
                         }
+                    } catch (FileMaskNoMatchesFoundException e) {
+                        listener.getLogger().println(e.getMessage());
                     } catch (Exception e) {
                         Functions.printStackTrace(e, listener.getLogger());
                     }
