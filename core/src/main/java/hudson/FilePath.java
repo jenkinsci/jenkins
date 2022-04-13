@@ -55,6 +55,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
 import hudson.slaves.WorkspaceList;
+import hudson.tasks.ArtifactArchiver;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -3055,7 +3056,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
-     * Provide an explicit exception {@link InterruptedException} for when no matching ant file mask matches are found
+     * A dedicated subtype of {@link InterruptedException} for when no matching Ant file mask
+     * matches are found.
+     *
+     * @see ArtifactArchiver
      */
     public static class FileMaskNoMatchesFoundException extends InterruptedException {
         private FileMaskNoMatchesFoundException(String message) {
