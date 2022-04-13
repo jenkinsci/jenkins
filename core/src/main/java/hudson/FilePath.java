@@ -3055,6 +3055,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
+     * Provide an explicit exception {@link InterruptedException} for when no matching ant file mask matches are found
+     */
+    public static class FileMaskNoMatchesFoundException extends InterruptedException {
+        private FileMaskNoMatchesFoundException(String message) {
+            super(message);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar") against this directory, and try to point out the problem.
      * This performs only a bounded number of operations.
      *
@@ -3223,7 +3234,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0) {
                         return true;
                     } else {
-                        throw (InterruptedException) new InterruptedException("no matches found within " + bound).initCause(c);
+                        throw (FileMaskNoMatchesFoundException) new FileMaskNoMatchesFoundException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
