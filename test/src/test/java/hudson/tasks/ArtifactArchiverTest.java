@@ -135,14 +135,15 @@ public class ArtifactArchiverTest {
     @Issue("JENKINS-51913")
     public void testFilePathNoMaskFoundException() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        ArtifactArchiver aa = new ArtifactArchiver("f");
+        String pattern = "dir/**";
+        ArtifactArchiver aa = new ArtifactArchiver(pattern);
+        aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));
-        j.buildAndAssertSuccess(project);
-        project.getBuildByNumber(1).getHasArtifacts();
-        String pattern = "dir/**"
-        j.assertLogContains("WARN: No artifacts found that match the file pattern " + pattern, build);
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+        j.assertLogContains("No artifacts found that match the file pattern \"" + pattern + "\"", build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
-    } 
+    }
 
     @Issue("JENKINS-21958")
     @Test public void symlinks() throws Exception {
