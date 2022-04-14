@@ -62,12 +62,12 @@ THE SOFTWARE.
                             ${%deploytext}
                         </div>
                         <f:entry title="${%File}">
-                            <input type="file" name="name" class="setting-input" accept=".hpi,.jpi"/>
+                            <input type="file" name="name" class="jenkins-input" accept=".hpi,.jpi"/>
                         </f:entry>
                         <p>${%Or}</p>
                         <f:entry title="${%URL}">
                             <f:textbox name="pluginUrl"
-                                       class="setting-input validated" checkUrl="'checkPluginUrl?value='+this.value"/>
+                                       class="jenkins-input validated" checkUrl="'checkPluginUrl?value='+this.value"/>
                         </f:entry>
                         <f:submit value="${%Deploy}"/>
                     </f:form>
