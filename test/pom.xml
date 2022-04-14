@@ -42,6 +42,8 @@ THE SOFTWARE.
     <mavenDebug>false</mavenDebug>
     <!-- empty by default -->
     <jacocoSurefireArgs />
+    <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
+    <jenkins.insaneHook />
   </properties>
 
   <dependencyManagement>
@@ -73,10 +75,17 @@ THE SOFTWARE.
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- For maven-hpi-plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1731.v383b_5d6c3393</version>
+      <version>1736.vc72c458c5103</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -142,7 +151,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.57</version>
+      <version>1.58</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -191,6 +200,15 @@ THE SOFTWARE.
         <artifactId>maven-hpi-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>test-runtime</id>
+            <goals>
+              <goal>test-runtime</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
@@ -219,6 +237,14 @@ THE SOFTWARE.
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-minimal-supported.jar</destFileName>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>3.13</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-unsupported.jar</destFileName>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
@@ -229,6 +255,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
+          <argLine>${jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
@@ -236,6 +263,24 @@ THE SOFTWARE.
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
         </configuration>
+        <executions>
+          <!-- Unbind the default execution so that it does not run before test-runtime. -->
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+          <!-- Bind a new execution which, by virtue of being declared after test-runtime, will also run after it. -->
+          <execution>
+            <id>functional-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -298,7 +343,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.7</version>
+            <version>0.8.8</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which
@@ -342,32 +387,25 @@ THE SOFTWARE.
       <activation>
         <jdk>(,1.8]</jdk>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${jacocoSurefireArgs} -Xmx1g</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <!--
+          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+        -->
+        <jenkins.addOpens />
+      </properties>
     </profile>
     <profile>
       <id>jdk-9-and-above</id>
       <activation>
         <jdk>[9,)</jdk>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${jacocoSurefireArgs} -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <!--
+          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+          Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
+        -->
+        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
+      </properties>
     </profile>
   </profiles>
 </project>
