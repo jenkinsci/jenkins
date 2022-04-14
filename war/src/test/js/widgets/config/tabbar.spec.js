@@ -25,15 +25,6 @@ describe("tabbar-spec tests", function () {
 
     beforeEach(() => {
         mockBehaviorShim();
-
-        jest.mock('../../../../main/js/util/page', () => ({
-            __esModule: true,
-            ...mockPageUtils,
-            default: {
-                ...mockPageUtils.default,
-                fireBottomStickerAdjustEvent: jest.fn(),
-            }
-        }));
     });
 
     afterEach(() => {

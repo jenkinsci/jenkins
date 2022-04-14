@@ -52,7 +52,7 @@ function fromConfigTable(configTable) {
     // The first set of rows don't have a 'section-header-row', so we manufacture one,
     // calling it a "General" section. We do this by marking the first row in the table.
     // See the next block of code.
-    
+
     if(!firstRow.hasClass('section-header-row')){
       var tr;
       if (configTable[0].nodeName === 'TR') {
@@ -148,10 +148,6 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
             findTimeout = undefined;
             thisTMD.showSections(thisTMD.findInput.val());
         }, 300);
-    });
-
-    $('.jenkins-config-widgets .find-container input').focus(function() {
-        page.fireBottomStickerAdjustEvent();
     });
 
     this.configWidgets.append(findWidget);
@@ -337,7 +333,7 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     }
 
     var thisConfig = this;
-    
+
     try {
         for (var i = 0; i < this.sections.length; i++) {
             var section = this.sections[i];
@@ -349,7 +345,7 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
         }
     } finally {
         var interval = (thisConfig.trackSectionVisibilityTO || 0);
-        
+
         // The rescan interval will drop off over time, starting out very fast.
         interval += 10;
         interval =  Math.min(interval, 500);
@@ -390,7 +386,7 @@ function isTestEnv() {
     } else if (window.navigator.userAgent.toLowerCase().indexOf("jsdom") !== -1) {
         return true;
     }
-    
+
     return false;
 }
 

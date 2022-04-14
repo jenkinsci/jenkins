@@ -188,10 +188,6 @@ public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
-    @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
-
     public Functions() {
     }
 
@@ -518,16 +514,6 @@ public class Functions {
     @Restricted(DoNotUse.class)
     public static String getSystemProperty(String key) {
         return SystemProperties.getString(key);
-    }
-
-    /**
-     * Returns true if and only if the UI refresh is enabled.
-     *
-     * @since 2.222
-     */
-    @Restricted(DoNotUse.class)
-    public static boolean isUiRefreshEnabled() {
-        return UI_REFRESH;
     }
 
     public static Map getEnvVars() {
@@ -1266,7 +1252,12 @@ public class Functions {
 
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if (name == null)     return null;
+        if (name == null) {
+            return null;
+        }
+        if (name.startsWith("symbol-")) {
+            return name;
+        }
         if (name.startsWith("/"))
             return name.substring(1);
         else
@@ -2313,6 +2304,26 @@ public class Functions {
         }
 
         return iconMetadata;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String extractPluginNameFromIconSrc(String iconSrc) {
+        if (iconSrc == null) {
+            return "";
+        }
+
+        if (!iconSrc.contains("plugin-")) {
+            return "";
+        }
+
+        String[] arr = iconSrc.split(" ");
+        for (String element : arr) {
+            if (element.startsWith("plugin-")) {
+                return element.replace("plugin-", "");
+            }
+        }
+
+        return "";
     }
 
     @Restricted(NoExternalUse.class)

@@ -25,6 +25,7 @@
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
@@ -202,6 +203,7 @@ public class Shell extends CommandInterpreter {
             save();
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Shell_DisplayName();

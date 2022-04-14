@@ -58,7 +58,7 @@ THE SOFTWARE.
 
         <j:choose>
           <j:when test="${iconClassName != null}">
-            <l:icon class="${iconClassName} icon-lg" alt="${it.description}" tooltip="${it.description}" />
+            <l:icon src="${iconClassName}" class="${iconClassName}" alt="${it.description}" tooltip="${it.description}" />
           </j:when>
           <j:otherwise>
             <!-- "it" is not a hudson.model.BallColor.  Let's try figure out the icon from its URL.  -->

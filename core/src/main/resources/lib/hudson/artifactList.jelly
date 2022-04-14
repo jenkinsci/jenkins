@@ -41,7 +41,7 @@ THE SOFTWARE.
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
     <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
     <j:if test="${!empty(artifacts)}">
-      <t:summary icon="package.png">
+      <t:summary icon="symbol-cube" href="${baseURL}artifact/">
         <a href="${baseURL}artifact/">${caption}</a>
         <j:if test="${build.building}">
           <p>
