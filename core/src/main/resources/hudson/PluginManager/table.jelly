@@ -92,7 +92,8 @@ THE SOFTWARE.
                        value="${installJob.status.success and installJob.plugin.version==p.version}"/>
                 <tr
                   class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}"
-                  name="${p.displayName}">
+                  name="${p.displayName}"
+                  data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
                     <td align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
