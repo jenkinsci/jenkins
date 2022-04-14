@@ -34,7 +34,7 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form name="configSubmit" method="post" action="newLogRecorder">
         <f:entry title="${%Name}">
-          <f:textbox name="name" checkUrl="'${rootURL}/log/checkNewName?name='+encodeURIComponent(this.value)" />
+          <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />
         </f:entry>
         <f:block>
           <f:submit value="${%Create}" />
