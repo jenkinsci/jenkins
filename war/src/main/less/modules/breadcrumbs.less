@@ -144,17 +144,17 @@
 }
 
 .jenkins-menu-dropdown-chevron {
-  position: relative;
+  position: absolute;
   display: inline-block;
   width: 14px;
   height: 14px;
+  top: 2px;
+  right: 0;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 0;
-  margin-left: -14px;
   pointer-events: none;
-  vertical-align: middle;
   transition: var(--standard-transition);
   background: transparent;
 
@@ -175,10 +175,7 @@
   &::before {
     content: "";
     position: absolute;
-    top: -7px;
-    bottom: -7px;
-    right: -20px;
-    width: 20px;
+    inset: -7px;
     pointer-events: all;
   }
 
@@ -224,11 +221,7 @@
 
     .jenkins-menu-dropdown-chevron {
       pointer-events: all;
-
-      &::before,
-      &::after {
-        right: -20px;
-      }
+      right: -22px;
 
       &::after {
         opacity: 0.5;
