@@ -37,18 +37,6 @@ THE SOFTWARE.
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
 
-      <div class="jenkins-form-item jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:icon src="symbol-search"/>
-        </div>
-      </div>
-
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
@@ -66,6 +54,18 @@ THE SOFTWARE.
       />
 
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+
+      <div class="jenkins-form-item jenkins-search">
+        <input
+          class="jenkins-search__input"
+          type="search"
+          id="filter-box"
+          value="${request.getParameter('filter')}"
+          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+        <div class="jenkins-search__icon">
+          <l:icon src="symbol-search"/>
+        </div>
+      </div>
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
