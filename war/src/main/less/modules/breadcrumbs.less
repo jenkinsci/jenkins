@@ -40,6 +40,7 @@
         color: var(--text-color);
         z-index: 0;
         text-decoration: none;
+        margin-right: 0 !important;
 
         &::before,
         &::after {
@@ -80,6 +81,16 @@
             opacity: 0.05 !important;
             box-shadow: 0 0 0 5px var(--text-color);
           }
+        }
+      }
+
+      & > .model-link {
+        .jenkins-menu-dropdown-chevron {
+          top: 6px;
+        }
+
+        &:hover {
+          margin-right: 30px !important;
         }
       }
     }
