@@ -89,6 +89,10 @@
           top: 6px;
         }
 
+        @media (hover: none) {
+          margin-right: 30px !important;
+        }
+
         &:hover {
           margin-right: 30px !important;
         }
@@ -211,31 +215,48 @@
   transition: var(--standard-transition) !important;
   margin-right: 40px !important;
 
-  & + a.model-link {
-    margin-left: 0 !important;
-  }
-
-  & + a.jenkins-table__badge {
-    margin-left: -1.5rem !important;
-  }
-
-  &:hover {
-    & + a.jenkins-table__badge {
-      margin-left: -1.5rem !important;
-      transform: translateX(1.5rem);
-    }
-
+  @media (hover: none) {
     &::before,
     &::after {
-      right: -30px;
+      right: -30px !important;
     }
 
     .jenkins-menu-dropdown-chevron {
-      pointer-events: all;
       right: -22px;
 
       &::after {
-        opacity: 0.5;
+        opacity: 1;
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    & + a.model-link {
+      margin-left: 0 !important;
+    }
+
+    & + a.jenkins-table__badge {
+      margin-left: -1.5rem !important;
+    }
+
+    &:hover {
+      & + a.jenkins-table__badge {
+        margin-left: -1.5rem !important;
+        transform: translateX(1.5rem);
+      }
+
+      &::before,
+      &::after {
+        right: -30px;
+      }
+
+      .jenkins-menu-dropdown-chevron {
+        pointer-events: all;
+        right: -22px;
+
+        &::after {
+          opacity: 0.5;
+        }
       }
     }
   }
@@ -243,53 +264,73 @@
 
 .model-link--float {
   z-index: 0;
-  margin-right: 0 !important;
 
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    top: -7px;
-    left: -10px;
-    bottom: -7px;
-    right: -10px;
-    opacity: 0;
-    border-radius: 6px;
-    transition: var(--standard-transition);
-  }
+  @media (hover: none) {
+    margin-right: 30px !important;
 
-  &::before {
-    z-index: -2;
-    background: var(--background);
-
-  }
-
-  &::after {
-    z-index: -1;
-    background: var(--text-color);
-  }
-
-  &:hover {
-    z-index: 10;
-
-    @media (hover: hover) {
-      &::before,
-      &::after {
-        right: calc((2ch + 14px) * -1);
-      }
-    }
-
-    &::before {
-      opacity: 1;
-    }
-
+    &::before,
     &::after {
-      opacity: 0.15;
+      right: -30px !important;
     }
 
     .jenkins-menu-dropdown-chevron {
+      right: -10px;
+
       &::after {
-        opacity: 0.5;
+        opacity: 1;
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    margin-right: 0 !important;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: -10px;
+      bottom: -7px;
+      right: -10px;
+      opacity: 0;
+      border-radius: 6px;
+      transition: var(--standard-transition);
+    }
+
+    &::before {
+      z-index: -2;
+      background: var(--background);
+
+    }
+
+    &::after {
+      z-index: -1;
+      background: var(--text-color);
+    }
+
+    &:hover {
+      z-index: 10;
+
+      @media (hover: hover) {
+        &::before,
+        &::after {
+          right: calc((2ch + 14px) * -1);
+        }
+      }
+
+      &::before {
+        opacity: 1;
+      }
+
+      &::after {
+        opacity: 0.15;
+      }
+
+      .jenkins-menu-dropdown-chevron {
+        &::after {
+          opacity: 0.5;
+        }
       }
     }
   }
