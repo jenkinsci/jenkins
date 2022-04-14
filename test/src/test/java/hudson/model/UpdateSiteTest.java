@@ -204,15 +204,6 @@ public class UpdateSiteTest {
 
     }
 
-    @Issue("JENKINS-31448")
-    @Test public void isLegacyDefault() {
-        assertFalse("isLegacyDefault should be false with null id", new UpdateSite(null, "url").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false when id is not default and url is http://hudson-ci.org/", new UpdateSite("dummy", "http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/", new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID, "http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/", new UpdateSite("dummy", "http://updates.hudson-labs.org/").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false with null url", new UpdateSite(null, null).isLegacyDefault());
-    }
-
     @Test public void getAvailables() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/available-update-center.json");
         List<UpdateSite.Plugin> available = site.getAvailables();

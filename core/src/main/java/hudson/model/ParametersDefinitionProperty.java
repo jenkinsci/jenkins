@@ -234,6 +234,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ParametersDefinitionProperty_DisplayName();

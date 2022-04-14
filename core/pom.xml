@@ -828,6 +828,7 @@ THE SOFTWARE.
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
               <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
             </configuration>
           </plugin>

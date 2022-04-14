@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -110,6 +111,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
         @Extension @Symbol("standard")
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.DefaultProjectNamingStrategy_DisplayName();
@@ -180,6 +182,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
             public static final String DEFAULT_PATTERN = ".*";
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.PatternProjectNamingStrategy_DisplayName();

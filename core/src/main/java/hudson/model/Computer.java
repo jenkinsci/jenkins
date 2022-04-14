@@ -270,6 +270,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns the transient {@link Action}s associated with the computer.
      */
     @SuppressWarnings("deprecation")
+    @NonNull
     @Override
     public List<Action> getActions() {
         List<Action> result = new ArrayList<>(super.getActions());
@@ -344,6 +345,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
