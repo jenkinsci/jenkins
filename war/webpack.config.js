@@ -33,7 +33,6 @@ module.exports = (env, argv) => ({
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
     "styles": [path.join(__dirname, "src/main/less/styles.less")],
-    "ui-refresh-overrides": [path.join(__dirname, "src/main/less/ui-refresh-overrides.less")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
