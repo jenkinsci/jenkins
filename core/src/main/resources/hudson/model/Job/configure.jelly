@@ -30,8 +30,6 @@ THE SOFTWARE.
   <l:layout permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
-    <l:js src="jsbundles/section-to-sidebar-items.js" />
-
     <l:side-panel>
       <div id="tasks">
         <div class="jenkins-app-bar">
@@ -43,6 +41,8 @@ THE SOFTWARE.
     </l:side-panel>
 
     <l:main-panel>
+      <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript"/>
+
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
