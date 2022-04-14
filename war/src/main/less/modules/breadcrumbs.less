@@ -201,20 +201,25 @@
 .model-link {
   position: relative;
   transition: var(--standard-transition) !important;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: -7px;
-    left: -10px;
-    bottom: -7px;
-    right: -10px;
-  }
+  margin-right: 40px !important;
 
   &:hover {
+    & + a.model-link {
+      margin-left: 0 !important;
+    }
+
+    &::before,
+    &::after {
+      right: -30px;
+    }
+
     .jenkins-menu-dropdown-chevron {
-      margin-left: 1ch;
       pointer-events: all;
+
+      &::before,
+      &::after {
+        right: -20px;
+      }
 
       &::after {
         opacity: 0.5;
@@ -225,38 +230,30 @@
     // the badge so that it doesn't cause a table column resize, yet doesn't change in appearance
     @media (hover: hover) {
       & + a.model-link:not(.model-link--float) {
-        transform: translateX(10px);
-        margin-right: calc((14px + 1ch) * -1) !important;
+        margin-left: 1ch;
       }
     }
   }
 
-  @media (hover: none) {
-    & + a.model-link {
-      transform: translateX(10px);
-      margin-right: calc((14px + 1ch) * -1) !important;
-    }
-
-    .jenkins-menu-dropdown-chevron {
-      margin-left: 1ch;
-
-      &::after {
-        opacity: 0.5;
-      }
-    }
-  }
-}
-
-@media (hover: hover) {
-  .inside {
-    &:hover {
-      margin-right: calc((14px + 1ch) * -1) !important;
-    }
-  }
+  //@media (hover: none) {
+  //  & + a.model-link {
+  //    transform: translateX(10px);
+  //    margin-right: calc((14px + 1ch) * -1) !important;
+  //  }
+  //
+  //  .jenkins-menu-dropdown-chevron {
+  //    margin-left: 1ch;
+  //
+  //    &::after {
+  //      opacity: 0.5;
+  //    }
+  //  }
+  //}
 }
 
 .model-link--float {
   z-index: 0;
+  margin-right: 0 !important;
 
   &::before,
   &::after {
