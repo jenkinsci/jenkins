@@ -12,10 +12,10 @@ const globalPlugin = {
   fn() {
     return {
       onCreate(instance) {
-        tooltipInstances = tooltipInstances.concat(instance);
+        tooltipInstances = tooltipInstances.concat(instance)
       },
       onDestroy(instance) {
-        tooltipInstances = tooltipInstances.filter(i => i !== instance);
+        tooltipInstances = tooltipInstances.filter(i => i !== instance)
       }
     }
   }
@@ -32,7 +32,11 @@ registerTooltips()
  * If called again, destroys existing tooltips and registers them again (useful for progressive rendering)
  * @param {HTMLElement} container - Registers the tooltips for the given container
  */
-function registerTooltips(container = document) {
+function registerTooltips(container) {
+  if (!container) {
+    container = document
+  }
+
   tooltipInstances.forEach(instance => {
     if (instance.props.container === container) {
       instance.destroy()
@@ -48,13 +52,13 @@ function registerTooltips(container = document) {
     container: container,
     ...TOOLTIP_BASE,
     onCreate(instance) {
-      instance.reference.setAttribute("title", instance.props.content);
+      instance.reference.setAttribute("title", instance.props.content)
     },
     onShow(instance) {
-      instance.reference.removeAttribute("title");
+      instance.reference.removeAttribute("title")
     },
     onHidden(instance) {
-      instance.reference.setAttribute("title", instance.props.content);
+      instance.reference.setAttribute("title", instance.props.content)
     }
   })
 
