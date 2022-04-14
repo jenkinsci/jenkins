@@ -30,8 +30,14 @@ THE SOFTWARE.
   <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <l:app-bar title="${%Plugin Manager}">
-      <div class="jenkins-search">
+    <l:app-bar title="${%Plugin Manager}" />
+
+    <st:include page="sidepanel.jelly"/>
+
+    <l:main-panel>
+      <st:adjunct includes="hudson.PluginManager._table"/>
+
+      <div class="jenkins-form-item jenkins-search">
         <input
           class="jenkins-search__input"
           type="search"
@@ -42,12 +48,6 @@ THE SOFTWARE.
           <l:icon src="symbol-search"/>
         </div>
       </div>
-    </l:app-bar>
-
-    <st:include page="sidepanel.jelly"/>
-
-    <l:main-panel>
-      <st:adjunct includes="hudson.PluginManager._table"/>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
