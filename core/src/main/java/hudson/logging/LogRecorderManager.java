@@ -163,6 +163,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         return new HttpRedirect(name + "/configure");
     }
 
+    @Restricted(NoExternalUse.class)
     public FormValidation doCheckNewName(@QueryParameter String name) {
         if (Util.fixEmpty(name) == null) {
             return FormValidation.ok();
