@@ -54,7 +54,7 @@ THE SOFTWARE.
         <f:repeatable var="instance" items="${it.loggers}" name="loggers">
           <div>
             <f:entry title="${%Logger}">
-              <f:textbox  field="name" autoCompleteUrl="autoCompleteLoggerName"/>
+              <f:textbox  field="name" checkUrl="checkName" checkDependsOn="level" autoCompleteUrl="autoCompleteLoggerName" />
             </f:entry>
             <f:entry title="${%Log level}">
               <div class="jenkins-select">

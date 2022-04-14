@@ -26,6 +26,7 @@ package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -43,6 +44,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -185,6 +187,31 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             }
         }
         return relevantPrefixes;
+    }
+
+    /**
+     * Validate the name.
+     *
+     * @return {@link FormValidation#ok} if the log target is not empty, otherwise {@link
+     *     FormValidation#warning} with a message explaining the problem.
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public FormValidation doCheckName(@QueryParameter String value, @QueryParameter String level) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        try {
+            if ((Util.fixEmpty(level) == null || Level.parse(level).intValue() <= Level.FINE.intValue())
+                    && Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        } catch (IllegalArgumentException iae) {
+            // We cannot figure out the level, if the name is empty show a warning
+            if (Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        }
+        return FormValidation.ok();
     }
 
     @Restricted(NoExternalUse.class)
