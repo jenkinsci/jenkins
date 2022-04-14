@@ -53,7 +53,10 @@ THE SOFTWARE.
           <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
           <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
           <j:if test="${output!=null}">
-            <h2>${%Result}</h2>
+            <h2>
+              ${%Result}
+              <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
+            </h2>
             <pre><st:out value="${output}"/></pre>
           </j:if>
         </j:when>
