@@ -99,11 +99,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             String text = a.getDisplayName();
             String base = Functions.getIconFilePath(a);
             if (base == null)     return this;
-            String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-
             String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
 
-            return add(url, icon, text);
+            if (base.startsWith("symbol-")) {
+                Icon icon = Functions.tryGetIcon(base);
+                return add(url, icon.getClassSpec(), text);
+            } else {
+                String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
+                return add(url, icon, text);
+            }
         }
 
         public ContextMenu add(String url, String icon, String text) {
@@ -153,7 +157,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
             final MenuItem item = new MenuItem().withDisplayName(title);
-            item.header = true;
+            item.type = MenuItemType.HEADER;
+            return add(item);
+        }
+
+        /**
+         * Add a separator row (no icon, no URL, no text).
+         *
+         * @since 2.340
+         */
+        public ContextMenu addSeparator() {
+            final MenuItem item = new MenuItem();
+            item.type = MenuItemType.SEPARATOR;
             return add(item);
         }
 
@@ -303,12 +318,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
 
         /**
-         * True to display this item as a section header.
-         * @since 2.231
+         * The type of menu item
+         * @since 2.340
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
-        public boolean header;
+        public MenuItemType type = MenuItemType.ITEM;
 
         /**
          * If this is a submenu, definition of subitems.
@@ -386,6 +401,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
         }
 
+    }
+
+    enum MenuItemType {
+        ITEM,
+        HEADER,
+        SEPARATOR
     }
 
     /**

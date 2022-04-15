@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.71</version>
+    <version>1.73</version>
     <relativePath />
   </parent>
 
@@ -57,9 +57,9 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
 
-  <scm>
-    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
     <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
@@ -70,7 +70,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.339</revision>
+    <revision>2.344</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -85,7 +85,6 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <java.level>8</java.level>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
@@ -102,7 +101,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.4.0</mockito.version>
-    <spotless.version>2.21.0</spotless.version>
+    <spotless.version>2.22.1</spotless.version>
   </properties>
 
   <dependencyManagement>
@@ -214,7 +213,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing</doclint>
+            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -637,37 +636,6 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <configuration>
-          <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java1${java.level}</artifactId>
-            <version>1.0</version>
-          </signature>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in parent POM -->
-        <configuration>
-          <source>1.${java.level}</source>
-          <target>1.${java.level}</target>
-          <!-- default reuseCreated is more performant
-          feel free to uncomment if you have any issues on your platform
-          <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
-          -->
-        </configuration>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -823,20 +791,25 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>jdk11</id>
+      <id>jdk-17-and-above</id>
       <activation>
-        <jdk>11</jdk>
+        <jdk>[17,)</jdk>
       </activation>
       <properties>
-        <!-- TODO: https://issues.jenkins.io/browse/JENKINS-53788 (JDK11 issue on CI) -->
-        <doclint>none</doclint>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- release is needed for reliable cross compilation. It is supported
-        starting JDK 9, but as the only earlier version we support is 8, it would
-        be either compiled by javac from 8 or one from a newer compiler that
-        correctly handle the release flag. This will replace both source and target
-        once we drop support for JDK 8 that only recognize source and target. -->
-        <maven.compiler.release>${java.level}</maven.compiler.release>
+        <!--
+          Animal Sniffer does not work on Java 17, but we cannot remove it from our configuration
+          entirely until we drop support for Java 8. As a temporary solution, we skip it when
+          running on Java 17. When JENKINS-54842 is resolved, this can be deleted.
+        -->
+        <animal.sniffer.skip>true</animal.sniffer.skip>
+
+        <!--
+          Spotless requires custom arguments to be added to .mvn/jvm.config when running on Java 17,
+          but we cannot add those custom arguments until we drop support for Java 8. As a temporary
+          workaround, we skip Spotless when running on Java 17. When JENKINS-68015 is resolved, this
+          can be deleted.
+        -->
+        <spotless.check.skip>true</spotless.check.skip>
       </properties>
     </profile>
   </profiles>

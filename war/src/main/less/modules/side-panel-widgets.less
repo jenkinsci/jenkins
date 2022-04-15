@@ -38,8 +38,16 @@
 
 #side-panel .pane-header .expand,
 #side-panel .pane-header .collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
   padding-left: 0.5rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 #side-panel .pane-content {
@@ -148,6 +156,7 @@
 
 .build-row-cell .pane.build-name .build-icon {
   position: absolute;
+  z-index: 1;
 }
 
 .build-row-cell .build-stop {

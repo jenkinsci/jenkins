@@ -27,7 +27,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Override
     protected String extraAttributes() {
-        return " class='model-link'";
+        return " class='model-link model-link--float'";
     }
 
     public static String encodeTo(@NonNull User u) {

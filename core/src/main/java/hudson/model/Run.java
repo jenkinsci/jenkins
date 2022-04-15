@@ -1590,6 +1590,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new Api(this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         // for now, don't maintain ACL per run, and do it at project level

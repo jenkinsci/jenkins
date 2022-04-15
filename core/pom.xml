@@ -376,7 +376,7 @@ THE SOFTWARE.
       <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -819,39 +819,18 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>japicmp</id>
+      <id>jdk-9-and-above</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
       <build>
         <plugins>
           <plugin>
-            <groupId>com.github.siom79.japicmp</groupId>
-            <artifactId>japicmp-maven-plugin</artifactId>
-            <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
-            <version>0.14.4-20200728.214757-1</version>
+            <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <parameter>
-                <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
-                <oldVersionPattern>\d+[.]\d+</oldVersionPattern>
-                <!-- <onlyModified>true</onlyModified> -->
-                <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
-              </parameter>
-              <oldClassPathDependencies>
-                <dependency>
-                  <!-- provided, so not visible in flattened artifact -->
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>javax.servlet-api</artifactId>
-                  <version>3.1.0</version>
-                  <scope>provided</scope>
-                </dependency>
-              </oldClassPathDependencies>
+              <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
+              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
             </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>cmp</goal>
-                </goals>
-                <phase>verify</phase>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>

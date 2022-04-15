@@ -1073,11 +1073,11 @@ public class Util {
     /**
      * Copies a single file by using Ant.
      *
-     * @deprecated since TODO; use {@link Files#copy(Path, Path, CopyOption...)} directly
+     * @deprecated since 2.335; use {@link Files#copy(Path, Path, CopyOption...)} directly
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.335")
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
         cp.setProject(new Project());

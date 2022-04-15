@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -54,9 +55,8 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings("unchecked")
 public final class PackedMap<K, V> extends AbstractMap<K, V> {
-    private Object[] kvpairs;
+    private final Object[] kvpairs;
 
     /**
      *
@@ -77,6 +77,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
     }
 
     private final Set<Entry<K, V>> entrySet = new AbstractSet<Entry<K, V>>() {
+        @NonNull
         @Override
         public Iterator<Entry<K, V>> iterator() {
             return new Iterator<Entry<K, V>>() {
@@ -136,6 +137,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V get(Object key) {
         for (int i = 0; i < kvpairs.length; i += 2)
             if (key.equals(kvpairs[i]))
@@ -143,7 +145,9 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
         return null;
     }
 
+    @NonNull
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<V> values() {
         return new AbstractList<V>() {
             @Override
@@ -178,7 +182,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            return PackedMap.of((Map) super.unmarshal(reader, context));
+            return PackedMap.of((Map<?, ?>) super.unmarshal(reader, context));
         }
     }
 }
