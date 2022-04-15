@@ -270,6 +270,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns the transient {@link Action}s associated with the computer.
      */
     @SuppressWarnings("deprecation")
+    @NonNull
     @Override
     public List<Action> getActions() {
         List<Action> result = new ArrayList<>(super.getActions());
@@ -344,6 +345,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
@@ -727,10 +729,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getIcon() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "computer-user-offline.png";
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
         // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "computer-x.png";
-        return "computer.png";
+        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
+        return "symbol-computer";
     }
 
     /**
@@ -747,10 +749,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getIconClassName() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "icon-computer-user-offline";
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
         // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "icon-computer-x";
-        return "icon-computer";
+        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
+        return "symbol-computer";
     }
 
     public String getIconAltText() {

@@ -30,7 +30,7 @@ THE SOFTWARE.
 <l:layout title="Log" permission="${app.SYSTEM_READ}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><l:icon class="icon-clipboard icon-xlg"/>${it.displayName}</h1>
+    <h1>${it.displayName}</h1>
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>

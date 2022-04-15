@@ -53,6 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -375,7 +376,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = out.toString();
+        final String oldB2Log = out.toString(Charset.defaultCharset().name());
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -392,7 +393,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = out.toString();
+        final String newB2Log = out.toString(Charset.defaultCharset().name());
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 

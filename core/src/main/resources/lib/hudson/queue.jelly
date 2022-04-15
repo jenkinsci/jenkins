@@ -78,12 +78,13 @@ THE SOFTWARE.
                     <l:breakable value="${item.task.fullDisplayName}"/>
                   </a>
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
-                  <j:if test="${stuck}">
-                    &#160;
+                <j:if test="${stuck}">
+                  <td class="pane" width="16" align="center" valign="middle">
                     <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation">
                       <l:icon class="icon-hourglass icon-sm"/>
                     </a>
-                  </j:if>
+                  </td>
+                </j:if>
                 </j:when>
                 <j:otherwise>
                   <span>${%Unknown Task}</span>

@@ -67,7 +67,7 @@ ConfigRowGrouping.prototype.findToggleWidget = function(row) {
     var input = $(':input.block-control', row);
     if (input.length === 1) {
         this.toggleWidget = input;
-        this.label = input.parent().find('label').text();
+        this.label = input.next().text();
         input.addClass('disable-behavior');
     }
 };

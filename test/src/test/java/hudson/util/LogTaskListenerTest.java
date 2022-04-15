@@ -30,6 +30,7 @@ import hudson.console.HyperlinkNote;
 import hudson.model.TaskListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -54,6 +55,30 @@ public class LogTaskListenerTest {
         l.getLogger().println();
         l.getLogger().println(HyperlinkNote.encodeTo(url, "there") + " from encoded");
         assertEquals("[plain line, from annotate, from hyperlink, there from encoded]", logging.getMessages().toString());
+    }
+
+    @Test
+    public void serialization() throws Exception {
+        TaskListener l = new LogTaskListener(Logger.getLogger("LogTaskListenerTest"), Level.INFO);
+        r.createOnlineSlave().getChannel().call(new Log(l));
+        assertEquals("[from agent]", logging.getMessages().toString());
+    }
+
+    private static final class Log extends MasterToSlaveCallable<Void, RuntimeException> {
+
+        private final TaskListener l;
+
+        Log(TaskListener l) {
+            this.l = l;
+        }
+
+        @Override
+        public Void call() throws RuntimeException {
+            l.getLogger().println("from agent");
+            l.getLogger().flush();
+            return null;
+        }
+
     }
 
 }

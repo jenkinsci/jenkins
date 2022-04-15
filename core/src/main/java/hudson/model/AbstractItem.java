@@ -527,9 +527,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * then it will be loaded, then this method will be invoked
      * to perform any implementation-specific work.
      *
-     * <p>
-     *
-     *
      * @param src
      *      Item from which it's copied from. The same type as {@code this}. Never null.
      */
@@ -606,6 +603,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Returns the {@link ACL} for this object.
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);

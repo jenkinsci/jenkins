@@ -41,8 +41,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -55,7 +53,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -175,9 +172,9 @@ public class ViewTest {
         HtmlAnchor privateViewsLink = userPage.getAnchorByText("My Views");
         assertNotNull("My Views link not available", privateViewsLink);
 
-        HtmlPage privateViewsPage = (HtmlPage) privateViewsLink.click();
+        HtmlPage privateViewsPage = privateViewsLink.click();
 
-        Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
+        Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
         View listView = listView("listView");
@@ -185,7 +182,7 @@ public class ViewTest {
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
-        ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
+        form.getInputByValue("hudson.model.ProxyView").setChecked(true);
         HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
         assertNotNull(proxyView);
@@ -237,7 +234,7 @@ public class ViewTest {
         // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
         if (!folderPluginActive && folderPluginClassesLoaded) {
             // reset the icon added by Folder because the plugin resources are not reachable
-            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "svgs/folder.svg", "width: 24px; height: 24px;"));
         }
 
         WebClient webClient = j.createWebClient()
@@ -648,9 +645,9 @@ public class ViewTest {
     public void shouldFindNestedViewByName() throws Exception {
         //given
         String testNestedViewName = "right2ndNestedView";
-        View right2ndNestedView = mockedViewWithName(testNestedViewName);
+        View right2ndNestedView = new ListView(testNestedViewName);
         //and
-        View left2ndNestedView = mockedViewWithName("left2ndNestedView");
+        View left2ndNestedView = new ListView("left2ndNestedView");
         DummyCompositeView rightNestedGroupView = new DummyCompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
         //and
         listView("leftTopLevelView");
@@ -659,10 +656,6 @@ public class ViewTest {
         View foundNestedView = j.jenkins.getView(testNestedViewName);
         //then
         assertEquals(right2ndNestedView, foundNestedView);
-    }
-
-    private View mockedViewWithName(String viewName) {
-        return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
     }
 
     public void prepareSec1923() {

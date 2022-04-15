@@ -283,6 +283,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * Get the cause if temporary offline.
+     *
+     * @return null if not temporary offline or there was no cause given.
+     * @since 2.340
+     */
+    public OfflineCause getTemporaryOfflineCause() {
+        return temporaryOfflineCause;
+    }
+
+    /**
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
@@ -517,13 +527,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return NodeProperty.for_(this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     @Override
-    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
+    public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
         if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");

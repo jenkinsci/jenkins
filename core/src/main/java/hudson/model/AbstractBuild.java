@@ -184,6 +184,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         return runMixIn;
     }
 
+    @NonNull
     @Override protected final BuildReference<R> createReference() {
         return getRunMixIn().createReference();
     }
@@ -460,6 +461,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
             return wsl.allocate(ws, getBuild());
         }
 
+        @NonNull
         @Override
         public Result run(@NonNull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
@@ -702,7 +704,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         protected abstract void post2(BuildListener listener) throws Exception;
 
         @Override
-        public final void post(BuildListener listener) throws Exception {
+        public final void post(@NonNull BuildListener listener) throws Exception {
             try {
                 post2(listener);
             } finally {
@@ -716,7 +718,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         }
 
         @Override
-        public void cleanUp(BuildListener listener) throws Exception {
+        public void cleanUp(@NonNull BuildListener listener) throws Exception {
             if (lease != null) {
                 lease.release();
                 lease = null;
@@ -947,8 +949,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         return ChangeLogSet.createEmpty(this);
     }
 
+    @NonNull
     @Override
-    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+    public EnvVars getEnvironment(@NonNull TaskListener log) throws IOException, InterruptedException {
         EnvVars env = super.getEnvironment(log);
         FilePath ws = getWorkspace();
         if (ws != null) { // if this is done very early on in the build, workspace may not be decided yet. see JENKINS-3997
@@ -1003,7 +1006,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      * {@inheritDoc}
      * The action may have a {@code summary.jelly} view containing a {@code <t:summary>} or other {@code <tr>}.
      */
-    @Override public void addAction(Action a) {
+    @Override public void addAction(@NonNull Action a) {
         super.addAction(a);
     }
 

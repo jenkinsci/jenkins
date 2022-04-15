@@ -42,8 +42,9 @@ import static org.mockito.Mockito.mock;
 
 import hudson.Functions;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -454,7 +455,7 @@ public class PathRemoverTest {
 
     private static void touchWithFileName(File... files) throws IOException {
         for (File file : files) {
-            try (FileWriter writer = new FileWriter(file)) {
+            try (Writer writer = Files.newBufferedWriter(file.toPath(), Charset.defaultCharset())) {
                 writer.append(file.getName()).append(System.lineSeparator());
             }
             assertTrue(file.isFile());

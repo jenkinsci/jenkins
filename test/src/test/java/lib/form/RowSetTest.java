@@ -1,10 +1,11 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbIssuer;
-import junit.framework.Assert;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class RowSetTest {
 
             JSONObject expected = JSONObject.fromObject(
                     "{'a':'aaa','b':'bbb','c':{'c1':'ccc1','c2':'ccc2'},'d':{'d1':'d1','d2':'d2'}}");
-            Assert.assertEquals(expected, json);
+            assertEquals(expected, json);
         }
 
         @Override

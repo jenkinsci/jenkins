@@ -134,7 +134,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
         public void doWithThrowOtherException() throws IOException { replyOk(); }
 
-        public HttpResponse doWithReturnHttpResponse() { return HttpResponses.plainText("ok"); }
+        public HttpResponse doWithReturnHttpResponse() { return HttpResponses.text("ok"); }
 
         public HttpResponseChild doWithReturnHttpResponseChild() { return new HttpResponseChild(); }
 
@@ -360,7 +360,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedLimitedTo() throws Exception {
+    public void testAnnotatedMethodOk_annotatedLimitedTo() {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
         assertEquals(500, e.getStatusCode());
         assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));

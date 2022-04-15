@@ -161,6 +161,7 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
@@ -186,10 +187,6 @@ import org.springframework.security.access.AccessDeniedException;
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
-
-    @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
     }
@@ -519,16 +516,6 @@ public class Functions {
         return SystemProperties.getString(key);
     }
 
-    /**
-     * Returns true if and only if the UI refresh is enabled.
-     *
-     * @since 2.222
-     */
-    @Restricted(DoNotUse.class)
-    public static boolean isUiRefreshEnabled() {
-        return UI_REFRESH;
-    }
-
     public static Map getEnvVars() {
         return new TreeMap<>(EnvVars.masterEnvVars);
     }
@@ -573,7 +560,7 @@ public class Functions {
     private static String[] logRecordPreformat(LogRecord r) {
         String source;
         if (r.getSourceClassName() == null) {
-            source = r.getLoggerName();
+            source = r.getLoggerName() == null ? "" : r.getLoggerName();
         } else {
             if (r.getSourceMethodName() == null) {
                 source = r.getSourceClassName();
@@ -1265,7 +1252,12 @@ public class Functions {
 
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if (name == null)     return null;
+        if (name == null) {
+            return null;
+        }
+        if (name.startsWith("symbol-")) {
+            return name;
+        }
         if (name.startsWith("/"))
             return name.substring(1);
         else
@@ -2287,5 +2279,96 @@ public class Functions {
         } else {
             return true;
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Icon tryGetIcon(String iconGuess) {
+        // Jenkins Symbols don't have metadata so return null
+        if (iconGuess == null || iconGuess.startsWith("symbol-")) {
+            return null;
+        }
+
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
+
+        if (iconMetadata == null) {
+            // Icon could be provided as a simple iconFileName e.g. "settings.png"
+            iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
+        }
+
+        if (iconMetadata == null) {
+            // Icon could be provided as an absolute iconFileName e.g. "/plugin/foo/abc.png"
+            iconMetadata = IconSet.icons.getIconByUrl(iconGuess);
+        }
+
+        return iconMetadata;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String extractPluginNameFromIconSrc(String iconSrc) {
+        if (iconSrc == null) {
+            return "";
+        }
+
+        if (!iconSrc.contains("plugin-")) {
+            return "";
+        }
+
+        String[] arr = iconSrc.split(" ");
+        for (String element : arr) {
+            if (element.startsWith("plugin-")) {
+                return element.replace("plugin-", "");
+            }
+        }
+
+        return "";
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String tryGetIconPath(String iconGuess, JellyContext context) {
+        if (iconGuess == null) {
+            return null;
+        }
+
+        if (iconGuess.startsWith("symbol-")) {
+            return iconGuess;
+        }
+
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        String rootURL = currentRequest.getContextPath();
+        Icon iconMetadata = tryGetIcon(iconGuess);
+        String iconSource = null;
+
+        if (iconMetadata != null) {
+            iconSource = iconMetadata.getQualifiedUrl(context);
+        }
+
+        if (iconMetadata == null) {
+            //noinspection HttpUrlsUsage
+            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+                return iconGuess;
+            }
+            if (!iconGuess.startsWith("/")) {
+                iconGuess = "/" + iconGuess;
+            }
+            iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
+        }
+
+        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
+            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
+            if (translatedIcon != null) {
+                return translatedIcon;
+            }
+        }
+
+        return iconSource;
+    }
+
+    @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "True randomness isn't necessary for form item IDs")
+    @Restricted(NoExternalUse.class)
+    public static String generateItemId() {
+        return String.valueOf(Math.floor(Math.random() * 3000));
     }
 }

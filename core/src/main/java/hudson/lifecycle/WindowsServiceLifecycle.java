@@ -33,9 +33,12 @@ import hudson.Util;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -110,7 +113,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File baseDir = getBaseDir();
         File copyFiles = new File(baseDir, baseName + ".copies");
 
-        try (FileWriter w = new FileWriter(copyFiles, true)) {
+        try (Writer w = Files.newBufferedWriter(Util.fileToPath(copyFiles), Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             w.write(by.getAbsolutePath() + '>' + getHudsonWar().getAbsolutePath() + '\n');
         }
     }

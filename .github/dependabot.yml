@@ -23,6 +23,9 @@ updates:
       - dependency-name: "javax.servlet.servlet-api"
       # needs a jakarta upgrade project, imports changed
       - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
+      # Starting with version 2.0.2, this library requires Java 11
+      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
+        versions: [">=2.0.2"]
       # see https://github.com/jenkinsci/jenkins/pull/4224 can't be updated without breaking api
       - dependency-name: "org.jfree:jfreechart"
       # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
@@ -34,7 +37,8 @@ updates:
       # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
         versions: [">=10.0.0"]
-      # Pending https://github.com/siom79/japicmp/pull/266
-      - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
       # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
       - dependency-name: "org.jenkins-ci:winstone"
+      # Starting with version 10.0, this library requires Java 11
+      - dependency-name: "com.puppycrawl.tools:checkstyle"
+        versions: [">=10.0"]
