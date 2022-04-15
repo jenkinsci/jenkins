@@ -96,7 +96,7 @@ THE SOFTWARE.
         </j:if>
       </j:when>
       <j:otherwise>
-        <div class="setting-main help-sibling" style="display:flex; algin-items:center;">
+        <div class="setting-main help-sibling">
           <d:invokeBody />
           <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
         </div>
