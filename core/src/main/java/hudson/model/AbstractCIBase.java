@@ -41,13 +41,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean LOG_STARTUP_PERFORMANCE = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "logStartupPerformance", false);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
@@ -85,6 +86,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     protected void setViewOwner(View v) {
         v.owner = this;
     }
+
     protected void interruptReloadThread() {
         ViewJob.interruptReloadThread();
     }
@@ -100,7 +102,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      *
      * @since 2.230
      */
-    public Set<String> getDisabledAdministrativeMonitors(){
+    public Set<String> getDisabledAdministrativeMonitors() {
         synchronized (this.disabledAdministrativeMonitors) {
             return new HashSet<>(disabledAdministrativeMonitors);
         }
@@ -130,15 +132,15 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
     public abstract Queue getQueue();
 
-    protected abstract Map<Node,Computer> getComputerMap();
+    protected abstract Map<Node, Computer> getComputerMap();
 
     /* =================================================================================================================
      * Computer API uses package protection heavily
      * ============================================================================================================== */
 
-    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticAgentLaunch) {
+    private void updateComputer(Node n, Map<String, Computer> byNameMap, Set<Computer> used, boolean automaticAgentLaunch) {
         Computer c = byNameMap.get(n.getNodeName());
-        if (c!=null) {
+        if (c != null) {
             try {
                 c.setNode(n); // reuse
                 used.add(c);
@@ -156,12 +158,12 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     @CheckForNull
     private Computer createNewComputerForNode(Node n, boolean automaticAgentLaunch) {
         Computer c = null;
-        Map<Node,Computer> computers = getComputerMap();
+        Map<Node, Computer> computers = getComputerMap();
         // we always need Computer for the built-in node as a fallback in case there's no other Computer.
-        if(n.getNumExecutors()>0 || n==Jenkins.get()) {
+        if (n.getNumExecutors() > 0 || n == Jenkins.get()) {
             try {
                 c = n.createComputer();
-            } catch(RuntimeException ex) { // Just in case there is a bogus extension
+            } catch (RuntimeException ex) { // Just in case there is a bogus extension
                 LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
             }
             if (c == null) {
@@ -193,7 +195,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Map<Node,Computer> computers = getComputerMap();
+                Map<Node, Computer> computers = getComputerMap();
                 for (Map.Entry<Node, Computer> e : computers.entrySet()) {
                     if (e.getValue() == computer) {
                         computers.remove(e.getKey());
@@ -206,7 +208,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
-        Map<Node,Computer> computers = getComputerMap();
+        Map<Node, Computer> computers = getComputerMap();
         return computers.get(n);
     }
 
@@ -219,13 +221,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
         createNewComputerForNode(n, automaticAgentLaunch);
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all()) {
-            try {
-                cl.onConfigurationChange();
-            } catch (Throwable t) {
-                LOGGER.log(Level.WARNING, null, t);
-            }
-        }
+        Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);
     }
 
     /**
@@ -236,18 +232,18 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * so that we won't upset {@link Executor}s running in it.
      */
     protected void updateComputerList(final boolean automaticAgentLaunch) {
-        final Map<Node,Computer> computers = getComputerMap();
+        final Map<Node, Computer> computers = getComputerMap();
         final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Map<String,Computer> byName = new HashMap<>();
+                Map<String, Computer> byName = new HashMap<>();
                 for (Computer c : computers.values()) {
                     old.add(c);
                     Node node = c.getNode();
                     if (node == null)
                         continue;   // this computer is gone
-                    byName.put(node.getNodeName(),c);
+                    byName.put(node.getNodeName(), c);
                 }
 
                 Set<Computer> used = new HashSet<>(old.size());
@@ -278,13 +274,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             killComputer(c);
         }
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all()) {
-            try {
-                cl.onConfigurationChange();
-            } catch (Throwable t) {
-                LOGGER.log(Level.WARNING, null, t);
-            }
-        }
+        Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);
     }
 
 }

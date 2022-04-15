@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -101,10 +102,12 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         viewGroupMixIn = new ViewGroupMixIn(this) {
             @Override
             protected List<View> views() { return views; }
+
             @Override
             protected String primaryView() { return primaryViewName; }
+
             @Override
-            protected void primaryView(String name) { primaryViewName=name; }
+            protected void primaryView(String name) { primaryViewName = name; }
         };
 
         return this;
@@ -161,7 +164,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     @Override
     public void onViewRenamed(View view, String oldName, String newName) {
-        viewGroupMixIn.onViewRenamed(view,oldName,newName);
+        viewGroupMixIn.onViewRenamed(view, oldName, newName);
     }
 
     @Override
@@ -196,13 +199,13 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         String view = Util.fixEmpty(value);
         if (view == null) return FormValidation.ok();
         if (exists) {
-        	return getView(view) != null ?
-            		FormValidation.ok() :
-            		FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_NotExist(view));
+            return getView(view) != null ?
+                    FormValidation.ok() :
+                    FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_NotExist(view));
         } else {
-        	return getView(view) == null ?
-        			FormValidation.ok() :
-        			FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_AlreadyExists(view));
+            return getView(view) == null ?
+                    FormValidation.ok() :
+                    FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_AlreadyExists(view));
         }
     }
 
@@ -240,11 +243,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             return new MyViewsProperty();
         }
     }
-    
+
     @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-    	req.bindJSON(this, form);
-    	return this;
+        req.bindJSON(this, form);
+        return this;
     }
 
     @Override
@@ -266,30 +269,30 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     public MyViewsTabBar getMyViewsTabBar() {
         return Jenkins.get().getMyViewsTabBar();
     }
-    
+
     @Extension @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
-		@Override
-		public String getDisplayName() {
-			return Messages.MyViewsProperty_GlobalAction_DisplayName();
-		}
+        @Override
+        public String getDisplayName() {
+            return Messages.MyViewsProperty_GlobalAction_DisplayName();
+        }
 
-		@Override
-		public String getIconFileName() {
-			// do not show when not logged in
-			if (User.current() == null ) {
-				return null;
-			} 
-			
-			return "user.png";
-		}
+        @Override
+        public String getIconFileName() {
+            // do not show when not logged in
+            if (User.current() == null) {
+                return null;
+            }
 
-		@Override
-		public String getUrlName() {
-			return "/me/my-views";
-		}
-		
+            return "user.png";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "/me/my-views";
+        }
+
     }
-   
+
 }

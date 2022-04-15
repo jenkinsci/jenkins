@@ -11,7 +11,6 @@
 #side-panel .pane-header {
   font-size: var(--font-size-sm);
   display: inline-flex;
-  font-weight: bold;
 }
 
 #side-panel .pane-footer {
@@ -30,12 +29,25 @@
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
+  font-weight: bold;
+
+  & > div {
+    font-weight: normal;
+  }
 }
 
 #side-panel .pane-header .expand,
 #side-panel .pane-header .collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
   padding-left: 0.5rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 #side-panel .pane-content {
@@ -144,6 +156,7 @@
 
 .build-row-cell .pane.build-name .build-icon {
   position: absolute;
+  z-index: 1;
 }
 
 .build-row-cell .build-stop {
@@ -221,10 +234,10 @@
   &__information {
     text-align: center;
     line-height: 80px;
-    background-color: rgba(204, 204, 204, 0.2);
+    background-color: var(--panel-header-bg-color);
     margin-top: 10px;
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: var(--form-input-border-radius);
   }
 
   .build-row {
@@ -237,5 +250,16 @@
 
   &--loading .build-row {
     opacity: 0.5;
+  }
+}
+
+.jenkins-pane__header--build-history {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  font-weight: bold!important;
+
+  .jenkins-table__cell--tight {
+    width: auto;
+    margin-right: 1rem;
   }
 }

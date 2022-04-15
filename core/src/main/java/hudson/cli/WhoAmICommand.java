@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -43,10 +44,10 @@ public class WhoAmICommand extends CLICommand {
     @Override
     protected int run() {
         Authentication a = Jenkins.getAuthentication2();
-        stdout.println("Authenticated as: "+a.getName());
+        stdout.println("Authenticated as: " + a.getName());
         stdout.println("Authorities:");
         for (GrantedAuthority ga : a.getAuthorities()) {
-            stdout.println("  "+ga.getAuthority());
+            stdout.println("  " + ga.getAuthority());
         }
         return 0;
     }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -34,21 +35,21 @@ public class JDKNameTest {
     public void nullIsDefaultName() {
         assertThat(JDK.isDefaultName(null), is(true));
     }
-    
+
     @Test
     public void recognizeOldDefaultName() {
         // DEFAULT_NAME took this value prior to 1.598.
         assertThat(JDK.isDefaultName("(Default)"), is(true));
     }
-    
+
     @Test
     public void recognizeDefaultName() {
         assertThat(JDK.isDefaultName(JDK.DEFAULT_NAME), is(true));
     }
-    
+
     @Test
     public void othernameNotDefault() {
         assertThat(JDK.isDefaultName("I'm a customized name"), is(false));
     }
-    
+
 }

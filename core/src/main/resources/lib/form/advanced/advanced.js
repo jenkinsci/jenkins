@@ -32,3 +32,14 @@ Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
         });
         e = null; // avoid memory leak
 });
+
+Behaviour.specify('.advanced-customized-fields-info', 'advanced', 0, function(element) {
+    var id = element.getAttribute('data-id');
+    var span = $(id)
+    if (span != null) {
+        span.style.display = '';
+    } else if (console && console.log) {
+        var customizedFields = element.getAttribute('data-customized-fields');
+        console.log('no element ' + id + ' for ' + customizedFields);
+    }
+});

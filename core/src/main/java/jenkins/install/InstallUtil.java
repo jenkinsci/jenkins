@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import static java.util.logging.Level.SEVERE;
@@ -37,7 +38,9 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,16 +77,18 @@ public class InstallUtil {
      * Simple chain pattern using iterator.next()
      */
     private static class ProviderChain<T> implements Provider<T> {
-        private final Iterator<Function<Provider<T>,T>> functions;
-        ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
+        private final Iterator<Function<Provider<T>, T>> functions;
+
+        ProviderChain(Iterator<Function<Provider<T>, T>> functions) {
             this.functions = functions;
         }
+
         @Override
         public T get() {
             return functions.next().apply(this);
         }
     }
-    
+
     /**
      * Proceed to the state following the provided one
      */
@@ -93,18 +98,18 @@ public class InstallUtil {
             Jenkins.get().setInstallState(next);
         }
     }
-    
+
     /**
      * Returns the next state during a transition from the current install state
      */
     /*package*/ static InstallState getNextInstallState(InstallState current) {
-        List<Function<Provider<InstallState>,InstallState>> installStateFilterChain = new ArrayList<>();
+        List<Function<Provider<InstallState>, InstallState>> installStateFilterChain = new ArrayList<>();
         for (InstallStateFilter setupExtension : InstallStateFilter.all()) {
             installStateFilterChain.add(next -> setupExtension.getNextInstallState(current, next));
         }
         // Terminal condition: getNextState() on the current install state
         installStateFilterChain.add(input -> {
-            // Initially, install state is unknown and 
+            // Initially, install state is unknown and
             // needs to be determined
             if (current == null || InstallState.UNKNOWN.equals(current)) {
                 return getDefaultInstallState();
@@ -122,11 +127,11 @@ public class InstallUtil {
             }
             return states.get(current);
         });
-        
+
         ProviderChain<InstallState> chain = new ProviderChain<>(installStateFilterChain.iterator());
         return chain.get();
     }
-    
+
     private static InstallState getDefaultInstallState() {
         // Support a simple state override. Useful for testing.
         String stateOverride = System.getProperty("jenkins.install.state", System.getenv("jenkins.install.state"));
@@ -134,21 +139,21 @@ public class InstallUtil {
             try {
                 return InstallState.valueOf(stateOverride.toUpperCase());
             } catch (RuntimeException e) {
-                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
+                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.", e);
             }
         }
-        
+
         // Support a 3-state flag for running or disabling the setup wizard
         String shouldRunFlag = SystemProperties.getString("jenkins.install.runSetupWizard");
         boolean shouldRun = "true".equalsIgnoreCase(shouldRunFlag);
         boolean shouldNotRun = "false".equalsIgnoreCase(shouldRunFlag);
-        
+
         // install wizard will always run if environment specified
         if (!shouldRun) {
             if (Functions.getIsUnitTest()) {
                 return InstallState.TEST;
             }
-            
+
             if (SystemProperties.getBoolean("hudson.Main.development")) {
                 return InstallState.DEVELOPMENT;
             }
@@ -159,17 +164,11 @@ public class InstallUtil {
         // has the setup wizard been completed?
         if (!SetupWizard.getUpdateStateFile().exists()) {
             Jenkins j = Jenkins.get();
-            
+
             // Allow for skipping
-            if(shouldNotRun) {
-                try {
-                    InstallState.INITIAL_SETUP_COMPLETED.initializeState();
-                    return j.getInstallState();
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            if (shouldNotRun) {
+                InstallState.INITIAL_SETUP_COMPLETED.initializeState();
+                return j.getInstallState();
             }
 
             return InstallState.INITIAL_SECURITY_SETUP;
@@ -284,12 +283,12 @@ public class InstallUtil {
      * Returns a list of any plugins that are persisted in the installing list
      */
     @SuppressWarnings("unchecked")
-	public static synchronized @CheckForNull Map<String,String> getPersistedInstallStatus() {
+    public static synchronized @CheckForNull Map<String, String> getPersistedInstallStatus() {
         File installingPluginsFile = getInstallingPluginsFile();
-        if(installingPluginsFile == null || !installingPluginsFile.exists()) {
-		return null;
+        if (installingPluginsFile == null || !installingPluginsFile.exists()) {
+            return null;
         }
-        return (Map<String,String>)new XStream().fromXML(installingPluginsFile);
+        return (Map<String, String>) new XStream().fromXML(installingPluginsFile);
     }
 
     /**
@@ -297,25 +296,29 @@ public class InstallUtil {
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();
-	if(installingPlugins == null || installingPlugins.isEmpty()) {
-		installingPluginsFile.delete();
-		return;
-	}
-	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
-	Map<String,String> statuses = new HashMap<>();
-	for(UpdateCenterJob j : installingPlugins) {
-		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
-			InstallationJob ij = (InstallationJob)j;
-			InstallationStatus status = ij.status;
-			String statusText = status.getType();
-			if(status instanceof Installing) { // flag currently installing plugins as pending
-				statusText = "Pending";
-			}
-			statuses.put(ij.plugin.name, statusText);
-		}
-	}
+        if (installingPlugins == null || installingPlugins.isEmpty()) {
+            try {
+                Files.deleteIfExists(installingPluginsFile.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return;
+        }
+        LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
+        Map<String, String> statuses = new HashMap<>();
+        for (UpdateCenterJob j : installingPlugins) {
+            if (j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
+                InstallationJob ij = (InstallationJob) j;
+                InstallationStatus status = ij.status;
+                String statusText = status.getType();
+                if (status instanceof Installing) { // flag currently installing plugins as pending
+                    statusText = "Pending";
+                }
+                statuses.put(ij.plugin.name, statusText);
+            }
+        }
         try {
-		String installingPluginXml = new XStream().toXML(statuses);
+            String installingPluginXml = new XStream().toXML(statuses);
             FileUtils.write(installingPluginsFile, installingPluginXml);
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + installingPluginsFile.getAbsolutePath(), e);
@@ -325,7 +328,7 @@ public class InstallUtil {
     /**
      * Call to remove any active install status
      */
-	public static void clearInstallStatus() {
-		persistInstallStatus(null);
-	}
+    public static void clearInstallStatus() {
+        persistInstallStatus(null);
+    }
 }

@@ -35,14 +35,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 import hudson.Functions;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -147,6 +149,7 @@ public class PathRemoverTest {
 
     @Test
     public void testForceRemoveFile_SymbolicLink() throws IOException {
+        assumeFalse(Functions.isWindows());
         File file = tmp.newFile();
         touchWithFileName(file);
         Path link = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("test-link"), file.toPath());
@@ -177,6 +180,7 @@ public class PathRemoverTest {
     @Test
     @Issue("JENKINS-55448")
     public void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
+        assumeFalse(Functions.isWindows());
         Path realParent = tmp.newFolder().toPath();
         Path path = realParent.resolve("test-file");
         touchWithFileName(path.toFile());
@@ -359,6 +363,7 @@ public class PathRemoverTest {
 
     @Test
     public void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
+        assumeFalse(Functions.isWindows());
         File folder = tmp.newFolder();
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
@@ -398,6 +403,7 @@ public class PathRemoverTest {
     @Test
     @Issue("JENKINS-55448")
     public void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
+        assumeFalse(Functions.isWindows());
         File folder = tmp.newFolder();
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
@@ -449,7 +455,7 @@ public class PathRemoverTest {
 
     private static void touchWithFileName(File... files) throws IOException {
         for (File file : files) {
-            try (FileWriter writer = new FileWriter(file)) {
+            try (Writer writer = Files.newBufferedWriter(file.toPath(), Charset.defaultCharset())) {
                 writer.append(file.getName()).append(System.lineSeparator());
             }
             assertTrue(file.isFile());

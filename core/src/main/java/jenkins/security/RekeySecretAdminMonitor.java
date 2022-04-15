@@ -60,7 +60,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
         // actually rewritten XML files.
         Jenkins j = Jenkins.get();
         if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
-        &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
+        &&  new FileBoolean(new File(j.getRootDir(), "secret.key.not-so-secret")).isOff())
             needed.on();
         Util.deleteRecursive(new File(getBaseDir(), "backups")); // SECURITY-376: no longer used
     }
@@ -92,26 +92,26 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
 
     @RequirePOST
     public HttpResponse doScan(StaplerRequest req) throws IOException, GeneralSecurityException {
-        if(req.hasParameter("background")) {
+        if (req.hasParameter("background")) {
             start(false);
         } else
-        if(req.hasParameter("schedule")) {
+        if (req.hasParameter("schedule")) {
             scanOnBoot.on();
         } else
-        if(req.hasParameter("dismiss")) {
+        if (req.hasParameter("dismiss")) {
             disable(true);
         } else
-            throw HttpResponses.error(400,"Invalid request submission: " + req.getParameterMap());
+            throw HttpResponses.error(400, "Invalid request submission: " + req.getParameterMap());
 
         return HttpResponses.redirectViaContextPath("/manage");
     }
 
 
     private FileBoolean state(String name) {
-        return new FileBoolean(new File(getBaseDir(),name));
+        return new FileBoolean(new File(getBaseDir(), name));
     }
 
-    @Initializer(fatal=false,after=InitMilestone.PLUGINS_STARTED,before=InitMilestone.EXTENSIONS_AUGMENTED)
+    @Initializer(fatal = false, after = InitMilestone.PLUGINS_STARTED, before = InitMilestone.EXTENSIONS_AUGMENTED)
     // as early as possible, but this needs to be late enough that the ConfidentialStore is available
     public void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
         FileBoolean flag = scanOnBoot;
@@ -133,12 +133,12 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
      */
     @Override
     protected File getLogFile() {
-        return new File(getBaseDir(),"rekey.log");
+        return new File(getBaseDir(), "rekey.log");
     }
 
     @Override
     protected void fix(TaskListener listener) throws Exception {
-        LOGGER.info("Initiating a re-keying of secrets. See "+getLogFile());
+        LOGGER.info("Initiating a re-keying of secrets. See " + getLogFile());
 
         SecretRewriter rewriter = new SecretRewriter();
 
@@ -146,11 +146,11 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
             PrintStream log = listener.getLogger();
             log.println("Started re-keying " + new Date());
             int count = rewriter.rewriteRecursive(Jenkins.get().getRootDir(), listener);
-            log.printf("Completed re-keying %d files on %s%n",count,new Date());
+            log.printf("Completed re-keying %d files on %s%n", count, new Date());
             new RekeySecretAdminMonitor().done.on();
             LOGGER.info("Secret re-keying completed");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
+            LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets", e);
             Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));
         }
     }

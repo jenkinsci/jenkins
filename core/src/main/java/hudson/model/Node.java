@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -99,7 +100,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
     /** @see <a href="https://issues.jenkins.io/browse/JENKINS-46652">JENKINS-46652</a> */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final */ boolean SKIP_BUILD_CHECK_ON_FLYWEIGHTS = SystemProperties.getBoolean(Node.class.getName() + ".SKIP_BUILD_CHECK_ON_FLYWEIGHTS", true);
 
     /**
@@ -149,7 +150,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @return
      *      "" if this is master
      */
-    @Exported(visibility=999)
+    @Exported(visibility = 999)
     @NonNull
     public abstract String getNodeName();
 
@@ -218,12 +219,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     @CheckForNull
     public final VirtualChannel getChannel() {
         Computer c = toComputer();
-        return c==null ? null : c.getChannel();
+        return c == null ? null : c.getChannel();
     }
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
-     * 
+     *
      * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      * @return Created instance of the computer.
      *         Can be {@code null} if the {@link Node} implementation does not support it (e.g. {@link Cloud} agent).
@@ -258,7 +259,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // At startup, we need to restore any previously in-effect temp offline cause.
             // We wait until the computer is started rather than getting the data to it sooner
             // so that the normal computer start up processing works as expected.
-            if (node!= null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
+            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
                 c.setTemporarilyOffline(true, node.temporaryOfflineCause);
             }
         }
@@ -282,6 +283,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * Get the cause if temporary offline.
+     *
+     * @return null if not temporary offline or there was no cause given.
+     * @since 2.340
+     */
+    public OfflineCause getTemporaryOfflineCause() {
+        return temporaryOfflineCause;
+    }
+
+    /**
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
@@ -297,6 +308,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * and should be called after events that will change that - e.g. a agent
      * connecting.
      */
+
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Set<LabelAtom> r = Label.parse(getLabelString());
@@ -316,7 +328,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
             for (Label label : labeler.findLabels(this))
-                if (label instanceof LabelAtom) result.add((LabelAtom)label);
+                if (label instanceof LabelAtom) result.add((LabelAtom) label);
         }
         return result;
     }
@@ -381,10 +393,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public CauseOfBlockage canTake(Queue.BuildableItem item) {
         Label l = item.getAssignedLabel();
-        if(l!=null && !l.contains(this))
+        if (l != null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getDisplayName(), l));   // the task needs to be executed on label that this node doesn't have.
 
-        if(l==null && getMode()== Mode.EXCLUSIVE) {
+        if (l == null && getMode() == Mode.EXCLUSIVE) {
             // flyweight tasks need to get executed somewhere, if every node
             if (!(item.task instanceof Queue.FlyweightTask && (
                     this instanceof Jenkins
@@ -404,7 +416,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         // Check each NodeProperty to see whether they object to this node
         // taking the task
-        for (NodeProperty prop: getNodeProperties()) {
+        for (NodeProperty prop : getNodeProperties()) {
             CauseOfBlockage c;
             try {
                 c = prop.canTake(item);
@@ -413,7 +425,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", getNodeName(), item.task.getName()));
                 c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
             }
-            if (c!=null)    return c;
+            if (c != null)    return c;
         }
 
         if (!isAcceptingTasks()) {
@@ -455,8 +467,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public @CheckForNull FilePath createPath(String absolutePath) {
         VirtualChannel ch = getChannel();
-        if(ch==null)    return null;    // offline
-        return new FilePath(ch,absolutePath);
+        if (ch == null)    return null;    // offline
+        return new FilePath(ch, absolutePath);
     }
 
     @Deprecated
@@ -471,43 +483,43 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Gets the specified property or null if the property is not configured for this Node.
-     * 
+     *
      * @param clazz the type of the property
-     * 
+     *
      * @return null if the property is not configured
-     * 
+     *
      * @since 2.37
      */
     @CheckForNull
     public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
     {
-        for (NodeProperty p: getNodeProperties()) {
+        for (NodeProperty p : getNodeProperties()) {
             if (clazz.isInstance(p)) {
                 return clazz.cast(p);
             }
         }
-        return null;      
+        return null;
     }
 
     /**
-     * Gets the property from the given classname or null if the property 
+     * Gets the property from the given classname or null if the property
      * is not configured for this Node.
-     * 
+     *
      * @param className The classname of the property
-     * 
+     *
      * @return null if the property is not configured
-     * 
+     *
      * @since 2.37
      */
     @CheckForNull
     public NodeProperty getNodeProperty(String className)
     {
-        for (NodeProperty p: getNodeProperties()) {
+        for (NodeProperty p : getNodeProperties()) {
             if (p.getClass().getName().equals(className)) {
                 return p;
             }
         }
-        return null;      
+        return null;
     }
 
     // used in the Jelly script to expose descriptors
@@ -515,14 +527,15 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return NodeProperty.for_(this);
     }
 
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     @Override
-    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
-        if (form==null)     return null;
+    public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
+        if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
         final AtomicReference<BindInterceptor> old = new AtomicReference<>();
@@ -563,8 +576,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getChannel();
-        if(channel==null)
-            throw new IOException(getNodeName()+" is offline");
+        if (channel == null)
+            throw new IOException(getNodeName() + " is offline");
 
         return channel.call(getClockDifferenceCallable());
     }
@@ -576,7 +589,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      always non-null.
      * @since 1.522
      */
-    public abstract Callable<ClockDifference,IOException> getClockDifferenceCallable();
+    public abstract Callable<ClockDifference, IOException> getClockDifferenceCallable();
 
     /**
      * Constants that control how Hudson allocates jobs to agents.

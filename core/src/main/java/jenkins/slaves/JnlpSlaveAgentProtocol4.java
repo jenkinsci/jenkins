@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
 
 import hudson.Extension;
@@ -57,7 +58,7 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since 2.27 available as experimental protocol 
+ * @since 2.27 available as experimental protocol
  * @since 2.41 enabled by default
  */
 @Extension

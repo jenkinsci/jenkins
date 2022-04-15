@@ -41,15 +41,11 @@ function onWinScroll(callback) {
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-head');
+    return elementHeight('#page-header') + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
     return elementHeight('#breadcrumbBar');
-}
-
-function fireBottomStickerAdjustEvent() {
-    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
 }
 
 function removeTextHighlighting(selector) {
@@ -70,6 +66,5 @@ export default {
     onWinScroll,
     pageHeaderHeight,
     breadcrumbBarHeight,
-    fireBottomStickerAdjustEvent,
     removeTextHighlighting
 }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.junit.Assert.assertNotNull;
@@ -62,7 +63,7 @@ public class UserDetailsCacheTest {
     }
 
     @Test
-    public void getCachedFalse() throws Exception {
+    public void getCachedFalse() {
         UserDetailsCache cache = UserDetailsCache.get();
         assertNotNull(cache);
         UserDetails alice1 = cache.getCached("alice");
@@ -79,7 +80,7 @@ public class UserDetailsCacheTest {
     }
 
     @Test
-    public void getCachedFalseNotFound() throws Exception {
+    public void getCachedFalseNotFound() {
         UserDetailsCache cache = UserDetailsCache.get();
         assertNotNull(cache);
         UserDetails bob = cache.getCached("bob");

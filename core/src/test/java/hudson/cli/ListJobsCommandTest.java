@@ -13,12 +13,17 @@ import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewTest.CompositeView;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -154,8 +159,19 @@ public class ListJobsCommandTest {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
-
-                return item.toString().isEmpty();
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    return item.toString(charset.name()).isEmpty();
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
             }
 
             @Override
@@ -173,9 +189,20 @@ public class ListJobsCommandTest {
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                final HashSet<String> jobs = new HashSet<>(
-                        Arrays.asList(item.toString().split(System.getProperty("line.separator")))
-                );
+                Set<String> jobs;
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    jobs = new HashSet<>(Arrays.asList(item.toString(charset.name()).split(System.getProperty("line.separator"))));
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }
