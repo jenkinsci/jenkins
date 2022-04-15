@@ -94,7 +94,7 @@ public class IconTest  {
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
         List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted");
+        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-md");
 
         DomElement statusIcons = p.getElementById("statusIcons");
         List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
