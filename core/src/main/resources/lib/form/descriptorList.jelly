@@ -69,7 +69,7 @@ THE SOFTWARE.
   <j:set var="instances" value="${attrs.instances ?: instance[field] ?: descriptor['default'+h.capitalize(field)]}"/>
 
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
-    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}" icon="${icon}">
+    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}" icon="${attrs.icon}">
       <j:if test="${attrs.field!=null}">
         <div class="stapler-class-bag tr">
           <div>
