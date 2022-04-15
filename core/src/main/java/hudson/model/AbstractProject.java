@@ -636,6 +636,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return scmCheckoutRetryCount != null;
     }
 
+    @Override
+    public boolean isBuildable() {
+        return ParameterizedJobMixIn.ParameterizedJob.super.isBuildable();
+    }
+
     /**
      * Used in {@code sidepanel.jelly} to decide whether to display
      * the config/delete/build links.

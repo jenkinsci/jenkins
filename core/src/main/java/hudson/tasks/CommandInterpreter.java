@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.filters.EnvVarsFilterException;
@@ -128,7 +129,8 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
                 // on Windows environment variables are converted to all upper case,
                 // but no such conversions are done on Unix, so to make this cross-platform,
                 // convert variables to all upper cases.
-                envVars.putAll(build.getBuildVariables());
+                for (Map.Entry<String, String> e : build.getBuildVariables().entrySet())
+                    envVars.put(e.getKey(), e.getValue());
 
                 launcher.prepareFilterRules(build, this);
 

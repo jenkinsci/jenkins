@@ -50,7 +50,17 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
     protected ConsoleAnnotationDescriptor() {
     }
 
-     /**
+    /**
+     * {@inheritDoc}
+     *
+     * Users use this name to enable/disable annotations.
+     */
+    @Override
+    public String getDisplayName() {
+        return super.getDisplayName();
+    }
+
+    /**
      * Returns true if this descriptor has a JavaScript to be inserted on applicable console page.
      */
     public boolean hasScript() {
