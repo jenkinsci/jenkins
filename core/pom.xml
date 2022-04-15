@@ -856,6 +856,7 @@ THE SOFTWARE.
                   <includes>
                     <include>hudson/**/*</include>
                     <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
                   </includes>
                   <excludes>
                     <exclude>**/Messages.class</exclude>
