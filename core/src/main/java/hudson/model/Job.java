@@ -1442,7 +1442,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             else if (r == Result.UNSTABLE)
                 return ColorPalette.YELLOW;
             else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                return ColorPalette.GREY;
+                return ColorPalette.DARK_GREY;
             else
                 return ColorPalette.BLUE;
         }

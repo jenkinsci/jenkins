@@ -529,17 +529,14 @@ public class UpdateSite {
 
     /**
      * Is this the legacy default update center site?
+     * @deprecated
+     *      Will be removed, currently returns always false.
+     * @since TODO
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
     public boolean isLegacyDefault() {
-        return isHudsonCI() || isUpdatesFromHudsonLabs();
-    }
-
-    private boolean isHudsonCI() {
-        return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
-    }
-
-    private boolean isUpdatesFromHudsonLabs() {
-        return url != null && url.startsWith("http://updates.hudson-labs.org/");
+        return false;
     }
 
     /**
@@ -801,7 +798,7 @@ public class UpdateSite {
          * Size of the file being advertised in bytes, or {@code null} if unspecified/unknown.
          * @return size of the file if known, {@code null} otherwise.
          *
-         * @since TODO
+         * @since 2.325
          */
         // @Exported -- TODO unsure
         @Restricted(NoExternalUse.class)

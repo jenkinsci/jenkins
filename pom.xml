@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.70</version>
+    <version>1.73</version>
     <relativePath />
   </parent>
 
@@ -57,9 +57,9 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
 
-  <scm>
-    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
     <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
@@ -70,8 +70,14 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.333</revision>
+    <revision>2.344</revision>
     <changelist>-SNAPSHOT</changelist>
+
+    <!-- TODO pending https://github.com/jenkinsci/pom/pull/209 remove this -->
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+    <enforcer.skip>true</enforcer.skip>
+    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.testRelease>11</maven.compiler.testRelease>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
@@ -84,14 +90,10 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <!-- TODO https://github.com/jenkinsci/pom/pull/209 remove this -->
-    <animal.sniffer.skip>true</animal.sniffer.skip>
-    <java.level>11</java.level>
-
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.11.2</remoting.version>
+    <remoting.version>4.13</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -102,8 +104,8 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.3.1</mockito.version>
-    <spotless.version>2.20.0</spotless.version>
+    <mockito.version>4.4.0</mockito.version>
+    <spotless.version>2.22.1</spotless.version>
   </properties>
 
   <dependencyManagement>
@@ -215,7 +217,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing</doclint>
+            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -380,10 +382,6 @@ THE SOFTWARE.
               </pluginExecutions>
             </lifecycleMappingMetadata>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
@@ -556,7 +554,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.3</version>
+              <version>10.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -589,6 +587,8 @@ THE SOFTWARE.
                 <lineSeparator>\n</lineSeparator>
                 <expandEmptyElements>false</expandEmptyElements>
                 <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <sortDependencies>scope,groupId,artifactId</sortDependencies>
+                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
               </sortPom>
             </pom>
           </configuration>
@@ -635,36 +635,6 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <configuration>
-          <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java1${java.level}</artifactId>
-            <version>1.0</version>
-          </signature>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in parent POM -->
-        <configuration>
-          <release>${java.level}</release>
-          <!-- default reuseCreated is more performant
-          feel free to uncomment if you have any issues on your platform
-          <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
-          -->
-        </configuration>
       </plugin>
 
       <plugin>

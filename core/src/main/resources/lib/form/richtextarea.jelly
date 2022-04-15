@@ -34,7 +34,7 @@ THE SOFTWARE.
     <st:attribute name="style"/>
   </st:documentation>
   <textarea name="${attrs.name}" id="${attrs.id}" style="${attrs.style}"
-            class="setting-input rich-editor"
+            class="jenkins-input rich-editor"
             rows="${h.determineRows(attrs.value)}">
     <st:out value="${attrs.value}" />
   </textarea>

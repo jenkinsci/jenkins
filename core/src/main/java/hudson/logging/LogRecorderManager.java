@@ -83,7 +83,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.323")
     public final transient Map<String, LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
     private List<LogRecorder> recorders;

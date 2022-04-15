@@ -108,7 +108,7 @@ public class BasicHeaderProcessorTest {
         makeRequestWithAuthCodeAndFail(null);
     }
 
-    private void makeRequestAndVerify(String expectedLogin) throws IOException, SAXException {
+    private void makeRequestAndVerify(String expectedLogin) throws IOException {
         makeRequestWithAuthCodeAndVerify(null, expectedLogin);
     }
 
@@ -163,7 +163,7 @@ public class BasicHeaderProcessorTest {
         assertEquals(expectedLogin, p.getWebResponse().getContentAsString());
     }
 
-    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
+    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException {
         try {
             makeRequestWithAuthCodeAndVerify(authCode, "-");
             fail();

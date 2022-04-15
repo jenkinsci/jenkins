@@ -25,7 +25,6 @@
 package hudson.util.io;
 
 import hudson.Functions;
-import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
 import java.io.File;
@@ -62,7 +61,7 @@ final class TarArchiver extends Archiver {
             if (mode != -1) {
                 e.setMode(mode);
             }
-        } catch (PosixException x) {
+        } catch (IOException x) {
             // ignore
         }
 
