@@ -37,19 +37,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <l:layout title="${%Update Center} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-    <l:app-bar title="${%Plugin Manager}">
-      <div class="jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:icon src="symbol-search"/>
-        </div>
-      </div>
-    </l:app-bar>
+    <l:app-bar title="${%Plugin Manager}" />
 
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
@@ -58,6 +46,19 @@ THE SOFTWARE.
       <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}"/>
         <local:tabBar xmlns:local="/hudson/PluginManager" page="${attrs.page}"/>
+
+        <div class="jenkins-form-item jenkins-search">
+          <input
+            class="jenkins-search__input"
+            type="search"
+            id="filter-box"
+            value="${request.getParameter('filter')}"
+            placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+          <div class="jenkins-search__icon">
+            <l:icon src="symbol-search"/>
+          </div>
+        </div>
+
         <table id="plugins" class="jenkins-table sortable">
           <thead>
             <tr>
@@ -92,7 +93,8 @@ THE SOFTWARE.
                        value="${installJob.status.success and installJob.plugin.version==p.version}"/>
                 <tr
                   class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}"
-                  name="${p.displayName}">
+                  name="${p.displayName}"
+                  data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
                     <td align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
