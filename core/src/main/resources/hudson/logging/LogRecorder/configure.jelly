@@ -35,9 +35,6 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
 
   <l:main-panel>
-    <p>
-      ${%Enter the name of the logger you want to enable}.
-    </p>
     <f:form method="post" name="config" action="configSubmit">
       <div class="alert alert-info jenkins-form-item">
         ${%fine_warning}
@@ -60,7 +57,7 @@ THE SOFTWARE.
               <div class="jenkins-select">
                 <select class="jenkins-select__input" name="level">
                   <j:forEach var="lv" items="${it.LEVELS}">
-                    <f:option value="${lv.name}" selected="${instance.level==lv or (instance.level == null and lv == 'INFO')}">${lv.localizedName}</f:option>
+                    <f:option value="${lv.name}" selected="${instance.level==lv}">${lv.localizedName}</f:option>
                   </j:forEach>
                 </select>
               </div>
