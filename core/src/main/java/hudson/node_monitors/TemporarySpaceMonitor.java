@@ -26,7 +26,6 @@ package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -57,7 +56,8 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     public TemporarySpaceMonitor() {}
 
     public DiskSpace getFreeSpace(Computer c) {
-        return ExtensionList.lookupSingleton(DiskSpace.class);
+        DiskSpaceMonitorDescriptor descriptor = (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
+        return descriptor != null ? descriptor.get(c) : null;
     }
 
     @Override
