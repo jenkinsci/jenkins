@@ -58,7 +58,7 @@ public class WaitNodeOnlineCommandTest {
     }
 
     @Test
-    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() throws Exception {
+    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -99,7 +99,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 
@@ -125,7 +125,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 
@@ -150,7 +150,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 

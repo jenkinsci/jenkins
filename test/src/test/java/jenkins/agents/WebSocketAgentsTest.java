@@ -38,6 +38,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -136,7 +137,7 @@ public class WebSocketAgentsTest {
 
         @Override
         public String call() {
-            return new String(payload);
+            return new String(payload, StandardCharsets.UTF_8);
         }
     }
 

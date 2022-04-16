@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,9 +45,9 @@ public class EnvVarsTest {
 
     @Test
     public void caseInsensitive() {
-        EnvVars ev = new EnvVars(Collections.singletonMap("Path","A:B:C"));
+        EnvVars ev = new EnvVars(Collections.singletonMap("Path", "A:B:C"));
         assertTrue(ev.containsKey("PATH"));
-        assertEquals("A:B:C",ev.get("PATH"));
+        assertEquals("A:B:C", ev.get("PATH"));
     }
 
     @Test

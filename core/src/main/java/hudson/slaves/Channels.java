@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Proc;
 import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
@@ -54,7 +56,7 @@ import jenkins.security.ChannelConfigurator;
 
 /**
  * Various convenient subtype of {@link Channel}s.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Channels {
@@ -64,7 +66,7 @@ public class Channels {
      */
     @Deprecated
     public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, Proc proc) throws IOException {
-        return forProcess(name,execService,in,out,null,proc);
+        return forProcess(name, execService, in, out, null, proc);
     }
 
     /**
@@ -72,10 +74,10 @@ public class Channels {
      * we kill the process.
      */
     public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, OutputStream header, final Proc proc) throws IOException {
-        ChannelBuilder cb = new ChannelBuilder(name,execService) {
+        ChannelBuilder cb = new ChannelBuilder(name, execService) {
             @Override
             public Channel build(CommandTransport transport) throws IOException {
-                return new Channel(this,transport) {
+                return new Channel(this, transport) {
                     /**
                      * Kill the process when the channel is severed.
                      */
@@ -86,7 +88,7 @@ public class Channels {
                             proc.kill();
                         } catch (IOException x) {
                             // we are already in the error recovery mode, so just record it and move on
-                            LOGGER.log(Level.INFO, "Failed to terminate the severed connection",x);
+                            LOGGER.log(Level.INFO, "Failed to terminate the severed connection", x);
                         } catch (InterruptedException x) {
                             // process the interrupt later
                             Thread.currentThread().interrupt();
@@ -108,21 +110,23 @@ public class Channels {
         };
         cb.withHeaderStream(header);
 
+        Executor executor = Executor.currentExecutor();
+        Object context = executor != null ? executor.getOwner() : proc;
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+            cc.onChannelBuilding(cb, context);
         }
 
-        return cb.build(in,out);
+        return cb.build(in, out);
     }
 
     public static Channel forProcess(String name, ExecutorService execService, final Process proc, OutputStream header) throws IOException {
         final Thread thread = new StreamCopyThread(name + " stderr", proc.getErrorStream(), header);
         thread.start();
 
-        ChannelBuilder cb = new ChannelBuilder(name,execService) {
+        ChannelBuilder cb = new ChannelBuilder(name, execService) {
             @Override
             public Channel build(CommandTransport transport) throws IOException {
-                return new Channel(this,transport) {
+                return new Channel(this, transport) {
                     /**
                      * Kill the process when the channel is severed.
                      */
@@ -145,11 +149,13 @@ public class Channels {
         };
         cb.withHeaderStream(header);
 
+        Executor executor = Executor.currentExecutor();
+        Object context = executor != null ? executor.getOwner() : proc;
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+            cc.onChannelBuilding(cb, context);
         }
 
-        return cb.build(proc.getInputStream(),proc.getOutputStream());
+        return cb.build(proc.getInputStream(), proc.getOutputStream());
     }
 
     /**
@@ -176,11 +182,11 @@ public class Channels {
      *      never null
      * @since 1.300
      */
-    public static Channel newJVM(String displayName, TaskListener listener, FilePath workDir, ClasspathBuilder classpath, Map<String,String> systemProperties) throws IOException {
+    public static Channel newJVM(String displayName, TaskListener listener, FilePath workDir, ClasspathBuilder classpath, Map<String, String> systemProperties) throws IOException {
         JVMBuilder vmb = new JVMBuilder();
         vmb.systemProperties(systemProperties);
 
-        return newJVM(displayName,listener,vmb,workDir,classpath);
+        return newJVM(displayName, listener, vmb, workDir, classpath);
     }
 
     /**
@@ -209,26 +215,26 @@ public class Channels {
      */
     public static Channel newJVM(String displayName, TaskListener listener, JVMBuilder vmb, FilePath workDir, ClasspathBuilder classpath) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
-        serverSocket.bind(new InetSocketAddress("localhost",0));
-        serverSocket.setSoTimeout((int)TimeUnit.SECONDS.toMillis(10));
+        serverSocket.bind(new InetSocketAddress("localhost", 0));
+        serverSocket.setSoTimeout((int) TimeUnit.SECONDS.toMillis(10));
 
         // use -cp + FQCN instead of -jar since remoting.jar can be rebundled (like in the case of the swarm plugin.)
         vmb.classpath().addJarOf(Channel.class);
         vmb.mainClass(Launcher.class);
 
-        if(classpath!=null)
+        if (classpath != null)
             vmb.args().add("-cp").add(classpath);
-        vmb.args().add("-connectTo","localhost:"+serverSocket.getLocalPort());
+        vmb.args().add("-connectTo", "localhost:" + serverSocket.getLocalPort());
 
-        listener.getLogger().println("Starting "+displayName);
+        listener.getLogger().println("Starting " + displayName);
         Proc p = vmb.launch(new LocalLauncher(listener)).stdout(listener).pwd(workDir).start();
 
         Socket s = serverSocket.accept();
         serverSocket.close();
 
-        return forProcess("Channel to "+displayName, Computer.threadPoolForRemoting,
+        return forProcess("Channel to " + displayName, Computer.threadPoolForRemoting,
                 new BufferedInputStream(SocketChannelStream.in(s)),
-                new BufferedOutputStream(SocketChannelStream.out(s)),null,p);
+                new BufferedOutputStream(SocketChannelStream.out(s)), null, p);
     }
 
 

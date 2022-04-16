@@ -26,6 +26,7 @@ package jenkins.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -48,8 +49,9 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @since 2.60
  */
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
 public interface RunWithSCM<JobT extends Job<JobT, RunT>,
-        RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT>> {
+        RunT extends Run<JobT, RunT> & RunWithSCM<JobT, RunT>> {
 
     /**
      * Gets all {@link ChangeLogSet}s currently associated with this item.
@@ -99,7 +101,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
 
             @Override
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(culpritIds.iterator()) {
+                return new AdaptedIterator<String, User>(culpritIds.iterator()) {
                     @Override
                     protected User adapt(String id) {
                         // TODO: Probably it should not auto-create users
@@ -125,7 +127,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
     @NonNull
     default Set<User> calculateCulprits() {
         Set<User> r = new HashSet<>();
-        RunT p = ((RunT)this).getPreviousCompletedBuild();
+        RunT p = ((RunT) this).getPreviousCompletedBuild();
         if (p != null) {
             Result pr = p.getResult();
             if (pr != null && pr.isWorseThan(Result.SUCCESS)) {

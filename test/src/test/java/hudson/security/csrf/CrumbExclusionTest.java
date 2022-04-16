@@ -69,7 +69,7 @@ public class CrumbExclusionTest {
                     assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
                     break;
                 case 400: // from Jetty
-                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("Ambiguous path parameter in URI"));
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("Ambiguous path parameter"));
                     break;
                 default:
                     fail("unexpected error code");

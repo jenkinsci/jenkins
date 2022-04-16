@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,6 +55,8 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.GroupDetails;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
+import hudson.security.SecurityRealm;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.security.UserMayOrMayNotExistException2;
 import hudson.tasks.MailAddressResolver;
 import java.io.File;
@@ -156,7 +159,7 @@ public class UserTest {
         j.assertAllImageLoadSuccessfully(page);
     }
 
-    @Test public void getAuthorities() throws Exception {
+    @Test public void getAuthorities() {
         JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
         realm.addGroups("administrator", "admins");
         realm.addGroups("alice", "users");
@@ -195,7 +198,7 @@ public class UserTest {
         User user3 = User.get("John Smith");
         user3.setFullName("Alice Smith");
         assertEquals("What was this asserting exactly?", "John Smith", user3.getId());
-        User user4 = User.get("Marie",false, Collections.EMPTY_MAP);
+        User user4 = User.get("Marie", false, Collections.EMPTY_MAP);
         assertNull("User should not be created because Marie does not exists.", user4);
         }
     }
@@ -233,10 +236,12 @@ public class UserTest {
 
     private static class IdStrategySpecifyingSecurityRealm extends HudsonPrivateSecurityRealm {
         private final IdStrategy idStrategy;
+
         IdStrategySpecifyingSecurityRealm(IdStrategy idStrategy) {
             super(true, false, null);
             this.idStrategy = idStrategy;
         }
+
         @Override
         public IdStrategy getUserIdStrategy() {
             return idStrategy;
@@ -378,8 +383,8 @@ public class UserTest {
         j.jenkins.reload();
         {
          boolean contained = false;
-         for(User u: User.getAll()){
-             if(u.getId().equals("John Smith")){
+         for (User u : User.getAll()) {
+             if (u.getId().equals("John Smith")) {
                  contained = true;
                  break;
              }
@@ -442,7 +447,7 @@ public class UserTest {
             fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if (!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         }
@@ -469,7 +474,7 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","password");
+        User user = realm.createAccount("John Smith", "password");
         User user2 = realm.createAccount("John Smith2", "password");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
@@ -488,8 +493,8 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = realm.createAccount("John Smith","password");
-        User user2 = realm.createAccount("John Smith2","password");
+        User user = realm.createAccount("John Smith", "password");
+        User user2 = realm.createAccount("John Smith2", "password");
         user2.save();
 
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
@@ -510,7 +515,7 @@ public class UserTest {
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -540,7 +545,7 @@ public class UserTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void resolveByIdThenName() throws Exception{
+    public void resolveByIdThenName() throws Exception {
         j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null));
 
         User u1 = User.get("user1");
@@ -585,7 +590,7 @@ public class UserTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void resolveByUnloadedIdThenName() throws Exception {
+    public void resolveByUnloadedIdThenName() {
         j.jenkins.setSecurityRealm(new ExternalSecurityRealm());
         // do *not* call this here: User.get("victim");
         User attacker1 = User.get("attacker1");
@@ -620,10 +625,12 @@ public class UserTest {
                 return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY2));
             }
         }
+
         @Override
         protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return loadUserByUsername2(username); // irrelevant
         }
+
         @Override
         public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname); // irrelevant
@@ -770,4 +777,26 @@ public class UserTest {
         assertThat(failingResources, empty());
     }
 
+    @Test
+    public void legacyCallerGetsUserMayOrMayNotExistException() {
+        final SecurityRealm realm = new NonEnumeratingAcegiSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm.loadUserByUsername("unknown"));
+
+        final SecurityRealm realm2 = new NonEnumeratingSpringSecurityRealm();
+        assertThrows(UserMayOrMayNotExistException.class, () -> realm2.loadUserByUsername("unknown"));
+    }
+
+    private static class NonEnumeratingAcegiSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException(username + " not found");
+        }
+    }
+
+    private static class NonEnumeratingSpringSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+        @Override
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException2(username + " not found");
+        }
+    }
 }

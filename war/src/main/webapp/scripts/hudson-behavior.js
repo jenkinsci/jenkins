@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -154,7 +154,7 @@ var crumb = {
     // else, the instance is starting, restarting, etc.
 })();
 
-var isRunAsTest = undefined; 
+var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
 var rootURL = 'not-defined-yet';
@@ -355,7 +355,7 @@ function findAncestorClass(e, cssClass) {
 }
 
 function isTR(tr, nodeClass) {
-    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr');
+    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr') || tr.classList.contains('jenkins-form-item');
 }
 
 function findFollowingTR(node, className, nodeClass) {
@@ -429,7 +429,7 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ 
+    return directionF(src,function(e){
         if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
             var r = 0;
             while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
@@ -779,7 +779,7 @@ function renderOnDemand(e,callback,noBehaviour) {
 }
 
 /**
- * Finds all the script tags 
+ * Finds all the script tags
  */
 function evalInnerHtmlScripts(text,callback) {
     var q = [];
@@ -835,11 +835,14 @@ function expandButton(e) {
 function labelAttachPreviousOnClick() {
     var e = $(this).previous();
     while (e!=null) {
-        if (e.tagName=="INPUT") {
-            e.click();
-            break;
-        }
-        e = e.previous();
+      if (e.classList.contains("jenkins-radio")) {
+        e = e.querySelector("input");
+      }
+      if (e.tagName=="INPUT") {
+        e.click();
+        break;
+      }
+      e = e.previous();
     }
 }
 
@@ -857,8 +860,23 @@ function helpButtonOnClick() {
         new Ajax.Request(this.getAttribute("helpURL"), {
             method : 'get',
             onSuccess : function(x) {
+                // Which plugin is this from?
                 var from = x.getResponseHeader("X-Plugin-From");
                 div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+
+                // Ensure links open in new window unless explicitly specified otherwise
+                var links = div.getElementsByTagName('a');
+                for (var i = 0; i < links.length; i++) {
+                  var link = links[i];
+                  if (link.hasAttribute('href')) { // ignore document anchors
+                    if (!link.hasAttribute('target')) {
+                      link.setAttribute('target', '_blank');
+                    }
+                    if (!link.hasAttribute('rel')) {
+                      link.setAttribute('rel', 'noopener noreferrer');
+                    }
+                  }
+                }
                 layoutUpdateCallback.call();
             },
             onFailure : function(x) {
@@ -916,13 +934,20 @@ function makeInnerVisible(b) {
 }
 
 function updateVisibility() {
-    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    var display = (this.outerVisible && this.innerVisible);
     for (var e=this.start; e!=this.end; e=$(e).next()) {
         if (e.rowVisibilityGroup && e!=this.start) {
             e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
             e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
         } else {
-            e.style.display = display;
+            if (display) {
+                e.style.display = ""
+                e.classList.remove("form-container--hidden")
+            } else {
+                // TODO remove display once tab bar (ConfigTableMetaData) is able to handle hidden tabs via class and not just display
+                e.style.display = "none"
+                e.classList.add("form-container--hidden")
+            }
         }
     }
     layoutUpdateCallback.call();
@@ -1000,7 +1025,7 @@ function rowvgStartEachRow(recursive,f) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
-    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -1012,7 +1037,7 @@ function rowvgStartEachRow(recursive,f) {
             resultsList: "suggestions",
             fields: ["name"]
         };
-        
+
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
         ac.generateRequest = function(query) {
@@ -1034,6 +1059,13 @@ function rowvgStartEachRow(recursive,f) {
     });
 
 
+    Behaviour.specify("A.jenkins-help-button", "a-jenkins-help-button", ++p, function(e) {
+        e.onclick = helpButtonOnClick;
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
+        e.parentNode.parentNode.addClassName('has-help');
+    });
+
+    // legacy class name
     Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
         e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
@@ -1046,7 +1078,7 @@ function rowvgStartEachRow(recursive,f) {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
-            
+
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
               lineNumbers: true,
@@ -1081,7 +1113,6 @@ function rowvgStartEachRow(recursive,f) {
                 }
               }
             }).getWrapperElement();
-            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
     });
 
@@ -1197,8 +1228,10 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
-        // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
+
+        // Set start.ref to checkbox in preparation of row-set-end processing
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     });
 
@@ -1271,7 +1304,8 @@ function rowvgStartEachRow(recursive,f) {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
         updateOptionalBlock(checkbox,false);
     });
 
@@ -1394,89 +1428,24 @@ function rowvgStartEachRow(recursive,f) {
         });
     });
 
-    /*
-        Use on div tag to make it sticky visible on the bottom of the page.
-        When page scrolls it remains in the bottom of the page
-        Convenient on "OK" button and etc for a long form page
-     */
-    Behaviour.specify("#bottom-sticker", "-bottom-sticker", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
+  window.addEventListener('load', function () {
+    // Add a class to the bottom bar when it's stuck to the bottom of the screen
+    const el = document.querySelector("#bottom-sticker")
+    if (el) {
+      const observer = new IntersectionObserver(
+        ([e]) => e.target.classList.toggle("bottom-sticker-inner--stuck", e.intersectionRatio < 1),
+        {threshold: [1]}
+      );
 
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "bottom-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-
-            var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
-
-            sticker.style.bottom = bottomPos + "px"
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
-        adjustSticker();
-        layoutUpdateCallback.add(adjustSticker);
-    });
-
-    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
-        this[".top-sticker"](sticker);
-    });
-
-    /**
-     * @param {HTMLElement} sticker
-     */
-    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
-
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        var initialBreadcrumbPosition = DOM.getRegion(shadow);
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-            if(pos.top <= initialBreadcrumbPosition.top) {
-                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
-            }
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        adjustSticker();
-    });
+      observer.observe(el);
+    }
+  })
 
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
      * When a checkbox is generated by setting the title on the f:entry like
-     *     <f:entry field="rebaseBeforePush"title="${%Rebase Before Push}">
+     *     <f:entry field="rebaseBeforePush" title="${%Rebase Before Push}">
      *         <f:checkbox />
      *     </f:entry>
      * This function will copy the title from the .setting-name field to the checkbox label.
@@ -1485,32 +1454,36 @@ function rowvgStartEachRow(recursive,f) {
      * @param {HTMLLabelElement} label
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
-        var labelParent = label.parentElement;
+        var labelParent = label.parentElement.parentElement;
+
         if (!labelParent.classList.contains('setting-main')) return;
 
         function findSettingName(formGroup) {
             for (var i=0; i<formGroup.childNodes.length; i++) {
                 var child = formGroup.childNodes[i];
-                if (child.classList.contains('setting-name')) return child;
+                if (child.classList.contains('jenkins-form-label') || child.classList.contains('setting-name')) return child;
             }
         }
 
         var settingName = findSettingName(labelParent.parentNode);
         if (settingName == undefined) return
-        var helpLink = settingName.querySelector('.setting-help');
-
-        // Copy setting-name text and append it to the checkbox label
-        var labelText = settingName.innerText;
-        var spanTag = document.createElement('span')
-        spanTag.innerHTML = labelText
-        label.appendChild(spanTag)
+        var jenkinsHelpButton = settingName.querySelector('.jenkins-help-button');
+        var helpLink = jenkinsHelpButton !== null ? jenkinsHelpButton : settingName.querySelector('.setting-help');
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
+            labelParent.classList.add('jenkins-checkbox-help-wrapper');
             labelParent.appendChild(helpLink);
         }
 
         labelParent.parentNode.removeChild(settingName);
+
+        // Copy setting-name text and append it to the checkbox label
+        var labelText = settingName.innerText;
+
+        var spanTag = document.createElement('span')
+        spanTag.innerHTML = labelText
+        label.appendChild(spanTag)
     });
 })();
 
@@ -1577,7 +1550,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
     new Ajax.Request(
         "./descriptionForm",
         {
@@ -1747,18 +1720,18 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    
-    var n = button; 
+
+    var n = button;
     while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
     }
 
     var parent = n.parentNode;
-    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
     var textArea = parent.childNodes[0];
     textArea.name = field.name;
-    textArea.innerText = value;
+    textArea.value = value;
 
     layoutUpdateCallback.call();
 }
@@ -1870,509 +1843,6 @@ function onBuildHistoryChange(handler) {
 }
 function fireBuildHistoryChanged() {
     Event.fire(window, 'jenkins:buildHistoryChanged');
-}
-
-function updateBuildHistory(ajaxUrl,nBuild) {
-    if(isRunAsTest) return;
-    var bh = $('buildHistory');
-    
-    // If the build history pane is collapsed, just return immediately and don't set up
-    // the build history refresh.
-    if (bh.hasClassName('collapsed')) {
-        return;
-    }
-    
-    var buildHistoryPage = $('buildHistoryPage');
-
-    bh.headers = ["n",nBuild];
-
-    function getDataTable(buildHistoryDiv) {
-	return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
-    }
-
-    var leftRightPadding = 4;
-    function checkRowCellOverflows(row) {
-        if (!row) {
-            return;
-        }
-
-        if (row.classList.contains('overflow-checked')) {
-            // already done.
-            return;
-        }
-
-        function markSingleline() {
-            row.classList.add('single-line');
-            row.classList.remove('multi-line');
-        }
-        function markMultiline() {
-            row.classList.remove('single-line');
-            row.classList.add('multi-line');
-        }
-        function indentMultiline(element) {
-            element.classList.add('indent-multiline');
-        }
-
-        function blockWrap(el1, el2) {
-            var div = document.createElement('div');
-
-            div.classList.add('block');
-            div.classList.add('wrap');
-            el1.classList.add('wrapped');
-            el2.classList.add('wrapped');
-
-            el1.parentNode.insertBefore(div, el1);
-            el1.parentNode.removeChild(el1);
-            el2.parentNode.removeChild(el2);
-            div.appendChild(el1);
-            div.appendChild(el2);
-
-            return div;
-        }
-        function blockUnwrap(element) {
-            var wrapped = $(element).getElementsBySelector('.wrapped');
-            for (var i = 0; i < wrapped.length; i++) {
-                var wrappedEl = wrapped[i];
-                wrappedEl.parentNode.removeChild(wrappedEl);
-                element.parentNode.insertBefore(wrappedEl, element);
-                wrappedEl.classList.remove('wrapped');
-            }
-            element.parentNode.removeChild(element);
-        }
-
-        var buildName = $(row).getElementsBySelector('.build-name')[0];
-        var buildDetails = $(row).getElementsBySelector('.build-details')[0];
-
-        if (!buildName || !buildDetails) {
-            return;
-        }
-
-        var displayName = $(buildName).getElementsBySelector('.display-name')[0];
-        var buildControls = $(row).getElementsBySelector('.build-controls')[0];
-        var desc;
-
-        var descElements = $(row).getElementsBySelector('.desc');
-        if (descElements.length > 0) {
-            desc = descElements[0];
-        }
-
-        function resetCellOverflows() {
-            markSingleline();
-
-            // undo block wraps
-            var blockWraps = $(row).getElementsBySelector('.block.wrap');
-            for (var i = 0; i < blockWraps.length; i++) {
-                blockUnwrap(blockWraps[i]);
-            }
-
-            buildName.classList.remove('block');
-            buildName.removeAttribute('style');
-            buildDetails.classList.remove('block');
-            buildDetails.removeAttribute('style');
-            if (buildControls) {
-                buildControls.classList.remove('block');
-                buildDetails.removeAttribute('style');
-            }
-        }
-
-        // Undo everything from the previous poll.
-        resetCellOverflows();
-
-        // Mark the text as multiline, if it has more than one line
-        if (desc) {
-            markMultiline();
-        }
-
-        var rowWidth = bh.clientWidth;
-        var usableRowWidth = rowWidth - (leftRightPadding * 2);
-        var nameOverflowParams = getElementOverflowParams(buildName);
-        var detailsOverflowParams = getElementOverflowParams(buildDetails);
-
-        var controlsOverflowParams;
-        if (buildControls) {
-            controlsOverflowParams = getElementOverflowParams(buildControls);
-        }
-
-        function fitToControlsHeight(element) {
-            if (buildControls) {
-                if (element.clientHeight < buildControls.clientHeight) {
-                    $(element).setStyle({height: buildControls.clientHeight.toString() + 'px'});
-                }
-            }
-        }
-
-        function setBuildControlWidths() {
-            if (buildControls) {
-                var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
-
-                if (buildBadge) {
-                    var buildControlsWidth = buildControls.clientWidth;
-                    var buildBadgeWidth;
-
-                    var buildStop = $(buildControls).getElementsBySelector('.build-stop')[0];
-                    if (buildStop) {
-                        $(buildStop).setStyle({width: '24px'});
-                        // Minus 24 for the buildStop width,
-                        // minus 4 for left+right padding in the controls container
-                        buildBadgeWidth = (buildControlsWidth - 24 - leftRightPadding);
-                        if (buildControls.classList.contains('indent-multiline')) {
-                            buildBadgeWidth = buildBadgeWidth - 20;
-                        }
-                        $(buildBadge).setStyle({width: (buildBadgeWidth) + 'px'});
-                    } else {
-                        $(buildBadge).setStyle({width: '100%'});
-                    }
-                }
-                controlsOverflowParams = getElementOverflowParams(buildControls);
-            }
-        }
-        setBuildControlWidths();
-
-        var controlsRepositioned = false;
-
-        if (nameOverflowParams.isOverflowed || detailsOverflowParams.isOverflowed) {
-            // At least one of the cells (name or details) needs to move to a row of its own.
-
-            markMultiline();
-
-            if (buildControls) {
-
-                // We have build controls. Lets see can we find a combination that allows the build controls
-                // to sit beside either the build name or the build details.
-
-                var badgesOverflowing = false;
-                var nameLessThanHalf = true;
-                var detailsLessThanHalf = true;
-                var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
-                if (buildBadge) {
-                    var badgeOverflowParams = getElementOverflowParams(buildBadge);
-
-                    if (badgeOverflowParams.isOverflowed) {
-                        // The badges are also overflowing. In this case, we will only attempt to
-                        // put the controls on the same line as the name or details (see below)
-                        // if the name or details is using less than half the width of the build history
-                        // widget.
-                        badgesOverflowing = true;
-                        nameLessThanHalf = (nameOverflowParams.scrollWidth < usableRowWidth/2);
-                        detailsLessThanHalf = (detailsOverflowParams.scrollWidth < usableRowWidth/2);
-                    }
-                }
-                function expandLeftWithRight(leftCellOverFlowParams, rightCellOverflowParams) {
-                    // Float them left and right...
-                    $(leftCellOverFlowParams.element).setStyle({float: 'left'});
-                    $(rightCellOverflowParams.element).setStyle({float: 'right'});
-
-                    if (!leftCellOverFlowParams.isOverflowed && !rightCellOverflowParams.isOverflowed) {
-                        // If neither left nor right are overflowed, just leave as is and let them float left and right.
-                        return;
-                    }
-                    if (leftCellOverFlowParams.isOverflowed && !rightCellOverflowParams.isOverflowed) {
-                        $(leftCellOverFlowParams.element).setStyle({width: leftCellOverFlowParams.scrollWidth + 'px'});
-                        return;
-                    }
-                    if (!leftCellOverFlowParams.isOverflowed && rightCellOverflowParams.isOverflowed) {
-                        $(rightCellOverflowParams.element).setStyle({width: rightCellOverflowParams.scrollWidth + 'px'});
-                        return;
-                    }
-                }
-
-                if ((!badgesOverflowing || nameLessThanHalf) &&
-                    (nameOverflowParams.scrollWidth + controlsOverflowParams.scrollWidth <= usableRowWidth)) {
-                    // Build name and controls can go on one row (first row). Need to move build details down
-                    // to a row of its own (second row) by making it a block element, forcing it to wrap. If there
-                    // are controls, we move them up to position them after the build name by inserting before the
-                    // build details.
-                    buildDetails.classList.add('block');
-                    buildControls.parentNode.removeChild(buildControls);
-                    buildDetails.parentNode.insertBefore(buildControls, buildDetails);
-                    var wrap = blockWrap(buildName, buildControls);
-                    wrap.classList.add('build-name-controls');
-                    indentMultiline(buildDetails);
-                    nameOverflowParams = getElementOverflowParams(buildName); // recalculate
-                    expandLeftWithRight(nameOverflowParams, controlsOverflowParams);
-                    setBuildControlWidths();
-                    fitToControlsHeight(buildName);
-                } else if ((!badgesOverflowing || detailsLessThanHalf) &&
-                    (detailsOverflowParams.scrollWidth + controlsOverflowParams.scrollWidth <= usableRowWidth)) {
-                    // Build details and controls can go on one row. Need to make the
-                    // build name (first field) a block element, forcing the details and controls to wrap
-                    // onto the next row (creating a second row).
-                    buildName.classList.add('block');
-                    var wrap = blockWrap(buildDetails, buildControls);
-                    indentMultiline(wrap);
-                    wrap.classList.add('build-details-controls');
-                    detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
-                    expandLeftWithRight(detailsOverflowParams, controlsOverflowParams);
-                    setBuildControlWidths();
-                    fitToControlsHeight(buildDetails);
-                } else {
-                    // No suitable combo fits on a row. All need to go on rows of their own.
-                    buildName.classList.add('block');
-                    buildDetails.classList.add('block');
-                    buildControls.classList.add('block');
-                    indentMultiline(buildDetails);
-                    indentMultiline(buildControls);
-                    nameOverflowParams = getElementOverflowParams(buildName); // recalculate
-                    detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
-                    setBuildControlWidths();
-                }
-                controlsRepositioned = true;
-            } else {
-                buildName.classList.add('block');
-                buildDetails.classList.add('block');
-                indentMultiline(buildDetails);
-            }
-        }
-
-        if (buildControls && !controlsRepositioned) {
-            var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
-            if (buildBadge) {
-                var badgeOverflowParams = getElementOverflowParams(buildBadge);
-
-                if (badgeOverflowParams.isOverflowed) {
-                    markMultiline();
-                    indentMultiline(buildControls);
-                    buildControls.classList.add('block');
-                    controlsRepositioned = true;
-                    setBuildControlWidths();
-                }
-            }
-        }
-
-        if (!nameOverflowParams.isOverflowed && !detailsOverflowParams.isOverflowed && !controlsRepositioned) {
-            fitToControlsHeight(buildName);
-            fitToControlsHeight(buildDetails);
-        }
-
-        row.classList.add('overflow-checked');
-    }
-
-    function checkAllRowCellOverflows() {
-        if(isRunAsTest) {
-            return;
-        }
-
-        var bh = $('buildHistory');
-        var dataTable = getDataTable(bh);
-        var rows = dataTable.rows;
-
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            checkRowCellOverflows(row);
-        }
-    }
-
-    var updateBuildsRefreshInterval = 5000;
-    function updateBuilds() {
-        if(isPageVisible()){
-            if (bh.headers == null) {
-                // Yahoo.log("Missing headers in buildHistory element");
-            }
-
-            new Ajax.Request(ajaxUrl, {
-                requestHeaders: bh.headers,
-                onSuccess: function(rsp) {
-                    var dataTable = getDataTable(bh);
-                    var rows = dataTable.rows;
-
-                    //delete rows with transitive data
-                    var firstBuildRow = 0;
-                    if (rows[firstBuildRow].classList.contains('build-search-row')) {
-                        firstBuildRow++;
-                    }
-                    while (rows.length > 0 && rows[firstBuildRow].classList.contains('transitive')) {
-                        Element.remove(rows[firstBuildRow]);
-                    }
-
-                    // insert new rows
-                    var div = document.createElement('div');
-                    div.innerHTML = rsp.responseText;
-                    Behaviour.applySubtree(div);
-
-                    var pivot = rows[firstBuildRow];
-                    var newDataTable = getDataTable(div);
-                    var newRows = newDataTable.rows;
-                    while (newRows.length > 0) {
-                        if (pivot !== undefined) {
-                            // The data table has rows.  Insert before a "pivot" row (first row).
-                            pivot.parentNode.insertBefore(newRows[0], pivot);
-                        } else {
-                            // The data table has no rows.  In this case, we just add all new rows directly to the
-                            // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-                            dataTable.appendChild(newRows[0]);
-			            }
-			        }
-
-                    if (newDataTable.classList.contains('hasPageData')) {
-                        buildHistoryPage.setAttribute('page-entry-newest', newDataTable.getAttribute('page-entry-newest'));
-                    }
-
-                    // next update
-                    bh.headers = ["n",rsp.getResponseHeader("n")];
-                    checkAllRowCellOverflows();
-                    createRefreshTimeout();
-                }
-	        });
-	    } else {
-            // Reschedule again
-	        createRefreshTimeout();
-        }
-    }
-
-    var buildRefreshTimeout;
-    function createRefreshTimeout() {
-        cancelRefreshTimeout();
-        buildRefreshTimeout = window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
-    }
-    function cancelRefreshTimeout() {
-        if (buildRefreshTimeout) {
-            window.clearTimeout(buildRefreshTimeout);
-            buildRefreshTimeout = undefined;
-        }
-    }
-
-    createRefreshTimeout();
-    checkAllRowCellOverflows();
-
-    onBuildHistoryChange(function() {
-        checkAllRowCellOverflows();
-    });
-
-    function setupHistoryNav() {
-        var sidePanel = $('side-panel');
-        var buildHistoryPageNav = $('buildHistoryPageNav');
-
-        // Show/hide the nav as the mouse moves into the sidepanel and build history.
-        sidePanel.observe('mouseover', function() {
-            buildHistoryPageNav.classList.add('mouseOverSidePanel');
-        });
-        sidePanel.observe('mouseout', function() {
-            buildHistoryPageNav.classList.remove('mouseOverSidePanel');
-        });
-        bh.observe('mouseover', function() {
-            buildHistoryPageNav.classList.add('mouseOverSidePanelBuildHistory');
-        });
-        bh.observe('mouseout', function() {
-            buildHistoryPageNav.classList.remove('mouseOverSidePanelBuildHistory');
-        });
-
-        var pageSearchInput = Element.getElementsBySelector(bh, '.build-search-row input')[0];
-        var pageSearchClear = Element.getElementsBySelector(bh, '.build-search-row .clear')[0];
-        var pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
-        var pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
-        var pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
-
-        function hasPageUp() {
-            return buildHistoryPage.getAttribute('page-has-up') === 'true';
-        }
-        function hasPageDown() {
-            return buildHistoryPage.getAttribute('page-has-down') === 'true';
-        }
-        function getNewestEntryId() {
-            return buildHistoryPage.getAttribute('page-entry-newest');
-        }
-        function getOldestEntryId() {
-            return buildHistoryPage.getAttribute('page-entry-oldest');
-        }
-        function updatePageParams(dataTable) {
-            buildHistoryPage.setAttribute('page-has-up', dataTable.getAttribute('page-has-up'));
-            buildHistoryPage.setAttribute('page-has-down', dataTable.getAttribute('page-has-down'));
-            buildHistoryPage.setAttribute('page-entry-newest', dataTable.getAttribute('page-entry-newest'));
-            buildHistoryPage.setAttribute('page-entry-oldest', dataTable.getAttribute('page-entry-oldest'));
-        }
-        function togglePageUpDown() {
-            buildHistoryPageNav.classList.remove('hasUpPage');
-            buildHistoryPageNav.classList.remove('hasDownPage');
-            if (hasPageUp()) {
-                buildHistoryPageNav.classList.add('hasUpPage');
-            }
-            if (hasPageDown()) {
-                buildHistoryPageNav.classList.add('hasDownPage');
-            }
-        }
-
-        function loadPage(params, focusOnSearch) {
-            var searchString = pageSearchInput.value;
-
-            if (searchString !== '') {
-                if (params === undefined) {
-                    params = {};
-                }
-                params.search = searchString;
-            }
-
-            new Ajax.Request(ajaxUrl + toQueryString(params), {
-                onSuccess: function(rsp) {
-                    var dataTable = getDataTable(bh);
-                    var rows = dataTable.rows;
-
-                    // delete all rows
-                    var searchRow;
-                    if (rows[0].classList.contains('build-search-row')) {
-                        searchRow = rows[0];
-                    }
-                    while (rows.length > 0) {
-                        Element.remove(rows[0]);
-                    }
-                    if (searchRow) {
-                        dataTable.appendChild(searchRow);
-                    }
-
-                    // insert new rows
-                    var div = document.createElement('div');
-                    div.innerHTML = rsp.responseText;
-                    Behaviour.applySubtree(div);
-
-                    var newDataTable = getDataTable(div);
-                    var newRows = newDataTable.rows;
-                    while (newRows.length > 0) {
-                        dataTable.appendChild(newRows[0]);
-                    }
-
-                    checkAllRowCellOverflows();
-                    updatePageParams(newDataTable);
-                    togglePageUpDown();
-                    if (!hasPageUp()) {
-                        createRefreshTimeout();
-                    }
-
-                    if (focusOnSearch) {
-                        pageSearchInput.focus();
-                    }
-                }
-            });
-        }
-
-        pageSearchInput.observe('keypress', function(e) {
-            var key = e.which || e.keyCode;
-            // On enter
-            if (key === 13) {
-                loadPage({}, true);
-            }
-        });
-        pageSearchClear.observe('click', function() {
-            pageSearchInput.value = '';
-            loadPage({}, true);
-        });
-        pageOne.observe('click', function() {
-            loadPage();
-        });
-        pageUp.observe('click', function() {
-            loadPage({'newer-than': getNewestEntryId()});
-        });
-        pageDown.observe('click', function() {
-            if (hasPageDown()) {
-                cancelRefreshTimeout();
-                loadPage({'older-than': getOldestEntryId()});
-            } else {
-                // wrap back around to the top
-                loadPage();
-            }
-        });
-
-        togglePageUpDown();
-    }
-    setupHistoryNav();
 }
 
 function toQueryString(params) {
@@ -2680,7 +2150,7 @@ function buildFormTree(form) {
                 addProperty(findParent(e),e.name,values);
                 continue;
             }
-                
+
             var p;
             var r;
             var type = e.getAttribute("type");
@@ -2803,12 +2273,11 @@ var hoverNotification = (function() {
 
         var div = document.createElement("DIV");
         document.body.appendChild(div);
-        div.innerHTML = "<div id=hoverNotification><div class=bd></div></div>";
+        div.innerHTML = "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
         body = $('hoverNotification');
-        
+
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
-          width:"10em",
           zIndex:1000,
           effect:{
             effect:effect,
@@ -2831,6 +2300,15 @@ var hoverNotification = (function() {
         msgBox.show();
     };
 })();
+
+// Decrease vertical padding for checkboxes
+window.addEventListener('load', function () {
+    document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
+        if (element.querySelector(".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox") != null) {
+            element.classList.add("jenkins-form-item--tight")
+        }
+    });
+})
 
 /**
  * Loads the script specified by the URL.
@@ -2880,7 +2358,7 @@ function safeValidateButton(yuiButton) {
 
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
-    
+
     validateButton(checkUrl, paramList, yuiButton);
 }
 

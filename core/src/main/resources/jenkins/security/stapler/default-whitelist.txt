@@ -131,7 +131,7 @@ method hudson.plugins.build_publisher.BuildPublisher$BuildPublisherDescriptor do
 
 
 ###############################################
-# Changes since last successfull build Plugin # (sic)
+# Changes since last successful build Plugin  #
 ###############################################
 # Only has an index.jelly view, so needs to be explicit
 class com.cloudbees.jenkins.plugins.changelog.Changes

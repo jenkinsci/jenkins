@@ -33,7 +33,7 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="newLogRecorder">
         <f:entry title="${%Name}">
-          <input type="text" name="name" class="setting-input" id="box" autofocus="autofocus" />
+          <input type="text" name="name" class="jenkins-input" id="box" autofocus="autofocus" />
         </f:entry>
 
         <f:block>

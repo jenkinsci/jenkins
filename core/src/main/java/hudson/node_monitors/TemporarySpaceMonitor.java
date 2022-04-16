@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
@@ -47,9 +49,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     @DataBoundConstructor
-	public TemporarySpaceMonitor(String freeSpaceThreshold) throws ParseException {
+    public TemporarySpaceMonitor(String freeSpaceThreshold) throws ParseException {
         super(freeSpaceThreshold);
-	}
+    }
 
     public TemporarySpaceMonitor() {}
 
@@ -70,10 +72,12 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
     @Extension @Symbol("tmpSpace")
     public static class DescriptorImpl extends DiskSpaceMonitorDescriptor {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this;
         }
@@ -84,12 +88,12 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         }
 
         @Override
-        protected Callable<DiskSpace,IOException> createCallable(Computer c) {
+        protected Callable<DiskSpace, IOException> createCallable(Computer c) {
             Node node = c.getNode();
             if (node == null) return null;
-            
+
             FilePath p = node.getRootPath();
-            if(p==null) return null;
+            if (p == null) return null;
 
             return p.asCallableWith(new GetTempSpace());
         }
@@ -102,7 +106,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     public static DiskSpaceMonitorDescriptor install() {
         return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
     }
-    
+
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
@@ -110,9 +114,10 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
                 // so calling File.createTempFile and figuring out the directory won't reliably work.
                 f = new File(System.getProperty("java.io.tmpdir"));
                 long s = f.getUsableSpace();
-                if(s<=0)    return null;
+                if (s <= 0)    return null;
                 return new DiskSpace(f.getCanonicalPath(), s);
         }
+
         private static final long serialVersionUID = 1L;
     }
 }

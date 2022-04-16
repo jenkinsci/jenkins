@@ -26,17 +26,17 @@ public class CoreEnvironmentContributorTest {
 
     @Mock
     Job job;
-    
+
     @Mock
     TaskListener listener;
-    
+
     @After
     public void tearDown() throws Exception {
         mocks.close();
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
         instance = new CoreEnvironmentContributor();
     }

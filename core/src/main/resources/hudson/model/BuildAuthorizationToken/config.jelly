@@ -37,9 +37,9 @@ THE SOFTWARE.
       <f:entry title="${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
         ${%Use the following URL to trigger build remotely:}
-        <tt>JENKINS_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
+        <code>JENKINS_URL</code>/${it.url}build?token=<code>TOKEN_NAME</code>
         ${%or}
-        /buildWithParameters?token=<tt>TOKEN_NAME</tt>
+        /buildWithParameters?token=<code>TOKEN_NAME</code>
         <br/>
         ${%Optionally append &lt;tt>&amp;cause=Cause+Text&lt;/tt> to provide text that will be included in the recorded build cause.}
       </f:entry>

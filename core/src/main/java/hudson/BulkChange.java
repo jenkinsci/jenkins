@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import hudson.model.Saveable;
@@ -89,7 +90,7 @@ public class BulkChange implements Closeable {
      * Saves the accumulated changes.
      */
     public void commit() throws IOException {
-        if(completed)   return;
+        if (completed)   return;
         completed = true;
 
         // move this object out of the scope first before save, or otherwise the save() method will do nothing.
@@ -117,13 +118,13 @@ public class BulkChange implements Closeable {
      * This is so that {@link BulkChange} can be used naturally in the try/finally block.
      */
     public void abort() {
-        if(completed)   return;
+        if (completed)   return;
         completed = true;
         pop();
     }
 
     private void pop() {
-        if(current()!=this)
+        if (current() != this)
             throw new AssertionError("Trying to save BulkChange that's not in scope");
         INSCOPE.set(parent);
     }
@@ -148,8 +149,8 @@ public class BulkChange implements Closeable {
      * if the actual persistence should happen now or not.
      */
     public static boolean contains(Saveable s) {
-        for(BulkChange b=current(); b!=null; b=b.parent)
-            if(b.saveable==s || b.saveable==ALL)
+        for (BulkChange b = current(); b != null; b = b.parent)
+            if (b.saveable == s || b.saveable == ALL)
                 return true;
         return false;
     }

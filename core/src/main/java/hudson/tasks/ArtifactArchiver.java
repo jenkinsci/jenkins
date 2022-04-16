@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -105,7 +106,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @NonNull
     private Boolean defaultExcludes = true;
-    
+
     /**
      * Indicate whether include and exclude patterns should be considered as case sensitive
      */
@@ -135,7 +136,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful) {
-        this(artifacts, excludes , latestOnly , allowEmptyArchive, onlyIfSuccessful , true);
+        this(artifacts, excludes, latestOnly, allowEmptyArchive, onlyIfSuccessful, true);
     }
 
     @Deprecated
@@ -153,9 +154,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
     protected Object readResolve() {
         if (allowEmptyArchive == null) {
-            this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+            this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName() + ".warnOnEmpty");
         }
-        if (defaultExcludes == null){
+        if (defaultExcludes == null) {
             defaultExcludes = true;
         }
         if (caseSensitive == null) {
@@ -216,7 +217,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @DataBoundSetter public final void setDefaultExcludes(boolean defaultExcludes) {
         this.defaultExcludes = defaultExcludes;
     }
-    
+
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -234,8 +235,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath ws, EnvVars environment, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        if(artifacts.length()==0) {
+    public void perform(Run<?, ?> build, FilePath ws, EnvVars environment, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        if (artifacts.length() == 0) {
             throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
 
@@ -252,7 +253,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 artifacts = environment.expand(artifacts);
             }
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
+            Map<String, String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -267,10 +268,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 //noinspection StatementWithEmptyBody
                 if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     try {
-                    	String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                        String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
                         if (msg != null) {
                             listener.getLogger().println(msg);
                         }
+                    } catch (FilePath.FileMaskNoMatchesFoundException e) {
+                        listener.getLogger().println(e.getMessage());
                     } catch (Exception e) {
                         Functions.printStackTrace(e, listener.getLogger());
                     }
@@ -292,7 +295,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String, String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
@@ -307,8 +310,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             this.followSymlinks = followSymlinks;
         }
 
-        @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String,String> r = new HashMap<>();
+        @Override public Map<String, String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
+            Map<String, String> r = new HashMap<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
@@ -327,7 +330,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
-    
+
     /**
      * @deprecated as of 1.286
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
@@ -339,6 +342,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Extension @Symbol("archiveArtifacts")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
             DESCRIPTOR = this; // backward compatibility
         }
@@ -366,7 +370,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
         @Override
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(ArtifactArchiver.class,formData);
+            return req.bindJSON(ArtifactArchiver.class, formData);
         }
 
         @Override
@@ -378,7 +382,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.get().allItems(AbstractProject.class)) {
+            for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

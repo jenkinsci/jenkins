@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,6 +46,7 @@ public class AlternativeUiTextProviderTest {
     @TestExtension
     public static class Impl extends AlternativeUiTextProvider {
         static boolean oldschool;
+
         @SuppressWarnings("deprecation")
         @Override public <T> String getText(Message<T> text, T context) {
             if (oldschool && text == ParameterizedJobMixIn.BUILD_NOW_TEXT) {
@@ -64,10 +66,10 @@ public class AlternativeUiTextProviderTest {
     public void basics() throws Exception {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
-        assertThat(j.createWebClient().getPage(p).asText(), containsString("newschool:aaa"));
+        assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("newschool:aaa"));
 
         Impl.oldschool = true;
-        assertThat(j.createWebClient().getPage(p).asText(), containsString("oldschool:aaa"));
+        assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("oldschool:aaa"));
     }
 
     /**
@@ -79,11 +81,11 @@ public class AlternativeUiTextProviderTest {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", null)));
-        String pageText = j.createWebClient().getPage(p).asText();
+        String pageText = j.createWebClient().getPage(p).asNormalizedText();
         assertThat(pageText, containsString("newschool:aaa"));
 
         Impl.oldschool = true;
-        pageText = j.createWebClient().getPage(p).asText();
+        pageText = j.createWebClient().getPage(p).asNormalizedText();
         assertThat(pageText, containsString("oldschool:aaa"));
     }
 }

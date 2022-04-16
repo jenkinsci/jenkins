@@ -31,44 +31,44 @@
   <h3>Operatori supportati</h3>
   Sono supportati i seguenti operatori in ordine di precedenza decrescente:
   <dl>
-    <dt><tt>(espressione)</tt></dt>
+    <dt><code>(espressione)</code></dt>
     <dd>
       parentesi — utilizzate per definire esplicitamente l'associatività
       di un'espressione
     </dd>
 
-    <dt><tt>!espressione</tt></dt>
+    <dt><code>!espressione</code></dt>
     <dd>
-      NOT — negazione; il risultato di <tt>espressione</tt> <b>non</b>
+      NOT — negazione; il risultato di <code>espressione</code> <b>non</b>
       dev'essere vero
     </dd>
 
-    <dt><tt>a &amp;&amp; b</tt></dt>
+    <dt><code>a &amp;&amp; b</code></dt>
     <dd>
-      AND — <b>entrambe</b> le espressioni <tt>a</tt> e <tt>b</tt> devono
+      AND — <b>entrambe</b> le espressioni <code>a</code> e <code>b</code> devono
       essere vere
     </dd>
 
-    <dt><tt>a || b</tt></dt>
+    <dt><code>a || b</code></dt>
     <dd>
-      OR — <b>una</b> delle espressioni <tt>a</tt> o <tt>b</tt> può essere vera
+      OR — <b>una</b> delle espressioni <code>a</code> o <code>b</code> può essere vera
     </dd>
 
-    <dt><tt>a -> b</tt></dt>
+    <dt><code>a -> b</code></dt>
     <dd>
-      operatore "implica" — equivalente ad <tt>!a || b</tt>.<br>
-      Ad esempio, <tt>windows -> x64</tt> può essere interpretato come "se
+      operatore "implica" — equivalente ad <code>!a || b</code>.<br>
+      Ad esempio, <code>windows -> x64</code> può essere interpretato come "se
       viene utilizzato un agente Windows, allora tale agente <i>deve</i>
       essere a 64 bit", consentendo comunque l'esecuzione su qualunque agente
-      che <i>non</i> abbia l'etichetta <tt>windows</tt>, a prescindere dal
-      fatto che abbia l'etichetta <tt>x64</tt>
+      che <i>non</i> abbia l'etichetta <code>windows</code>, a prescindere dal
+      fatto che abbia l'etichetta <code>x64</code>
     </dd>
 
-    <dt><tt>a &lt;-> b</tt></dt>
+    <dt><code>a &lt;-> b</code></dt>
     <dd>
-      operatore "se e solo se" — equivalente a <tt>a &amp;&amp; b ||
-      !a &amp;&amp; !b</tt><br>
-      Ad esempio, <tt>windows &lt;-> dc2</tt> può essere interpretato come
+      operatore "se e solo se" — equivalente a <code>a &amp;&amp; b ||
+      !a &amp;&amp; !b</code><br>
+      Ad esempio, <code>windows &lt;-> dc2</code> può essere interpretato come
       "se viene utilizzato un agente Windows, allora tale agente <i>deve</i>
       essere nel datacenter 2, ma se viene utilizzato un agente non Windows,
       allora <i>non deve</i> essere nel datacenter 2"
@@ -79,13 +79,13 @@
   <ul>
     <li>
       Tutti gli operatori sono associativi a sinistra, ossia
-      <tt>a -> b -> c</tt> è equivalente ad <tt>(a -> b) -> c</tt>.
+      <code>a -> b -> c</code> è equivalente ad <code>(a -> b) -> c</code>.
     </li>
     <li>
       Le etichette o i nomi degli agenti possono essere racchiusi da
       virgolette doppie se contengono caratteri che andrebbero in conflitto con
       la sintassi degli operatori.<br>
-      Ad esempio, <tt>"osx (10.11)" || "Windows Server"</tt>.
+      Ad esempio, <code>"osx (10.11)" || "Windows Server"</code>.
     </li>
     <li>
       Le espressioni possono essere scritte senza spazi bianchi, ma includerli
@@ -104,34 +104,34 @@
 
   <h3>Esempi</h3>
   <dl>
-    <dt><tt>built-in</tt></dt>
+    <dt><code>built-in</code></dt>
     <dd>
       Le compilazioni di questo progetto possono eseguite solo sul nodo
       master di Jenkins
     </dd>
 
-    <dt><tt>linux-machine-42</tt></dt>
+    <dt><code>linux-machine-42</code></dt>
     <dd>
       Le compilazioni di questo progetto possono essere eseguite solo
-      sull'agente denominato <tt>linux-machine-42</tt> (o su qualunque sistema
-      che abbia un'etichetta denominata <tt>linux-machine-42</tt>)
+      sull'agente denominato <code>linux-machine-42</code> (o su qualunque sistema
+      che abbia un'etichetta denominata <code>linux-machine-42</code>)
     </dd>
 
-    <dt><tt>windows &amp;&amp; jdk9</tt></dt>
+    <dt><code>windows &amp;&amp; jdk9</code></dt>
     <dd>
       Le compilazioni di questo progetto possono essere eseguite solo su un
       qualunque agente Windows che abbia installata la versione 9 del Java
       Development Kit (assumendo che agli agenti su cui sia installato JDK 9
-      sia stata assegnata l'etichetta <tt>jdk9</tt>)
+      sia stata assegnata l'etichetta <code>jdk9</code>)
     </dd>
 
-    <dt><tt>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</tt></dt>
+    <dt><code>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</code></dt>
     <dd>
       Le compilazioni di questo progetto possono essere eseguite solo su
       qualunque agente Linux o FreeBSD fintantoché <i>non</i> siano una
       macchina virtuale e abbiano PostgreSQL installato (assumendo che ogni
       agente abbia le etichette appropriate — in particolare, ogni agente in
-      esecuzione in una macchina virtuale deve avere l'etichetta <tt>vm</tt>
+      esecuzione in una macchina virtuale deve avere l'etichetta <code>vm</code>
       affinché quest'esempio funzioni come atteso)
     </dd>
 

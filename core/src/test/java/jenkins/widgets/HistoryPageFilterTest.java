@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
 import hudson.model.Build;
@@ -491,7 +492,7 @@ public class HistoryPageFilterTest {
             return this;
         }
 
-        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) throws IOException {
+        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) {
             addAction(new ParametersAction(buildPropertiesMapToParameterValues(buildParametersAsMap), buildParametersAsMap.keySet()));
             return this;
         }

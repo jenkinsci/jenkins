@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -35,7 +36,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class UpdateViewCommand extends CLICommand {
 
-    @Argument(usage="Name of the view to update", required=true)
+    @Argument(usage = "Name of the view to update", required = true)
     private View view;
 
     @Override

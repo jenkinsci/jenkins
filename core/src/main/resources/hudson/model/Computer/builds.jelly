@@ -28,7 +28,6 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <l:icon class="icon-notepad icon-xlg"/>
         ${%title(it.displayName)}
       </h1>
       <p>
@@ -36,7 +35,6 @@ THE SOFTWARE.
       </p>
 
       <st:include page="control.jelly" it="${it.timeline}" />
-      <div class="spacer" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

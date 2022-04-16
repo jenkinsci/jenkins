@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static hudson.Util.fixNull;
@@ -239,7 +240,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return 1;
     }
 
-    private boolean isOnlineScheduled() {
+    private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);

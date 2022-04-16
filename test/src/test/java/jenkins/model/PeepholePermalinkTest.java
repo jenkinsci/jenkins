@@ -31,7 +31,7 @@ public class PeepholePermalinkTest {
     @Test
     public void basics() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
 
         String lsb = "lastSuccessfulBuild";
         String lfb = "lastFailedBuild";
@@ -53,7 +53,7 @@ public class PeepholePermalinkTest {
 
         // one more build and this time it succeeds
         p.getBuildersList().clear();
-        FreeStyleBuild b3 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b3 = j.buildAndAssertSuccess(p);
 
         assertStorage(lsb, p, b3);
         assertStorage(lfb, p, b2);

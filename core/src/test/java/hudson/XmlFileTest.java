@@ -34,7 +34,7 @@ public class XmlFileTest {
     // should be illegal.  Ignoring this test until we switch to a more compliant driver
     @Ignore
     @Test
-    public void xml1_0_withSpecialCharsShouldFail() throws IOException {
+    public void xml1_0_withSpecialCharsShouldFail() {
         URL configUrl = getClass().getResource("/hudson/config_1_0_with_special_chars.xml");
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
@@ -58,7 +58,7 @@ public class XmlFileTest {
             assertThat(n.getMode().toString(), is("NORMAL"));
         }
     }
-    
+
     @Test
     public void canReadXmlWithControlCharsTest() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_1_with_special_chars.xml");

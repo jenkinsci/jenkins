@@ -23,6 +23,14 @@ function registerSortableDragDrop(e) {
       forceFallback: true, // Do not use html5 drag & drop behaviour because it does not work with autoscroll
       scroll: true,
       bubbleScroll: true,
+      onChoose: function (event) {
+        const draggableDiv = event.item;
+        const height = draggableDiv.clientHeight;
+        draggableDiv.style.height = `${height}px`;
+      },
+      onUnchoose: function (event) {
+        event.item.style.removeProperty('height');
+      }
   });
 }
 

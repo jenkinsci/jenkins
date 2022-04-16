@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -29,7 +30,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeNoException;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -37,6 +40,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
+import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -44,7 +48,6 @@ import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,30 +56,33 @@ import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.TestExtension;
 
 public class Security637Test {
-    
+
     @Rule
     public JenkinsSessionRule sessions = new JenkinsSessionRule();
-    
+
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                EnvVars envVars = new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))
+                        ? null
+                        : new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED");
+                DumbSlave slave = j.createOnlineSlave(null, envVars);
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
-                
+
                 String safeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("file", null, -1, "", null)));
                 assertThat(safeHandlerClassName, not(containsString("SafeURLStreamHandler")));
         });
     }
-    
+
     private static class URLHandlerCallable extends MasterToSlaveCallable<String, Exception> {
         private URL url;
-        
+
         URLHandlerCallable(URL url) {
             this.url = url;
         }
-        
+
         @Override
         public String call() throws Exception {
             Field handlerField = URL.class.getDeclaredField("handler");
@@ -98,14 +104,14 @@ public class Security637Test {
                 );
         });
     }
-    
+
     @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave();
-                
+
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
                         slave.getChannel().call(new URLBuilderCallable("https://jenkins.io")),
@@ -115,27 +121,27 @@ public class Security637Test {
                 );
         });
     }
-    
+
     private static class URLBuilderCallable extends MasterToSlaveCallable<URL, Exception> {
         private String url;
-        
+
         URLBuilderCallable(String url) {
             this.url = url;
         }
-        
+
         @Override
         public URL call() throws Exception {
             return new URL(url);
         }
     }
-    
+
     @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave();
-                
+
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
                         slave.getChannel().call(new URLTransferCallable(new URL("https://jenkins.io"))),
@@ -143,7 +149,7 @@ public class Security637Test {
                                 slave.getChannel().call(new URLTransferCallable(new URL("https://www.jenkins.io")))
                         ))
                 );
-                
+
                 // due to the DNS resolution they are equal
                 assertEquals(
                         new URL("https://jenkins.io"),
@@ -151,21 +157,21 @@ public class Security637Test {
                 );
         });
     }
-    
+
     // the URL is serialized / deserialized twice, master => agent and then agent => master
     private static class URLTransferCallable extends MasterToSlaveCallable<URL, Exception> {
         private URL url;
-        
+
         URLTransferCallable(URL url) {
             this.url = url;
         }
-        
+
         @Override
         public URL call() throws Exception {
             return url;
         }
     }
-    
+
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_inXStreamContext() throws Throwable {
@@ -178,21 +184,25 @@ public class Security637Test {
                         new URL("https", null, -1, "", null)
                 );
                 project.addProperty(URLJobProperty);
-                
+
                 project.save();
         });
-        
+
         sessions.then(j -> {
                 FreeStyleProject project = j.jenkins.getItemByFullName("project-with-url", FreeStyleProject.class);
                 assertNotNull(project);
-                
+
                 Field handlerField = URL.class.getDeclaredField("handler");
-                handlerField.setAccessible(true);
-                
+                try {
+                    handlerField.setAccessible(true);
+                } catch (RuntimeException e) {
+                    assumeNoException(e);
+                }
+
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
                 for (URL url : urlJobProperty.urlSet) {
                     URLStreamHandler handler = (URLStreamHandler) handlerField.get(url);
-                    if (StringUtils.isEmpty(url.getHost())) {
+                    if (url.getHost() == null || url.getHost().isEmpty()) {
                         assertThat(handler.getClass().getName(), not(containsString("SafeURLStreamHandler")));
                     } else {
                         assertThat(handler.getClass().getName(), containsString("SafeURLStreamHandler"));
@@ -200,21 +210,21 @@ public class Security637Test {
                 }
         });
     }
-    
+
     public static class URLJobProperty extends JobProperty<FreeStyleProject> {
-        
+
         private Set<URL> urlSet;
-        
+
         public URLJobProperty(URL... urls) {
             this.urlSet = new HashSet<>();
             Collections.addAll(urlSet, urls);
         }
-        
+
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             return true;
         }
-        
+
         @TestExtension("urlSafeDeserialization_inXStreamContext")
         public static class DescriptorImpl extends JobPropertyDescriptor {}
     }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
 import hudson.remoting.Channel;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -90,7 +90,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
         out.println(msg);
 
         Charset charset = getCharset();
-        return new PrintWriter(charset != null ? new OutputStreamWriter(out, charset) : new OutputStreamWriter(out), true);
+        return new PrintWriter(new OutputStreamWriter(out, charset), true);
     }
 
     /**
@@ -130,7 +130,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
      */
     @NonNull
     default PrintWriter error(String format, Object... args) {
-        return error(String.format(format,args));
+        return error(String.format(format, args));
     }
 
     /**
@@ -155,5 +155,5 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link TaskListener} that discards the output.
      */
-    TaskListener NULL = new StreamTaskListener(new NullStream());
+    TaskListener NULL = new NullTaskListener();
 }

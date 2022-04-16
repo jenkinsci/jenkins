@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertNull;
@@ -52,18 +53,18 @@ public class ManagementLinkTest {
     public void links() throws Exception {
         WebClient wc = j.createWebClient();
 
-        for (int i=0; ; i++) {
+        for (int i = 0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(@onclick)]");
-            assertTrue(anchors.size()>=8);
-            if (i==anchors.size())  return; // done
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(contains(@class,'confirmation-link'))]");
+            assertTrue(anchors.size() >= 8);
+            if (i == anchors.size())  return; // done
 
-            ((HtmlAnchor)anchors.get(i)).click();
+            ((HtmlAnchor) anchors.get(i)).click();
         }
     }
 
     @Test @Issue("JENKINS-33683")
-    public void invisibleLinks() throws Exception {
+    public void invisibleLinks() {
         assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 

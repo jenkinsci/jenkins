@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -43,16 +44,16 @@ public class UserSeedChangeListenerTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void onProgrammaticUserSeedChange_listenerTriggered() throws Exception {
+    public void onProgrammaticUserSeedChange_listenerTriggered() {
         TestUserSeedChangeListener testListener = j.jenkins.getExtensionList(UserSeedChangeListener.class).get(TestUserSeedChangeListener.class);
 
         String userId = "alice";
         User alice = User.getById(userId, true);
         assertNull(testListener.lastUserIdReceived);
-        
+
         UserSeedProperty userSeed = alice.getProperty(UserSeedProperty.class);
         assertNull(testListener.lastUserIdReceived);
-        
+
         userSeed.renewSeed();
         assertThat(testListener.lastUserIdReceived, is(userId));
         assertThat(testListener.userWasNull, is(false));
@@ -84,11 +85,11 @@ public class UserSeedChangeListenerTest {
     public static class TestUserSeedChangeListener extends UserSeedChangeListener {
         String lastUserIdReceived;
         boolean userWasNull;
-        
-        @Override 
+
+        @Override
         public void onUserSeedRenewed(@NonNull User user) {
             if (user == null) {
-                userWasNull = true; 
+                userWasNull = true;
             }
             lastUserIdReceived = user.getId();
         }

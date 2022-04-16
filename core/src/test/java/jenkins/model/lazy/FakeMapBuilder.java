@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
 import java.io.File;
@@ -57,14 +58,14 @@ public class FakeMapBuilder implements TestRule {
      * Adds a build record under the given ID but make it unloadable,
      * which will cause a failure when a load is attempted on this build ID.
      */
-    public FakeMapBuilder addUnloadable(int n) throws IOException {
+    public FakeMapBuilder addUnloadable(int n) {
         File build = new File(dir, Integer.toString(n));
         build.mkdir();
         return this;
     }
 
     public FakeMap make() {
-        assert dir!=null;
+        assert dir != null;
         return new FakeMap(dir);
     }
 
@@ -73,7 +74,7 @@ public class FakeMapBuilder implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                dir = File.createTempFile("lazyload","test");
+                dir = File.createTempFile("lazyload", "test");
                 dir.delete();
                 dir.mkdirs();
                 try {

@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * Copyright (c) 2015 Christopher Simons
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,6 +40,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -51,9 +53,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -86,7 +89,7 @@ public class JobTest {
     @Test public void jobPropertySummaryIsShownInMainPage() throws Exception {
         AbstractProject project = j.createFreeStyleProject();
         project.addProperty(new JobPropertyImpl("NeedleInPage"));
-                
+
         HtmlPage page = j.createWebClient().getPage(project);
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
@@ -145,7 +148,7 @@ public class JobTest {
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
                             if (buildNumber != savedBuildNumber - 1) {
-                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
+                                this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber - 1) + ")";
                                 this.passed = false;
                                 return;
                             }
@@ -170,7 +173,7 @@ public class JobTest {
 
                 this.passed = true;
             }
-            catch (InterruptedException e) {}
+            catch (InterruptedException e) { }
             catch (IOException e) {
                 throw new AssertionError("Failed to assign build number", e);
             }
@@ -180,14 +183,14 @@ public class JobTest {
         }
     }
 
-    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+    public static class JobPropertyImpl extends JobProperty<Job<?, ?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
-        
+
         public JobPropertyImpl(String testString) {
             this.testString = testString;
         }
-        
+
         public String getTestString() {
             return testString;
         }
@@ -223,7 +226,7 @@ public class JobTest {
     @LocalData
     @Test public void configDotXmlPermission() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
@@ -232,17 +235,17 @@ public class JobTest {
             wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
 
             wc.setThrowExceptionOnFailingStatusCode(false);
-            
+
             // Has CONFIGURE and EXTENDED_READ permission
-            wc.withBasicApiToken(User.getById("alice", true));  
+            wc.withBasicApiToken(User.getById("alice", true));
             tryConfigDotXml(wc, HttpURLConnection.HTTP_INTERNAL_ERROR, "Both perms; should get 500");
 
             // Has only CONFIGURE permission (this should imply EXTENDED_READ)
-            wc.withBasicApiToken(User.getById("bob", true));  
+            wc.withBasicApiToken(User.getById("bob", true));
             tryConfigDotXml(wc, HttpURLConnection.HTTP_INTERNAL_ERROR, "Config perm should imply EXTENDED_READ");
 
             // Has only EXTENDED_READ permission
-            wc.withBasicApiToken(User.getById("charlie", true));  
+            wc.withBasicApiToken(User.getById("charlie", true));
             tryConfigDotXml(wc, HttpURLConnection.HTTP_FORBIDDEN, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
@@ -253,19 +256,19 @@ public class JobTest {
         // Verify we can GET the config.xml:
         Page p = wc.goTo("job/testJob/config.xml", "application/xml");
         assertEquals("Retrieving config.xml should be ok", HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
-        
+
         // This page is a simple form to POST to /job/testJob/config.xml
         // But it posts invalid data so we expect 500 if we have permission, 403 if not
         HtmlPage page = wc.goTo("userContent/post.html");
         p = HtmlFormUtil.submit(page.getForms().get(0));
         assertEquals(msg, status, p.getWebResponse().getStatusCode());
-        
+
         p = wc.goTo("logout");
         assertEquals("To logout should be ok", HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
     }
 
     @LocalData @Issue("JENKINS-6371")
-    @Test public void getArtifactsUpTo() throws Exception {
+    @Test public void getArtifactsUpTo() {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
         Run r = j.jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
@@ -285,7 +288,7 @@ public class JobTest {
         project.setDescription(null);
         assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
     }
-    
+
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
         try {
@@ -304,16 +307,16 @@ public class JobTest {
         final FreeStyleProject p = j.createFreeStyleProject();
         RunLoadCounter.prepare(p);
         p.getBuildersList().add(new FailureBuilder());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
+        j.buildAndAssertStatus(Result.FAILURE, p);
         p.getBuildersList().remove(FailureBuilder.class);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
-            @Override public Integer call() throws Exception {
+            @Override public Integer call() {
                 return p.getLastFailedBuild().getNumber();
             }
         }).intValue());
@@ -323,7 +326,7 @@ public class JobTest {
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
         final FreeStyleProject p = j.createFreeStyleProject();
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
         p.renameTo("different-name");
     }
 
@@ -373,7 +376,7 @@ public class JobTest {
         FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = new String(out.toByteArray());
+        final String oldB2Log = out.toString(Charset.defaultCharset().name());
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
         f.renameTo("something-else");
 
@@ -390,7 +393,7 @@ public class JobTest {
         assertNotNull(b2);
         out = new ByteArrayOutputStream();
         b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = new String(out.toByteArray());
+        final String newB2Log = out.toString(Charset.defaultCharset().name());
         assertEquals(oldB2Log, newB2Log);
         assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
 
@@ -492,13 +495,14 @@ public class JobTest {
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         j.jenkins.setNumExecutors(2);
         Queue.getInstance().maintain();
         final FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("dummy", "0")));
         p.setConcurrentBuild(true);
-        p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));  // we want the uninterrupted job to run for long time
         FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
         FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
         QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
@@ -506,13 +510,14 @@ public class JobTest {
         p.delete();
         long end = System.nanoTime();
         assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
-        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
-        assertThat(build3.isCancelled(), Matchers.is(true));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build2));
+        assertTrue(build3.isCancelled());
     }
 
     @Issue("SECURITY-1868")
     @Test public void noXssPossible() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         String desiredNodeName = "agent is a better name2 <script>alert(123)</script>";
         String initialNodeName = "agent is a better name";
 
@@ -524,7 +529,7 @@ public class JobTest {
         j.jenkins.setNumExecutors(0);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         node.setVirtualName(desiredNodeName);
 
@@ -549,13 +554,14 @@ public class JobTest {
         private String virtualName;
 
         NameChangingNode(JenkinsRule j, String name) throws Exception {
-            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
+            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.emptyList());
         }
 
         public void setVirtualName(String virtualName) {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getNodeName() {
             if (virtualName != null) {

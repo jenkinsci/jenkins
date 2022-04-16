@@ -2,31 +2,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid var(--panel-border-color);
+  margin-bottom: var(--section-padding);
 
   .jenkins-app-bar__content {
     display: flex;
     justify-content: center;
     flex-direction: column;
     width: 100%;
+    min-height: 36px;
   }
 
   .jenkins-app-bar__controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 2rem;
+    margin-left: var(--section-padding);
+    min-height: 36px;
+    gap: 1rem;
+
+    .jenkins-search {
+      min-width: 260px;
+    }
   }
 
-  &--no-border {
-    border-bottom: none;
-    margin-bottom: 0;
+  &--border {
+    margin-bottom: var(--section-padding);
+    padding-bottom: var(--section-padding);
+    border-bottom: 2px solid var(--panel-border-color);
   }
 
   h1 {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 }

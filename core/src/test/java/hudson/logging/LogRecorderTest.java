@@ -24,6 +24,8 @@
 
 package hudson.logging;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -68,7 +70,7 @@ public class LogRecorderTest {
     @Test public void testClearing() throws IOException {
         LogRecorder lr = new LogRecorder("foo");
         LogRecorder.Target t = new LogRecorder.Target("", Level.FINE);
-        lr.targets.add(t);
+        lr.getLoggers().add(t);
 
         Jenkins j = Mockito.mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = Mockito.mockStatic(Jenkins.class)) {
@@ -92,9 +94,9 @@ public class LogRecorderTest {
         LogRecorder.Target targetLevel1 = new LogRecorder.Target("foo", Level.INFO);
         LogRecorder.Target targetLevel2 = new LogRecorder.Target("foo.bar", Level.SEVERE);
 
-        lr.targets.add(targetLevel1);
-        lr.targets.add(targetLevel2);
-        lr.targets.add(targetLevel0);
+        lr.getLoggers().add(targetLevel1);
+        lr.getLoggers().add(targetLevel2);
+        lr.getLoggers().add(targetLevel0);
 
         assertEquals(lr.orderedTargets()[0], targetLevel2);
         assertEquals(lr.orderedTargets()[1], targetLevel1);
@@ -113,12 +115,7 @@ public class LogRecorderTest {
         lr.handler.publish(r5);
         lr.handler.publish(r6);
 
-        assertTrue(lr.handler.getView().contains(r1));
-        assertFalse(lr.handler.getView().contains(r2));
-        assertFalse(lr.handler.getView().contains(r3));
-        assertFalse(lr.handler.getView().contains(r4));
-        assertTrue(lr.handler.getView().contains(r5));
-        assertTrue(lr.handler.getView().contains(r6));
+        assertThat(lr.handler.getView(), contains(r6, r5, r1));
     }
 
     private static LogRecord createLogRecord(String logger, Level level, String message) {
@@ -143,7 +140,7 @@ public class LogRecorderTest {
     }
 
     @Test
-    public void autocompletionTest() throws Exception {
+    public void autocompletionTest() {
         List<String> loggers = Arrays.asList(
                 "com.company.whatever.Foo", "com.foo.Bar", "com.foo.Baz",
                 "org.example.app.Main", "org.example.app.impl.xml.Parser", "org.example.app.impl.xml.Validator");
@@ -170,6 +167,7 @@ public class LogRecorderTest {
     private static void isCandidate(Set<String> candidates, String candidate) {
         assertTrue(candidate, candidates.contains(candidate));
     }
+
     private static void isNotCandidate(Set<String> candidates, String candidate) {
         assertFalse(candidate, candidates.contains(candidate));
     }

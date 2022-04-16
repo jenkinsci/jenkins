@@ -68,17 +68,13 @@ public class TimerTest {
                 ClassLoader cl = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(bogusClassloader);
                 ScheduledExecutorService exec = Timer.get();
-                for (int i=0; i<threadCount; i++) {
+                for (int i = 0; i < threadCount; i++) {
                     final int j = i;
                     futures[j] = exec.schedule(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                startLatch.countDown();
-                                contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            startLatch.countDown();
+                            contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
                         }
                     }, 0, TimeUnit.SECONDS);
                 }
@@ -90,7 +86,7 @@ public class TimerTest {
         t.start();
         t.join(1000L);
 
-        for (int i=0; i<threadCount; i++) {
+        for (int i = 0; i < threadCount; i++) {
             futures[i].get();
             assertEquals(Timer.class.getClassLoader(), contextClassloaders[i]);
         }

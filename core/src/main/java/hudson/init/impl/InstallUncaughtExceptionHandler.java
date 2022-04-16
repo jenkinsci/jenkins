@@ -53,7 +53,7 @@ public class InstallUncaughtExceptionHandler {
         String id = UUID.randomUUID().toString();
         LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
         req.setAttribute("jenkins.exception.id", id);
-        req.setAttribute("javax.servlet.error.exception",e);
+        req.setAttribute("javax.servlet.error.exception", e);
         rsp.setStatus(code);
         try {
             WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");

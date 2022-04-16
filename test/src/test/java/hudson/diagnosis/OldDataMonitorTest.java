@@ -77,21 +77,21 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
-        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BadAction2());
         b.save();
         r.jenkins.getQueue().clearLeftItems();
         p._getRuns().purgeCache();
         b = p.getBuildByNumber(1);
         assertEquals(Collections.singleton(b), OldDataMonitor.get(r.jenkins).getData().keySet());
-        WeakReference<?> ref = new WeakReference<Object>(b);
+        WeakReference<?> ref = new WeakReference<>(b);
         b = null;
         MemoryAssert.assertGC(ref, true);
     }
 
     /**
      * Note that this doesn't actually run slowly, it just ensures that
-     * the {@link OldDataMonitor#changeListener's onChange()} can complete
+     * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
      * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
      * is still running.
      *
@@ -100,7 +100,7 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-24763")
     @Test public void slowDiscard() throws InterruptedException, IOException, ExecutionException {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
-        final CountDownLatch ensureEntry= new CountDownLatch(1);
+        final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
         Saveable slowSavable = new Saveable() {
             @Override
@@ -113,7 +113,7 @@ public class OldDataMonitorTest {
             }
         };
 
-        OldDataMonitor.report(slowSavable,(String)null);
+        OldDataMonitor.report(slowSavable, (String) null);
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
         Future<Void> discardFuture = executors.submit(new Callable<Void>() {
@@ -129,7 +129,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() {@Override public void save() {}},
+                .onChange(new Saveable() { @Override public void save() {} },
                         new XmlFile(xml));
 
         preventExit.countDown();

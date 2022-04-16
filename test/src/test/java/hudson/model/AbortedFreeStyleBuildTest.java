@@ -3,7 +3,6 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 
 import hudson.Launcher;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -23,8 +22,7 @@ public class AbortedFreeStyleBuildTest {
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new AbortingBuilder());
-        Run build = project.scheduleBuild2(0).get();
-        assertEquals(Result.ABORTED, build.getResult());
+        j.buildAndAssertStatus(Result.ABORTED, project);
         assertEquals(Result.ABORTED, wrapper.buildResultInTearDown);
     }
 
@@ -36,19 +34,18 @@ public class AbortedFreeStyleBuildTest {
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 Executor.currentExecutor().interrupt(Result.FAILURE);
                 throw new InterruptedException();
             }
         });
-        Run build = project.scheduleBuild2(0).get();
-        assertEquals(Result.FAILURE, build.getResult());
+        j.buildAndAssertStatus(Result.FAILURE, project);
         assertEquals(Result.FAILURE, wrapper.buildResultInTearDown);
     }
 
     private static class AbortingBuilder extends TestBuilder {
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
             throw new InterruptedException();
         }
     }

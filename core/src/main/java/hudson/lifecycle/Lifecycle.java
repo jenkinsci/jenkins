@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Util;
@@ -30,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -56,13 +61,13 @@ public abstract class Lifecycle implements ExtensionPoint {
      * @return never null
      */
     public static synchronized Lifecycle get() {
-        if(INSTANCE==null) {
+        if (INSTANCE == null) {
             Lifecycle instance;
             String p = SystemProperties.getString("hudson.lifecycle");
-            if(p!=null) {
+            if (p != null) {
                 try {
                     ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                    instance = (Lifecycle)cl.loadClass(p).getDeclaredConstructor().newInstance();
+                    instance = (Lifecycle) cl.loadClass(p).getDeclaredConstructor().newInstance();
                 } catch (NoSuchMethodException e) {
                     NoSuchMethodError x = new NoSuchMethodError(e.getMessage());
                     x.initCause(e);
@@ -94,7 +99,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                     }
                 }
             } else {
-                if(Functions.isWindows()) {
+                if (Functions.isWindows()) {
                     instance = new Lifecycle() {
                         @Override
                         public void verifyRestartable() throws RestartNotSupportedException {
@@ -102,15 +107,18 @@ public abstract class Lifecycle implements ExtensionPoint {
                                     "Default Windows lifecycle does not support restart.");
                         }
                     };
-                } else if (System.getenv("SMF_FMRI")!=null && System.getenv("SMF_RESTARTER")!=null) {
+                } else if (System.getenv("SMF_FMRI") != null && System.getenv("SMF_RESTARTER") != null) {
                     // when we are run by Solaris SMF, these environment variables are set.
                     instance = new SolarisSMFLifecycle();
+                } else if (System.getenv("NOTIFY_SOCKET") != null) {
+                    // When we are running under systemd with Type=notify, this environment variable is set.
+                    instance = new SystemdLifecycle();
                 } else {
                     // if run on Unix, we can do restart
                     try {
                         instance = new UnixLifecycle();
                     } catch (final IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", e);
                         instance = new Lifecycle() {
                             @Override
                             public void verifyRestartable() throws RestartNotSupportedException {
@@ -138,7 +146,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public File getHudsonWar() {
         String war = SystemProperties.getString("executable-war");
-        if(war!=null && new File(war).exists())
+        if (war != null && new File(war).exists())
             return new File(war);
         return null;
     }
@@ -155,7 +163,7 @@ public abstract class Lifecycle implements ExtensionPoint {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,
         // but let's be defensive
-        if(dest==null)  throw new IOException("jenkins.war location is not known.");
+        if (dest == null)  throw new IOException("jenkins.war location is not known.");
 
         // backing up the old jenkins.war before it gets lost due to upgrading
         // (newly downloaded jenkins.war and 'backup' (jenkins.war.tmp) are the same files
@@ -163,11 +171,12 @@ public abstract class Lifecycle implements ExtensionPoint {
         File bak = new File(dest.getPath() + ".bak");
         if (!by.equals(bak))
             FileUtils.copyFile(dest, bak);
-       
+
         FileUtils.copyFile(by, dest);
         // we don't want to keep backup if we are downgrading
-        if (by.equals(bak)&&bak.exists())
-            bak.delete();
+        if (by.equals(bak)) {
+            Files.deleteIfExists(Util.fileToPath(bak));
+        }
     }
 
     /**
@@ -211,7 +220,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public void verifyRestartable() throws RestartNotSupportedException {
         // the rewriteHudsonWar method isn't overridden.
-        if (!Util.isOverridden(Lifecycle.class,getClass(), "restart"))
+        if (!Util.isOverridden(Lifecycle.class, getClass(), "restart"))
             throw new RestartNotSupportedException("Restart is not supported in this running mode (" +
                     getClass().getName() + ").");
     }
@@ -227,6 +236,75 @@ public abstract class Lifecycle implements ExtensionPoint {
         } catch (RestartNotSupportedException e) {
             return false;
         }
+    }
+
+    /**
+     * Called when Jenkins startup is finished or when Jenkins has finished reloading its
+     * configuration.
+     *
+     * @since 2.333
+     */
+    public void onReady() {
+        LOGGER.log(Level.INFO, "Jenkins is fully up and running");
+    }
+
+    /**
+     * Called when Jenkins is reloading its configuration.
+     *
+     * <p>Callers must also send an {@link #onReady()} notification when Jenkins has finished
+     * reloading its configuration.
+     *
+     * @since 2.333
+     */
+    public void onReload(@NonNull String user, @CheckForNull String remoteAddr) {
+        if (remoteAddr != null) {
+            LOGGER.log(
+                    Level.INFO,
+                    "Reloading Jenkins as requested by {0} from {1}",
+                    new Object[] {user, remoteAddr});
+        } else {
+            LOGGER.log(Level.INFO, "Reloading Jenkins as requested by {0}", user);
+        }
+    }
+
+    /**
+     * Called when Jenkins is beginning its shutdown.
+     *
+     * @since 2.333
+     */
+    public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
+        if (remoteAddr != null) {
+            LOGGER.log(
+                    Level.INFO,
+                    "Stopping Jenkins as requested by {0} from {1}",
+                    new Object[] {user, remoteAddr});
+        } else {
+            LOGGER.log(Level.INFO, "Stopping Jenkins as requested by {0}", user);
+        }
+    }
+
+    /**
+     * Tell the service manager to extend the startup or shutdown timeout. The value specified is a
+     * time during which either {@link #onExtendTimeout(long, TimeUnit)} must be called again or
+     * startup/shutdown must complete.
+     *
+     * @param timeout The amount by which to extend the timeout.
+     * @param unit The time unit of the timeout argument.
+     *
+     * @since 2.335
+     */
+    public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
+
+    /**
+     * Called when Jenkins service state has changed.
+     *
+     * @param status The status string. This is free-form and can be used for various purposes:
+     *     general state feedback, completion percentages, human-readable error message, etc.
+     *
+     * @since 2.333
+     */
+    public void onStatusUpdate(String status) {
+        LOGGER.log(Level.INFO, status);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

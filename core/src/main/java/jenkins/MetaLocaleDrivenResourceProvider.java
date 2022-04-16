@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -51,7 +52,7 @@ public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResource
                 if (url != null) {
                     return url;
                 }
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.warn("Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
             }
         }

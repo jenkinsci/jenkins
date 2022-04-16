@@ -26,8 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Fetch/Update config.xml</h2>
   <p>
-    To programmatically obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
-    You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
+    To programmatically obtain <code>config.xml</code>, hit <a href="../config.xml">this URL</a>.
+    You can also POST an updated <code>config.xml</code> to the same URL to programmatically
     update the configuration of a view.
   </p>
 </j:jelly>

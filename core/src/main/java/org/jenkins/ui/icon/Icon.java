@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.jenkins.ui.icon;
 
 import java.util.ArrayList;
@@ -179,7 +180,23 @@ public class Icon {
      */
     public String getQualifiedUrl(JellyContext context) {
         if (url != null) {
-            return iconType.toQualifiedUrl(url, context);
+            return iconType.toQualifiedUrl(url, context.getVariable("resURL").toString());
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Get the qualified icon url.
+     * <br>
+     * Qualifying the URL involves prefixing it depending on whether the icon is a core or plugin icon.
+     *
+     * @param resUrl The url of resources.
+     * @return The qualified icon url.
+     */
+    public String getQualifiedUrl(String resUrl) {
+        if (url != null) {
+            return iconType.toQualifiedUrl(url, resUrl);
         } else {
             return "";
         }
@@ -204,7 +221,11 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        return "icon-" + toNormalizedIconName(string);
+        String iconName = toNormalizedIconName(string);
+        if (iconName.startsWith("icon-")) {
+            return iconName;
+        }
+        return "icon-" + iconName;
     }
 
     /**
@@ -269,7 +290,7 @@ public class Icon {
         classNameTokL.toArray(classNameTokA);
 
         // Sort classNameTokA
-        Arrays.sort(classNameTokA, new StringComparator());
+        Arrays.sort(classNameTokA, Comparator.comparing(String::toString));
 
         // Build the compound name
         StringBuilder stringBuilder = new StringBuilder();
@@ -304,13 +325,5 @@ public class Icon {
         }
 
         return originalUrl;
-    }
-
-    private static class StringComparator implements Comparator<String> {
-
-        @Override
-        public int compare(String s1, String s2) {
-            return s1.compareTo(s2);
-        }
     }
 }

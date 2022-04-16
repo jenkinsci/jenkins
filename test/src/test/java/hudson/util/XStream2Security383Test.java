@@ -123,22 +123,27 @@ public class XStream2Security383Test {
         public int read() throws IOException {
             return inner.read();
         }
+
         @Override
         public int read(byte[] b) throws IOException {
             return inner.read(b);
         }
+
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             return inner.read(b, off, len);
         }
+
         @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public boolean isReady() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();
