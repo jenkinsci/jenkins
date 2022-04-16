@@ -36,8 +36,6 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -89,7 +87,6 @@ public class SwapSpaceMonitor extends NodeMonitor {
      *      use injection
      */
     @Deprecated
-    @Restricted(NoExternalUse.class)
     public static /*almost final*/ AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR;
 
     @Extension @Symbol("swapSpace")
