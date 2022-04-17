@@ -27,54 +27,62 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Logger Configuration}">
-  <l:app-bar title="${%Logger Configuration}">
-    <t:help tooltip="${%Additional information on log levels}" href="${%url}" />
-  </l:app-bar>
+  <l:layout title="${%Logger Configuration}">
+    <l:app-bar title="${%Logger Configuration}">
+      <t:help tooltip="${%Additional information on log levels}" href="${%url}"/>
+    </l:app-bar>
 
-  <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
 
-  <l:main-panel>
-    <table class="sortable jenkins-table" id="logLevels">
-      <thead>
-        <tr>
-          <th>${%Name}</th>
-          <th>${%Level}</th>
-        </tr>
-      </thead>
-      <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
-      <j:forEach var="name" items="${h.loggerNames}">
-        <j:set var="logger" value="${lm.getLogger(name)}"/>
-        <j:if test="${logger.level != null}">
+    <l:main-panel>
+      <table class="sortable jenkins-table" id="logLevels">
+        <thead>
           <tr>
-            <td>${name}</td>
-            <td>${logger.level}</td>
+            <th>${%Name}</th>
+            <th>${%Level}</th>
           </tr>
-        </j:if>
-      </j:forEach>
-    </table>
-    <p>${%defaultLoggerMsg}</p>
-    <l:isAdmin>
-      <h2>${%Adjust Levels}</h2>
-      <form action="configLogger" method="post" name="configLogger">
-        ${%Name}: <input type="text" name="name" width="40" />
-        ${%Level}:
-        <select name="level">
-          <option>inherit</option>
-          <option>off</option>
-          <option>severe</option>
-          <option>warning</option>
-          <option>info</option>
-          <option>config</option>
-          <option>fine</option>
-          <option>finer</option>
-          <option>finest</option>
-          <option>all</option>
-        </select>
-        <st:nbsp/>
-        <f:submit />
-      </form>
-    </l:isAdmin>
-  </l:main-panel>
-</l:layout>
+        </thead>
+        <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
+        <j:forEach var="name" items="${h.loggerNames}">
+          <j:set var="logger" value="${lm.getLogger(name)}"/>
+          <j:if test="${logger.level != null}">
+            <tr>
+              <td>${name}</td>
+              <td>${logger.level}</td>
+            </tr>
+          </j:if>
+        </j:forEach>
+      </table>
+      <p>${%defaultLoggerMsg}</p>
+      <l:isAdmin>
+        <h2>${%Adjust Levels}</h2>
+        <form action="configLogger" method="post" name="configLogger">
+          <f:entry>
+            <label class="jenkins-form-label" for="name">${%Name}</label>
+            <input id="name" type="text" class="jenkins-input" name="name" width="40"/>
+          </f:entry>
+          <f:entry>
+            <label class="jenkins-form-label" for="level">${%Level}</label>
+            <div class="jenkins-select">
+              <select id="level" name="level" class="jenkins-select__input">
+                <option>inherit</option>
+                <option>off</option>
+                <option>severe</option>
+                <option>warning</option>
+                <option>info</option>
+                <option>config</option>
+                <option>fine</option>
+                <option>finer</option>
+                <option>finest</option>
+                <option>all</option>
+              </select>
+            </div>
+          </f:entry>
+          <f:bottomButtonBar>
+            <f:submit value="${%Save}"/>
+          </f:bottomButtonBar>
+        </form>
+      </l:isAdmin>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
