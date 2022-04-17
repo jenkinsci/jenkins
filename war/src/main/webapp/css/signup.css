@@ -21,10 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-.signup{
-  max-width: 480px;
-  width: 100%;
-}
 .signupIntroDefault {
   text-align: center;
 }
@@ -51,4 +47,8 @@ label {
 }
 #passwordStrengthWrapper {
   margin-top: 4px;
+}
+
+.password {
+  width: 96%;
 }
