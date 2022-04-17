@@ -1682,7 +1682,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public String[] getStatuses() {
             synchronized (statuses) {
-                return statuses.toArray(new String[statuses.size()]);
+                return statuses.toArray(new String[0]);
             }
         }
 

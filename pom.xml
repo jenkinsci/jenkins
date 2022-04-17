@@ -55,6 +55,7 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
+    <module>coverage</module>
   </modules>
 
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
@@ -601,6 +602,11 @@ THE SOFTWARE.
               </goals>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.8</version>
         </plugin>
       </plugins>
     </pluginManagement>

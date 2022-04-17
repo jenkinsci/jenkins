@@ -16,6 +16,8 @@
 
   <properties>
     <mina-sshd.version>2.8.0</mina-sshd.version>
+    <!-- Filled in by jacoco-maven-plugin -->
+    <jacocoSurefireArgs />
   </properties>
 
   <dependencyManagement>
@@ -123,6 +125,9 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
+        <configuration>
+          <argLine>@{jacocoSurefireArgs}</argLine>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -209,4 +214,38 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>enable-jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <!-- Version specified in parent POM -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
