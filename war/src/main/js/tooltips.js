@@ -9,12 +9,12 @@ const TOOLTIP_BASE = {
 
 let tooltipInstances = []
 const globalPlugin = {
-  fn() {
+  fn(instance) {
     return {
-      onCreate(instance) {
+      onCreate() {
         tooltipInstances = tooltipInstances.concat(instance)
       },
-      onDestroy(instance) {
+      onDestroy() {
         tooltipInstances = tooltipInstances.filter(i => i !== instance)
       }
     }
@@ -43,14 +43,13 @@ function registerTooltips(container) {
     }
   })
 
-  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), {
+  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), Array.prototype.push.apply({
     content: element => element.getAttribute("tooltip")
       .replace("<br>", "\n")
       .replace("<br/>", "\n")
       .replace("<br />", "\n")
       .replace("\\n", "\n"),
     container: container,
-    ...TOOLTIP_BASE,
     onCreate(instance) {
       instance.reference.setAttribute("title", instance.props.content)
     },
@@ -60,15 +59,14 @@ function registerTooltips(container) {
     onHidden(instance) {
       instance.reference.setAttribute("title", instance.props.content)
     }
-  })
+  }, TOOLTIP_BASE))
 
-  tippy(container.querySelectorAll("[html-tooltip]"), {
+  tippy(container.querySelectorAll("[html-tooltip]"), Array.prototype.push.apply({
     content: element => element.getAttribute("html-tooltip"),
     allowHTML: true,
     container: container,
     interactive: true,
-    ...TOOLTIP_BASE
-  })
+  }, TOOLTIP_BASE))
 }
 
 /**
@@ -77,17 +75,16 @@ function registerTooltips(container) {
  * @param {HTMLElement} element - The element to show the tooltip
  */
 function hoverNotification(text, element) {
-  const tooltip = tippy(element, {
+  const tooltip = tippy(element, Array.prototype.push.apply({
     trigger: "hover",
     offset: [0, 0],
     content: text,
-    ...TOOLTIP_BASE,
     onShow(instance) {
       setTimeout(() => {
         instance.hide()
       }, 3000)
     },
-  })
+  }, TOOLTIP_BASE))
   tooltip.show()
 }
 
