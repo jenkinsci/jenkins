@@ -40,7 +40,7 @@ function _createFilterMenuButton(menu) {
 }
 
 function _applyFilterKeyword(menu, filterInput) {
-  const filterKeyword = filterInput.currentTarget.value?.toLowerCase();
+  const filterKeyword = (filterInput.currentTarget.value || '').toLowerCase();
   const itemList = _getItemList(menu);
   let item, match;
   for (item of itemList.children) {
