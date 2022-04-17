@@ -1224,7 +1224,7 @@ public class UpdateSite {
                 }
             }
             final String popularityFromJson = get(o, "popularity");
-            Double popularity = 0.0;
+            double popularity = 0.0;
             if (popularityFromJson != null) {
                 try {
                     popularity = Double.parseDouble(popularityFromJson);
