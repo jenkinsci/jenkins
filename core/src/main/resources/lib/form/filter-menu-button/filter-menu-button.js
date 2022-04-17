@@ -1,56 +1,55 @@
-function createFilterMenuButton (button, menu, menuAlignment, menuMinScrollHeight) {
-    var MIN_NUM_OPTIONS = 5;
-    var menuButton = new YAHOO.widget.Button(button, {
-        type: "menu",
-        menu: menu,
-        menualignment: menuAlignment,
-        menuminscrollheight: menuMinScrollHeight
-    });
+function createFilterMenuButton(button, menu, menuAlignment, menuMinScrollHeight) {
+  var MIN_NUM_OPTIONS = 5;
+  var menuButton = new YAHOO.widget.Button(button, {
+    type: "menu",
+    menu: menu,
+    menualignment: menuAlignment,
+    menuminscrollheight: menuMinScrollHeight
+  });
 
-    var filter = _createFilter(menuButton._menu);
+  var filter = _createFilterMenuButton(menuButton._menu);
 
-    menuButton._menu.element.appendChild(filter);
-    menuButton._menu.showEvent.subscribe(function() {
-        filter.firstElementChild.value = '';
-        _applyFilterKeyword(menuButton._menu, filter.firstElementChild);
-        filter.style.display = (_getItemList(menuButton._menu).children.length >= MIN_NUM_OPTIONS) ? '' : 'NONE';
-    });
-    menuButton._menu.setInitialFocus = function () {
-        setTimeout(function() {
-            filter.firstElementChild.focus();
-        }, 0);
-    };
+  menuButton._menu.element.appendChild(filter);
+  menuButton._menu.showEvent.subscribe(function () {
+    filter.firstElementChild.value = '';
+    _applyFilterKeyword(menuButton._menu, filter.firstElementChild);
+    filter.style.display = (_getItemList(menuButton._menu).children.length >= MIN_NUM_OPTIONS) ? '' : 'NONE';
+  });
+  menuButton._menu.setInitialFocus = function () {
+    setTimeout(function () {
+      filter.firstElementChild.focus();
+    }, 0);
+  };
 
-    return menuButton;
+  return menuButton;
 }
 
-function _createFilter (menu) {
-    var filterInput = document.createElement("input");
-    filterInput.style.width = '100%';
-    filterInput.setAttribute("placeholder", "Filter");
-    filterInput.onkeyup = _onFilterKeyUp.bind(menu);
+function _createFilterMenuButton(menu) {
+  const filterInput = document.createElement("input");
+  filterInput.classList.add('jenkins-input')
+  filterInput.setAttribute("placeholder", "Filter");
+  filterInput.setAttribute("spellcheck", "false");
+  filterInput.setAttribute("type", "search");
 
-    var filterContainer = document.createElement("div");
-    filterContainer.appendChild(filterInput);
+  filterInput.addEventListener('input', (event) => _applyFilterKeyword(menu, event));
 
-    return filterContainer;
+  const filterContainer = document.createElement("div");
+  filterContainer.appendChild(filterInput);
+
+  return filterContainer;
 }
 
-function _onFilterKeyUp (evt) {
-    _applyFilterKeyword(this, evt.target);
+function _applyFilterKeyword(menu, filterInput) {
+  const filterKeyword = filterInput.currentTarget.value?.toLowerCase();
+  const itemList = _getItemList(menu);
+  let item, match;
+  for (item of itemList.children) {
+    match = item.innerText.toLowerCase().includes(filterKeyword);
+    item.style.display = match ? '' : 'NONE';
+  }
+  menu.align();
 }
 
-function _applyFilterKeyword (menu, filterInput) {
-    var filterKeyword = filterInput.value;
-    var itemList = _getItemList(menu);
-    var item, match;
-    for (item of itemList.children) {
-        match = (item.innerText.toLowerCase().indexOf(filterKeyword) !== -1);
-        item.style.display = match ? '' : 'NONE';
-    }
-    menu.align();
-}
-
-function _getItemList (menu) {
-    return menu.body.children[0];
+function _getItemList(menu) {
+  return menu.body.children[0];
 }
