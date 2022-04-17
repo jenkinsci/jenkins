@@ -331,8 +331,9 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return triggers;
     }
 
+    @NonNull
     @Override
-    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+    public EnvVars getEnvironment(@CheckForNull Node node, @NonNull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env =  super.getEnvironment(node, listener);
 
         JDK jdkTool = getJDK();
@@ -986,6 +987,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * @see TransientProjectActionFactory
      */
     @SuppressWarnings("deprecation")
+    @NonNull
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too

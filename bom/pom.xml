@@ -38,7 +38,7 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.2</asm.version>
+    <asm.version>9.3</asm.version>
     <slf4jVersion>1.7.36</slf4jVersion>
     <stapler.version>1669.v95a_4b_919a_b_a_2</stapler.version>
     <groovy.version>2.4.21</groovy.version>
@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.18</version>
+        <version>5.3.19</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
