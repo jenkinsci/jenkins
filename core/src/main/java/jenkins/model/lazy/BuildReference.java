@@ -1,18 +1,18 @@
 package jenkins.model.lazy;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.util.SystemProperties;
 import hudson.model.Run;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.lazy.LazyBuildMixIn.RunMixIn;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,7 +50,7 @@ public final class BuildReference<R> {
      */
     public @CheckForNull R get() {
         Holder<R> h = holder; // capture
-        return h!=null ? h.get() : null;
+        return h != null ? h.get() : null;
     }
 
     /**
@@ -142,7 +142,7 @@ public final class BuildReference<R> {
      * </dl>
      */
     @Restricted(NoExternalUse.class)
-    @Extension(ordinal=Double.NEGATIVE_INFINITY) public static final class DefaultHolderFactory implements HolderFactory {
+    @Extension(ordinal = Double.NEGATIVE_INFINITY) public static final class DefaultHolderFactory implements HolderFactory {
 
         public static final String MODE_PROPERTY = "jenkins.model.lazy.BuildReference.MODE";
         private static final String mode = SystemProperties.getString(MODE_PROPERTY);
@@ -175,14 +175,20 @@ public final class BuildReference<R> {
 
         private static final class StrongHolder<R> implements Holder<R> {
             private final R referent;
+
             StrongHolder(R referent) {
                 this.referent = referent;
             }
-            @Override public R get() {return referent;}
+
+            @Override public R get() {
+                return referent;
+            }
         }
 
         private static final class NoHolder<R> implements Holder<R> {
-            @Override public R get() {return null;}
+            @Override public R get() {
+                return null;
+            }
         }
 
     }

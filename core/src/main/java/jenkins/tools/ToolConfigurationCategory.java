@@ -1,8 +1,8 @@
 package jenkins.tools;
 
 import hudson.Extension;
-import jenkins.model.GlobalConfigurationCategory;
 import jenkins.management.Messages;
+import jenkins.model.GlobalConfigurationCategory;
 
 /**
  * Global configuration of tool locations and installers.

@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.util.Secret;
 import hudson.util.VariableResolver;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.Locale;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -57,10 +57,10 @@ public class PasswordParameterValue extends ParameterValue {
     }
 
     @Override
-    public void buildEnvironment(Run<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?, ?> build, EnvVars env) {
         String v = Secret.toString(value);
         env.put(name, v);
-        env.put(name.toUpperCase(Locale.ENGLISH),v); // backward compatibility pre 1.345
+        env.put(name.toUpperCase(Locale.ENGLISH), v); // backward compatibility pre 1.345
     }
 
     @Override

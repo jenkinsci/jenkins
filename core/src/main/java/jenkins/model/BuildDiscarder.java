@@ -14,7 +14,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.LogRotator;
 import hudson.util.RobustReflectionConverter;
-
 import java.io.IOException;
 
 /**
@@ -38,11 +37,11 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
      *
      * @see Job#logRotate()
      */
-    public abstract void perform(Job<?,?> job) throws IOException, InterruptedException;
+    public abstract void perform(Job<?, ?> job) throws IOException, InterruptedException;
 
     @Override
     public BuildDiscarderDescriptor getDescriptor() {
-        return (BuildDiscarderDescriptor)super.getDescriptor();
+        return (BuildDiscarderDescriptor) super.getDescriptor();
     }
 
     /**
@@ -56,7 +55,7 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
         private RobustReflectionConverter ref;
 
         public ConverterImpl(Mapper m) {
-            ref = new RobustReflectionConverter(m,new JVM().bestReflectionProvider()) {
+            ref = new RobustReflectionConverter(m, JVM.newReflectionProvider()) {
                 @Override
                 protected Object instantiateNewInstance(HierarchicalStreamReader reader, UnmarshallingContext context) {
                     return reflectionProvider.newInstance(LogRotator.class);
@@ -73,12 +72,12 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             // force unmarshal as LogRotator
-            return ref.unmarshal(reader,context);
+            return ref.unmarshal(reader, context);
         }
 
         @Override
         public boolean canConvert(Class type) {
-            return type==BuildDiscarder.class;
+            return type == BuildDiscarder.class;
         }
     }
 }

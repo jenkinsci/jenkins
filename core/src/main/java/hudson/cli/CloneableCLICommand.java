@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 /**
@@ -34,7 +35,7 @@ public abstract class CloneableCLICommand extends CLICommand implements Cloneabl
     @Override
     protected CLICommand createClone() {
         try {
-            return (CLICommand)clone();
+            return (CLICommand) clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }

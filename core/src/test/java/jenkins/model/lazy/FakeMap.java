@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model.lazy;
 
-import org.apache.commons.io.FileUtils;
+package jenkins.model.lazy;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import org.apache.commons.io.FileUtils;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -36,7 +36,6 @@ import hudson.model.ListView;
 import hudson.model.MyView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,7 +94,7 @@ public class UpdateViewCommandTest {
                 ;
 
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(), containsString("Expecting view type: "+ myView.getClass()
+        assertThat(result.stderr(), containsString("Expecting view type: " + myView.getClass()
                 + " but got: class hudson.model.ListView instead."));
     }
 

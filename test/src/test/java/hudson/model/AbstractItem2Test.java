@@ -21,19 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 import hudson.XmlFile;
 import java.util.logging.Level;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class AbstractItem2Test {
 
@@ -63,8 +65,10 @@ public class AbstractItem2Test {
                 assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
         });
     }
+
     static class BadProperty extends JobProperty<FreeStyleProject> {
         final FreeStyleProject other;
+
         BadProperty(FreeStyleProject other) {
             this.other = other;
         }

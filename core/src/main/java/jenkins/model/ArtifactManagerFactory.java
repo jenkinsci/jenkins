@@ -24,10 +24,10 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Run;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -47,7 +47,7 @@ public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<Art
      * @param build a running (or recently completed) build ready for {@link ArtifactManager#archive}
      * @return a manager, or null if this manager should not handle this kind of project, builds on this kind of agent, etc.
      */
-    public abstract @CheckForNull ArtifactManager managerFor(Run<?,?> build);
+    public abstract @CheckForNull ArtifactManager managerFor(Run<?, ?> build);
 
     @Override public ArtifactManagerFactoryDescriptor getDescriptor() {
         return (ArtifactManagerFactoryDescriptor) super.getDescriptor();

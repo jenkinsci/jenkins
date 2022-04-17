@@ -5,7 +5,6 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -24,8 +23,8 @@ public class UserSearchProperty extends hudson.model.UserProperty {
     public boolean getInsensitiveSearch() {
         return insensitiveSearch;
     }
-    
-    public static boolean isCaseInsensitive(){
+
+    public static boolean isCaseInsensitive() {
         User user = User.current();
 
         if (user == null) {
@@ -34,7 +33,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
 
         return user.getProperty(UserSearchProperty.class).getInsensitiveSearch();
     }
-    
+
 
     @Extension @Symbol("search")
     public static final class DescriptorImpl extends UserPropertyDescriptor {

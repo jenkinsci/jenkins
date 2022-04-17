@@ -1,21 +1,22 @@
 package hudson.util;
 
-import hudson.WebAppMain;
-import jenkins.util.groovy.GroovyHookScript;
-import org.kohsuke.stapler.WebApp;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.ServletContext;
+import hudson.WebAppMain;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import jenkins.util.groovy.GroovyHookScript;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * Indicates a fatal boot problem, among {@link ErrorObject}
@@ -38,17 +39,17 @@ public abstract class BootFailure extends ErrorObject {
      *      JENKINS_HOME if it's already known.
      */
     public void publish(ServletContext context, @CheckForNull File home) {
-        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",this);
+        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins", this);
 
         WebApp.get(context).setApp(this);
         if (home == null) {
             return;
         }
         new GroovyHookScript("boot-failure", context, home, BootFailure.class.getClassLoader())
-                .bind("exception",this)
-                .bind("home",home)
+                .bind("exception", this)
+                .bind("home", home)
                 .bind("servletContext", context)
-                .bind("attempts",loadAttempts(home))
+                .bind("attempts", loadAttempts(home))
                 .run();
     }
 
@@ -57,14 +58,14 @@ public abstract class BootFailure extends ErrorObject {
      */
     protected List<Date> loadAttempts(File home) {
         List<Date> dates = new ArrayList<>();
-        if (home!=null) {
+        if (home != null) {
             File f = getBootFailureFile(home);
             try {
                 if (f.exists()) {
-                    try (BufferedReader failureFileReader = new BufferedReader(new FileReader(f))) {
+                    try (BufferedReader failureFileReader = Files.newBufferedReader(f.toPath(), Charset.defaultCharset())) {
                         String line;
                         DateFormat df = DateFormat.getDateInstance();
-                        while ((line=failureFileReader.readLine())!=null) {
+                        while ((line = failureFileReader.readLine()) != null) {
                             try {
                                 dates.add(df.parse(line));
                             } catch (Exception e) {
@@ -73,9 +74,9 @@ public abstract class BootFailure extends ErrorObject {
                         }
                     }
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Failed to parse "+f,e);
-            } 
+            } catch (IOException | InvalidPathException e) {
+                LOGGER.log(Level.WARNING, "Failed to parse " + f, e);
+            }
         }
         return dates;
     }

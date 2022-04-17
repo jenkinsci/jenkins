@@ -1,7 +1,8 @@
 package hudson.model;
 
-import hudson.EnvVars;
 import static org.junit.Assert.assertEquals;
+
+import hudson.EnvVars;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -23,7 +24,7 @@ public class EnvironmentContributorTest {
         CaptureEnvironmentBuilder c = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(c);
         p.setDescription("Issac Newton");
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         assertEquals("Issac Newton", c.getEnvVars().get("ABC"));
         assertEquals("built-in", c.getEnvVars().get("NODE_NAME"));

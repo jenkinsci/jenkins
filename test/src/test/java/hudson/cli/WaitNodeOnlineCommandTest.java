@@ -24,17 +24,6 @@
 
 package hudson.cli;
 
-import hudson.slaves.DumbSlave;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -42,6 +31,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
+
+import hudson.slaves.DumbSlave;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -59,7 +58,7 @@ public class WaitNodeOnlineCommandTest {
     }
 
     @Test
-    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() throws Exception {
+    public void waitNodeOnlineShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -100,7 +99,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 
@@ -126,7 +125,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 
@@ -151,7 +150,7 @@ public class WaitNodeOnlineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 

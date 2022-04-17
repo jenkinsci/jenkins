@@ -21,7 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import hudson.model.Action;
 import hudson.model.Computer;
@@ -30,6 +42,7 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewGroup;
+import hudson.util.VersionNumber;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -40,43 +53,25 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import org.mockito.MockedStatic;
 
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class FunctionsTest {
     @Test
-    public void testGetActionUrl_absoluteUriWithAuthority(){
+    public void testGetActionUrl_absoluteUriWithAuthority() {
         String[] uris = {
             "http://example.com/foo/bar",
             "https://example.com/foo/bar",
             "ftp://example.com/foo/bar",
             "svn+ssh://nobody@example.com/foo/bar",
         };
-        for(String uri : uris) {
+        for (String uri : uris) {
             String result = Functions.getActionUrl(null, createMockAction(uri));
             assertEquals(uri, result);
         }
@@ -84,20 +79,19 @@ public class FunctionsTest {
 
     @Test
     @Issue("JENKINS-7725")
-    public void testGetActionUrl_absoluteUriWithoutAuthority(){
+    public void testGetActionUrl_absoluteUriWithoutAuthority() {
         String[] uris = {
             "mailto:nobody@example.com",
             "mailto:nobody@example.com?subject=hello",
             "javascript:alert('hello')",
         };
-        for(String uri : uris) {
+        for (String uri : uris) {
             String result = Functions.getActionUrl(null, createMockAction(uri));
             assertEquals(uri, result);
         }
     }
 
     @Test
-    @PrepareForTest(Stapler.class)
     public void testGetActionUrl_absolutePath() {
         String contextPath = "/jenkins";
         StaplerRequest req = createMockRequest(contextPath);
@@ -105,16 +99,17 @@ public class FunctionsTest {
             "/",
             "/foo/bar",
         };
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        for(String path : paths) {
-            String result = Functions.getActionUrl(null, createMockAction(path));
-            assertEquals(contextPath + path, result);
+
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            for (String path : paths) {
+                String result = Functions.getActionUrl(null, createMockAction(path));
+                assertEquals(contextPath + path, result);
+            }
         }
     }
 
     @Test
-    @PrepareForTest(Stapler.class)
     public void testGetActionUrl_relativePath() {
         String contextPath = "/jenkins";
         String itUrl = "iturl/";
@@ -124,105 +119,121 @@ public class FunctionsTest {
             "./foo/bar",
             "../foo/bar",
         };
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        for(String path : paths) {
-            String result = Functions.getActionUrl(itUrl, createMockAction(path));
-            assertEquals(contextPath + "/" + itUrl + path, result);
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            for (String path : paths) {
+                String result = Functions.getActionUrl(itUrl, createMockAction(path));
+                assertEquals(contextPath + "/" + itUrl + path, result);
+            }
         }
-    }
-    
-    @Test
-    @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobContainedInView() {
-        Jenkins j = createMockJenkins();
-        ItemGroup parent = j;
-        String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwner()).thenReturn(j);
-        when(j.getItemGroup()).thenReturn(j);
-        createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
-        TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.singletonList(i));
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("job/i/", result);
     }
 
     @Test
-    @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobFromComputer() {
-        Jenkins j = createMockJenkins();
-        ItemGroup parent = j;
+    public void testGetRelativeLinkTo_JobContainedInView() {
         String contextPath = "/jenkins";
         StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        Computer computer = mock(Computer.class);
-        createMockAncestors(req, createAncestor(computer, "."), createAncestor(j, "../.."));
-        TopLevelItem i = createMockItem(parent, "job/i/");
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("/jenkins/job/i/", result);
+        try (
+                MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
+                MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            Jenkins j = createMockJenkins(mockedJenkins);
+            ItemGroup parent = j;
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            View view = mock(View.class);
+            when(view.getOwner()).thenReturn(j);
+            when(j.getItemGroup()).thenReturn(j);
+            createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
+            TopLevelItem i = createMockItem(parent, "job/i/");
+            when(view.getItems()).thenReturn(Collections.singletonList(i));
+            String result = Functions.getRelativeLinkTo(i);
+            assertEquals("job/i/", result);
+        }
+    }
+
+    @Test
+    public void testGetRelativeLinkTo_JobFromComputer() {
+        String contextPath = "/jenkins";
+        StaplerRequest req = createMockRequest(contextPath);
+        try (
+                MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
+                MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            Jenkins j = createMockJenkins(mockedJenkins);
+            ItemGroup parent = j;
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            Computer computer = mock(Computer.class);
+            createMockAncestors(req, createAncestor(computer, "."), createAncestor(j, "../.."));
+            TopLevelItem i = createMockItem(parent, "job/i/");
+            String result = Functions.getRelativeLinkTo(i);
+            assertEquals("/jenkins/job/i/", result);
+        }
     }
 
     @Ignore("too expensive to make it correct")
     @Test
-    @PrepareForTest({Stapler.class, Jenkins.class})
     public void testGetRelativeLinkTo_JobNotContainedInView() {
-        Jenkins j = createMockJenkins();
-        ItemGroup parent = j;
         String contextPath = "/jenkins";
         StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwner().getItemGroup()).thenReturn(parent);
-        createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
-        TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.emptyList());
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("/jenkins/job/i/", result);
+        try (
+                MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
+                MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            Jenkins j = createMockJenkins(mockedJenkins);
+            ItemGroup parent = j;
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            View view = mock(View.class);
+            when(view.getOwner().getItemGroup()).thenReturn(parent);
+            createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
+            TopLevelItem i = createMockItem(parent, "job/i/");
+            when(view.getItems()).thenReturn(Collections.emptyList());
+            String result = Functions.getRelativeLinkTo(i);
+            assertEquals("/jenkins/job/i/", result);
+        }
     }
-    
-    private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
-    
+
+    private interface TopLevelItemAndItemGroup<T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
+
     @Test
-    @PrepareForTest({Stapler.class,Jenkins.class})
     public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
-        Jenkins j = createMockJenkins();
-        TopLevelItemAndItemGroup parent = mock(TopLevelItemAndItemGroup.class);
-        when(parent.getShortUrl()).thenReturn("parent/");
         String contextPath = "/jenkins";
         StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwner()).thenReturn(parent);
-        when(parent.getItemGroup()).thenReturn(parent);
-        createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
-        TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
-        when(view.getItems()).thenReturn(Collections.singletonList(i));
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("job/i/", result);
+        try (
+                MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
+                MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            Jenkins j = createMockJenkins(mockedJenkins);
+            TopLevelItemAndItemGroup parent = mock(TopLevelItemAndItemGroup.class);
+            when(parent.getShortUrl()).thenReturn("parent/");
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            View view = mock(View.class);
+            when(view.getOwner()).thenReturn(parent);
+            when(parent.getItemGroup()).thenReturn(parent);
+            createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
+            TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
+            when(view.getItems()).thenReturn(Collections.singletonList(i));
+            String result = Functions.getRelativeLinkTo(i);
+            assertEquals("job/i/", result);
+        }
     }
 
     @Issue("JENKINS-17713")
-    @PrepareForTest({Stapler.class, Jenkins.class})
     @Test public void getRelativeLinkTo_MavenModules() {
-        Jenkins j = createMockJenkins();
         StaplerRequest req = createMockRequest("/jenkins");
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
-        when(ms.getShortUrl()).thenReturn("job/ms/");
-        // TODO "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
-        createMockAncestors(req, createAncestor(j, "../.."), createAncestor(ms, "."));
-        Item m = mock(Item.class);
-        when(m.getParent()).thenReturn(ms);
-        when(m.getShortUrl()).thenReturn("grp$art/");
-        assertEquals("grp$art/", Functions.getRelativeLinkTo(m));
+        try (
+                MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
+                MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            Jenkins j = createMockJenkins(mockedJenkins);
+            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
+            when(ms.getShortUrl()).thenReturn("job/ms/");
+            // TODO "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
+            createMockAncestors(req, createAncestor(j, "../.."), createAncestor(ms, "."));
+            Item m = mock(Item.class);
+            when(m.getParent()).thenReturn(ms);
+            when(m.getShortUrl()).thenReturn("grp$art/");
+            assertEquals("grp$art/", Functions.getRelativeLinkTo(m));
+        }
     }
 
     @Test
@@ -230,9 +241,9 @@ public class FunctionsTest {
         Item i = mock(Item.class);
         when(i.getName()).thenReturn("jobName");
         when(i.getFullDisplayName()).thenReturn("displayName");
-        assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
+        assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, null));
     }
-    
+
     @Test
     public void testGetRelativeDisplayNameInsideItemGroup() {
         Item i = mock(Item.class);
@@ -257,7 +268,7 @@ public class FunctionsTest {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
         when(req.getAncestors()).thenReturn(ancestorsList);
     }
-    
+
     private TopLevelItem createMockItem(ItemGroup p, String shortUrl) {
         return createMockItem(p, shortUrl, shortUrl);
     }
@@ -270,13 +281,12 @@ public class FunctionsTest {
         return i;
     }
 
-    private Jenkins createMockJenkins() {
-        mockStatic(Jenkins.class);
+    private Jenkins createMockJenkins(MockedStatic<Jenkins> mockedJenkins) {
         Jenkins j = mock(Jenkins.class);
-        when(Jenkins.get()).thenReturn(j);
+        mockedJenkins.when(Jenkins::get).thenReturn(j);
         return j;
     }
-    
+
     private static Ancestor createAncestor(Object o, String relativePath) {
         Ancestor a = mock(Ancestor.class);
         when(a.getObject()).thenReturn(o);
@@ -285,7 +295,6 @@ public class FunctionsTest {
     }
 
     @Test
-    @PrepareForTest(Stapler.class)
     public void testGetActionUrl_unparseable() {
         assertNull(Functions.getActionUrl(null, createMockAction("http://example.net/stuff?something=^woohoo")));
     }
@@ -304,9 +313,9 @@ public class FunctionsTest {
 
     @Test
     @Issue("JENKINS-16630")
-    public void testHumanReadableFileSize(){
+    public void testHumanReadableFileSize() {
         Locale defaultLocale = Locale.getDefault();
-        try{
+        try {
             Locale.setDefault(Locale.ENGLISH);
             assertEquals("0 B", Functions.humanReadableByteSize(0));
             assertEquals("1023 B", Functions.humanReadableByteSize(1023));
@@ -316,7 +325,7 @@ public class FunctionsTest {
             assertEquals("1023.00 KB", Functions.humanReadableByteSize(1047552));
             assertEquals("1.00 MB", Functions.humanReadableByteSize(1048576));
             assertEquals("1.50 GB", Functions.humanReadableByteSize(1610612700));
-        }finally{
+        } finally {
             Locale.setDefault(defaultLocale);
         }
     }
@@ -357,8 +366,41 @@ public class FunctionsTest {
         assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
+    @Test public void printLogRecordHtmlNoLogger() {
+        LogRecord lr = new LogRecord(Level.INFO, "<discarded/>");
+        assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcHandlesNull() {
+        String result = Functions.extractPluginNameFromIconSrc(null);
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcHandlesEmptyString() {
+        String result = Functions.extractPluginNameFromIconSrc("");
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcOnlyReturnsPluginFromStart() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-plugin-mailer plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcExtractsPlugin() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
+    }
+
     @Issue("JDK-6507809")
-    @Test public void printThrowable() throws Exception {
+    @Test public void printThrowable() {
         // Basics: a single exception. No change.
         assertPrintThrowable(new Stack("java.lang.NullPointerException: oops", "p.C.method1:17", "m.Main.main:1"),
             "java.lang.NullPointerException: oops\n" +
@@ -422,7 +464,7 @@ public class FunctionsTest {
         StackTraceElement[] combined = new StackTraceElement[original.length + 1 + callSite.length];
         System.arraycopy(original, 0, combined, 0, original.length);
         combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
-        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
             "remote.Exception: oops\n" +
@@ -444,7 +486,7 @@ public class FunctionsTest {
         combined = new StackTraceElement[original.length + 1 + callSite.length];
         System.arraycopy(original, 0, combined, 0, original.length);
         combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
-        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
             "remote.Wrapper: remote.Exception: oops\n" +
@@ -548,13 +590,15 @@ public class FunctionsTest {
                             "\tat p.C.method1(C.java:17)\n");
         }
     }
+
     private static VersionNumber getVersion() {
         String version = System.getProperty("java.version");
-        if(version.startsWith("1.")) {
+        if (version.startsWith("1.")) {
             version = version.substring(2).replace("_", ".");
         }
         return new VersionNumber(version);
     }
+
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
@@ -563,9 +607,11 @@ public class FunctionsTest {
         System.out.println(actual);
         assertThat(actual.replace(System.lineSeparator(), "\n"), is(custom));
     }
+
     private static final class Stack extends Throwable {
         private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");
         private final String toString;
+
         Stack(String toString, String... stack) {
             this.toString = toString;
             StackTraceElement[] lines = new StackTraceElement[stack.length];
@@ -576,13 +622,16 @@ public class FunctionsTest {
             }
             setStackTrace(lines);
         }
+
         @Override
         public String toString() {
             return toString;
         }
+
         synchronized Stack cause(Throwable cause) {
             return (Stack) initCause(cause);
         }
+
         synchronized Stack suppressed(Throwable... suppressed) {
             for (Throwable t : suppressed) {
                 addSuppressed(t);

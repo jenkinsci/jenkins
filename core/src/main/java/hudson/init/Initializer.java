@@ -21,26 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.init;
 
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.STARTED;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import hudson.Extension;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.jvnet.hudson.reactor.Task;
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.METHOD;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
-
-import static hudson.init.InitMilestone.STARTED;
-import static hudson.init.InitMilestone.COMPLETED;
-
 /**
  * Placed on methods to indicate that this method is to be run during the Jenkins start up to perform
- * some sort of initialization tasks.
+ * some sort of initialization tasks, for example:
  *
- * <h3>Example</h3>
  * <pre>
    &#64;Initializer(after=JOB_LOADED)
    public static void init() throws IOException {
@@ -52,7 +51,7 @@ import static hudson.init.InitMilestone.COMPLETED;
  * The method in question can be either {@code static} or an instance method. When used with instance
  * methods, those methods have to be on a class annotated with {@link Extension} and marked as
  * {@link #after()} {@link InitMilestone#PLUGINS_PREPARED}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Indexed
@@ -100,7 +99,7 @@ public @interface Initializer {
     /**
      * Should the failure in this task prevent Hudson from starting up?
      *
-     * @see Task#failureIsFatal() 
+     * @see Task#failureIsFatal()
      */
     boolean fatal() default true;
 }

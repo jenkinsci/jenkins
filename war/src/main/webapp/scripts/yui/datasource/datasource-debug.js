@@ -2593,7 +2593,7 @@ lang.augmentObject(util.XHRDataSource, DS);
 /****************************************************************************/
 
 /**
- * Factory class for creating a BaseDataSource subclass instance. The sublcass is
+ * Factory class for creating a BaseDataSource subclass instance. The subclass is
  * determined by oLiveData's type, unless the dataType config is explicitly passed in.  
  *
  * @namespace YAHOO.util

@@ -86,6 +86,10 @@ class LabelExpressionLexer extends Lexer;
 options {
   // There must be an options section to satisfy
   // org.codehaus.mojo.antlr.metadata.MetadataExtracter#intrepret, even if it is empty.
+  
+  // https://www.antlr2.org/doc/lexer.html#Common_prefixes
+  // to prevent nondeterminism between IMPLIES and ATOM related to the first "-"
+  k=2;
 }
 
 AND:    "&&";
@@ -98,12 +102,21 @@ RPAREN: ")";
 
 protected
 IDENTIFIER_PART
-    :   ~( '&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t' | '\"' | '\'' )
+    :   ~( '&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t' | '\"' | '\'' | '-' )
     ;
 
 ATOM
-/* the real check of valid identifier happens in LabelAtom.get() */
-    :   (IDENTIFIER_PART)+
+/* 
+    the real check of valid identifier happens in LabelAtom.get()
+    
+    https://www.antlr2.org/doc/lexer.html#usingexplicit
+    If we are seeing currently a '-', we check that the next char is not a '>' which will be a IMPLIES.
+    Otherwise the ATOM and the IMPLIES will collide and expr like a->b will just be parsed as ATOM (without spaces)
+*/
+    :   (
+          { LA(2) != '>' }? '-' 
+        | IDENTIFIER_PART
+        )+
     ;
 
 WS

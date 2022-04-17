@@ -21,21 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
+
+import static hudson.Util.fixNull;
+import static java.util.logging.Level.INFO;
 
 import antlr.ANTLRException;
 import hudson.Extension;
-import static hudson.Util.fixNull;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Queue;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormValidation;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-
-import net.jcip.annotations.GuardedBy;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.Calendar;
@@ -43,7 +41,10 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.INFO;
+import net.jcip.annotations.GuardedBy;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link RetentionStrategy} that controls the agent based on a schedule.
@@ -239,7 +240,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return 1;
     }
 
-    private boolean isOnlineScheduled() {
+    private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);

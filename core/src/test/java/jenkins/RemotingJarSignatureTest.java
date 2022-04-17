@@ -4,14 +4,13 @@ import static org.junit.Assert.assertNotNull;
 
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -23,9 +22,9 @@ public class RemotingJarSignatureTest {
     @Test
     public void testSignature() throws Exception {
         File jar = Which.jarFile(Channel.class);
-        System.out.println("Verifying "+jar);
+        System.out.println("Verifying " + jar);
 
-        JarFile myJar = new JarFile(jar,true);
+        JarFile myJar = new JarFile(jar, true);
 
         Enumeration<JarEntry> entries = myJar.entries();
         while (entries.hasMoreElements()) {

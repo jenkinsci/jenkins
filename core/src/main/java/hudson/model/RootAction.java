@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 
 /**
  * Marker interface for actions that are added to {@link jenkins.model.Jenkins}.

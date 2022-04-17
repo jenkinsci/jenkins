@@ -10,7 +10,6 @@ import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
@@ -42,10 +41,10 @@ public class NodePropertyTest {
         assertFalse(before.reconfigured);
 
         DumbSlave s2 = j.configRoundtrip(s);
-        assertNotSame(s,s2);
+        assertNotSame(s, s2);
         InvisibleProperty after = s2.getNodeProperties().get(InvisibleProperty.class);
 
-        assertSame(before,after);
+        assertSame(before, after);
         assertTrue(after.reconfigured);
     }
 
@@ -53,7 +52,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
             reconfigured = true;
             return this;
         }
@@ -66,16 +65,16 @@ public class NodePropertyTest {
     public void basicConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
-        ((HtmlLabel)DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
+        ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
         j.submit(f);
         PropertyImpl p = j.jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
-        assertEquals("Duke",p.name);
+        assertEquals("Duke", p.name);
 
         p.name = "Kohsuke";
         j.configRoundtrip(s);
 
         PropertyImpl p2 = j.jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
-        assertNotSame(p,p2);
+        assertNotSame(p, p2);
         j.assertEqualDataBoundBeans(p, p2);
     }
 

@@ -1,5 +1,9 @@
 package hudson;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -11,6 +15,12 @@ import hudson.model.UpdateSite;
 import hudson.model.UpdateSiteTest;
 import hudson.util.HttpResponses;
 import hudson.util.Retrier;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -22,17 +32,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PluginManagerCheckUpdateCenterTest {
     @Rule
@@ -71,7 +70,7 @@ public class PluginManagerCheckUpdateCenterTest {
             //Avoid CertPathValidatorException: Algorithm constraints check failed on signature algorithm: MD5withRSA
             DownloadService.signatureCheck = false;
             // Have to end in update-center.json or it fails. See UpdateSite#getMetadataUrlForDownloadable
-            checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json", "", true );
+            checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json", "", true);
         } finally {
             DownloadService.signatureCheck = oldValueSignatureCheck;
         }
@@ -109,7 +108,7 @@ public class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    private HtmlAnchor getCheckNow(HtmlPage page){
+    private HtmlAnchor getCheckNow(HtmlPage page) {
         List<HtmlElement> elements = page.getElementById("bottom-sticker")
                 .getElementsByTagName("a")
                 .stream()

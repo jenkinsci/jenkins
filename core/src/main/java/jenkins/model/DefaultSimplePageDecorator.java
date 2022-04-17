@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.Extension;
@@ -31,6 +32,6 @@ import hudson.Extension;
  * To make sure that we load this extension last (or at least very late) we use a negative ordinal.
  * This allows custom implementation to be "first"
  */
-@Extension(ordinal=-9999)
+@Extension(ordinal = -9999)
 public class DefaultSimplePageDecorator extends SimplePageDecorator {
 }

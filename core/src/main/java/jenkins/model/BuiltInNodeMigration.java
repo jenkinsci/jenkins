@@ -21,10 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -32,9 +35,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Inform the admin about the migration. This affects the parts of the rename

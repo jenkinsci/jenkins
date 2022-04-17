@@ -37,27 +37,16 @@ THE SOFTWARE.
           ${%Connect agent to Jenkins one of these ways:}
         </p>
         <ul>
-          <j:choose>
-            <j:when test="${it.launcher.javaWebStartSupported}">
-              <li>
-                <p>
-                  <a href="jenkins-agent.jnlp" id="jnlp-link">
-                    <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-                  </a>
-                  ${%Launch agent from browser}
-                </p>
-              </li>
-            </j:when>
-            <j:otherwise>
-              <li>
-                <p>
-                  <a href="https://www.jenkins.io/redirect/java11-java-web-start">
-                    ${%Java Web Start is not available for the JVM version running Jenkins}
-                  </a>
-                </p>
-              </li>
-            </j:otherwise>
-          </j:choose>
+          <j:if test="${it.launcher.javaWebStartSupported}">
+            <li>
+              <p>
+                <a href="jenkins-agent.jnlp" id="jnlp-link">
+                  <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
+                </a>
+                ${%Launch agent from browser}
+              </p>
+            </li>
+          </j:if>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
               <li>

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import org.junit.Test;
 
 /**
@@ -13,8 +12,6 @@ import org.junit.Test;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"PMD", "all"})
-//CHECKSTYLE:OFF
 public class TreeStringBuilderTest {
     /**
      * Tests the simple operations inside the builder.
@@ -36,7 +33,7 @@ public class TreeStringBuilderTest {
      */
     @Test
     public void testRandom() {
-        String[] dict = new String[]{"aa","b","aba","ba"};
+        String[] dict = new String[]{"aa", "b", "aba", "ba"};
         TreeStringBuilder x = new TreeStringBuilder();
         Random r = new Random(0);
 

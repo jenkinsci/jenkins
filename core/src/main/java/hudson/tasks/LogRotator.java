@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
  * Copyright (c) 2019 Intel Corporation
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,11 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
+import hudson.Extension;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.util.RunList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,36 +44,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import hudson.util.RunList;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import hudson.Extension;
-import hudson.model.Job;
-import hudson.model.Run;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderDescriptor;
 import jenkins.util.io.CompositeIOException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
  *
  * For historical reason, this is called LogRotator, but it does not rotate logs :-)
- * 
+ *
  * Since 1.350 it has also the option to keep the build, but delete its recorded artifacts.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class LogRotator extends BuildDiscarder {
-    
+
     /** @deprecated Replaced by more generic {@link CompositeIOException}. */
     @Deprecated
-    public class CollatedLogRotatorException extends IOException {
+    public static class CollatedLogRotatorException extends IOException {
         private static final long serialVersionUID = 5944233808072651101L;
-        
+
         public final Collection<Exception> collated;
-        
+
         public CollatedLogRotatorException(String msg, Exception... collated) {
             super(msg);
             if (collated == null || collated.length == 0) {
@@ -83,7 +82,7 @@ public class LogRotator extends BuildDiscarder {
             this.collated = values != null ? values : Collections.emptyList();
         }
     }
-    
+
     /**
      * If not -1, history is only kept up to this days.
      */
@@ -109,13 +108,13 @@ public class LogRotator extends BuildDiscarder {
     private final Integer artifactNumToKeep;
 
     @DataBoundConstructor
-    public LogRotator (String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
-        this (parse(daysToKeepStr),parse(numToKeepStr),
-              parse(artifactDaysToKeepStr),parse(artifactNumToKeepStr));
+    public LogRotator(String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
+        this (parse(daysToKeepStr), parse(numToKeepStr),
+              parse(artifactDaysToKeepStr), parse(artifactNumToKeepStr));
     }
 
     public static int parse(String p) {
-        if(p==null)     return -1;
+        if (p == null)     return -1;
         try {
             return Integer.parseInt(p);
         } catch (NumberFormatException e) {
@@ -137,28 +136,28 @@ public class LogRotator extends BuildDiscarder {
         this.numToKeep = numToKeep;
         this.artifactDaysToKeep = artifactDaysToKeep;
         this.artifactNumToKeep = artifactNumToKeep;
-        
+
     }
-    
+
     @Override
     @SuppressWarnings("rawtypes")
-    public void perform(Job<?,?> job) throws IOException, InterruptedException {
+    public void perform(Job<?, ?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported
-        Map<Run<?,?>, Set<IOException>> exceptionMap = new HashMap<>();
-        
+        Map<Run<?, ?>, Set<IOException>> exceptionMap = new HashMap<>();
+
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
-        
+
         // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
 
-        if(numToKeep!=-1) {
+        if (numToKeep != -1) {
             // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
             // However we would need to load the first numToKeep anyway, just to skip over them;
             // and we would need to load the rest anyway, to delete them.
             // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
             // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
-            RunList<? extends Run<?,?>> builds = job.getBuilds();
+            RunList<? extends Run<?, ?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), numToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
@@ -169,9 +168,9 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(daysToKeep!=-1) {
+        if (daysToKeep != -1) {
             Calendar cal = new GregorianCalendar();
-            cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
+            cal.add(Calendar.DAY_OF_YEAR, -daysToKeep);
             Run r = job.getFirstBuild();
             while (r != null) {
                 if (tooNew(r, cal)) {
@@ -186,8 +185,8 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
-            RunList<? extends Run<?,?>> builds = job.getBuilds();
+        if (artifactNumToKeep != null && artifactNumToKeep != -1) {
+            RunList<? extends Run<?, ?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
@@ -198,9 +197,9 @@ public class LogRotator extends BuildDiscarder {
             }
         }
 
-        if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
+        if (artifactDaysToKeep != null && artifactDaysToKeep != -1) {
             Calendar cal = new GregorianCalendar();
-            cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
+            cal.add(Calendar.DAY_OF_YEAR, -artifactDaysToKeep);
             Run r = job.getFirstBuild();
             while (r != null) {
                 if (tooNew(r, cal)) {
@@ -214,7 +213,7 @@ public class LogRotator extends BuildDiscarder {
                 r = r.getNextBuild();
             }
         }
-        
+
         if (!exceptionMap.isEmpty()) {
             //Collate all encountered exceptions into a single exception and throw that
             String msg = String.format(
@@ -287,11 +286,11 @@ public class LogRotator extends BuildDiscarder {
     }
 
     private int unbox(Integer i) {
-        return i==null ? -1: i;
+        return i == null ? -1 : i;
     }
 
     private String toString(Integer i) {
-        if (i==null || i==-1)   return "";
+        if (i == null || i == -1)   return "";
         return String.valueOf(i);
     }
 

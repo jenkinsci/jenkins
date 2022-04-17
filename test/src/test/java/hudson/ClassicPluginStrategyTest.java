@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.junit.Assert.assertNotNull;
@@ -29,6 +30,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.model.Hudson;
+import java.io.File;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,13 +44,6 @@ import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Alan Harder
@@ -56,9 +56,9 @@ public class ClassicPluginStrategyTest {
     @Override
     protected Hudson newHudson() throws Exception {
         File home = homeLoader.allocate();
-        
+
         for (JenkinsRecipe.Runner r : recipes) {
-            r.decorateHome(this,home);
+            r.decorateHome(this, home);
         }
         LocalPluginManager pluginManager = new LocalPluginManager(home) {
             @Override
@@ -117,7 +117,7 @@ public class ClassicPluginStrategyTest {
         for (int i = 0; en.hasMoreElements(); i++) {
             String res = en.nextElement().toString();
             if (i == 0)
-                assertTrue("expected foo4, found "+res , res.contains("/foo4/"));
+                assertTrue("expected foo4, found " + res, res.contains("/foo4/"));
             else
                 fail("disabled dependency should not be included");
         }

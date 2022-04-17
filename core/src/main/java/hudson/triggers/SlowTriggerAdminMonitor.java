@@ -1,9 +1,17 @@
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -13,15 +21,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
-
 @Restricted(NoExternalUse.class)
 @Extension
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
@@ -29,7 +28,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ int MAX_ENTRIES = SystemProperties.getInteger(SlowTriggerAdminMonitor.class.getName() + ".maxEntries", 10);
 
     @NonNull
@@ -95,7 +94,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         return HttpResponses.redirectViaContextPath("/manage");
     }
 
-    public class Value {
+    public static class Value {
 
         private final LocalDateTime time;
         private Class<? extends TriggerDescriptor> trigger;

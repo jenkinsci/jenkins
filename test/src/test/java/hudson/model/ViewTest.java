@@ -21,87 +21,77 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionList;
-import hudson.diagnosis.OldDataMonitor;
-import hudson.views.ViewsTabBar;
-import jenkins.model.Jenkins;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.jvnet.hudson.test.Issue;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-
-import hudson.XmlFile;
-import hudson.matrix.AxisList;
-import hudson.matrix.LabelAxis;
-import hudson.matrix.MatrixProject;
-import hudson.model.Queue.Task;
-import hudson.model.Node.Mode;
-
-import org.jvnet.hudson.test.Email;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.w3c.dom.Text;
-
 import static hudson.model.Messages.Hudson_ViewName;
-import hudson.security.ACL;
-import hudson.security.AccessDeniedException3;
-import hudson.slaves.DumbSlave;
-import hudson.util.FormValidation;
-import hudson.util.HudsonIsLoading;
-import java.io.File;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Collection;
-import java.net.HttpURLConnection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import jenkins.model.ProjectNamingStrategy;
-import jenkins.security.NotReallyRoleSensitiveCallable;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
-import javax.servlet.ServletException;
-
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlLabel;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.ExtensionList;
+import hudson.XmlFile;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.matrix.AxisList;
+import hudson.matrix.LabelAxis;
+import hudson.matrix.MatrixProject;
+import hudson.model.Node.Mode;
+import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import hudson.security.AccessDeniedException3;
+import hudson.slaves.DumbSlave;
+import hudson.util.FormValidation;
+import hudson.util.HudsonIsLoading;
+import hudson.views.ViewsTabBar;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import jenkins.model.Jenkins;
+import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.LoggerRule;
@@ -110,6 +100,9 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.w3c.dom.Text;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -138,7 +131,7 @@ public class ViewTest {
 
         final Map<String, String> values = new HashMap<>();
 
-        for(NameValuePair p : responseHeaders) {
+        for (NameValuePair p : responseHeaders) {
             values.put(p.getName(), p.getValue());
         }
 
@@ -179,9 +172,9 @@ public class ViewTest {
         HtmlAnchor privateViewsLink = userPage.getAnchorByText("My Views");
         assertNotNull("My Views link not available", privateViewsLink);
 
-        HtmlPage privateViewsPage = (HtmlPage) privateViewsLink.click();
+        HtmlPage privateViewsPage = privateViewsLink.click();
 
-        Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
+        Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
         View listView = listView("listView");
@@ -189,7 +182,7 @@ public class ViewTest {
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
-        ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
+        form.getInputByValue("hudson.model.ProxyView").setChecked(true);
         HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
         assertNotNull(proxyView);
@@ -241,7 +234,7 @@ public class ViewTest {
         // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
         if (!folderPluginActive && folderPluginClassesLoaded) {
             // reset the icon added by Folder because the plugin resources are not reachable
-            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "svgs/folder.svg", "width: 24px; height: 24px;"));
         }
 
         WebClient webClient = j.createWebClient()
@@ -313,7 +306,7 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetQueueItems() throws Exception{
+    public void testGetQueueItems() throws Exception {
         ListView view1 = listView("view1");
         view1.filterQueue = true;
         ListView view2 = listView("view2");
@@ -349,7 +342,7 @@ public class ViewTest {
     }
 
     private void assertContainsItems(View view, Task... items) {
-        for (Task job: items) {
+        for (Task job : items) {
             assertTrue(
                     "Queued items for " + view.getDisplayName() + " should contain " + job.getDisplayName(),
                     view.getQueueItems().contains(Queue.getInstance().getItem(job))
@@ -358,7 +351,7 @@ public class ViewTest {
     }
 
     private void assertNotContainsItems(View view, Task... items) {
-        for (Task job: items) {
+        for (Task job : items) {
             assertFalse(
                     "Queued items for " + view.getDisplayName() + " should not contain " + job.getDisplayName(),
                     view.getQueueItems().contains(Queue.getInstance().getItem(job))
@@ -367,13 +360,13 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetComputers() throws Exception{
+    public void testGetComputers() throws Exception {
         ListView view1 = listView("view1");
         ListView view2 = listView("view2");
         ListView view3 = listView("view3");
-        view1.filterExecutors=true;
-        view2.filterExecutors=true;
-        view3.filterExecutors=true;
+        view1.filterExecutors = true;
+        view2.filterExecutors = true;
+        view3.filterExecutors = true;
 
         Slave slave0 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
         Slave slave1 = j.createOnlineSlave(j.jenkins.getLabel("label1"));
@@ -433,7 +426,7 @@ public class ViewTest {
     }
 
     private void assertContainsNodes(View view, Node... slaves) {
-        for (Node slave: slaves) {
+        for (Node slave : slaves) {
             assertTrue(
                     "Filtered executors for " + view.getDisplayName() + " should contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
@@ -442,7 +435,7 @@ public class ViewTest {
     }
 
     private void assertNotContainsNodes(View view, Node... slaves) {
-        for (Node slave: slaves) {
+        for (Node slave : slaves) {
             assertFalse(
                     "Filtered executors for " + view.getDisplayName() + " should not contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
@@ -451,14 +444,14 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetItem() throws Exception{
+    public void testGetItem() throws Exception {
         ListView view = listView("foo");
         FreeStyleProject job1 = j.createFreeStyleProject("free");
         MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
         FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
-        assertEquals("View should return job " + job1.getDisplayName(),job1,  view.getItem("free"));
+        assertEquals("View should return job " + job1.getDisplayName(), job1,  view.getItem("free"));
         assertNotNull("View should return null.", view.getItem("not-included"));
     }
 
@@ -468,37 +461,32 @@ public class ViewTest {
         view.rename("renamed");
         assertEquals("View should have name foo.", "renamed", view.getDisplayName());
         ListView view2 = listView("foo");
-        try{
-            view2.rename("renamed");
-            fail("Attempt to rename job with a name used by another view with the same owner should throw exception");
-        }
-        catch(Exception Exception){
-        }
+        assertThrows("Attempt to rename job with a name used by another view with the same owner should throw exception", Descriptor.FormException.class, () -> view2.rename("renamed"));
         assertEquals("View should not be renamed if required name has another view with the same owner", "foo", view2.getDisplayName());
     }
 
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
+        assertEquals("View should have owner jenkins.", j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
 
     @Test
-    public void testGetOwnerPrimaryView() throws Exception{
+    public void testGetOwnerPrimaryView() throws Exception {
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(), view, view.getOwner().getPrimaryView());
     }
 
     @Test
-    public void testSave() throws Exception{
+    public void testSave() throws Exception {
         ListView view = listView("foo");
         FreeStyleProject job = j.createFreeStyleProject("free");
         view.jobNames.add("free");
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
+        if (j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading) {
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));
@@ -549,9 +537,9 @@ public class ViewTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Item.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
-        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -561,9 +549,9 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
@@ -580,9 +568,9 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void, Exception>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
                 assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
@@ -624,11 +612,14 @@ public class ViewTest {
         }
         assertTrue(found);
     }
+
     private static class BrokenView extends ListView {
         static final String ERR = "oops I cannot retrieve items";
+
         BrokenView() {
             super("broken");
         }
+
         @Override
         public List<TopLevelItem> getItems() {
             throw new IllegalStateException(ERR);
@@ -638,14 +629,14 @@ public class ViewTest {
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewCreatedIfNoPrimary() throws Exception {
+    public void testAllViewCreatedIfNoPrimary() {
         assertNotNull(j.getInstance().getView("All"));
     }
 
     @Test
     @Issue("JENKINS-36908")
     @LocalData
-    public void testAllViewNotCreatedIfPrimary() throws Exception {
+    public void testAllViewNotCreatedIfPrimary() {
         assertNull(j.getInstance().getView("All"));
     }
 
@@ -654,9 +645,9 @@ public class ViewTest {
     public void shouldFindNestedViewByName() throws Exception {
         //given
         String testNestedViewName = "right2ndNestedView";
-        View right2ndNestedView = mockedViewWithName(testNestedViewName);
+        View right2ndNestedView = new ListView(testNestedViewName);
         //and
-        View left2ndNestedView = mockedViewWithName("left2ndNestedView");
+        View left2ndNestedView = new ListView("left2ndNestedView");
         DummyCompositeView rightNestedGroupView = new DummyCompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
         //and
         listView("leftTopLevelView");
@@ -665,10 +656,6 @@ public class ViewTest {
         View foundNestedView = j.jenkins.getView(testNestedViewName);
         //then
         assertEquals(right2ndNestedView, foundNestedView);
-    }
-
-    private View mockedViewWithName(String viewName) {
-        return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
     }
 
     public void prepareSec1923() {
@@ -704,16 +691,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(ORIGINAL_BAD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -752,16 +735,12 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
-            // This should have a different message, but this is the current behavior demonstrating the problem.
-            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
-        }
+        // This should have a different message, but this is the current behavior demonstrating the problem.
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -796,13 +775,9 @@ public class ViewTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -1004,7 +979,7 @@ public class ViewTest {
         }
 
     }
-    
+
     //Duplication with ViewTest.CompositeView from core unit test module - unfortunately it is inaccessible from here
     private static class DummyCompositeView extends View implements ViewGroup {
 
@@ -1015,8 +990,10 @@ public class ViewTest {
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
             @Override
             protected List<View> views() { return views; }
+
             @Override
             protected String primaryView() { return primaryView; }
+
             @Override
             protected void primaryView(String name) { primaryView = name; }
         };
@@ -1088,11 +1065,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) throws IOException, ServletException, Descriptor.FormException {
+        protected void submit(StaplerRequest req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
             return null;
         }
     }

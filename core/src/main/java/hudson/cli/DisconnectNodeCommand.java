@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -28,13 +29,12 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * CLI Command, which disconnects nodes.

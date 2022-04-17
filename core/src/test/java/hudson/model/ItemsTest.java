@@ -1,13 +1,12 @@
 package hudson.model;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -54,17 +53,17 @@ public class ItemsTest {
 
     @Test
     public void computeRelativeNamesAfterRenaming() {
-        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root ));
-        assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar ));
-        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo ));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root));
+        assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo));
 
-        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", root ));
-        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", foo_bar ));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", root));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", foo_bar));
 
-        assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo ));
-        assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar ));
+        assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo));
+        assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar));
 
-        assertEquals("foo-renamed,foo_bar", Items.computeRelativeNamesAfterRenaming("foo", "foo-renamed", "foo,foo_bar", root ));
+        assertEquals("foo-renamed,foo_bar", Items.computeRelativeNamesAfterRenaming("foo", "foo-renamed", "foo,foo_bar", root));
 
         // Handle moves too:
         assertEquals("../nue/dir/j", Items.computeRelativeNamesAfterRenaming("dir", "nue/dir", "../dir/j", foo));

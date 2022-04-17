@@ -25,15 +25,15 @@
 package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,7 +83,7 @@ public class GetNodeCommandTest {
         assertThat(result, succeeded());
     }
 
-    @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void getNodeShouldFailIfNodeDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)
@@ -97,7 +97,7 @@ public class GetNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void getNodeShouldFailForBuiltInNode() throws Exception {
+    public void getNodeShouldFailForBuiltInNode() {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));

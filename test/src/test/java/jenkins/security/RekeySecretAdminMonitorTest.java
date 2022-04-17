@@ -17,12 +17,6 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
 import hudson.util.SecretHelper;
-import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.JenkinsRecipe;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
-
-import javax.crypto.Cipher;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -31,11 +25,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.crypto.Cipher;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -90,12 +89,12 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml,"<foo>" + encryptOld(TEST_KEY) + "</foo>");
+        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
     }
 
     private void verifyRewrite(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
+        Pattern pattern = Pattern.compile("<foo>" + plain_regex_match + "</foo>");
         MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
@@ -150,7 +149,7 @@ public class RekeySecretAdminMonitorTest {
         if (index > 0) {
             buttonStream = buttonStream.skip(index);
         }
-        
+
         return buttonStream
                 .findFirst()
                 .orElse(null);
@@ -178,7 +177,7 @@ public class RekeySecretAdminMonitorTest {
     private static String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8))));
+        return Base64.getEncoder().encodeToString(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8)));
     }
 
     private String encryptNew(String str) {

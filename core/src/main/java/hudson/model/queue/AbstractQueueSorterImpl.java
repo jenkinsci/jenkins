@@ -2,11 +2,10 @@ package hudson.model.queue;
 
 import hudson.RestrictedSince;
 import hudson.model.Queue.BuildableItem;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.Comparator;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Partial implementation of {@link QueueSorter} in terms of {@link Comparator}.
@@ -32,7 +31,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      */
     @Override
     public int compare(BuildableItem lhs, BuildableItem rhs) {
-        return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
+        return Long.compare(lhs.buildableStartMilliseconds, rhs.buildableStartMilliseconds);
     }
 
     /**

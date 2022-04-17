@@ -36,18 +36,17 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @Restricted(DoNotUse.class) // only for buildTimeTrend.jelly
 public class BuildTimeTrend extends RunListProgressiveRendering {
 
-    @Override protected void calculate(Run<?,?> build, JSONObject element) {
+    @Override protected void calculate(Run<?, ?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
         element.put("iconName", iconColor.getIconName());
         element.put("iconColorOrdinal", iconColor.ordinal());
         element.put("iconColorDescription", iconColor.getDescription());
-        element.put("buildStatusUrl", build.getBuildStatusUrl());
         element.put("number", build.getNumber());
         element.put("displayName", build.getDisplayName());
         element.put("duration", build.getDuration());
         element.put("durationString", build.getDurationString());
         if (build instanceof AbstractBuild) {
-            AbstractBuild<?,?> b = (AbstractBuild) build;
+            AbstractBuild<?, ?> b = (AbstractBuild) build;
             Node n = b.getBuiltOn();
             if (n == null) {
                 String ns = b.getBuiltOnStr();

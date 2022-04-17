@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,22 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
-import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.XMLFilter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.apache.commons.jelly.XMLOutput;
-
-import java.util.Locale;
-import java.util.Stack;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import org.apache.commons.jelly.XMLOutput;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * {@link XMLFilter} that checks the proper nesting of table related tags.
@@ -75,11 +75,11 @@ public class TableNestChecker extends XMLFilterImpl {
         String tagName = localName.toUpperCase(Locale.ENGLISH);
 
         // make sure that this tag occurs in the proper context
-        if(!elements.peek().isAllowed(tagName))
-            throw new SAXException(tagName+" is not allowed inside "+tagNames.peek());
+        if (!elements.peek().isAllowed(tagName))
+            throw new SAXException(tagName + " is not allowed inside " + tagNames.peek());
 
         Checker next = CHECKERS.get(tagName);
-        if(next==null)  next = ALL_ALLOWED;
+        if (next == null)  next = ALL_ALLOWED;
         elements.push(next);
         tagNames.push(tagName);
 
@@ -113,12 +113,12 @@ public class TableNestChecker extends XMLFilterImpl {
         }
     }
 
-    private static final Map<String,Checker> CHECKERS = new HashMap<>();
+    private static final Map<String, Checker> CHECKERS = new HashMap<>();
 
     static {
-        CHECKERS.put("TABLE",new InList("TR","THEAD","TBODY"));
+        CHECKERS.put("TABLE", new InList("TR", "THEAD", "TBODY"));
         InList rows = new InList("TR");
-        CHECKERS.put("THEAD",rows);
-        CHECKERS.put("TR",   new InList("TD","TH"));
+        CHECKERS.put("THEAD", rows);
+        CHECKERS.put("TR",   new InList("TD", "TH"));
     }
 }

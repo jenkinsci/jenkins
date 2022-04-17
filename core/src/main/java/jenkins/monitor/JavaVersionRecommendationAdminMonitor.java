@@ -27,6 +27,7 @@ package jenkins.monitor;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
@@ -40,12 +41,14 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.io.IOException;
-
 @Extension
 @Restricted(NoExternalUse.class)
 @Symbol("javaVersionRecommendation")
 public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor {
+
+    public JavaVersionRecommendationAdminMonitor() {
+        super(JavaVersionRecommendationAdminMonitor.class.getName() + "-2");
+    }
 
     private static Boolean disabled = SystemProperties.getBoolean(JavaVersionRecommendationAdminMonitor.class.getName() + ".disabled", false);
 

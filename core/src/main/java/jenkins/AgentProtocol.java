@@ -1,15 +1,13 @@
 package jenkins;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.TcpSlaveAgentListener;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
 import jenkins.model.Jenkins;
 
 /**
@@ -25,10 +23,10 @@ import jenkins.model.Jenkins;
  *  <dt>description.jelly</dt>
  *  <dd>Optional protocol description</dd>
  *  <dt>deprecationCause.jelly</dt>
- *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()}, 
+ *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()},
  *      clarifies the deprecation reason and provides extra documentation links</dd>
  * </dl>
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.467
  * @see TcpSlaveAgentListener
@@ -61,19 +59,20 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * @return {@code true} if the protocol can never be disabled.
      * @since 2.16
      */
+
     public boolean isRequired() {
         return false;
     }
-    
+
     /**
      * Checks if the protocol is deprecated.
-     * 
+     *
      * @since 2.75
      */
     public boolean isDeprecated() {
         return false;
     }
-    
+
     /**
      * Protocol name.
      *
@@ -111,7 +110,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
     public static AgentProtocol of(String protocolName) {
         for (AgentProtocol p : all()) {
             String n = p.getName();
-            if (n!=null && n.equals(protocolName))
+            if (n != null && n.equals(protocolName))
                 return p;
         }
         return null;
