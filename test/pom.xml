@@ -352,7 +352,9 @@ THE SOFTWARE.
                 <configuration>
                   <propertyName>jacocoSurefireArgs</propertyName>
                   <includes>
+                    <include>hudson/*</include>
                     <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
                     <include>jenkins/**/*</include>
                     <include>org/jenkins/**/*</include>
                   </includes>
