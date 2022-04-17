@@ -43,7 +43,7 @@ function registerTooltips(container) {
     }
   })
 
-  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), Array.prototype.push.apply({
+  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), Object.assign({
     content: element => element.getAttribute("tooltip")
       .replace("<br>", "\n")
       .replace("<br/>", "\n")
@@ -61,7 +61,7 @@ function registerTooltips(container) {
     }
   }, TOOLTIP_BASE))
 
-  tippy(container.querySelectorAll("[html-tooltip]"), Array.prototype.push.apply({
+  tippy(container.querySelectorAll("[html-tooltip]"), Object.assign({
     content: element => element.getAttribute("html-tooltip"),
     allowHTML: true,
     container: container,
@@ -75,7 +75,7 @@ function registerTooltips(container) {
  * @param {HTMLElement} element - The element to show the tooltip
  */
 function hoverNotification(text, element) {
-  const tooltip = tippy(element, Array.prototype.push.apply({
+  const tooltip = tippy(element, Object.assign({
     trigger: "hover",
     offset: [0, 0],
     content: text,
