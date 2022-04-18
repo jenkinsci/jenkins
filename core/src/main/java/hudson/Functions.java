@@ -2347,10 +2347,13 @@ public class Functions {
         }
 
         if (iconMetadata == null) {
-            if (!iconGuess.startsWith("/") && !iconGuess.startsWith("http")) {
+            //noinspection HttpUrlsUsage
+            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+                return iconGuess;
+            }
+            if (!iconGuess.startsWith("/")) {
                 iconGuess = "/" + iconGuess;
             }
-
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
 

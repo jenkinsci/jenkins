@@ -31,11 +31,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.RestrictedSince;
+import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.FormValidation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -159,6 +161,20 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
 
         // redirect to the config screen
         return new HttpRedirect(name + "/configure");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckNewName(@QueryParameter String name) {
+        if (Util.fixEmpty(name) == null) {
+            return FormValidation.ok();
+        }
+
+        try {
+            Jenkins.checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     @Override

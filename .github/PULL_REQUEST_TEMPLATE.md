@@ -56,4 +56,4 @@ Before the changes are marked as `ready-for-merge`:
 - [ ] Changelog entries in the PR title and/or `Proposed changelog entries` are accurate, human-readable, and in the imperative mood
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically
 - [ ] If the change needs additional upgrade steps from users, `upgrade-guide-needed` label is set and there is a `Proposed upgrade guidelines` section in the PR title. ([example](https://github.com/jenkinsci/jenkins/pull/4387))
-- [ ] If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins-ci.org/issues/?filter=12146)).
+- [ ] If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins.io/issues/?filter=12146)).
