@@ -54,17 +54,17 @@ THE SOFTWARE.
         <body>
             <div class="simple-page" role="main">
                 <div class="modal signup">
-                    <div class="signupIntroDefault">
+                    <div class="signupTag">
                         <h1>${%Create an account!}</h1>
-                        <div>
+                        <p>
                             ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login">${%please sign in.}</a>
-                        </div>
+                        </p>
                     </div>
                     <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
                         <div class="jenkins-form-item">
                             <div class="inputHeader">
                                 <label
-                                    class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
+                                    class="jenkins-form-label ${data.errors.containsKey('username') ? 'alert' : 'normal'}"
                                     for="username"
                                 >
                                     ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
@@ -81,7 +81,7 @@ THE SOFTWARE.
                         <div class="jenkins-form-item">
                             <div class="inputHeader">
                                 <label
-                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
+                                    class="jenkins-form-label ${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
                                     for="fullname"
                                 >
                                     ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
@@ -99,7 +99,7 @@ THE SOFTWARE.
                             <div class="jenkins-form-item">
                                 <div class="inputHeader">
                                     <label
-                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('email') ? 'alert' : 'normal'}"
                                         for="email"
                                     >
                                         ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
@@ -118,7 +118,7 @@ THE SOFTWARE.
                             <div class="jenkins-form-item">
                                 <div class="inputHeader">
                                     <label
-                                        class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
                                         for="captcha"
                                     >${%Enter text as shown}</label>
                                 </div>
@@ -136,7 +136,7 @@ THE SOFTWARE.
                         <div class="jenkins-form-item">
                             <div class="inputHeader password">
                                 <label
-                                        class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
                                         for="password1"
                                 >
                                     ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
