@@ -3,45 +3,51 @@
   align-items: center;
   justify-content: space-between;
   margin: 2rem 0;
-  
+
   &__items {
     display: flex;
     align-items: center;
-    
+
     ol {
       margin: 0;
       padding: 0;
       list-style-type: none;
       display: flex;
       align-items: center;
+      gap: 0.25rem;
     }
-    
+
     li {
       width: 32px;
-      margin-right: 0.2rem;
-      
-      .yui-button {
+
+      .jenkins-button {
         margin: 0!important;
         padding: 0!important;
-        width: 32px!important;
-        height: 32px!important;
         min-width: 0!important;
+        aspect-ratio: 1;
       }
     }
-    
+
     .jenkins-icon-size__items-item {
-      height: 32px;
-      width: 32px;
-      border-radius: 4px;
-      line-height: 32px;
-      background: var(--btn-link-bg--hover);
-      text-align: center;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+      height: 36px;
+      width: 36px;
+      border-radius: 6px;
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
-    }
-    
-    & > * {
-      margin-right: 0.5rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.05;
+      }
     }
   }
 }

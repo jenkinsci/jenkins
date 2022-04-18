@@ -37,7 +37,7 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <li>
-              <a class="yui-button link-button" href="${rootURL}/iconSize?${sz}">
+              <a class="jenkins-button jenkins-button--transparent" href="${rootURL}/iconSize?${sz}">
                 ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
               </a>
             </li>
@@ -55,8 +55,6 @@ THE SOFTWARE.
       </ol>
     </div>
 
-    <div>
-      <d:invokeBody />
-    </div>
+    <d:invokeBody />
   </div>
 </j:jelly>
