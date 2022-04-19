@@ -4970,18 +4970,30 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
         return Timer.get().schedule(() -> {
 
+            //Wait for the currently running calculation to finish without blocking rebuildDependencyGraphAsync()
+            Future<DependencyGraph> temp = null;
             synchronized (dependencyGraphLock) {
-                //Wait for the currently running calculation to finish
                 if (calculatingFutureDependencyGraph != null) {
-                    calculatingFutureDependencyGraph.get();
+                    temp = calculatingFutureDependencyGraph;
                 }
+            }
 
+            if (temp != null) {
+                temp.get();
+            }
+
+            synchronized (dependencyGraphLock) {
                 // Scheduled future becomes the currently calculating future
                 calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
                 scheduledFutureDependencyGraph = null;
             }
 
             rebuildDependencyGraph();
+
+            synchronized (dependencyGraphLock) {
+                calculatingFutureDependencyGraph = null;
+            }
+
             return dependencyGraph;
         }, delay, unit);
     }
