@@ -56,7 +56,7 @@ THE SOFTWARE.
                 <div class="modal signup">
                     <div class="signupTag">
                         <h1>${%Create an account!}</h1>
-                        <p>
+                        <p class="simple-page--description">
                             ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login">${%please sign in.}</a>
                         </p>
                     </div>
@@ -247,7 +247,7 @@ THE SOFTWARE.
                             </script>
 
                         </div>
-                        <p>
+                        <p class="simple-page--description">
                             ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
                         </p>
                         <input

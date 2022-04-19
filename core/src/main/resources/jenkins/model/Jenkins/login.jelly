@@ -72,7 +72,7 @@ THE SOFTWARE.
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
-                  <p class="signupTag">
+                  <p class="signupTag simple-page--description">
                     ${%signUp}
                   </p>
                 </j:if>
