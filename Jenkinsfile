@@ -11,7 +11,6 @@ def failFast = false
 // Same memory sizing for both builds and ATH
 def javaOpts = [
   'JAVA_OPTS=-Xmx1536m -Xms512m',
-  'MAVEN_OPTS=-Xmx1536m -Xms512m',
 ]
 
 properties([
