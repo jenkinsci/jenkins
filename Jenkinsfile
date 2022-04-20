@@ -52,6 +52,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
+                '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
@@ -86,6 +87,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             error 'There were test failures; halting early'
           }
           if (buildType == 'Linux' && jdk == jdks[0]) {
+            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])

@@ -69,10 +69,22 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="checkDependsOn">
+      Fields to be sent during form validation.
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
+    </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
       Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
       If any other value is specified then requests will use POST.
       The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
+    </st:attribute>
+    <st:attribute name="autoCompleteUrl">
+      Url to use for auto-completion
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
     </st:attribute>
     <st:attribute name="autoCompleteDelimChar">
       A single character that can be used as a delimiter for autocompletion. Normal
