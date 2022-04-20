@@ -55,19 +55,6 @@ import org.apache.commons.io.FileUtils;
 public abstract class Lifecycle implements ExtensionPoint {
     private static Lifecycle INSTANCE = null;
 
-    public Lifecycle() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins != null) {
-                try {
-                    jenkins.cleanUp();
-                } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "Failed to clean up. Shutdown will continue.", t);
-                }
-            }
-        }));
-    }
-
     /**
      * Gets the singleton instance.
      *
