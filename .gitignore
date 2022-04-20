@@ -5,7 +5,9 @@ work
 *.iml
 *.iws
 *.ipr
-.idea
+/.idea/*
+!/.idea/icon.svg
+!/.idea/.name
 out
 
 # Eclipse and VSCode project files
