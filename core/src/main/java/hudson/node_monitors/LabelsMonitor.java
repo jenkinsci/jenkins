@@ -5,6 +5,7 @@ import hudson.model.Computer;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.remoting.Callable;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class LabelsMonitor extends NodeMonitor
 
   @Extension
   @Symbol("labels")
-  public static class DescriptorImpl extends AbstractNodeMonitorDescriptor<Set<LabelAtom>> {
+  public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Set<LabelAtom>> {
 
     @Override
     public String getDisplayName() {
@@ -72,7 +73,7 @@ public class LabelsMonitor extends NodeMonitor
     }
 
     @Override
-    protected Set<LabelAtom> monitor(Computer c) throws IOException, InterruptedException
+    protected Callable<Set<LabelAtom>, IOException> createCallable(Computer c)
     {
       return null;
     }
