@@ -37,7 +37,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar__content">
         <h1>${%Manage nodes and clouds}</h1>
       </div>
-      <j:if test="${h.hasPermission(app.MANAGE) || h.hasPermission(Computer.EXTENDED_READ)}">
+      <j:if test="${h.hasAnyPermission(it, it.EXTENDED_READ_AND_MANAGE)}">
         <div class="jenkins-app-bar__controls">
           <form method="post" action="updateNow">
             <s:submit value="${%Refresh status}"/>

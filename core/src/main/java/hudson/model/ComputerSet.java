@@ -36,6 +36,7 @@ import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
+import hudson.security.Permission;
 import hudson.slaves.NodeDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
@@ -58,6 +59,8 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -483,4 +486,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         }
         return null;
     }
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] EXTENDED_READ_AND_MANAGE =
+            new Permission[] { Computer.EXTENDED_READ, Jenkins.MANAGE };
 }
