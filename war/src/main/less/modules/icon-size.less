@@ -7,19 +7,36 @@
   &__items {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
 
     ol {
+      position: relative;
+      display: flex;
+      align-items: center;
       margin: 0;
       padding: 0;
       list-style-type: none;
-      display: flex;
-      align-items: center;
       gap: 0.25rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 8px;
+        background: currentColor;
+        opacity: 0;
+        transition: var(--standard-transition);
+      }
+
+      &:hover {
+        &::before {
+          inset: -0.2rem;
+          opacity: 0.05;
+        }
+      }
     }
 
     li {
-      width: 32px;
-
       .jenkins-button {
         margin: 0!important;
         padding: 0!important;
