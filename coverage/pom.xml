@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>jenkins-coverage</artifactId>
+  <packaging>pom</packaging>
 
   <name>Jenkins coverage</name>
   <description>Compute aggregated test code coverage</description>
