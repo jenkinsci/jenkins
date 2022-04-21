@@ -127,7 +127,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             dir(m2repo) {
               archiveArtifacts(
                   artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-test*/',
+                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
                   allowEmptyArchive: true, // in case we forgot to reincrementalify
                   fingerprint: true
                   )
