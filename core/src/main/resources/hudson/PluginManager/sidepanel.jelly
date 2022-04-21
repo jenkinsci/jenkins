@@ -1,0 +1,91 @@
+<!--
+The MIT License
+
+Copyright (c) 2022, Jenkins contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Sidepanel component for Plugins Manager
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="page">
+      Adds the highlighted class to the current page item in the list
+    </st:attribute>
+  </st:documentation>
+
+  <!-- TODO - Remove this when all tasks (Jenkins' sidepanel items) are styled like this -->
+  <style>
+    #side-panel {
+    border-right: none;
+    padding-right: 0;
+    }
+  </style>
+
+  <div class="jenkins-side-nav">
+    <div class="jenkins-app-bar">
+      <div class="jenkins-app-bar__content">
+        <h1>
+          ${%Plugins}
+        </h1>
+      </div>
+    </div>
+
+    <a href="./available" class="jenkins-side-nav__item ${page == 'available' ? 'jenkins-side-nav__item--selected' : ''}">
+      <div class="jenkins-side-nav__item__icon">
+        <l:ionicon name="bag-handle-outline" />
+      </div>
+      ${%Available plugins}
+    </a>
+
+    <a href="./installed" class="jenkins-side-nav__item ${page == 'installed' ? 'jenkins-side-nav__item--selected' : ''}">
+      <div class="jenkins-side-nav__item__icon">
+        <l:ionicon name="extension-puzzle-outline" />
+      </div>
+      ${%Updates and installed plugins}
+      <j:if test="${app.updateCenter.updates.size() != 0}">
+        <span class="jenkins-side-nav__item__badge">
+          ${app.updateCenter.updates.size()}
+        </span>
+      </j:if>
+    </a>
+
+    <a href="./advanced" class="jenkins-side-nav__item ${page == 'advanced' ? 'jenkins-side-nav__item--selected' : ''}">
+      <div class="jenkins-side-nav__item__icon">
+        <l:ionicon name="settings-outline" />
+      </div>
+      ${%Advanced settings}
+    </a>
+  </div>
+
+  <div class="app-plugin-manager__restart-panel" id="needRestart" style="display:none;">
+    <l:ionicon name="warning-outline" />
+    <form method="post" action="${rootURL}/safeRestart">
+      You'll need to restart Jenkins for your changes to take effect
+      <j:if test="${app.lifecycle.canRestart()}">
+        <button class="jenkins-button">
+          ${%Restart once no jobs are running}
+        </button>
+      </j:if>
+    </form>
+  </div>
+</j:jelly>
