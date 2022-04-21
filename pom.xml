@@ -55,6 +55,7 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
+    <module>coverage</module>
   </modules>
 
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
@@ -70,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.344</revision>
+    <revision>2.345</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -100,7 +101,7 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.4.0</mockito.version>
+    <mockito.version>4.5.0</mockito.version>
     <spotless.version>2.22.1</spotless.version>
   </properties>
 
@@ -601,6 +602,11 @@ THE SOFTWARE.
               </goals>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.8</version>
         </plugin>
       </plugins>
     </pluginManagement>
