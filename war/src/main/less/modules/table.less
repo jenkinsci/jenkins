@@ -227,7 +227,7 @@
     &:focus, &:active {
       &::before {
         opacity: 0.1 !important;
-        border-radius: 5px;
+        border-radius: 6px;
         background: var(--text-color);
       }
 
@@ -250,7 +250,13 @@
   }
 
   &__badge {
+    gap: 0.4rem;
     margin-left: 1rem !important;
+
+    svg {
+      width: 0.8rem;
+      height: 0.8rem;
+    }
 
     &::before {
       top: -5px;
@@ -258,7 +264,7 @@
       bottom: -5px;
       right: -8px;
       border-radius: 13px;
-      background: var(--link-color);
+      background: currentColor;
       opacity: 0.05;
     }
 
@@ -267,6 +273,10 @@
       left: -8px;
       bottom: -5px;
       right: -8px;
+    }
+
+    &--pink {
+      color: var(--pink) !important;
     }
   }
 }
