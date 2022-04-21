@@ -40,7 +40,7 @@ THE SOFTWARE.
     <!-- may use e.g. 2C for 2 × (number of cores) -->
     <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
-    <!-- empty by default -->
+    <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
@@ -85,7 +85,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1736.vc72c458c5103</version>
+      <version>1738.v649c72e3211b_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -151,7 +151,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.58</version>
+      <version>1.59</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -255,7 +255,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
+          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
@@ -337,44 +337,30 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>jacoco</id>
+      <id>enable-jacoco</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.8</version>
+            <!-- Version specified in parent POM -->
             <executions>
-              <!--
-                Prepares the property pointing to the JaCoCo runtime agent which
-                is passed as VM argument when Maven the Surefire plugin is executed.
-              -->
               <execution>
-                <id>pre-unit-test</id>
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
                 <configuration>
-                  <!-- Sets the path to the file which contains the execution data. -->
-                  <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
                   <propertyName>jacocoSurefireArgs</propertyName>
-                </configuration>
-              </execution>
-              <!--
-                Ensures that the code coverage report for unit tests is created after
-                unit tests have been run.
-              -->
-              <execution>
-                <id>post-unit-test</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-                <phase>test</phase>
-                <configuration>
-                  <!-- Sets the path to the file which contains the execution data. -->
-                  <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-                  <!-- Sets the output directory for the code coverage report. -->
-                  <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
                 </configuration>
               </execution>
             </executions>

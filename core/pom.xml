@@ -42,6 +42,8 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
+    <!-- Filled in by jacoco-maven-plugin -->
+    <jacocoSurefireArgs />
   </properties>
 
   <dependencyManagement>
@@ -717,6 +719,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
+          <argLine>@{jacocoSurefireArgs}</argLine>
           <forkCount>0.5C</forkCount>
           <reuseForks>false</reuseForks>
         </configuration>
@@ -829,8 +832,40 @@ THE SOFTWARE.
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+              <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
             </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>enable-jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <!-- Version specified in parent POM -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
