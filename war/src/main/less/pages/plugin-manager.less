@@ -162,6 +162,60 @@
     height: 1.1rem;
   }
 
+  &__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 1rem;
+      color: inherit;
+      border: 2px solid currentColor;
+      border-radius: 100%;
+      opacity: 0;
+      transition: var(--standard-transition);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 1rem;
+      color: inherit;
+      border: 2px solid currentColor;
+      border-radius: 100%;
+      clip-path: inset(0 0 50% 50%);
+      opacity: 0;
+      transition: var(--standard-transition);
+      animation: loading-spinner 1s infinite linear;
+
+      @media (prefers-reduced-motion) {
+        animation-duration: 2s;
+      }
+    }
+  }
+
+  &--loading {
+    .app-plugin-manager__search__icon {
+      svg {
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      &::before {
+        opacity: 0.2;
+        inset: 0;
+      }
+
+      &::after {
+        opacity: 1;
+        inset: 0;
+      }
+    }
+  }
+
   input {
     background: transparent;
     border: none;

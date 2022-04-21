@@ -45,7 +45,9 @@ THE SOFTWARE.
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <div class="app-plugin-manager__search">
-            <l:icon src="symbol-search"/>
+            <span class="app-plugin-manager__search__icon">
+              <l:icon src="symbol-search"/>
+            </span>
             <input type="search"
                    placeholder="Search plugin updates"
                    id="filter-box"

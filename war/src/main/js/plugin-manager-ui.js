@@ -13,7 +13,7 @@ function applyFilter(searchQuery) {
         var selectedPlugins = [];
 
         var filterInput = document.getElementById('filter-box');
-        filterInput.parentElement.classList.remove("jenkins-search--loading");
+        filterInput.parentElement.classList.remove("app-plugin-manager__search--loading");
 
         function clearOldResults() {
             if (!admin) {
