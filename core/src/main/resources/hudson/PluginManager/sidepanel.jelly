@@ -33,7 +33,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <div id="tasks">
+  <div id="tasks" class="app-plugin-manager__sidebar">
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
         <h1>${%Plugins}</h1>
@@ -50,7 +50,7 @@ THE SOFTWARE.
             ${%Updates}
           </span>
           <j:if test="${app.updateCenter.updates.size() != 0}">
-            <span class="jenkins-side-nav__item__badge">
+            <span class="task-icon-badge">
               ${app.updateCenter.updates.size()}
             </span>
           </j:if>
@@ -96,5 +96,22 @@ THE SOFTWARE.
         </a>
       </span>
     </div>
+
+    <j:if test="${!app.updateCenter.jobs.isEmpty()}">
+      <hr />
+
+      <div class="task">
+        <span class="task-link-wrapper">
+          <a href="../updateCenter" class="task-link">
+            <div class="task-icon-link">
+              <l:icon src="symbol-list" />
+            </div>
+            <span class="task-icon-text">
+              ${%Update Center}
+            </span>
+          </a>
+        </span>
+      </div>
+    </j:if>
   </div>
 </j:jelly>

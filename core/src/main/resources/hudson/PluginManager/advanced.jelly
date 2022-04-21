@@ -31,15 +31,13 @@ THE SOFTWARE.
     <l:layout title="${%Advanced Settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-        <l:app-bar title="${%Plugin Manager}"/>
+        <l:app-bar title="${%Advanced settings}"/>
 
         <l:side-panel>
           <local:sidepanel xmlns:local="/hudson/PluginManager" page="advanced" />
         </l:side-panel>
 
         <l:main-panel>
-            <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
-
             <section class="jenkins-section">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">

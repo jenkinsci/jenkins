@@ -15,6 +15,26 @@
   }
 }
 
+#tasks h1 {
+  margin-top: 0.4rem;
+}
+
+#tasks hr {
+  position: relative;
+  width: 100%;
+  border: none;
+  height: 2px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 -0.8rem;
+    background: currentColor;
+    border-radius: 2px;
+    opacity: 0.1;
+  }
+}
+
 #tasks .task {
   margin: 0 0 0 -0.8rem;
 }
@@ -86,6 +106,29 @@
       * {
         transition: stroke-width var(--standard-transition);
       }
+    }
+  }
+
+  .task-icon-badge {
+    position: relative;
+    color: currentColor;
+    letter-spacing: 0;
+    z-index: 0;
+    margin-left: auto;
+    min-width: 24px;
+    text-align: center;
+    padding: 0 8px;
+    line-height: 0.75rem;
+    font-size: 0.75rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -6px 0;
+      background: currentColor;
+      border-radius: 100px;
+      z-index: -1;
+      opacity: 0.1;
     }
   }
 
