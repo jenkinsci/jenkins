@@ -33,7 +33,9 @@ THE SOFTWARE.
 
         <l:app-bar title="${%Plugin Manager}"/>
 
-        <st:include page="sidepanel.jelly"/>
+        <l:side-panel>
+          <local:sidepanel xmlns:local="/hudson/PluginManager" page="advanced" />
+        </l:side-panel>
 
         <l:main-panel>
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>

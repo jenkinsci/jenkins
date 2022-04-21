@@ -37,27 +37,27 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <l:layout title="${%Update Center} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-    <l:app-bar title="${%Plugin Manager}" />
+    <l:side-panel>
+      <local:sidepanel xmlns:local="/hudson/PluginManager" page="updates" />
+    </l:side-panel>
 
-    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <div class="app-plugin-manager__search">
+            <l:icon src="symbol-search"/>
+            <input type="search"
+                   placeholder="Search plugin updates"
+                   id="filter-box"
+                   value="${request.getParameter('filter')}" />
+          </div>
+        </div>
+      </div>
+
       <st:adjunct includes="hudson.PluginManager._table"/>
 
       <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}"/>
-        <local:tabBar xmlns:local="/hudson/PluginManager" page="${attrs.page}"/>
-
-        <div class="jenkins-form-item jenkins-search">
-          <input
-            class="jenkins-search__input"
-            type="search"
-            id="filter-box"
-            value="${request.getParameter('filter')}"
-            placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-          <div class="jenkins-search__icon">
-            <l:icon src="symbol-search"/>
-          </div>
-        </div>
 
         <table id="plugins" class="jenkins-table sortable">
           <thead>

@@ -30,7 +30,9 @@ THE SOFTWARE.
   <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <st:include page="sidepanel.jelly"/>
+    <l:side-panel>
+      <local:sidepanel xmlns:local="/hudson/PluginManager" page="installed" />
+    </l:side-panel>
 
     <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
@@ -38,12 +40,10 @@ THE SOFTWARE.
           <div class="app-plugin-manager__search">
             <l:icon src="symbol-search"/>
             <input type="search"
-                   placeholder="Search available plugins"
+                   placeholder="Search installed plugins"
                    id="filter-box"
                    value="${request.getParameter('filter')}" />
           </div>
-        </div>
-        <div class="jenkins-app-bar__controls">
         </div>
       </div>
 
@@ -64,8 +64,6 @@ THE SOFTWARE.
            data-detached-uninstall="${%detached-uninstall}"
            data-detached-possible-dependents="${%detached-possible-dependents}"
       />
-
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
