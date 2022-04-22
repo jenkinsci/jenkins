@@ -10,7 +10,6 @@ def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumbe
 def failFast = false
 // Same memory sizing for both builds and ATH
 def javaOpts = [
-  'JAVA_OPTS=-Xmx1536m -Xms512m',
   'MAVEN_OPTS=-Xmx1536m -Xms512m',
 ]
 
@@ -124,7 +123,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             dir(m2repo) {
               archiveArtifacts(
                   artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-test*/',
+                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
                   allowEmptyArchive: true, // in case we forgot to reincrementalify
                   fingerprint: true
                   )

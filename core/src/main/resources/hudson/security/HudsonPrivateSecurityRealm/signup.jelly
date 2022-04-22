@@ -54,43 +54,41 @@ THE SOFTWARE.
         <body>
             <div class="simple-page" role="main">
                 <div class="modal signup">
-                    <div class="signupIntroDefault">
+                    <div class="signupTag">
                         <h1>${%Create an account!}</h1>
-                        <div>
-                            ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login" tabindex="1">${%please sign in.}</a>
-                        </div>
+                        <p class="simple-page--description">
+                            ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login">${%please sign in.}</a>
+                        </p>
                     </div>
                     <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
-                        <div class="formRow">
+                        <div class="jenkins-form-item">
                             <div class="inputHeader">
                                 <label
-                                    class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
+                                    class="jenkins-form-label ${data.errors.containsKey('username') ? 'alert' : 'normal'}"
                                     for="username"
                                 >
                                     ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
                                 </label>
                             </div>
                             <input
-                                class="${data.errors.containsKey('username') ? 'danger' : 'normal'}"
+                                class="jenkins-input ${data.errors.containsKey('username') ? 'danger' : 'normal'}"
                                 value="${data.username}"
-                                tabindex="2"
                                 type="text"
                                 name="username"
                                 id="username"
                             />
                         </div>
-                        <div class="formRow">
+                        <div class="jenkins-form-item">
                             <div class="inputHeader">
                                 <label
-                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
+                                    class="jenkins-form-label ${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
                                     for="fullname"
                                 >
                                     ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
                                 </label>
                             </div>
                             <input
-                                tabindex="3"
-                                class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
+                                class="jenkins-input ${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
                                 value="${data.fullname}"
                                 type="text"
                                 name="fullname"
@@ -98,18 +96,17 @@ THE SOFTWARE.
                             />
                         </div>
                         <j:if test="${it.mailerPluginPresent}">
-                            <div class="formRow">
+                            <div class="jenkins-form-item">
                                 <div class="inputHeader">
                                     <label
-                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('email') ? 'alert' : 'normal'}"
                                         for="email"
                                     >
                                         ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
                                     </label>
                                 </div>
                                 <input
-                                    tabindex="4"
-                                    class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
+                                    class="jenkins-input ${data.errors.containsKey('email') ? 'danger' : 'normal'}"
                                     value="${data.email}"
                                     type="text"
                                     name="email"
@@ -118,10 +115,10 @@ THE SOFTWARE.
                             </div>
                         </j:if>
                         <j:if test="${it.isEnableCaptcha()}">
-                            <div class="formRow">
+                            <div class="jenkins-form-item">
                                 <div class="inputHeader">
                                     <label
-                                        class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
                                         for="captcha"
                                     >${%Enter text as shown}</label>
                                 </div>
@@ -131,16 +128,15 @@ THE SOFTWARE.
                                     type="text"
                                     name="captcha"
                                     id="captcha"
-                                    tabindex="5"
                                     autocomplete="off"
                                 />
                                 <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
                             </div>
                         </j:if>
-                        <div class="formRow">
-                            <div class="inputHeader">
+                        <div class="jenkins-form-item">
+                            <div class="inputHeader password">
                                 <label
-                                        class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
+                                        class="jenkins-form-label ${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
                                         for="password1"
                                 >
                                     ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
@@ -225,38 +221,21 @@ THE SOFTWARE.
                                         }
                                     }
                                 </script>
-                                <div class="Checkbox Checkbox-small">
-                                    <label class="Checkbox-wrapper">
-                                        <input
-                                            type="checkbox"
-                                            id="showPassword"
-                                            onClick="togglePasswordType(this)"
-                                            name="remember_me"
-                                            tabindex="7"
-                                        />
-                                        <div class="Checkbox-indicator">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                focusable="false"
-                                                width="20"
-                                                height="20"
-                                                class="svg-icon check"
-                                                viewBox="0 0 24 24">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="Checkbox-text">
-                                            ${%Show}
-                                        </div>
-                                    </label>
+                                <div class="jenkins-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="showPassword"
+                                        onClick="togglePasswordType(this)"
+                                        name="remember_me"
+                                    />
+                                    <label for="showPassword">${%Show}</label>
                                 </div>
                             </div>
                             <input
                                 onKeyUp="validatePassword()"
-                                class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
+                                class="jenkins-input ${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                                 value="${data.password1}"
                                 type="password"
-                                tabindex="6"
                                 name="password1"
                                 id="password1"
                             />
@@ -268,9 +247,9 @@ THE SOFTWARE.
                             </script>
 
                         </div>
-                        <div class="formRow">
+                        <p class="simple-page--description">
                             ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
-                        </div>
+                        </p>
                         <input
                             class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                             value="${data.password2}"
@@ -278,9 +257,13 @@ THE SOFTWARE.
                             name="password2"
                             id="password2"
                         />
-                        <div class="submit formRow">
-                            <f:submit value="${%Create account}"/>
-                        </div>
+                      <div class="submit">
+                        <button type="submit"
+                               name="Submit"
+                               class="jenkins-button jenkins-button--primary">
+                          ${%Create account}
+                        </button>
+                      </div>
                         <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
                         <j:if test="${data.errorField != null}">
                             <script type="text/javascript">
