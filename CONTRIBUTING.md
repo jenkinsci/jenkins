@@ -113,6 +113,48 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
+### Pull request management
+
+The Jenkins project uses a well-defined set of labels to mark the status and content of pull requests.
+The complete list of labels can be found at https://github.com/jenkinsci/jenkins/labels.
+These labels are defined as follows:
+
+- `needs-docs` marks a pull request as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes to the [Jenkins handbook](https://www.jenkins.io/doc/book/)).
+For such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
+If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and reviewed in tandem with the primary pull request that proposes the code change.
+- `needs-fix` marks a pull request which has pending requests for change that have not yet been addressed.
+Such pull requests will not be merged until the code has been fixed and the tests pass.
+- `needs-justification` marks a pull request where the reasoning is unclear, incomplete or not entirely cogent.
+To properly evaluate the solution provided in a pull request, maintainers must be able to understand the high-level problem that the pull request attempts to solve.
+While the context might be obvious to the author, it is not always apparent to reviewers and maintainers.
+The use of design documents, high-level tracking epics, [minimal reproducible examples (MREs)](https://en.wikipedia.org/wiki/Minimal_reproducible_example), etc. is strongly encouraged.
+- `needs-more-review` marks a pull request as lacking a sufficient number of reviews from subject-matter expert(s) (SME), either because the changes are complex and not sufficiently explained or because there is a lack of consensus regarding the proposed solution.
+- `on-hold` marks a pull request that depends on another event and cannot be merged until the completion of that event.
+When the dependent task has been completed, the pull request will be ready for merge.
+- `proposed-for-close` marks a pull request where there is either no consensus on the next steps or where the next steps have not been taken and an extended period of time has elapsed.
+Such pull requests are typically closed approximately one week after the label has been applied.
+They can always be reopened once consensus has been reached on the next steps or when action is taken regarding these next steps.
+- `ready-for-merge` marks a pull request that has met the acceptance criteria, as defined elsewhere in this document.
+If there is no negative feedback, such pull requests are typically merged within approximately 24 hours.
+- `stalled` marks a pull request that is off to a promising start but requires additional effort to reach completion - effort that appears to have been abandoned.
+If the original author lacks the time and interest to continue the original effort, we suggest that someone else pick up where the original author left off to drive the effort to completion.
+- `work-in-progress` marks a pull request that remains under active development.
+Such pull requests are not ready for final review.
+
+To ensure that pull requests are processed efficiently, the `ready-for-merge`, `stalled`, and `proposed-for-close` labels are subject to time constraints.
+
+A pull request labeled with `ready-for-merge` is merged after approximately 24 hours if there is no negative feedback.
+
+If a pull request has remained incomplete with no activity for over a month, we will make this explicit by labeling the PR as `stalled`.
+
+If a pull request labelled as `stalled` remains inactive for yet another month, we will label it as `proposed-for-close` in order to maintain an orderly PR queue.
+Approximately one week after this label is applied to a pull request, it will be closed.
+
+While contributors are strongly encouraged to drive PRs to completion on their own, we recognize that in some situations the help of a maintainer can be valuable.
+Yet also, we recognize that some contributors prefer not to receive unsolicited changes.
+When opening a pull request, enabling the _Allow edits by maintainers_ option indicates that you accept that maintainers may push new commits into your pull request branch.
+As some maintainers are willing to fix typographical errors and merge conflicts while reviewing pull requests, accepting edits from maintainers can speed up the integration of your pull request.
+
 ## IntelliJ suggestion
 
 In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
@@ -121,6 +163,15 @@ This will help minimize the diff, which makes reviewing PRs easier.
 
 We also do not recommend `*` imports in the production code.
 Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
+
+The addition of `@{jenkins.addOpens}` to `argLine` exposes a bug in IntelliJ IDEA.
+A patch has been proposed in [JetBrains/intellij-community#1976](https://github.com/JetBrains/intellij-community/pull/1976).
+Pending the merge and release of this patch, IntelliJ IDEA users should work around the problem as follows:
+
+1. Go to **Settings** > **Build, Execution, Deployment** > **Build Tools** > **Maven** > **Running Tests**.
+2. Under "Pass to JUnit process [the] following `maven-surefire-plugin` and `maven-failsafe-plugin` settings", uncheck `argLine`.
+
+Failure to work around the problem as described above will result in a `could not open '{jenkins.addOpens}'` failure when running tests in IntelliJ IDEA.
 
 ## Copyright
 

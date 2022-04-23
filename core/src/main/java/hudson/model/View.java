@@ -622,6 +622,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the {@link ACL} for this object.
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
@@ -914,6 +915,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
 
+        @NonNull
         @Override protected synchronized JSON data() {
             JSONArray r = new JSONArray();
             for (User u : modified) {

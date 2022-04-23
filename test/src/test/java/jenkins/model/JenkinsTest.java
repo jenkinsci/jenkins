@@ -50,6 +50,8 @@ import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
+import hudson.model.Label;
+import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.TaskListener;
@@ -757,6 +759,21 @@ public class JenkinsTest {
         HtmlPage login = wc.goTo("login");
         assertThat(login.getWebResponse().getStatusCode(), is(200));
         assertThat(login.getWebResponse().getContentAsString(), containsString("login"));
+    }
+
+    @Issue("JENKINS-68055")
+    @Test
+    public void testTrimLabelsRetainsLabelExpressions() throws Exception {
+        Node n = j.createOnlineSlave();
+        n.setLabelString("test expression");
+
+        FreeStyleProject f = j.createFreeStyleProject();
+        Label l = Label.parseExpression("test&&expression");
+        f.setAssignedLabel(l);
+        f.scheduleBuild2(0).get();
+
+        j.jenkins.trimLabels();
+        assertThat(j.jenkins.getLabels().contains(l), is(true));
     }
 
     @TestExtension({"testLogin123", "testLogin123WithRead"})

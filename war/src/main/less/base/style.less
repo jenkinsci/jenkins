@@ -42,14 +42,6 @@ form {
   margin: 0;
 }
 
-input,
-textarea,
-select {
-  color: var(--text-color);
-  background-color: var(--input-color);
-  font-family: inherit;
-}
-
 td {
   vertical-align: top;
 }
@@ -100,11 +92,10 @@ td.center-align {
     color: white;
     background-color: #ef2929;
     text-align: center;
-    margin-left: 2em;
-    margin-right: 2em;
-    margin-bottom: 0.5em;
+    margin-bottom: var(--section-padding);
     padding: 0.5em;
     -moz-border-radius: 0.5em;
+    border-radius: var(--form-input-border-radius)
 }
 
 /* #header .login {
@@ -209,7 +200,6 @@ img {
 
 div.disabled {
     opacity: 0.4;
-    filter: alpha(opacity=40); /* msie */
     background-color: #000;
 }
 
@@ -1407,6 +1397,7 @@ table.progress-bar.red td.progress-bar-done {
 .textarea-preview {
     background-color: var(--very-light-grey);
     padding: 0.5em;
+    border-radius: 10px;
 }
 
 /* ========================= logRecords.jelly ================== */

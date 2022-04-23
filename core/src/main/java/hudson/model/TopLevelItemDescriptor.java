@@ -129,6 +129,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      * script, which will be used to render the text below the caption
      * that explains the item type.
      */
+    @NonNull
     @Override
     public String getDisplayName() {
         return super.getDisplayName();
