@@ -14,7 +14,7 @@
         <j:set var="count" value="0"/>
         <j:forEach var="entry" items="${data}">
           <j:if test="${count &lt; from.maxLabelCount || from.maxLabelCount &lt; 0}">
-              <a href="${rootURL}/label/${entry.name}">${entry.name}</a>&amp;#32;
+              <a href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>&amp;#32;
           </j:if>
           <j:if test="${count == from.maxLabelCount}">
             <span>...</span>
@@ -25,7 +25,7 @@
           <j:set var="count" value="0"/>
           <j:forEach var="entry" items="${data}">
             <j:if test="${count &gt;= from.maxLabelCount &amp;&amp; from.maxLabelCount &gt;= 0}">
-              <a href="${rootURL}/label/${entry.name}">${entry.name}</a>&amp;#32;
+              <a href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>&amp;#32;
               <j:if test="${count &gt; from.maxLabelCount &amp;&amp; count % from.maxLabelCount == 0}">
                 <br/>
               </j:if>
