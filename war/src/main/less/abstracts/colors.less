@@ -1,0 +1,12 @@
+@colors: {
+  red: var(--red);
+  orange: var(--orange);
+  green: var(--green);
+  pink: var(--pink);
+}
+
+each(@colors, {
+  .jenkins-\!-color-@{key} {
+    color: @value !important;
+  }
+});
