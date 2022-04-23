@@ -58,7 +58,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>1.13</version>
+        <version>475.vf34069fef73c</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
