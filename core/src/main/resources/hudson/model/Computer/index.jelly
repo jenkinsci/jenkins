@@ -57,10 +57,13 @@ THE SOFTWARE.
           <l:icon src="${it.iconClassName}" />
         </span>
         ${it.caption}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
       </h1>
+
+      <j:if test="${!empty(it.node.nodeDescription)}">
+        <div>
+          <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
+        </div>
+      </j:if>
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
