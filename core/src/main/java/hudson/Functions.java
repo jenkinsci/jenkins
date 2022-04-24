@@ -2294,7 +2294,7 @@ public class Functions {
         // `iconGuess` must be class names if it contains a whitespace.
         //  It may contains extra css classes unrelated to icons.
         // Filter classes with `icon-` prefix.
-        if (iconMetadata == null && iconGuess.indexOf(' ') >= 0) {
+        if (iconMetadata == null && iconGuess.contains(" ")) {
             iconMetadata = IconSet.icons.getIconByClassSpec(filterIconNameClasses(iconGuess));
         }
 
