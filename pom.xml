@@ -102,7 +102,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.5.1</mockito.version>
-    <spotless.version>2.22.1</spotless.version>
+    <spotless.version>2.22.2</spotless.version>
   </properties>
 
   <dependencyManagement>
