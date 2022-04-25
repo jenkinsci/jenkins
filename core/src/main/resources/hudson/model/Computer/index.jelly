@@ -28,7 +28,20 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
 
-      <!-- temporarily offline switch -->
+      
+
+      <h1>
+        <span class="icon-lg">
+          <l:icon src="${it.iconClassName}" />
+        </span>
+        ${it.caption}
+      </h1>
+
+      <j:if test="${!empty(it.node.nodeDescription)}">
+        <div>
+          <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
+        </div>
+      </j:if><!-- temporarily offline switch -->
       <div style="float:right">
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
@@ -51,19 +64,6 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </div>
-
-      <h1>
-        <span class="icon-lg">
-          <l:icon src="${it.iconClassName}" />
-        </span>
-        ${it.caption}
-      </h1>
-
-      <j:if test="${!empty(it.node.nodeDescription)}">
-        <div>
-          <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
-        </div>
-      </j:if>
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
