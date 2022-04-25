@@ -2267,12 +2267,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param includedLabels the labels taken as reference to update labels. If {@code null}, all labels are considered.
      */
     private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
-        Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
-        this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
+        Set<Set<LabelAtom>> nodeLabels = new HashSet<>();
+        nodeLabels.add(this.getAssignedLabels());
+        this.getNodes().forEach(n -> nodeLabels.add(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
-                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
                     // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.

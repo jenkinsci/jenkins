@@ -85,7 +85,7 @@ THE SOFTWARE.
               <l:icon src="symbol-search" />
             </div>
           </div>
-          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() ? '' : 'display: none;'}">
+          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() and page.queueItems.isEmpty() ? '' : 'display: none;'}">
             ${%No builds}
           </div>
         </td>

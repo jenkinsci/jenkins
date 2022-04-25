@@ -86,8 +86,7 @@
             { "name": "pam-auth", "suggested": true },
             { "name": "ldap", "suggested": true },
             { "name": "role-strategy" },
-            { "name": "active-directory" },
-            { "name": "authorize-project" }
+            { "name": "active-directory" }
         ]
     },
     {
