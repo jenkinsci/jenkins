@@ -553,12 +553,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * So there's no need to check that in the implementation.
      *
      * <p>
-     * Starting 1.206, the default implementation of this method does the following:
-     * <pre>
-     * req.bindJSON(clazz,formData);
-     * </pre>
-     * <p>
-     * ... which performs the databinding on the constructor of {@link #clazz}.
+     * The default implementation of this method uses {@link #bindJSON}
+     * which performs the databinding on the constructor of {@link #clazz}.
      *
      * <p>
      * For some types of {@link Describable}, such as {@link ListViewColumn}, this method
@@ -592,25 +588,39 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                     // yes, req is supposed to be always non-null, but see the note above
                     return verifyNewInstance(clazz.getDeclaredConstructor().newInstance());
                 }
-
-                // new behavior as of 1.206
-                BindInterceptor oldInterceptor = req.getBindInterceptor();
-                try {
-                    NewInstanceBindInterceptor interceptor;
-                    if (oldInterceptor instanceof NewInstanceBindInterceptor) {
-                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
-                    } else {
-                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
-                        req.setBindInterceptor(interceptor);
-                    }
-                    interceptor.processed.put(formData, true);
-                    return verifyNewInstance(req.bindJSON(clazz, formData));
-                } finally {
-                    req.setBindInterceptor(oldInterceptor);
-                }
+                return verifyNewInstance(bindJSON(req, clazz, formData, true));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
             throw new LinkageError("Failed to instantiate " + clazz + " from " + RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData), e);
+        }
+    }
+
+    /**
+     * Replacement for {@link StaplerRequest#bindJSON(Class, JSONObject)} which honors {@link #newInstance(StaplerRequest, JSONObject)}.
+     * This is automatically used inside {@link #newInstance(StaplerRequest, JSONObject)} so a direct call would only be necessary
+     * in case the top level binding might use a {@link Descriptor} which overrides {@link #newInstance(StaplerRequest, JSONObject)}.
+     * @since TODO
+     */
+    public static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src) {
+        return bindJSON(req, type, src, false);
+    }
+
+    private static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src, boolean fromNewInstance) {
+        BindInterceptor oldInterceptor = req.getBindInterceptor();
+        try {
+            NewInstanceBindInterceptor interceptor;
+            if (oldInterceptor instanceof NewInstanceBindInterceptor) {
+                interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+            } else {
+                interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                req.setBindInterceptor(interceptor);
+            }
+            if (fromNewInstance) {
+                interceptor.processed.put(src, true);
+            }
+            return req.bindJSON(type, src);
+        } finally {
+            req.setBindInterceptor(oldInterceptor);
         }
     }
 

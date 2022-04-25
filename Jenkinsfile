@@ -8,11 +8,6 @@
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
 def failFast = false
-// Same memory sizing for both builds and ATH
-def javaOpts = [
-  'JAVA_OPTS=-Xmx1536m -Xms512m',
-  'MAVEN_OPTS=-Xmx1536m -Xms512m',
-]
 
 properties([
   buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -55,6 +50,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
+                '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
@@ -67,7 +63,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              infra.runMaven(mavenOptions, jdk.toString(), javaOpts, null, true)
+              infra.runMaven(mavenOptions, jdk)
               if (isUnix()) {
                 sh 'git add . && git diff --exit-code HEAD'
               }
@@ -89,6 +85,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             error 'There were test failures; halting early'
           }
           if (buildType == 'Linux' && jdk == jdks[0]) {
+            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
@@ -125,7 +122,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             dir(m2repo) {
               archiveArtifacts(
                   artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-test*/',
+                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
                   allowEmptyArchive: true, // in case we forgot to reincrementalify
                   fingerprint: true
                   )
@@ -153,7 +150,7 @@ builds.ath = {
         'war',
         'package',
       ]
-      infra.runMaven(mavenOptions, '11', javaOpts, null, true)
+      infra.runMaven(mavenOptions, 11)
       dir('war/target') {
         fileUri = 'file://' + pwd() + '/jenkins.war'
       }

@@ -28,6 +28,7 @@ package hudson.triggers;
 import static java.util.logging.Level.WARNING;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
@@ -293,6 +294,7 @@ public class SCMTrigger extends Trigger<Item> {
             return r;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_DisplayName();

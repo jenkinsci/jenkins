@@ -38,6 +38,8 @@ import java.text.ParseException;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -54,7 +56,8 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     public TemporarySpaceMonitor() {}
 
     public DiskSpace getFreeSpace(Computer c) {
-        return DESCRIPTOR.get(c);
+        DiskSpaceMonitorDescriptor descriptor = (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
+        return descriptor != null ? descriptor.get(c) : null;
     }
 
     @Override
@@ -68,6 +71,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      *      Use injection
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
@@ -100,7 +104,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      */
     @Deprecated
     public static DiskSpaceMonitorDescriptor install() {
-        return DESCRIPTOR;
+        return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
     }
 
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {

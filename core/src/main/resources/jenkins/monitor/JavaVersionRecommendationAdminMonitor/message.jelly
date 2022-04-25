@@ -25,7 +25,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <div class="alert alert-info">
-        ${%Recommended_Java_Version}
+        <j:invokeStatic var="currentRuntimeJavaVersion" className="jenkins.util.java.JavaUtils" method="getCurrentRuntimeJavaVersion" />
+        ${%Recommended_Java_Version(currentRuntimeJavaVersion)}
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>

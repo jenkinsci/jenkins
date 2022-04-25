@@ -30,19 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <l:app-bar title="${%Plugin Manager}">
-      <div class="jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:icon src="symbol-search"/>
-        </div>
-      </div>
-    </l:app-bar>
+    <l:app-bar title="${%Plugin Manager}" />
 
     <st:include page="sidepanel.jelly"/>
 
@@ -66,6 +54,18 @@ THE SOFTWARE.
       />
 
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+
+      <div class="jenkins-form-item jenkins-search">
+        <input
+          class="jenkins-search__input"
+          type="search"
+          id="filter-box"
+          value="${request.getParameter('filter')}"
+          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+        <div class="jenkins-search__icon">
+          <l:icon src="symbol-search"/>
+        </div>
+      </div>
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>

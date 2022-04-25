@@ -15,7 +15,6 @@
 .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
 .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /* == nested repeatable elements / 2 deep == */
 .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
@@ -25,7 +24,6 @@
 .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
 .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /* == nested repeatable elements / 3 deep == */
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
@@ -34,8 +32,7 @@
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
 
 /*
     <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
