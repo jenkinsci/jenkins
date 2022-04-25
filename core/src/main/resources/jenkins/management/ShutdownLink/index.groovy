@@ -15,7 +15,6 @@ l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
     }
     l.main_panel {
         h1 {
-            l.icon(class: 'icon-system-log-out icon-xlg')
             text(Messages.ShutdownLink_DisplayName_prepare())
         }
 
