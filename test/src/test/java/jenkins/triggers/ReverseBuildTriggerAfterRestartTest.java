@@ -13,11 +13,9 @@ public class ReverseBuildTriggerAfterRestartTest {
     @Rule
     public JenkinsSessionRule rule = new JenkinsSessionRule();
 
-
     @Issue("JENKINS-67237")
     @Test
     public void testExecutionOfReverseBuildTriggersAfterRestart() throws Throwable {
-
         String nameOfUpstreamProject = "upstreamProject";
         String nameOfDownstreamProject = "downstreamProject";
 
@@ -36,7 +34,5 @@ public class ReverseBuildTriggerAfterRestartTest {
             FreeStyleProject downstreamProject = j.jenkins.getItem(nameOfDownstreamProject, j.jenkins, FreeStyleProject.class);
             assertNotNull(downstreamProject.getLastBuild());
         });
-
     }
-
 }

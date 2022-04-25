@@ -261,8 +261,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
         DependencyGraph graphTemp;
         try {
-            //Note: futureDependencyGraph can be null, if no asynchronous computation of the dependency graph
-            //has been performed.
+            // Note: futureDependencyGraph can be null, if no asynchronous computation of the
+            // dependency graph has been performed.
             Future<DependencyGraph> futureDependencyGraph = Jenkins.get().getFutureDependencyGraph();
             if (futureDependencyGraph != null) {
                 graphTemp = futureDependencyGraph.get();
@@ -270,7 +270,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 graphTemp = Jenkins.get().getDependencyGraph();
             }
         } catch (IllegalStateException | InterruptedException | ExecutionException e) {
-            //Use old version of dependency graph instead
+            // Use old version of dependency graph instead
             graphTemp = Jenkins.get().getDependencyGraph();
         }
         DependencyGraph graph = graphTemp;
