@@ -39,10 +39,12 @@ THE SOFTWARE.
           <l:icon src="${it.icon}"/>
         </span>
         ${it.caption} ${%System Information}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
       </h1>
+      <j:if test="${!empty(it.node.nodeDescription)}">
+        <div style="margin-bottom: var(--section-padding);">
+          <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
+        </div>
+      </j:if>
 
       <j:choose>
         <j:when test="${it.channel != null}">
