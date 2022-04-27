@@ -38,10 +38,11 @@ THE SOFTWARE.
       </h1>
 
       <j:if test="${!empty(it.node.nodeDescription)}">
-        <div>
+        <div style="margin-bottom: var(--section-padding);">
           <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
         </div>
-      </j:if><!-- temporarily offline switch -->
+      </j:if>
+      <!-- temporarily offline switch -->
       <div style="float:right">
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
