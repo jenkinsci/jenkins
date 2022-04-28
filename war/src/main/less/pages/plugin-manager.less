@@ -148,6 +148,10 @@
 
   &::before {
     backdrop-filter: brightness(1.2) blur(20px);
+
+    @supports not (backdrop-filter: blur(20px)) {
+      background: var(--background);
+    }
   }
 
   &::after {
