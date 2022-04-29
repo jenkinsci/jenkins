@@ -93,7 +93,7 @@ THE SOFTWARE.
                   name="${p.displayName}"
                   data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
-                    <td class="jenkins-table__cell--checkbox" data="${isUpdates ? null : it.unscientific(p.popularity)}">
+                    <td class="jenkins-table__cell--checkbox">
                       <span class="jenkins-checkbox">
                         <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
                                id="plugin.${p.name}.${p.sourceId}"
