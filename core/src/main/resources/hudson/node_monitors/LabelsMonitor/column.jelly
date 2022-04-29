@@ -1,31 +1,39 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <style type="text/css">
-  .all_labels {
+  .extralabels {
     display: none;
+    text-align: right;
   }
-  .labels:hover .all_labels {
-    display: block;
+  .labelcolumnbox {
+    cursor: pointer;
+  }
+  .labels {
+    flex:99;
+  }
+  .labelsdots {
+    flex: 1;
+  }
+  .labels-container {
+    display: flex;
   }
   </style>
   <td align="right">
+    <div class="labels-container">
     <div class="labels">
       <nobr>
         <j:set var="count" value="0"/>
-        <j:forEach var="entry" items="${data}">
+        <j:forEach var="entry" items="${data.labels}">
           <j:if test="${count &lt; from.maxLabelCount || from.maxLabelCount &lt; 0}">
-              <a href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>&amp;#32;
-          </j:if>
-          <j:if test="${count == from.maxLabelCount}">
-            <span>...</span>
+              <a class="jenkins-table__link model-link inside" href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>
           </j:if>
           <j:set var="count" value="${count + 1}"/>
         </j:forEach>
-        <div class="all_labels" >
+        <div id="labels-${data.computer.name}" class="extralabels">
           <j:set var="count" value="0"/>
-          <j:forEach var="entry" items="${data}">
+          <j:forEach var="entry" items="${data.labels}">
             <j:if test="${count &gt;= from.maxLabelCount &amp;&amp; from.maxLabelCount &gt;= 0}">
-              <a href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>&amp;#32;
+              <a class="jenkins-table__link model-link inside" href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>
               <j:if test="${count &gt; from.maxLabelCount &amp;&amp; count % from.maxLabelCount == 0}">
                 <br/>
               </j:if>
@@ -35,5 +43,10 @@
         </div>
       </nobr>
     </div>
+    <j:if test="${count > from.maxLabelCount}">
+      <div class="labelsdots labelcolumnbox" tooltip="${%View all labels}" data="${data.computer.name}">...</div>
+    </j:if>
+    </div>
   </td>
+  <st:adjunct includes="hudson.node_monitors.LabelsMonitor.labels-monitor"/>
 </j:jelly>

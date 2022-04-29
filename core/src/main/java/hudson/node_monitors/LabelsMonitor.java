@@ -3,11 +3,12 @@ package hudson.node_monitors;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Label;
+import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
-import hudson.remoting.Callable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -34,7 +35,7 @@ public class LabelsMonitor extends NodeMonitor
   public String getColumnCaption()
   {
     if (!isIgnored())
-      return Messages.LabelsMonitor_DisplayName();
+      return "Labels";
     return null;
   }
 
@@ -57,23 +58,54 @@ public class LabelsMonitor extends NodeMonitor
       data = Label.parse(n.getLabelString());
       if (includeDynamic)
       {
-        data.addAll(n.getDynamicLabels());
+        data.addAll(getDynamicLabels(n));
       }
     }
-    return data;
+    return new Data(c, Collections.unmodifiableSet(data));
+  }
+
+  public static class Data {
+    final Computer computer;
+    final Set<LabelAtom> labels;
+
+    public Data(Computer computer, Set<LabelAtom> labels) {
+      this.computer = computer;
+      this.labels = labels;
+    }
+
+    public Computer getComputer()
+    {
+      return computer;
+    }
+
+    public Set<LabelAtom> getLabels()
+    {
+      return labels;
+    }
+  }
+
+  private HashSet<LabelAtom> getDynamicLabels(Node n) {
+    HashSet<LabelAtom> result = new HashSet<>();
+    for (LabelFinder labeler : LabelFinder.all()) {
+        // Filter out any bad(null) results from plugins
+        // for compatibility reasons, findLabels may return LabelExpression and not atom.
+        for (Label label : labeler.findLabels(n))
+            if (label instanceof LabelAtom) result.add((LabelAtom) label);
+    }
+    return result;
   }
 
   @Extension
   @Symbol("labels")
-  public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Set<LabelAtom>> {
+  public static class DescriptorImpl extends AbstractNodeMonitorDescriptor<Set<LabelAtom>> {
 
     @Override
     public String getDisplayName() {
-        return Messages.LabelsMonitor_DisplayName();
+        return "Labels";
     }
 
     @Override
-    protected Callable<Set<LabelAtom>, IOException> createCallable(Computer c)
+    protected Set<LabelAtom> monitor(Computer c) throws IOException, InterruptedException
     {
       return null;
     }
