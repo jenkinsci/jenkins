@@ -63,10 +63,7 @@ THE SOFTWARE.
           <thead>
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'up'}"
-                    tooltip="${%Check to install the plugin}"
-                    width="32">${%Install}
-                </th>
+                <th data-sort-disable="true" />
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
               <th>${%Released}</th>
