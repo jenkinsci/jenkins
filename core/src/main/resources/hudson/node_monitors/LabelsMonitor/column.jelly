@@ -1,25 +1,12 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <style type="text/css">
-  .extralabels {
-    display: none;
-    text-align: right;
-  }
-  .labelcolumnbox {
-    cursor: pointer;
-  }
   .labels {
     flex:99;
   }
-  .labelsdots {
-    flex: 1;
-  }
-  .labels-container {
-    display: flex;
-  }
   </style>
   <td align="right">
-    <div class="labels-container">
+    <div class="expanding-input">
     <div class="labels">
       <nobr>
         <j:set var="count" value="0"/>
@@ -29,7 +16,7 @@
           </j:if>
           <j:set var="count" value="${count + 1}"/>
         </j:forEach>
-        <div id="labels-${data.computer.name}" class="extralabels">
+        <div id="labels-${data.computer.name}" class="default-hidden">
           <j:set var="count" value="0"/>
           <j:forEach var="entry" items="${data.labels}">
             <j:if test="${count &gt;= from.maxLabelCount &amp;&amp; from.maxLabelCount &gt;= 0}">
@@ -44,7 +31,7 @@
       </nobr>
     </div>
     <j:if test="${count > from.maxLabelCount}">
-      <div class="labelsdots labelcolumnbox" tooltip="${%View all labels}" data="${data.computer.name}">...</div>
+      <div class="expanding-input__input labelcolumnbox pseudoLink" tooltip="${%View all labels}" data="${data.computer.name}">...</div>
     </j:if>
     </div>
   </td>
