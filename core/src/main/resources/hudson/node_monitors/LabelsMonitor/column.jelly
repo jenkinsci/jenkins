@@ -9,17 +9,17 @@
     <div class="expanding-input">
     <div class="labels">
       <nobr>
-        <j:set var="count" value="0"/>
+        <j:set var="count" value="1"/>
         <j:forEach var="entry" items="${data.labels}">
-          <j:if test="${count &lt; from.maxLabelCount || from.maxLabelCount &lt; 0}">
+          <j:if test="${count &lt;= from.maxLabelCount || from.maxLabelCount &lt; 0}">
               <a class="jenkins-table__link model-link inside" href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>
           </j:if>
           <j:set var="count" value="${count + 1}"/>
         </j:forEach>
         <div id="labels-${data.computer.name}" class="default-hidden">
-          <j:set var="count" value="0"/>
+          <j:set var="count" value="1"/>
           <j:forEach var="entry" items="${data.labels}">
-            <j:if test="${count &gt;= from.maxLabelCount &amp;&amp; from.maxLabelCount &gt;= 0}">
+            <j:if test="${count &gt; from.maxLabelCount &amp;&amp; from.maxLabelCount &gt; 0}">
               <a class="jenkins-table__link model-link inside" href="${rootURL}/label/${entry.name}" tooltip="${h.escape(entry.description)}">${entry.name}</a>
               <j:if test="${count &gt; from.maxLabelCount &amp;&amp; count % from.maxLabelCount == 0}">
                 <br/>
