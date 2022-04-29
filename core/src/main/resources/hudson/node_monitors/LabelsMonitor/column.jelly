@@ -30,7 +30,7 @@
         </div>
       </nobr>
     </div>
-    <j:if test="${count > from.maxLabelCount}">
+    <j:if test="${count > from.maxLabelCount + 1}">
       <div class="expanding-input__input labelcolumnbox pseudoLink" tooltip="${%View all labels}" data="${data.computer.name}">...</div>
     </j:if>
     </div>
