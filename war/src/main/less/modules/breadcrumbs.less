@@ -40,6 +40,7 @@
         color: var(--text-color);
         z-index: 0;
         text-decoration: none;
+        margin-right: 0 !important;
 
         &::before,
         &::after {
@@ -80,6 +81,20 @@
             opacity: 0.05 !important;
             box-shadow: 0 0 0 5px var(--text-color);
           }
+        }
+      }
+
+      & > .model-link {
+        .jenkins-menu-dropdown-chevron {
+          top: 6px;
+        }
+
+        @media (hover: none) {
+          margin-right: 30px !important;
+        }
+
+        &:hover {
+          margin-right: 30px !important;
         }
       }
     }
@@ -144,17 +159,17 @@
 }
 
 .jenkins-menu-dropdown-chevron {
-  position: relative;
+  position: absolute;
   display: inline-block;
   width: 14px;
   height: 14px;
+  top: 2px;
+  right: 0;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 0;
-  margin-left: -14px;
   pointer-events: none;
-  vertical-align: middle;
   transition: var(--standard-transition);
   background: transparent;
 
@@ -175,10 +190,7 @@
   &::before {
     content: "";
     position: absolute;
-    top: -7px;
-    bottom: -7px;
-    right: -20px;
-    width: 20px;
+    inset: -7px;
     pointer-events: all;
   }
 
@@ -201,56 +213,51 @@
 .model-link {
   position: relative;
   transition: var(--standard-transition) !important;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: -7px;
-    left: -10px;
-    bottom: -7px;
-    right: -10px;
-  }
-
-  &:hover {
-    .jenkins-menu-dropdown-chevron {
-      margin-left: 1ch;
-      pointer-events: all;
-
-      &::after {
-        opacity: 0.5;
-      }
-    }
-
-    // For links with badges next to them, eg build monitor page, we need to shrink the margins of
-    // the badge so that it doesn't cause a table column resize, yet doesn't change in appearance
-    @media (hover: hover) {
-      & + a.model-link:not(.model-link--float) {
-        transform: translateX(10px);
-        margin-right: calc((14px + 1ch) * -1) !important;
-      }
-    }
-  }
+  margin-right: 40px !important;
 
   @media (hover: none) {
-    & + a.model-link {
-      transform: translateX(10px);
-      margin-right: calc((14px + 1ch) * -1) !important;
+    &::before,
+    &::after {
+      right: -30px !important;
     }
 
     .jenkins-menu-dropdown-chevron {
-      margin-left: 1ch;
+      right: -22px;
 
       &::after {
-        opacity: 0.5;
+        opacity: 1;
       }
     }
   }
-}
 
-@media (hover: hover) {
-  .inside {
+  @media (hover: hover) {
+    & + a.model-link {
+      margin-left: 0 !important;
+    }
+
+    & + a.jenkins-table__badge {
+      margin-left: -1.5rem !important;
+    }
+
     &:hover {
-      margin-right: calc((14px + 1ch) * -1) !important;
+      & + a.jenkins-table__badge {
+        margin-left: -1.5rem !important;
+        transform: translateX(1.5rem);
+      }
+
+      &::before,
+      &::after {
+        right: -30px;
+      }
+
+      .jenkins-menu-dropdown-chevron {
+        pointer-events: all;
+        right: -22px;
+
+        &::after {
+          opacity: 0.5;
+        }
+      }
     }
   }
 }
@@ -258,63 +265,72 @@
 .model-link--float {
   z-index: 0;
 
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    top: -7px;
-    left: -10px;
-    bottom: -7px;
-    right: -10px;
-    opacity: 0;
-    border-radius: 6px;
-    transition: var(--standard-transition);
-  }
+  @media (hover: none) {
+    margin-right: 30px !important;
 
-  &::before {
-    z-index: -2;
-    background: var(--background);
-  }
+    &::before,
+    &::after {
+      right: -30px !important;
+    }
 
-  &::after {
-    z-index: -1;
-    background: var(--text-color);
+    .jenkins-menu-dropdown-chevron {
+      right: -10px;
+
+      &::after {
+        opacity: 1;
+      }
+    }
   }
 
   @media (hover: hover) {
-    .jenkins-menu-dropdown-chevron {
+    margin-right: 0 !important;
+
+    &::before,
+    &::after {
+      content: "";
       position: absolute;
-      top: 1px;
-      right: 0;
-      margin-left: 0 !important;
-    }
-  }
-
-  &:hover {
-    z-index: 10;
-
-    @media (hover: hover) {
-      &::before,
-      &::after {
-        right: calc((2ch + 14px) * -1);
-      }
+      top: -7px;
+      left: -10px;
+      bottom: -7px;
+      right: -10px;
+      opacity: 0;
+      border-radius: 6px;
+      transition: var(--standard-transition);
     }
 
     &::before {
-      opacity: 1;
+      z-index: -2;
+      background: var(--background);
+
     }
 
     &::after {
-      opacity: 0.15;
+      z-index: -1;
+      background: var(--text-color);
     }
 
-    .jenkins-menu-dropdown-chevron {
+    &:hover {
+      z-index: 10;
+
       @media (hover: hover) {
-        right: calc((1ch + 14px) * -1);
+        &::before,
+        &::after {
+          right: calc((2ch + 14px) * -1);
+        }
+      }
+
+      &::before {
+        opacity: 1;
       }
 
       &::after {
-        opacity: 0.5;
+        opacity: 0.15;
+      }
+
+      .jenkins-menu-dropdown-chevron {
+        &::after {
+          opacity: 0.5;
+        }
       }
     }
   }

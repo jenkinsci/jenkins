@@ -85,7 +85,8 @@ public class PluginManagerTest {
                 () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes(StandardCharsets.UTF_8))),
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
-        assertThat(ex.getCause().getMessage(), containsString("DOCTYPE is disallowed"));
+        assertThat(ex.getCause().getMessage(), containsString("DOCTYPE"));
+        assertThat(ex.getCause().getMessage(), containsString("http://apache.org/xml/features/disallow-doctype-decl"));
     }
 
     @Test

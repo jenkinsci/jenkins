@@ -139,7 +139,9 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     @Override
     public void save() throws IOException {
-        user.save();
+        if (user != null) {
+            user.save();
+        }
     }
 
     @Override

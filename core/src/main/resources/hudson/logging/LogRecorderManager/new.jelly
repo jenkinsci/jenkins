@@ -27,17 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout>
+  <l:layout title="${%New log recorder}">
     <st:include page="sidepanel.jelly" />
 
+    <l:app-bar title="${%New log recorder}"/>
     <l:main-panel>
-      <f:form method="post" action="newLogRecorder">
+      <f:form name="configSubmit" method="post" action="newLogRecorder">
         <f:entry title="${%Name}">
-          <input type="text" name="name" class="jenkins-input" id="box" autofocus="autofocus" />
+          <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />
         </f:entry>
-
         <f:block>
-          <f:submit value="OK" />
+          <f:submit value="${%Create}" />
         </f:block>
       </f:form>
     </l:main-panel>

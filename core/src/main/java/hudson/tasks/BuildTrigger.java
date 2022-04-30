@@ -60,6 +60,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
@@ -260,9 +261,16 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
         DependencyGraph graphTemp;
         try {
-            graphTemp = Jenkins.get().getFutureDependencyGraph().get();
+            // Note: futureDependencyGraph can be null, if no asynchronous computation of the
+            // dependency graph has been performed.
+            Future<DependencyGraph> futureDependencyGraph = Jenkins.get().getFutureDependencyGraph();
+            if (futureDependencyGraph != null) {
+                graphTemp = futureDependencyGraph.get();
+            } else {
+                graphTemp = Jenkins.get().getDependencyGraph();
+            }
         } catch (IllegalStateException | InterruptedException | ExecutionException e) {
-            //Use old version of dependency graph instead
+            // Use old version of dependency graph instead
             graphTemp = Jenkins.get().getDependencyGraph();
         }
         DependencyGraph graph = graphTemp;
@@ -365,6 +373,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
