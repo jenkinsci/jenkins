@@ -3,6 +3,7 @@ import requestAnimationFrame from 'raf';
 
 import pluginManagerAvailable from './templates/plugin-manager/available.hbs'
 import pluginManager from './api/pluginManager';
+import il8n from './util/il8n';
 
 function applyFilter(searchQuery) {
     // debounce reduces number of server side calls while typing
@@ -38,6 +39,7 @@ function applyFilter(searchQuery) {
         clearOldResults()
         var rows = pluginManagerAvailable({
             plugins: plugins.filter(plugin => selectedPlugins.indexOf(plugin.name) === -1),
+            il8n: il8n(),
             admin
         });
 
