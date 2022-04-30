@@ -1,7 +1,7 @@
-Behaviour.specify(".jenkins-copy-button", 'copyButton', 0, function(copyButton) {
+Behaviour.specify(".jenkins-copy-button", "copyButton", 0, function(copyButton) {
   copyButton.addEventListener("click", () => {
     // Make an invisible textarea element containing the text
-    const fakeInput = document.createElement('textarea');
+    const fakeInput = document.createElement("textarea");
     fakeInput.value = copyButton.getAttribute("text");
     fakeInput.style.width = "1px";
     fakeInput.style.height = "1px";
