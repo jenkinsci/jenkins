@@ -161,7 +161,7 @@ each(@variants, {
       right: 1px;
     }
   }
-  
+
   &:hover {
     .jenkins-copy-button__icon {
       &::before {
@@ -171,6 +171,19 @@ each(@variants, {
 
       &::after {
         transform: translate(-1px, -1px);
+      }
+    }
+  }
+
+  &:active {
+    .jenkins-copy-button__icon {
+      &::before {
+        transform: translate(1px, 1px) scale(0.85);
+        clip-path: polygon(100% 0, 100% 3px, 3px 3px, 3px 100%, 0 100%, 0 0);
+      }
+
+      &::after {
+        transform: translate(-1px, -1px) scale(0.85);
       }
     }
   }
