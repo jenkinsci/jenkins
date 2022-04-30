@@ -6,11 +6,14 @@ import hudson.model.Label;
 import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.remoting.Callable;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LabelsMonitor extends NodeMonitor
@@ -61,21 +64,22 @@ public class LabelsMonitor extends NodeMonitor
         data.addAll(getDynamicLabels(n));
       }
     }
-    return new Data(c, Collections.unmodifiableSet(data));
+    return new Data(c.getName(), Collections.unmodifiableSet(data));
   }
 
+  @Restricted(NoExternalUse.class)
   public static class Data {
-    final Computer computer;
-    final Set<LabelAtom> labels;
+    private final String computerName;
+    private final Set<LabelAtom> labels;
 
-    public Data(Computer computer, Set<LabelAtom> labels) {
-      this.computer = computer;
+    public Data(String computerName, Set<LabelAtom> labels) {
+      this.computerName = computerName;
       this.labels = labels;
     }
 
-    public Computer getComputer()
+    public String getComputerName()
     {
-      return computer;
+      return computerName;
     }
 
     public Set<LabelAtom> getLabels()
@@ -97,7 +101,7 @@ public class LabelsMonitor extends NodeMonitor
 
   @Extension
   @Symbol("labels")
-  public static class DescriptorImpl extends AbstractNodeMonitorDescriptor<Set<LabelAtom>> {
+  public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Set<LabelAtom>> {
 
     @Override
     public String getDisplayName() {
@@ -105,7 +109,7 @@ public class LabelsMonitor extends NodeMonitor
     }
 
     @Override
-    protected Set<LabelAtom> monitor(Computer c) throws IOException, InterruptedException
+    protected Callable<Set<LabelAtom>, IOException> createCallable(Computer c)
     {
       return null;
     }

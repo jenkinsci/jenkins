@@ -16,7 +16,7 @@
           </j:if>
           <j:set var="count" value="${count + 1}"/>
         </j:forEach>
-        <div id="labels-${data.computer.name}" class="default-hidden">
+        <div id="labels-${data.computerName}" class="default-hidden">
           <j:set var="count" value="1"/>
           <j:forEach var="entry" items="${data.labels}">
             <j:if test="${count &gt; from.maxLabelCount &amp;&amp; from.maxLabelCount &gt; 0}">
@@ -31,7 +31,7 @@
       </nobr>
     </div>
     <j:if test="${count > from.maxLabelCount + 1}">
-      <div class="expanding-input__input labelcolumnbox pseudoLink" tooltip="${%View all labels}" data="${data.computer.name}">...</div>
+      <div class="expanding-input__input labelcolumnbox pseudoLink" tooltip="${%View all labels}" data="${data.computerName}">...</div>
     </j:if>
     </div>
   </td>
