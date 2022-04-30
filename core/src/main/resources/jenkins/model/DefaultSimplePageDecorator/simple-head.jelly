@@ -23,7 +23,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
-  <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
-  <link rel="stylesheet" href="${resURL}/css/simple-page-forms.css" type="text/css" />
+  <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
 </j:jelly>
