@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>jenkins-coverage</artifactId>
+  <packaging>pom</packaging>
 
   <name>Jenkins coverage</name>
   <description>Compute aggregated test code coverage</description>
@@ -45,6 +46,13 @@
         <!-- Version specified in grandparent POM -->
         <configuration>
           <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <configuration>
+          <skipIfEmpty>true</skipIfEmpty>
         </configuration>
       </plugin>
     </plugins>
