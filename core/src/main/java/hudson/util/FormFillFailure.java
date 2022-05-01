@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.Locale;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
