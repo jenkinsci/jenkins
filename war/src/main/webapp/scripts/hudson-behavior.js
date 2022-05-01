@@ -521,7 +521,7 @@ function updateValidationArea(validationArea, content) {
 
       // Only include the notice in the validation-error-area, move all other elements out
       if (validationArea.children.length > 1) {
-        [...validationArea.children].slice(1).forEach((element) => {
+        Array.from(validationArea.children).slice(1).forEach((element) => {
           validationArea.after(element);
         })
       }
