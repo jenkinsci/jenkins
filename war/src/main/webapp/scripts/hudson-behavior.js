@@ -513,6 +513,7 @@ function updateValidationArea(validationArea, content) {
   if (content === "<div/>") {
     validationArea.classList.remove("validation-error-area--visible");
     validationArea.style.height = "0px";
+    validationArea.innerHTML = content;
   } else {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
