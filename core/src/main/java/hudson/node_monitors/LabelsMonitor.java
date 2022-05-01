@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LabelsMonitor extends NodeMonitor
@@ -64,15 +64,15 @@ public class LabelsMonitor extends NodeMonitor
         data.addAll(getDynamicLabels(n));
       }
     }
-    return new Data(c.getName(), Collections.unmodifiableSet(data));
+    return new Data(c.getName(), data);
   }
 
-  @Restricted(NoExternalUse.class)
+  @Restricted(DoNotUse.class)
   public static class Data {
     private final String computerName;
     private final Set<LabelAtom> labels;
 
-    public Data(String computerName, Set<LabelAtom> labels) {
+    private Data(String computerName, Set<LabelAtom> labels) {
       this.computerName = computerName;
       this.labels = labels;
     }
@@ -84,7 +84,7 @@ public class LabelsMonitor extends NodeMonitor
 
     public Set<LabelAtom> getLabels()
     {
-      return labels;
+      return Collections.unmodifiableSet(labels);
     }
   }
 
