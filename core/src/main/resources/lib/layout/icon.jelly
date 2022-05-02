@@ -70,6 +70,8 @@ THE SOFTWARE.
         <j:arg value="${attrs.tooltip ?: ''}" />
         <j:arg value="${iconMetadata.classSpec ?: ''}" />
         <j:arg value="${h.extractPluginNameFromIconSrc(iconSrc)}" />
+        <j:arg value="${attrs.id ?: ''}" />
+        <j:arg value="${attrs.style ?: ''}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>
@@ -87,7 +89,7 @@ THE SOFTWARE.
         </j:when>
 
         <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" style="${attrs.style}" tooltip="${attrs.tooltip}"/>
         </j:when>
 
         <j:otherwise>
