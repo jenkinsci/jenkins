@@ -44,11 +44,10 @@ function registerTooltips(container) {
   })
 
   tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"])"), Object.assign({
-    content: element => element.getAttribute("tooltip")
-      .replace("<br>", "\n")
-      .replace("<br/>", "\n")
-      .replace("<br />", "\n")
-      .replace("\\n", "\n"),
+    content: element => element.getAttribute("tooltip").replaceAll("<br>", "\n")
+      .replaceAll("<br/>", "\n")
+      .replaceAll("<br />", "\n")
+      .replaceAll("\\n", "\n"),
     container: container,
     onCreate(instance) {
       instance.reference.setAttribute("title", instance.props.content)
