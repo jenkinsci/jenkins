@@ -51,6 +51,8 @@ public class IconSetTest {
         assertThat(symbol, not(containsString("<span class=\"jenkins-visually-hidden\">Title</span>")));
         assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
         assertThat(symbol, not(containsString("class=\"class1 class2\"")));
+        assertThat(symbol, not(containsString("id=\"id\"")));
+        assertThat(symbol, not(containsString("style=\"display: block;\"")));
         assertThat(symbol, containsString("<span class=\"jenkins-visually-hidden\">Title2</span>"));
         assertThat(symbol, containsString("tooltip=\"Tooltip2\""));
         assertThat(symbol, containsString("class=\"class3 class4\""));
