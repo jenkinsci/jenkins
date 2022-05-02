@@ -1,11 +1,12 @@
 .tippy-box[data-theme~='tooltip'] {
   color: var(--tooltip-color);
-  padding: 0.55rem 0.8rem;
+  padding: 0.45rem 0.8rem;
   border-radius: 10px;
   box-shadow: var(--tooltip-box-shadow);
   font-weight: 500;
   font-size: 0.75rem;
-  max-width: unset !important;
+  line-height: 1.6;
+  max-width: ~"min(50vw, 1000px)" !important;
   white-space: pre-line;
   z-index: 0;
 
@@ -34,7 +35,7 @@
   // We style tables as they have additional margin/border radius when in tooltips
   .jenkins-tooltip--table-wrapper {
     background-color: rgba(black, 0.05);
-    margin: -0.55rem -0.8rem;
+    margin: -0.45rem -0.8rem;
     border-radius: 10px;
   }
 
