@@ -3746,6 +3746,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             final java.util.Timer timer = Trigger.timer;
             if (timer != null) {
                 final CountDownLatch latch = new CountDownLatch(1);
+                // before starting the wait, clear possible latent interrupt flag,
+                // otherwise latch.await may immediately throw an InterruptedException
+                if (Thread.interrupted()) {
+                    LOGGER.log(Level.FINE, "Cleared interrupt flag before trigger shutdown");
+                }
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
