@@ -527,7 +527,7 @@ function updateValidationArea(validationArea, content) {
         })
       }
 
-      Behaviour.applySubtree(validationArea.parentNode);
+      Behaviour.applySubtree(validationArea);
     }
   }
 }
