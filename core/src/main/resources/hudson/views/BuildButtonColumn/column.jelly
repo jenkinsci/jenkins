@@ -38,7 +38,7 @@ THE SOFTWARE.
                   <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
                 </j:otherwise>
               </j:choose>
-              <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-table__button--green" href="${href}">
+              <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-!-color-green" href="${href}">
                 <l:icon src="symbol-play" />
                 <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
               </a>
