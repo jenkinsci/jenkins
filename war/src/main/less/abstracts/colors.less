@@ -1,8 +1,14 @@
 @colors: {
-  red: var(--red);
-  orange: var(--orange);
+  blue: var(--blue);
+  brown: var(--brown);
+  cyan: var(--cyan);
   green: var(--green);
+  indigo: var(--indigo);
+  orange: var(--orange);
   pink: var(--pink);
+  purple: var(--purple);
+  red: var(--red);
+  yellow: var(--yellow);
 }
 
 each(@colors, {
@@ -10,3 +16,18 @@ each(@colors, {
     color: @value !important;
   }
 });
+
+// Deprecated - don't use the below classes
+.greyed {
+  color: #999;
+}
+
+.redbold {
+  color: var(--red);
+  font-weight: bold;
+}
+
+.greenbold {
+  color: var(--green);
+  font-weight: bold;
+}
