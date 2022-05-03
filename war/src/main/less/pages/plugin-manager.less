@@ -1,15 +1,9 @@
 #plugins {
   .app-plugin-manager__categories {
-    display: flex;
-    margin: 0.7rem 0;
-    gap: 1.5rem;
-
-    &:empty {
-      display: none;
-    }
+    margin: 0.5rem 0;
 
     a {
-      margin: 0 0 0 0 !important;
+      margin: 0 1.25rem 0 0 !important;
       font-size: 0.75rem;
     }
   }
@@ -17,7 +11,7 @@
   tr.already-upgraded {
     background-color: var(--plugin-manager-bg-color-already-upgraded);
   }
-
+  
   tr.unavailable {
     background-color: var(--plugin-manager-unavailable-bg-color);
   }

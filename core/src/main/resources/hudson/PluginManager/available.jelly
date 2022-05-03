@@ -37,10 +37,6 @@ THE SOFTWARE.
     <l:main-panel>
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
-      <div class="plugins i18n"
-           data-adopt-this-plugin="${%Adopt this plugin}"
-      />
-
       <form method="post" action="install">
         <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager"/>
 
