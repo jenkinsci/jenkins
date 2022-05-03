@@ -122,8 +122,17 @@
   }
 }
 
-.schedule-build-anime {
+@keyframes pulse-animation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.pulse-animation {
   svg {
-    animation: fadeout 1.5s ease infinite;
+    animation: pulse-animation 2s ease infinite;
   }
 }
