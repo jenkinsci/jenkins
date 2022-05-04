@@ -1,18 +1,21 @@
-@colors: {
-  blue: var(--blue);
-  brown: var(--brown);
-  cyan: var(--cyan);
-  green: var(--green);
-  indigo: var(--indigo);
-  orange: var(--orange);
-  pink: var(--pink);
-  purple: var(--purple);
-  red: var(--red);
-  yellow: var(--yellow);
-}
+@import "theme.less";
 
+// Generates a series of color override classes and their variations,
+// e.g. .jenkins-!-color-blue, .jenkins-!-color-light-blue, .jenkins-!-color-dark-blue
 each(@colors, {
+  .jenkins-\!-color-light-@{key} {
+    color: ~"var(--light-@{key})" !important;
+  }
   .jenkins-\!-color-@{key} {
+    color: ~"var(--@{key})" !important;
+  }
+  .jenkins-\!-color-dark-@{key} {
+    color: ~"var(--dark-@{key})" !important;
+  }
+});
+
+each(@semantics, {
+  .jenkins-\!-@{key}-color {
     color: @value !important;
   }
 });

@@ -179,7 +179,7 @@ THE SOFTWARE.
                         <j:if test="${p.downgradable}">
                           <form class="jenkins-buttons-row" method="post"
                                 action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-table__button  jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
+                            <button class="jenkins-table__button jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
                               <l:icon src="symbol-downgrade-circle"/>
                               <span class="jenkins-!-margin-left-1"
                                     style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
