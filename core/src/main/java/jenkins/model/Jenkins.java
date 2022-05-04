@@ -4707,8 +4707,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             try {
-                User u = User.current();
-                System.out.println(u.getDisplayName());
                 ScriptListener.fireScriptEvent(req);
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
