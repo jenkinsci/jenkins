@@ -135,3 +135,29 @@
     }
   }
 }
+
+.close-icon {
+	border:1px solid transparent;
+	background-color: transparent;
+	display: block;
+	vertical-align: middle;
+  outline: 0;
+  cursor: pointer;
+}
+
+.close-icon:after {
+	content: "x";
+  width: auto;
+  height: auto;
+  color: #486DAC;
+  position: absolute;
+  right: 10px;
+  top: 6px;
+  bottom: auto;
+  margin: auto;
+  font-size: 19px;
+}
+
+.jenkins-search__input:not(:valid) ~ .close-icon {
+	display: none;
+}

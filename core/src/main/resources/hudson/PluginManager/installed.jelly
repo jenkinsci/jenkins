@@ -52,7 +52,7 @@ THE SOFTWARE.
            data-detached-uninstall="${%detached-uninstall}"
            data-detached-possible-dependents="${%detached-possible-dependents}"
       />
-
+      <form method="post" action="install">
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <div class="jenkins-form-item jenkins-search">
@@ -61,7 +61,9 @@ THE SOFTWARE.
           type="search"
           id="filter-box"
           value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"
+          required=""/>
+        <button class="close-icon" type="reset"></button>
         <div class="jenkins-search__icon">
           <l:icon src="symbol-search"/>
         </div>
@@ -314,6 +316,7 @@ THE SOFTWARE.
 
         updateMsg(); // set the initial state
       </script>
+      </form>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -53,7 +53,9 @@ THE SOFTWARE.
             type="search"
             id="filter-box"
             value="${request.getParameter('filter')}"
-            placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+            placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"
+            required=""/>
+          <button class="close-icon" type="reset"></button>
           <div class="jenkins-search__icon">
             <l:icon src="symbol-search"/>
           </div>

@@ -46,7 +46,9 @@ THE SOFTWARE.
             type="search"
             id="filter-box"
             value="${request.getParameter('filter')}"
-            placeholder="${%Search}"/>
+            placeholder="${%Search}"
+            required=""/>
+          <button class="close-icon" type="reset"></button>
           <div class="jenkins-search__icon">
             <l:icon src="symbol-search"/>
           </div>
