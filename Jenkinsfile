@@ -5,13 +5,7 @@
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  */
 
-def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
-
 def failFast = false
-// Same memory sizing for both builds and ATH
-def javaOpts = [
-  'MAVEN_OPTS=-Xmx1536m -Xms512m',
-]
 
 properties([
   buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -42,7 +36,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
         stage('Checkout') {
-          checkout scm
+          infra.checkoutSCM()
         }
 
         def changelistF = "${pwd tmp: true}/changelist"
@@ -67,7 +61,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              infra.runMaven(mavenOptions, jdk.toString(), javaOpts, null, true)
+              infra.runMaven(mavenOptions, jdk)
               if (isUnix()) {
                 sh 'git add . && git diff --exit-code HEAD'
               }
@@ -154,7 +148,7 @@ builds.ath = {
         'war',
         'package',
       ]
-      infra.runMaven(mavenOptions, '11', javaOpts, null, true)
+      infra.runMaven(mavenOptions, 11)
       dir('war/target') {
         fileUri = 'file://' + pwd() + '/jenkins.war'
       }
