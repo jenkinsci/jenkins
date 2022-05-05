@@ -37,7 +37,14 @@ window.addEventListener("load", function() {
     });
 
     sidebar.insertAdjacentElement('beforeend', item);
-  })
+  });
+
+  // TODO - Remove when Matrix-Project plugin has been updated to only have one enable/disable project toggle
+  // Having multiple toggles on the same page for the same field corrupts submission for that field, so
+  // remove all but the first
+  document.querySelectorAll(".jenkins-form-item + span input[name='enable']").forEach(input => {
+    input.parentElement.remove();
+  });
 
   document.addEventListener("scroll", () => onScroll());
   onScroll();
