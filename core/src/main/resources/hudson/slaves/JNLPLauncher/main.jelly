@@ -37,27 +37,11 @@ THE SOFTWARE.
           ${%Connect agent to Jenkins one of these ways:}
         </p>
         <ul>
-          <j:if test="${it.launcher.javaWebStartSupported}">
-            <li>
-              <p>
-                <a href="jenkins-agent.jnlp" id="jnlp-link">
-                  <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-                </a>
-                ${%Launch agent from browser}
-              </p>
-            </li>
-          </j:if>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
               <li>
                 <p>
                   ${%Run from agent command line:}
-                </p>
-                <pre>javaws ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp</pre>
-              </li>
-              <li>
-                <p>
-                  ${%Or if the agent is headless:}
                 </p>
                 <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
               </li>

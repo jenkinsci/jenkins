@@ -36,7 +36,6 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -247,22 +246,6 @@ public class JNLPLauncher extends ComputerLauncher {
             return FormValidation.ok();
         }
 
-    }
-
-    /**
-     * Returns true if Java Web Start button should be displayed.
-     * Java Web Start is only supported when the Jenkins server is
-     * running with Java 8.  Earlier Java versions are not supported by Jenkins.
-     * Later Java versions do not support Java Web Start.
-     *
-     * This flag is checked in {@code config.jelly} before displaying the
-     * Java Web Start button.
-     * @return {@code true} if Java Web Start button should be displayed.
-     * @since 2.153
-     */
-    @Restricted(NoExternalUse.class) // Jelly use
-    public boolean isJavaWebStartSupported() {
-        return JavaUtils.isRunningWithJava8OrBelow();
     }
 
     /**
