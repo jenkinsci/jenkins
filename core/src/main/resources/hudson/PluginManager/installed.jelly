@@ -225,7 +225,7 @@ THE SOFTWARE.
                               </div>
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-!-color-red uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
+                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
                                 <l:icon src="symbol-close-circle"/>
                               </button>
                             </form>
