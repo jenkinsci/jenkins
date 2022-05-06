@@ -528,6 +528,10 @@ function updateValidationArea(validationArea, content) {
       }
 
       Behaviour.applySubtree(validationArea);
+      // For errors with additional details, apply the subtree to the expandable details pane
+      if (validationArea.nextElementSibling) {
+        Behaviour.applySubtree(validationArea.nextElementSibling);
+      }
     }
   }
 }
