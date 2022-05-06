@@ -57,7 +57,9 @@ THE SOFTWARE.
           <thead>
             <tr>
               <l:isAdmin>
-                <th data-sort-disable="true" />
+                <th data-sort-disable="true">
+                  ${%Install}
+                </th>
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
