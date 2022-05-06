@@ -97,10 +97,19 @@ THE SOFTWARE.
         </j:if>
       </j:when>
       <j:otherwise>
-        <div class="setting-main help-sibling">
-          <d:invokeBody />
-          <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
-        </div>
+        <j:choose>
+          <j:when test="${attrs.help!=null}">
+            <div class="setting-main help-sibling" style="display: inline-flex; align-items: center;">
+              <d:invokeBody />
+              <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
+            </div>
+          </j:when>
+          <j:otherwise>
+            <div class="setting-main help-sibling">
+              <d:invokeBody />
+            </div>
+          </j:otherwise>
+        </j:choose>
         <div class="validation-error-area">
           <!-- Used to display the form validation status -->
         </div>
