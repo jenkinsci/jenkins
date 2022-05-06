@@ -32,7 +32,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <f:toggleSwitch id="toggle-switch-project-enabled"
+  <f:toggleSwitch id="enable-disable-project"
                   name="enable"
                   title="${%Disabled}"
                   checkedTitle="${%Enabled}"

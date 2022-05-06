@@ -74,7 +74,7 @@ THE SOFTWARE.
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
 
-  <span tooltip="${attrs.tooltip}"
+  <span tooltip="${attrs.tooltip}" id="toggle-switch-${id}"
         class="jenkins-toggle-switch ${attrs.invertLabel != null ? 'jenkins-toggle-switch--invert-label' : null}">
     <input type="checkbox"
            name="${name}"
