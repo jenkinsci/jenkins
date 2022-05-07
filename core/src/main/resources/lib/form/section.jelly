@@ -46,9 +46,9 @@ THE SOFTWARE.
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
           <div class="jenkins-hidden">
-            <l:icon src="${icon}" />
+            <l:icon src="${attrs.icon ?: 'symbol-settings'}" />
           </div>
-          ${title}
+          ${attrs.title}
         </div>
       </j:if>
       <d:invokeBody />

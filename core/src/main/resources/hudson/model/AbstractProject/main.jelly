@@ -34,7 +34,7 @@ THE SOFTWARE.
 
     <j:forEach var="act" items="${it.prominentActions}">
       <j:set var="icon" value="${act.iconClassName != null ? act.iconClassName : act.iconFileName}"/>
-      <t:summary icon="${icon}" href="${act.urlName}">
+      <t:summary icon="${attrs.icon}" href="${act.urlName}">
         ${act.displayName}
       </t:summary>
     </j:forEach>
