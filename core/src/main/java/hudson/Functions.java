@@ -73,6 +73,7 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
@@ -1866,9 +1867,12 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
+     * This was primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
+     *
+     * @deprecated use {@link JNLPLauncher#getInboundAgentUrl}
      */
+    @Deprecated
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
