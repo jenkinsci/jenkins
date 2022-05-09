@@ -142,6 +142,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -4723,7 +4724,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             try {
-                ScriptListener.fireScriptEvent(req);
+                String runner = "Controller";
+                if (!(channel instanceof LocalChannel)) {
+                    runner = ((Channel) channel).getName();
+                }
+                ScriptListener.fireScriptConsoleEvent(text, runner);
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {

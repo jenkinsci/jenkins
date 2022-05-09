@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.model.ScriptListener;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -70,7 +71,9 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[0]));
+        String script = loadScript();
+        ScriptListener.fireScriptFromCLIEvent(script);
+        groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }
 

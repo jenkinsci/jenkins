@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.model.ScriptListener;
 import jline.TerminalFactory;
 import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -79,6 +80,7 @@ public class GroovyshCommand extends CLICommand {
         }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
+        ScriptListener.fireScriptFromCLIEvent(commandLine.toString());
         return shell.run(commandLine.toString());
     }
 
