@@ -81,7 +81,7 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id, String style) {
+    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id) {
         String translatedName = cleanName(name);
 
         String identifier = Util.fixEmpty(pluginName) == null ? "core" : pluginName;
@@ -92,15 +92,11 @@ public class IconSet {
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
             symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
-            symbol = symbol.replaceAll("(style=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty()) {
                 symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
             }
             if (!id.isEmpty()) {
                  symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
-            }
-            if (!style.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg style=\"" + style + "\"");
             }
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
             return prependTitleIfRequired(symbol, title);
@@ -125,15 +121,11 @@ public class IconSet {
         symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
-        symbol = symbol.replaceAll("(style=\")[^&]*?(\")", "");
         if (!tooltip.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
         }
         if (!id.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
-        }
-        if (!style.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg style=\"" + style + "\"");
         }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
         symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
