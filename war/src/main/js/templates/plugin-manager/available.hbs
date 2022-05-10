@@ -1,8 +1,11 @@
 {{#each plugins}}
     <tr data-plugin-id="{{ this.name }}" data-plugin-version="{{ this.version }}">
         {{#if @root/admin }}
-            <td align="center">
-                <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}">
+            <td class="jenkins-table__cell--checkbox">
+                <span class="jenkins-checkbox">
+                    <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}" id="plugin.{{ this.name }}.{{ this.sourceId }}">
+                    <label for="plugin.{{ this.name }}.{{ this.sourceId }}"></label>
+                </span>
             </td>
         {{/if}}
         <td>
