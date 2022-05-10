@@ -3,19 +3,22 @@ package hudson.node_monitors;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Label;
-import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.remoting.Callable;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+/**
+ * Displays the labels that are defined for an agent.
+ */
 public class LabelsMonitor extends NodeMonitor
 {
 
@@ -38,7 +41,7 @@ public class LabelsMonitor extends NodeMonitor
   public String getColumnCaption()
   {
     if (!isIgnored())
-      return "Labels";
+      return getDescriptor().getDisplayName();
     return null;
   }
 
@@ -61,13 +64,14 @@ public class LabelsMonitor extends NodeMonitor
       data = Label.parse(n.getLabelString());
       if (includeDynamic)
       {
-        data.addAll(getDynamicLabels(n));
+        data.addAll(n.getDynamicLabels());
       }
     }
     return new Data(c.getName(), data);
   }
 
   @Restricted(DoNotUse.class)
+  @ExportedBean(defaultVisibility = 0)
   public static class Data {
     private final String computerName;
     private final Set<LabelAtom> labels;
@@ -88,24 +92,13 @@ public class LabelsMonitor extends NodeMonitor
     }
   }
 
-  private HashSet<LabelAtom> getDynamicLabels(Node n) {
-    HashSet<LabelAtom> result = new HashSet<>();
-    for (LabelFinder labeler : LabelFinder.all()) {
-        // Filter out any bad(null) results from plugins
-        // for compatibility reasons, findLabels may return LabelExpression and not atom.
-        for (Label label : labeler.findLabels(n))
-            if (label instanceof LabelAtom) result.add((LabelAtom) label);
-    }
-    return result;
-  }
-
   @Extension
   @Symbol("labels")
   public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Set<LabelAtom>> {
 
     @Override
     public String getDisplayName() {
-        return "Labels";
+        return Messages.LabelsMonitor_DisplayName();
     }
 
     @Override
