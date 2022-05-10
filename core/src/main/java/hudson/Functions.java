@@ -2304,7 +2304,7 @@ public class Functions {
 
         if (iconMetadata == null) {
             // Icon could be provided as a simple iconFileName e.g. "help.svg"
-            iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
+            iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess));
         }
 
         if (iconMetadata == null) {
