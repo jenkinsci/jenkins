@@ -63,9 +63,8 @@ THE SOFTWARE.
           <thead>
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'up'}"
-                    tooltip="${%Check to install the plugin}"
-                    width="32">${%Install}
+                <th data-sort-disable="true" tooltip="${%Check to install the plugin}">
+                  ${%Install}
                 </th>
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
@@ -96,11 +95,15 @@ THE SOFTWARE.
                   name="${p.displayName}"
                   data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
-                    <td align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
-                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
-                             checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}"
-                             data-compat-warning="${!p.isCompatible(cache)}"/>
+                    <td class="jenkins-table__cell--checkbox">
+                      <span class="jenkins-checkbox">
+                        <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                               id="plugin.${p.name}.${p.sourceId}"
+                               checked="${installedOk ? 'checked' : null}"
+                               disabled="${installedOk ? 'disabled' : null}"
+                               data-compat-warning="${!p.isCompatible(cache)}"/>
+                        <label for="plugin.${p.name}.${p.sourceId}" />
+                      </span>
                     </td>
                   </l:isAdmin>
                   <td class="details"
