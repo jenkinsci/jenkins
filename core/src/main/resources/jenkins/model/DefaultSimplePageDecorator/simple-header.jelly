@@ -24,7 +24,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
     <div id="loginIntroDefault">
-        <div class="logo"> </div>
+        <div class="logo">
+          <img src="${imagesURL}/svgs/logo.svg" alt="Jenkins logo" />
+        </div>
         <h1>${%Welcome to Jenkins!}</h1>
     </div>
 </j:jelly>
