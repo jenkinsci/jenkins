@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
-import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +16,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jenkins.util.java.JavaUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,11 +52,9 @@ public class DetachedPluginsUtil {
             DETACHED_LIST = Collections.unmodifiableList(configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
 
-                // defaults to Java 1.0 to install unconditionally if unspecified
                 return new DetachedPluginsUtil.DetachedPlugin(pieces[0],
                                                               pieces[1] + ".*",
-                                                              pieces[2],
-                                                              pieces.length == 4 ? pieces[3] : "1.0");
+                                                              pieces[2]);
             }).collect(Collectors.toList()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
@@ -101,16 +97,13 @@ public class DetachedPluginsUtil {
     }
 
     /**
-     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core, applicable to the current Java runtime.
+     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core.
      *
      * @return A {@link List} of {@link DetachedPlugin}s.
-     * @see JavaUtils#getCurrentJavaRuntimeVersionNumber()
      */
     public static @NonNull
     List<DetachedPlugin> getDetachedPlugins() {
-        return DETACHED_LIST.stream()
-                .filter(plugin -> JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(plugin.getMinimumJavaVersion()))
-                .collect(Collectors.toList());
+        return Collections.unmodifiableList(new ArrayList<>(DETACHED_LIST));
     }
 
     /**
@@ -174,13 +167,11 @@ public class DetachedPluginsUtil {
          */
         private final VersionNumber splitWhen;
         private final String requiredVersion;
-        private final JavaSpecificationVersion minJavaVersion;
 
-        private DetachedPlugin(String shortName, String splitWhen, String requiredVersion, String minJavaVersion) {
+        private DetachedPlugin(String shortName, String splitWhen, String requiredVersion) {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
             this.requiredVersion = requiredVersion;
-            this.minJavaVersion = new JavaSpecificationVersion(minJavaVersion);
         }
 
         /**
@@ -214,11 +205,6 @@ public class DetachedPluginsUtil {
         @Override
         public String toString() {
             return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
-        }
-
-        @NonNull
-        public JavaSpecificationVersion getMinimumJavaVersion() {
-            return minJavaVersion;
         }
     }
 }

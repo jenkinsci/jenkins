@@ -2293,12 +2293,17 @@ public class Functions {
             return null;
         }
 
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
 
+        // `iconGuess` must be class names if it contains a whitespace.
+        //  It may contains extra css classes unrelated to icons.
+        // Filter classes with `icon-` prefix.
+        if (iconMetadata == null && iconGuess.contains(" ")) {
+            iconMetadata = IconSet.icons.getIconByClassSpec(filterIconNameClasses(iconGuess));
+        }
+
         if (iconMetadata == null) {
-            // Icon could be provided as a simple iconFileName e.g. "settings.png"
+            // Icon could be provided as a simple iconFileName e.g. "help.svg"
             iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
         }
 
@@ -2308,6 +2313,12 @@ public class Functions {
         }
 
         return iconMetadata;
+    }
+
+    private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
+        return Arrays.stream(StringUtils.split(classNames, ' '))
+            .filter(className -> className.startsWith("icon-"))
+            .collect(Collectors.joining(" "));
     }
 
     @Restricted(NoExternalUse.class)
