@@ -70,6 +70,7 @@ THE SOFTWARE.
         <j:arg value="${attrs.tooltip ?: ''}" />
         <j:arg value="${iconMetadata.classSpec ?: ''}" />
         <j:arg value="${h.extractPluginNameFromIconSrc(iconSrc)}" />
+        <j:arg value="${attrs.id ?: ''}" />
       </j:invokeStatic>
       <j:out value="${icon}" />
     </j:when>

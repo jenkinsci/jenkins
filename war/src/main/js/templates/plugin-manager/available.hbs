@@ -35,11 +35,6 @@
                     {{{ this.newerCoreRequired }}}
                 </div>
             {{/if}}
-            {{#if this.dependenciesNewerJava }}
-                <div class="alert alert-danger">
-                    {{{ this.dependenciesNewerJava }}}
-                </div>
-            {{/if}}
             {{#if this.unresolvedSecurityWarnings }}
                 <div class="alert alert-danger">
                     {{ this.unresolvedSecurityWarnings.text }}

@@ -155,9 +155,6 @@ THE SOFTWARE.
                     <j:if test="${p.isForNewerHudson()}">
                       <div class="alert alert-danger">${%coreWarning(p.requiredCore)}</div>
                     </j:if>
-                    <j:if test="${p.isForNewerJava()}">
-                      <div class="alert alert-danger">${%javaWarning(p.minimumJavaVersion)}</div>
-                    </j:if>
                     <j:if test="${p.fixesSecurityVulnerabilities()}">
                       <div class="alert alert-warning">
                         ${%Applying this update will address security vulnerabilities in the currently installed version.}
@@ -182,11 +179,6 @@ THE SOFTWARE.
                     <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
                       <div class="alert alert-danger">
                         ${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}
-                      </div>
-                    </j:if>
-                    <j:if test="${p.isNeededDependenciesForNewerJava()}">
-                      <div class="alert alert-danger">
-                        ${%depJavaWarning(p.getNeededDependenciesMinimumJavaVersion().toString())}
                       </div>
                     </j:if>
                     <j:if test="${p.hasWarnings()}">
