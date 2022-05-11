@@ -234,14 +234,14 @@ public class JNLPLauncherTest {
     @Test
     public void testConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
-        JNLPLauncher original = new JNLPLauncher("a", "b");
+        JNLPLauncher original = new JNLPLauncher("a");
         s.setLauncher(original);
         j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), RemotingWorkDirSettings.getEnabledDefaults());
         RemotingWorkDirSettings custom = new RemotingWorkDirSettings(false, null, "custom", false);
         ((JNLPLauncher) s.getLauncher()).setWorkDirSettings(custom);
         HtmlPage p = j.createWebClient().getPage(s, "configure");
         j.submit(p.getFormByName("config"));
-        j.assertEqualBeans(original, s.getLauncher(), "tunnel,vmargs");
+        j.assertEqualBeans(original, s.getLauncher(), "tunnel");
         j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), custom);
     }
 

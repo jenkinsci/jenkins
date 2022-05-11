@@ -66,11 +66,10 @@ public class JNLPLauncher extends ComputerLauncher {
     public final String tunnel;
 
     /**
-     * Additional JVM arguments. Can be null.
-     * @since 1.297
+     * @deprecated No longer used.
      */
-    @CheckForNull
-    public final String vmargs;
+    @Deprecated
+    public final transient String vmargs = null;
 
     @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
@@ -102,10 +101,20 @@ public class JNLPLauncher extends ComputerLauncher {
         }
     }
 
+    // TODO cannot easily make tunnel into a @DataBoundSetter because then the @DataBoundConstructor would be on a no-arg constructor
+    // which is already defined and deprecated. Could retroactively let no-arg constructor use default for workDirSettings,
+    // which would be a behavioral change only for callers of the Java constructor (unlikely).
     @DataBoundConstructor
+    public JNLPLauncher(@CheckForNull String tunnel) {
+        this.tunnel = Util.fixEmptyAndTrim(tunnel);
+    }
+
+    /**
+     * @deprecated use {@link JNLPLauncher#JNLPLauncher(String)}
+     */
+    @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
-        this.vmargs = Util.fixEmptyAndTrim(vmargs);
     }
 
     /**
