@@ -4,6 +4,18 @@
   .labels {
     flex:99;
   }
+  .labelcolumnbox > span {
+    padding-top: 1.5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+  .labelcolumnbox > span > svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .hidden {
+    display: none;
+  }
   </style>
   <td align="right">
     <div class="expanding-input">
@@ -31,7 +43,10 @@
       </nobr>
     </div>
     <j:if test="${count > from.maxLabelCount + 1}">
-      <div class="expanding-input__input labelcolumnbox pseudoLink" tooltip="${%View all labels}" data="${data.computerName}">...</div>
+      <div class="expanding-input__input labelcolumnbox" tooltip="${%View/Hide more labels}" data="${data.computerName}">
+        <span id="icon-down-${data.computerName}" class="jenkins-table__button"><l:icon src="symbol-chevron-down"/></span>
+        <span id="icon-up-${data.computerName}" class="hidden jenkins-table__button"><l:icon src="symbol-chevron-up"/></span>
+      </div>
     </j:if>
     </div>
   </td>
