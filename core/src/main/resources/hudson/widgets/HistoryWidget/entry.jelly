@@ -43,7 +43,7 @@ THE SOFTWARE.
         <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
-        <j:set var="linkTitleAttr" value=""/> 
+        <j:set var="linkTitleAttr" value=""/>
         <j:if test="${!build.building}">
           <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
         </j:if>
