@@ -1,6 +1,6 @@
 # See ClassicPluginStrategy.DETACHED_LIST. As of JENKINS-47634 also used by plugin-compat-tester.
 
-# Columns are: plugin ID, last core release still containing the plugin's functionality, plugin version that's implied, minimum Java specification version where to install the plugin
+# Columns are: plugin ID, last core release still containing the plugin's functionality, plugin version that's implied
 
 # Note that all split plugins between and including matrix-auth and jaxb incorrectly use the first
 # core release without the plugin's functionality when they should use the immediately prior release.
@@ -27,7 +27,7 @@ command-launcher 2.86 1.0
 jdk-tool 2.112 1.0
 
 # JENKINS-55681
-jaxb 2.163 2.3.0 11
+jaxb 2.163 2.3.0
 
 #JENKINS-43610 Split Trilead out from Core
 trilead-api 2.184 1.0.4
