@@ -1367,7 +1367,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                             .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
-                .limit(Math.max(limit - plugins.size(), 1))
                 .sorted((o1, o2) -> {
                     String o1DisplayName = o1.getDisplayName();
                     if (o1.name.equalsIgnoreCase(query) ||
@@ -1387,6 +1386,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     return o1DisplayName.compareTo(o2DisplayName);
                 })
+                .limit(Math.max(limit - plugins.size(), 1))
                 .map(plugin -> {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("name", plugin.name);
