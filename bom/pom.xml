@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.3</asm.version>
     <slf4jVersion>1.7.36</slf4jVersion>
-    <stapler.version>1669.v95a_4b_919a_b_a_2</stapler.version>
+    <stapler.version>1685.v3b_5035c4ce05</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -260,31 +260,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>instance-identity</artifactId>
         <version>2.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>launchd-slave-installer</artifactId>
-        <version>1.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>slave-installer</artifactId>
-        <version>1.7</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>systemd-slave-installer</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>upstart-slave-installer</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>windows-slave-installer</artifactId>
-        <version>2.0</version>
       </dependency>
       <dependency>
         <groupId>org.jfree</groupId>

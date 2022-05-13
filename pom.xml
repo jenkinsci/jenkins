@@ -90,7 +90,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.13</remoting.version>
+    <remoting.version>4.14</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -102,7 +102,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.5.1</mockito.version>
-    <spotless.version>2.22.4</spotless.version>
+    <spotless.version>2.22.5</spotless.version>
 
     <!-- TODO SUREFIRE-2056 -->
     <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
