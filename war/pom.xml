@@ -97,10 +97,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>instance-identity</artifactId>
-    </dependency>
-    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
@@ -415,7 +411,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.0.3</version>
+                  <version>3.1.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -434,6 +430,12 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
                   <version>1.6.2-5</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>instance-identity</artifactId>
+                  <version>3.0.1</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>

@@ -37,3 +37,6 @@ sshd 2.281 3.0.1
 
 javax-activation-api 2.330 1.2.0-2
 javax-mail-api 2.330 1.6.2-5
+
+# JENKINS-55582
+instance-identity 2.347 3.0.1
