@@ -1841,9 +1841,6 @@ Form.findMatchingInput = function(base, name) {
 function onBuildHistoryChange(handler) {
     Event.observe(window, 'jenkins:buildHistoryChanged', handler);
 }
-function fireBuildHistoryChanged() {
-    Event.fire(window, 'jenkins:buildHistoryChanged');
-}
 
 function toQueryString(params) {
     var query = '';
