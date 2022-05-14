@@ -28,7 +28,7 @@ import java.io.ObjectInputStream;
  * class Caller {
  *     void foo() {
  *         try (SetContextClassLoader sccl = new SetContextClassLoader(Caller.class)) {
- *             [...] // Uses Thread.currentThread().getContextClassLoader()
+ *             [...] // Callee uses Thread.currentThread().getContextClassLoader()
  *         }
  *     }
  * }
