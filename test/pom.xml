@@ -255,6 +255,7 @@ THE SOFTWARE.
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
+          <test>hudson.model.QueueRestartTest#persistQueueOnConsecutiveRestarts</test>
         </configuration>
         <executions>
           <!-- Unbind the default execution so that it does not run before test-runtime. -->
@@ -325,7 +326,6 @@ THE SOFTWARE.
       </activation>
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>

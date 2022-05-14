@@ -71,6 +71,15 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
+    <!-- Speed up the loop -->
+    <spotbugs.skip>true</spotbugs.skip>
+    <enforcer.skip>true</enforcer.skip>
+    <access-modifier-checker.skip>true</access-modifier-checker.skip>
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+    <invoker.skip>true</invoker.skip>
+    <spotless.check.skip>true</spotless.check.skip>
+    <checkstyle.skip>true</checkstyle.skip>
+
     <revision>2.348</revision>
     <changelist>-SNAPSHOT</changelist>
 
@@ -84,8 +93,6 @@ THE SOFTWARE.
     <patch.request.repository>jenkins</patch.request.repository>
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
-
-    <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 

@@ -127,6 +127,7 @@
         <!-- Version specified in grandparent POM -->
         <configuration>
           <argLine>@{jacocoSurefireArgs}</argLine>
+          <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>

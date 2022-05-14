@@ -12,8 +12,8 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
-def buildTypes = ['Linux', 'Windows']
-def jdks = [8, 11, 17]
+def buildTypes = ['Linux']
+def jdks = [11]
 
 def builds = [:]
 for (i = 0; i < buildTypes.size(); i++) {
@@ -44,22 +44,18 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Now run the actual build.
         stage("${buildType} Build / Test") {
-          timeout(time: 5, unit: 'HOURS') {
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
+          timeout(time: 12, unit: 'HOURS') {
+            for (int i = 1; i <= 400; i++) {
+              echo "Attempt ${i}"
               def mavenOptions = [
-                '-Pdebug',
-                '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
-                '-Dmaven.test.failure.ignore',
-                '-Dspotbugs.failOnError=false',
-                '-Dcheckstyle.failOnViolation=false',
                 '-Dset.changelist',
                 'help:evaluate',
                 '-Dexpression=changelist',
                 "-Doutput=$changelistF",
                 'clean',
-                'install',
+                'verify',
               ]
               infra.runMaven(mavenOptions, jdk)
               if (isUnix()) {
@@ -72,12 +68,6 @@ for (i = 0; i < buildTypes.size(); i++) {
         // Once we've built, archive the artifacts and the test results.
         stage("${buildType} Publishing") {
           archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the core package'
-          }
-          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the test package'
-          }
           // cli has been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
@@ -160,6 +150,7 @@ builds.ath = {
   }
 }
 
+builds.remove('ath')
 builds.failFast = failFast
 parallel builds
 infra.maybePublishIncrementals()
