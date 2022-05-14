@@ -73,6 +73,7 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
@@ -1866,9 +1867,12 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
+     * This was primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
+     *
+     * @deprecated use {@link JNLPLauncher#getInboundAgentUrl}
      */
+    @Deprecated
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
@@ -2289,12 +2293,17 @@ public class Functions {
             return null;
         }
 
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
 
+        // `iconGuess` must be class names if it contains a whitespace.
+        //  It may contains extra css classes unrelated to icons.
+        // Filter classes with `icon-` prefix.
+        if (iconMetadata == null && iconGuess.contains(" ")) {
+            iconMetadata = IconSet.icons.getIconByClassSpec(filterIconNameClasses(iconGuess));
+        }
+
         if (iconMetadata == null) {
-            // Icon could be provided as a simple iconFileName e.g. "settings.png"
+            // Icon could be provided as a simple iconFileName e.g. "help.svg"
             iconMetadata = IconSet.icons.getIconByClassSpec(IconSet.toNormalizedIconNameClass(iconGuess) + " icon-md");
         }
 
@@ -2304,6 +2313,12 @@ public class Functions {
         }
 
         return iconMetadata;
+    }
+
+    private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
+        return Arrays.stream(StringUtils.split(classNames, ' '))
+            .filter(className -> className.startsWith("icon-"))
+            .collect(Collectors.joining(" "));
     }
 
     @Restricted(NoExternalUse.class)

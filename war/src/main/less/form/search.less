@@ -20,9 +20,28 @@
       -webkit-appearance: none;
     }
 
-    // By default the clear text button doesn't change the cursor on hover - lets turn it into a pointer
-    &::-webkit-search-cancel-button:hover {
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      height: 1rem;
+      width: 1rem;
+      margin-right: 2px;
+      background: currentColor;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm75.31 260.69a16 16 0 11-22.62 22.62L256 278.63l-52.69 52.68a16 16 0 01-22.62-22.62L233.37 256l-52.68-52.69a16 16 0 0122.62-22.62L256 233.37l52.69-52.68a16 16 0 0122.62 22.62L278.63 256z'/%3E%3C/svg%3E");
+      mask-size: contain;
+      mask-repeat: no-repeat;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.8);
+      transition: var(--standard-transition);
       cursor: pointer;
+
+      &:hover {
+        opacity: 0.75 !important;
+      }
+
+      &:active {
+        opacity: 1 !important;
+      }
     }
 
     &:hover {
@@ -34,6 +53,12 @@
       outline: none;
       border-color: var(--focus-input-border);
       box-shadow: var(--form-input-glow--focus);
+
+      &::-webkit-search-cancel-button {
+        opacity: 0.5;
+        pointer-events: all;
+        transform: scale(1);
+      }
     }
   }
 

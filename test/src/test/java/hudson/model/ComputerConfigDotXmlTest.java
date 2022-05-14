@@ -144,7 +144,7 @@ public class ComputerConfigDotXmlTest {
         final String out = outputStream.toString();
         assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
-        assertThat(out, containsString("<description>dummy</description>"));
+        assertThat(out, containsString("<mode>NORMAL</mode>"));
     }
 
     @Test
