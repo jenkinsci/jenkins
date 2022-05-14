@@ -1838,10 +1838,6 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-function onBuildHistoryChange(handler) {
-    Event.observe(window, 'jenkins:buildHistoryChanged', handler);
-}
-
 function toQueryString(params) {
     var query = '';
     if (params) {
