@@ -115,6 +115,12 @@
     width: 3.5rem;
   }
 
+  &__cell--checkbox {
+    padding: calc(var(--table-padding) * 2) !important;
+    vertical-align: top !important;
+    width: calc((var(--table-padding) * 2) + 22px);
+  }
+
   &__cell--no-wrap {
     white-space: nowrap;
   }
@@ -171,7 +177,7 @@
   }
 
   &__button, &__link {
-    color: var(--link-color) !important;
+    color: var(--link-color);
   }
 
   &__button, .sortheader, &__link {
@@ -227,25 +233,13 @@
     &:focus, &:active {
       &::before {
         opacity: 0.1 !important;
-        border-radius: 5px;
+        border-radius: 6px;
         background: var(--text-color);
       }
 
       &::after {
         box-shadow: 0 0 0 5px var(--text-color);
       }
-    }
-
-    &--green {
-      color: var(--green) !important;
-    }
-
-    &--orange {
-      color: var(--orange) !important;
-    }
-
-    &--red {
-      color: var(--red) !important;
     }
   }
 
@@ -258,7 +252,7 @@
       bottom: -5px;
       right: -8px;
       border-radius: 13px;
-      background: var(--link-color);
+      background: currentColor;
       opacity: 0.05;
     }
 
