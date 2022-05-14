@@ -85,7 +85,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1741.va_38664ed66c3</version>
+      <version>1752.v86627a_c48d91</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -176,13 +176,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>318.va_f3ccb_729b_71</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- for testing JNLP launch. -->
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>netx</artifactId>
-      <version>0.5-hudson-2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
