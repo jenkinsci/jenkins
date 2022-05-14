@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import hudson.PluginManager;
 import hudson.remoting.ObjectInputStreamEx;
 import java.io.ObjectInputStream;
 
@@ -34,9 +35,11 @@ import java.io.ObjectInputStream;
  * </pre>
  *
  * <p>When called from a plugin, the {@code clazz} argument should typically be the calling class,
- * whose class loader has access to all the plugin's direct and transitive dependencies. In
- * functional tests, {@code RealJenkinsRule.Endpoint} can be used to reference a class loader that
- * has access to the plugins defined in the test scenario.
+ * whose class loader has access to all the plugin's direct and transitive dependencies. When the
+ * particular class loader needed is unclear, {@link PluginManager.UberClassLoader} can be used as a
+ * fallback, though this is not as safe since lookups could be ambiguous in case two unrelated
+ * plugins both bundled the same library. In functional tests, {@code RealJenkinsRule.Endpoint} can
+ * be used to reference a class loader that has access to the plugins defined in the test scenario.
  *
  * <p>See <a
  * href="https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#context-class-loaders">the
