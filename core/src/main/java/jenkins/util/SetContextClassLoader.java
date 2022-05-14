@@ -57,6 +57,7 @@ public final class SetContextClassLoader implements AutoCloseable {
     public SetContextClassLoader(Class<?> clazz) {
         t = Thread.currentThread();
         orig = t.getContextClassLoader();
+        // It is too bad that Reflection.getCallerClass() is a private API.
         t.setContextClassLoader(clazz.getClassLoader());
     }
 
