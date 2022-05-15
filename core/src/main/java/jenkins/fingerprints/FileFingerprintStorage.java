@@ -90,6 +90,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Load the Fingerprint stored inside the given file.
      */
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "intentional check for fingerprint corruption")
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if (!configFile.exists()) {
@@ -103,6 +106,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
                         + (loaded != null ? loaded.getClass() : "null"));
             }
             Fingerprint f = (Fingerprint) loaded;
+            if (f.getPersistedFacets() == null) {
+                logger.log(Level.WARNING, "Malformed fingerprint {0}: Missing facets", configFile);
+                Files.deleteIfExists(Util.fileToPath(file));
+                return null;
+            }
             return f;
         } catch (IOException e) {
             if (Files.exists(Util.fileToPath(file)) && Files.size(Util.fileToPath(file)) == 0) {

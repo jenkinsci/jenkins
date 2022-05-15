@@ -1,10 +1,7 @@
 import debounce from 'lodash/debounce'
-import requestAnimationFrame from 'raf';
 
 import pluginManagerAvailable from './templates/plugin-manager/available.hbs'
 import pluginManager from './api/pluginManager';
-
-var filterInput = document.getElementById('filter-box');
 
 function applyFilter(searchQuery) {
     // debounce reduces number of server side calls while typing
@@ -14,6 +11,7 @@ function applyFilter(searchQuery) {
         var admin = pluginsTable.dataset.hasadmin === 'true';
         var selectedPlugins = [];
 
+        var filterInput = document.getElementById('filter-box');
         filterInput.parentElement.classList.remove("jenkins-search--loading");
 
         function clearOldResults() {
@@ -43,11 +41,6 @@ function applyFilter(searchQuery) {
         });
 
         tbody.insertAdjacentHTML('beforeend', rows);
-
-        // @see JENKINS-64504 - Update the sticky buttons position after each search.
-        requestAnimationFrame(() => {
-            layoutUpdateCallback.call()
-        })
     })
 }
 
@@ -58,10 +51,13 @@ var handleFilter = function (e) {
 var debouncedFilter = debounce(handleFilter, 150);
 
 document.addEventListener("DOMContentLoaded", function () {
+    var filterInput = document.getElementById('filter-box');
     filterInput.addEventListener('input', function (e) {
         debouncedFilter(e);
         filterInput.parentElement.classList.add("jenkins-search--loading");
     });
+
+    filterInput.focus();
 
     applyFilter(filterInput.value);
 

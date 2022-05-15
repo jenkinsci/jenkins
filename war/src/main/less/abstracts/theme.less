@@ -66,13 +66,6 @@
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
 
-  // Header new UI colors
-  --header-bg-v2: var(--primary-hover);
-  --brand-link-color-hover-v2: var(--primary-hover);
-  --brand-link-color-active-v2: var(--primary-active);
-  --header-link-bg-hover-v2: var(--primary-hover);
-  --header-link-bg-active-v2: var(--primary-active);
-
   // Header dimensions
   --header-item-border-radius: 4px;
 
@@ -81,14 +74,6 @@
   --breadcrumbs-border: var(--light-grey);
   --breadcrumbs-text-color: #4d545d;
   --breadcrumbs-item-bg-color--hover: var(--light-grey);
-
-  // Non-security Monitor / bell-alert new colors
-  --monitor-bg-v2: #fff3cd;
-  --monitor-color-v2: #856404;
-
-  // Security Monitor / shield new colors
-  --sec-monitor-bg-v2: #f8d7da;
-  --sec-monitor-color-v2: #721c24;
 
   // Alert banners
   // Default
@@ -141,6 +126,7 @@
   --btn-large-font-size: var(--font-size-sm);
   --btn-large-line-height: 1.25rem;
   // Button primary
+  --button-color--primary: var(--background);
   --btn-primary-bg: #063F61;
   --btn-primary-bg-hover: lighten(#063F61, 7.5%);
   --btn-primary-bg-active: lighten(#063F61, 12%);
@@ -317,6 +303,7 @@
   --plugin-manager-category-text-color: var(--text-color);
   --plugin-manager-category-link-color--hover: var(--text-color);
   --plugin-manager-unavailable-bg-color: #f4f4f4;
+  --plugin-manager-unavailable-label-color: var(--text-color);
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;
@@ -326,7 +313,34 @@
   --call-to-action-text-color: var(--alert-info-text-color);
 
   // Colors
-  --green: #1c9146;
-  --orange: #fe820a;
-  --red: #df001c;
+  each(@colors, {
+    --light-@{key}: lighten(@value, 20%);
+    --@{key}: @value;
+    --dark-@{key}: darken(@value, 20%);
+  });
+
+  each(@semantics, {
+    --@{key}-color: @value;
+  })
+}
+
+@colors: {
+  blue: #007aff;
+  brown: #a2845e;
+  cyan: #32ade6;
+  green: #1c9146;
+  indigo: #5856d6;
+  orange: #fe820a;
+  pink: #fb0f45;
+  purple: #af52de;
+  red: #df001c;
+  yellow: #ffcc00;
+}
+
+@semantics: {
+  error: var(--red);
+  warning: var(--orange);
+  success: var(--green);
+  destructive: var(--red);
+  build: var(--green);
 }

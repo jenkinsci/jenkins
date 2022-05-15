@@ -30,19 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <l:app-bar title="${%Plugin Manager}">
-      <div class="jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:icon src="symbol-search"/>
-        </div>
-      </div>
-    </l:app-bar>
+    <l:app-bar title="${%Plugin Manager}" />
 
     <st:include page="sidepanel.jelly"/>
 
@@ -66,6 +54,18 @@ THE SOFTWARE.
       />
 
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+
+      <div class="jenkins-form-item jenkins-search">
+        <input
+          class="jenkins-search__input"
+          type="search"
+          id="filter-box"
+          value="${request.getParameter('filter')}"
+          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
+        <div class="jenkins-search__icon">
+          <l:icon src="symbol-search"/>
+        </div>
+      </div>
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
@@ -179,7 +179,7 @@ THE SOFTWARE.
                         <j:if test="${p.downgradable}">
                           <form class="jenkins-buttons-row" method="post"
                                 action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-table__button  jenkins-table__button--orange" tooltip="${%downgradeTo(p.backupVersion)}">
+                            <button class="jenkins-table__button jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
                               <l:icon src="symbol-downgrade-circle"/>
                               <span class="jenkins-!-margin-left-1"
                                     style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
@@ -225,7 +225,7 @@ THE SOFTWARE.
                               </div>
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
+                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
                                 <l:icon src="symbol-close-circle"/>
                               </button>
                             </form>

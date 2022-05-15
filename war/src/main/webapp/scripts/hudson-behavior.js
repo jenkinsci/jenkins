@@ -1441,45 +1441,6 @@ function rowvgStartEachRow(recursive,f) {
     }
   })
 
-    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
-        this[".top-sticker"](sticker);
-    });
-
-    /**
-     * @param {HTMLElement} sticker
-     */
-    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
-
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        var initialBreadcrumbPosition = DOM.getRegion(shadow);
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-            if(pos.top <= initialBreadcrumbPosition.top) {
-                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
-            }
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        adjustSticker();
-    });
-
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
@@ -1767,7 +1728,7 @@ function expandTextArea(button,id) {
     }
 
     var parent = n.parentNode;
-    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
     var textArea = parent.childNodes[0];
     textArea.name = field.name;
     textArea.value = value;
@@ -1877,13 +1838,6 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-function onBuildHistoryChange(handler) {
-    Event.observe(window, 'jenkins:buildHistoryChanged', handler);
-}
-function fireBuildHistoryChanged() {
-    Event.fire(window, 'jenkins:buildHistoryChanged');
-}
-
 function toQueryString(params) {
     var query = '';
     if (params) {
@@ -1937,52 +1891,6 @@ function getStyle(e,a){
     return e.currentStyle[a];
   return null;
 }
-
-function ElementResizeTracker() {
-    this.trackedElements = [];
-
-    if(isRunAsTest) {
-        return;
-    }
-
-    var thisTracker = this;
-    function checkForResize() {
-        for (var i = 0; i < thisTracker.trackedElements.length; i++) {
-            var element = thisTracker.trackedElements[i];
-            var currDims = Element.getDimensions(element);
-            var lastDims = element.lastDimensions;
-            if (currDims.width !== lastDims.width || currDims.height !== lastDims.height) {
-                Event.fire(element, 'jenkins:resize');
-            }
-            element.lastDimensions = currDims;
-        }
-    }
-    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
-
-    function checkForResizeLoop() {
-        checkForResize();
-        setTimeout(checkForResizeLoop, 200);
-    }
-    checkForResizeLoop();
-}
-ElementResizeTracker.prototype.addElement = function(element) {
-    for (var i = 0; i < this.trackedElements.length; i++) {
-        if (this.trackedElements[i] === element) {
-            // we're already tracking it so no need to add it.
-            return;
-        }
-    }
-    this.trackedElements.push(element);
-}
-ElementResizeTracker.prototype.onResize = function(element, handler) {
-    element.lastDimensions = Element.getDimensions(element);
-    Event.observe(element, 'jenkins:resize', handler);
-    this.addElement(element);
-}
-ElementResizeTracker.fireResizeCheck = function() {
-    Event.fire(window, 'jenkins:resizeCheck');
-}
-var elementResizeTracker = new ElementResizeTracker();
 
 /**
  * Makes sure the given element is within the viewport.

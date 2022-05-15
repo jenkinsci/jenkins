@@ -37,8 +37,6 @@ updates:
       # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
         versions: [">=10.0.0"]
-      # Pending https://github.com/siom79/japicmp/pull/266
-      - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
       # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
       - dependency-name: "org.jenkins-ci:winstone"
       # Starting with version 10.0, this library requires Java 11

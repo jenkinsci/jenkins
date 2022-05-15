@@ -42,7 +42,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -56,6 +55,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
 import hudson.slaves.WorkspaceList;
+import hudson.tasks.ArtifactArchiver;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -1985,7 +1985,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException, PosixException {
+    public int mode() throws IOException, InterruptedException {
         if (!isUnix())   return -1;
         return act(new Mode());
     }
@@ -3056,6 +3056,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
+     * A dedicated subtype of {@link InterruptedException} for when no matching Ant file mask
+     * matches are found.
+     *
+     * @see ArtifactArchiver
+     */
+    @Restricted(NoExternalUse.class)
+    public static class FileMaskNoMatchesFoundException extends InterruptedException {
+        private FileMaskNoMatchesFoundException(String message) {
+            super(message);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar") against this directory, and try to point out the problem.
      * This performs only a bounded number of operations.
      *
@@ -3224,7 +3239,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0) {
                         return true;
                     } else {
-                        throw (InterruptedException) new InterruptedException("no matches found within " + bound).initCause(c);
+                        throw (FileMaskNoMatchesFoundException) new FileMaskNoMatchesFoundException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
@@ -3456,7 +3471,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static final long serialVersionUID = 1L;
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.328")
     public static final int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());

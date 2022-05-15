@@ -237,6 +237,7 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -247,7 +248,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -498,7 +498,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile List<JDK> jdks = new ArrayList<>();
 
     private transient volatile DependencyGraph dependencyGraph;
-    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
+    private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
+    private transient Object dependencyGraphLock = new Object();
 
     /**
      * Currently active Views tab bar.
@@ -2256,7 +2258,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     void trimLabels(Node... nodes) {
         Set<LabelAtom> includedLabels = new HashSet<>();
-        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        Arrays.stream(nodes).filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
         trimLabels(includedLabels);
     }
 
@@ -2265,12 +2267,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param includedLabels the labels taken as reference to update labels. If {@code null}, all labels are considered.
      */
     private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
-        Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
-        this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
+        Set<Set<LabelAtom>> nodeLabels = new HashSet<>();
+        nodeLabels.add(this.getAssignedLabels());
+        this.getNodes().forEach(n -> nodeLabels.add(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
-                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
                     // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.
@@ -2982,9 +2985,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the item by its path name from the given context
      *
-     * <h2>Path Names</h2>
-     *
-     * <p>If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     * <p><strong>Path Names:</strong>
+     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
      *
@@ -3579,6 +3581,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
 
+            _cleanUpCancelDependencyGraphCalculation();
+
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3926,6 +3930,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to release all loggers", e);
             // save for later
             errors.add(e);
+        }
+    }
+
+    private void _cleanUpCancelDependencyGraphCalculation() {
+        synchronized (dependencyGraphLock) {
+            LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+            if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
+                scheduledFutureDependencyGraph.cancel(true);
+            }
+            if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
+                calculatingFutureDependencyGraph.cancel(true);
+            }
         }
     }
 
@@ -4899,6 +4915,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
+    public Future<DependencyGraph> getFutureDependencyGraph() {
+        synchronized (dependencyGraphLock) {
+            // Scheduled future will be the most recent one --> Return
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+
+            // Calculating future will be the most recent one --> Return
+            if (calculatingFutureDependencyGraph != null) {
+                return calculatingFutureDependencyGraph;
+            }
+
+            // No scheduled or calculating future --> Already completed dependency graph is the most recent one
+            return CompletableFuture.completedFuture(dependencyGraph);
+        }
+    }
+
     /**
      * Rebuilds the dependency map.
      */
@@ -4908,7 +4941,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
-        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -4921,13 +4953,44 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        dependencyGraphDirty.set(true);
-        return Timer.get().schedule(() -> {
-            if (dependencyGraphDirty.get()) {
-                rebuildDependencyGraph();
+        synchronized (dependencyGraphLock) {
+            // Collect calls to this method to avoid unnecessary calculation of the dependency graph
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
             }
+            // Schedule new calculation
+            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
+        return Timer.get().schedule(() -> {
+            // Wait for the currently running calculation to finish without blocking rebuildDependencyGraphAsync()
+            Future<DependencyGraph> temp = null;
+            synchronized (dependencyGraphLock) {
+                if (calculatingFutureDependencyGraph != null) {
+                    temp = calculatingFutureDependencyGraph;
+                }
+            }
+
+            if (temp != null) {
+                temp.get();
+            }
+
+            synchronized (dependencyGraphLock) {
+                // Scheduled future becomes the currently calculating future
+                calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
+                scheduledFutureDependencyGraph = null;
+            }
+
+            rebuildDependencyGraph();
+
+            synchronized (dependencyGraphLock) {
+                calculatingFutureDependencyGraph = null;
+            }
+
             return dependencyGraph;
-        }, 500, TimeUnit.MILLISECONDS);
+        }, delay, unit);
     }
 
     public DependencyGraph getDependencyGraph() {

@@ -40,7 +40,6 @@
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
     "mini-css-extract-plugin": "^0.9.0",
-    "postcss-custom-properties": "^9.1.1",
     "postcss-loader": "^3.0.0",
     "style-loader": "^1.2.1",
     "stylelint": "^13.0.0",
@@ -56,12 +55,11 @@
     "jenkins-js-modules": "^1.5.0",
     "jquery": "3.5.1",
     "lodash": "^4.17.20",
-    "raf": "^3.4.1",
     "sortablejs": "^1.13.0",
     "window-handle": "^1.0.0"
   },
   "browserslist": [
     "defaults",
-    "IE 11"
+    "not IE 11"
   ]
 }

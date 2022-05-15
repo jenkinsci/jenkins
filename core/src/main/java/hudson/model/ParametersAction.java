@@ -335,10 +335,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
             } else if (shouldKeepFlag == null) {
-                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
-                        + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
-                        + "even though it represents a security breach or `-D{2}=false` to no longer show this message.",
-                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
+                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}` (#{2}). Set `-D{3}=true` to allow "
+                        + "undefined parameters to be injected as environment variables or `-D{4}=[comma-separated list]` to whitelist specific parameter names, "
+                        + "even though it represents a security breach or `-D{3}=false` to no longer show this message.",
+                        new Object [] { v.getName(), run.getParent().getFullName(), run.getNumber(),
+                                KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
             }
         }
 

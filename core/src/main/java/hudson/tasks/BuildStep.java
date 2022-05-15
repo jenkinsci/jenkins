@@ -191,8 +191,8 @@ public interface BuildStep {
      * to perform necessary synchronizations.
      * </dl>
      *
-     * <h2>Migrating Older Implementation</h2>
      * <p>
+     * <strong>Migrating Older Implementations:</strong>
      * If you are migrating {@link BuildStep} implementations written for earlier versions of Hudson,
      * here's what you can do:
      *

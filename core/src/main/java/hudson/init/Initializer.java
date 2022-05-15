@@ -38,9 +38,8 @@ import org.jvnet.hudson.reactor.Task;
 
 /**
  * Placed on methods to indicate that this method is to be run during the Jenkins start up to perform
- * some sort of initialization tasks.
+ * some sort of initialization tasks, for example:
  *
- * <h3>Example</h3>
  * <pre>
    &#64;Initializer(after=JOB_LOADED)
    public static void init() throws IOException {

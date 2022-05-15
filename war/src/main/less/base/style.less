@@ -42,14 +42,6 @@ form {
   margin: 0;
 }
 
-input,
-textarea,
-select {
-  color: var(--text-color);
-  background-color: var(--input-color);
-  font-family: inherit;
-}
-
 td {
   vertical-align: top;
 }
@@ -100,11 +92,10 @@ td.center-align {
     color: white;
     background-color: #ef2929;
     text-align: center;
-    margin-left: 2em;
-    margin-right: 2em;
-    margin-bottom: 0.5em;
+    margin-bottom: var(--section-padding);
     padding: 0.5em;
     -moz-border-radius: 0.5em;
+    border-radius: var(--form-input-border-radius)
 }
 
 /* #header .login {
@@ -209,7 +200,6 @@ img {
 
 div.disabled {
     opacity: 0.4;
-    filter: alpha(opacity=40); /* msie */
     background-color: #000;
 }
 
@@ -243,7 +233,7 @@ pre {
   background-color: var(--pre-background);
   color: var(--pre-color) !important;
   font-family: var(--font-family-mono) !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   line-height: 1.66 !important;
 
   a {
@@ -413,10 +403,15 @@ pre.console {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
-  padding: 4px;
-  white-space: normal;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
 }
 
 .disabledJob {
@@ -539,16 +534,6 @@ div.behavior-loading {
     z-index: 999;
 }
 
-.top-sticker-inner {
-    padding: 1em;
-}
-
-.top-sticker-edge {
-    height: 16px;
-    background-image: url("../../images/top-sticker-bottom-edge.png");
-    background-repeat: repeat-x;
-}
-
 .top-sticker.noedge > .top-sticker-edge {
     display: none;
 }
@@ -594,13 +579,25 @@ div.behavior-loading {
 }
 
 .info {
-    color: var(--text-color);
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    background-image: url("../../images/16x16/go-next.png"); /* TODO: get a better icon */
-    background-position: left center;
-    background-repeat: no-repeat;
+  position: relative;
+  color: var(--text-color);
+  font-weight: bold;
+  min-height: 16px;
+  padding-left: 30px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EArrow Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M268 112l144 144-144 144M392 256H100'/%3E%3C/svg%3E");
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+  }
 }
 
 .icon16x16 {
@@ -837,6 +834,11 @@ table.parameters > tbody:hover {
 #buildHistory .build-rss-all-icon,
 #buildHistory .build-rss-failed-icon {
   margin-right: 0.25rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 #buildHistoryPage {
@@ -1045,9 +1047,16 @@ table.parameters > tbody:hover {
 }
 
 /* ========================= directory tree ========================= */
-.parentPath {
-  font-size: var(--font-size-base);
-  font-weight: bold;
+.parentPath form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .jenkins-input {
+    display: inline-flex;
+    width: 300px;
+  }
 }
 
 .dirTree li {
@@ -1059,18 +1068,20 @@ table.parameters > tbody:hover {
 }
 
 table.fileList {
-  margin-left: 2em;
   padding: 0;
 }
 
-table.fileList td {
-  padding: 0;
+table.fileList td:not(:first-of-type) {
+  padding: 0 1rem 0 0;
+  color: var(--text-color-secondary);
+
+  svg {
+    color: var(--link-color) !important;
+  }
 }
 
 table.fileList td.fileSize {
-  padding-left: 2em;
   text-align: right;
-  color: #888;
 }
 
 
@@ -1386,6 +1397,7 @@ table.progress-bar.red td.progress-bar-done {
 .textarea-preview {
     background-color: var(--very-light-grey);
     padding: 0.5em;
+    border-radius: 10px;
 }
 
 /* ========================= logRecords.jelly ================== */
@@ -1540,7 +1552,7 @@ body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
 
-body.no-decoration #page-head,
+body.no-decoration #page-header,
 body.no-decoration #side-panel,
 body.no-decoration footer {
     display: none;
@@ -1555,6 +1567,7 @@ body.no-sticker #bottom-sticker {
 svg.icon-sm {
     width: 16px;
     height: 16px;
+    vertical-align: middle;
 
   svg {
     width: 16px;
@@ -1566,6 +1579,7 @@ svg.icon-sm {
 svg.icon-md {
     width: 24px;
     height: 24px;
+    vertical-align: middle;
 
   svg {
     width: 24px;
@@ -1577,6 +1591,7 @@ svg.icon-md {
 svg.icon-lg {
     width: 32px;
     height: 32px;
+    vertical-align: middle;
 
   svg {
     width: 32px;
@@ -1588,6 +1603,7 @@ svg.icon-lg {
 svg.icon-xlg {
     width: 48px;
     height: 48px;
+    vertical-align: middle;
 
   svg {
     width: 48px;
@@ -1627,6 +1643,17 @@ svg.icon-xlg {
 /* used by elements that are hidden by default but revealed throught JavaScript */
 .default-hidden {
   display: none;
+}
+
+.app-summary {
+  & > td:first-of-type {
+    img,
+    svg {
+      width: 48px !important;
+      height: 48px !important;
+      margin-right: 1rem;
+    }
+  }
 }
 
 /* -------------------------------------- */

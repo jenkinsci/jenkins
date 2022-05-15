@@ -40,7 +40,7 @@ THE SOFTWARE.
 
       <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
         <!-- made overridable for ViewGroup that doesn't allow modifications -->
-        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
+        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 
       <j:choose>
@@ -51,7 +51,7 @@ THE SOFTWARE.
           <l:task href="${rootURL}/${it.viewUrl}asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
         </j:otherwise>
       </j:choose>
-      <l:task href="${rootURL}/${it.viewUrl}builds" icon="icon-notepad icon-md" title="${%Build History}"/>
+      <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
         <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="${%Edit View}"/>
@@ -60,7 +60,7 @@ THE SOFTWARE.
         <l:task href="delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete View}"/>
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
-        <l:task href="${rootURL}/projectRelationship" icon="icon-search icon-md" title="${%Project Relationship}"/>
+        <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="${%Project Relationship}"/>
         <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
       </j:if>
 

@@ -25,7 +25,11 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -369,6 +373,34 @@ public class FunctionsTest {
         assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
+    @Test
+    public void extractPluginNameFromIconSrcHandlesNull() {
+        String result = Functions.extractPluginNameFromIconSrc(null);
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcHandlesEmptyString() {
+        String result = Functions.extractPluginNameFromIconSrc("");
+
+        assertThat(result, is(emptyString()));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcOnlyReturnsPluginFromStart() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-plugin-mailer plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
+    }
+
+    @Test
+    public void extractPluginNameFromIconSrcExtractsPlugin() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library");
+
+        assertThat(result, is(equalTo("design-library")));
+    }
+
     @Issue("JDK-6507809")
     @Test public void printThrowable() {
         // Basics: a single exception. No change.
@@ -608,5 +640,40 @@ public class FunctionsTest {
             }
             return this;
         }
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForNull() throws Exception {
+        assertThat(Functions.tryGetIcon(null), is(nullValue()));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForSymbol() throws Exception {
+        assertThat(Functions.tryGetIcon("symbol-search"), is(nullValue()));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForExactSpec() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-help icon-sm"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForExtraSpec() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-help icon-sm extra-class"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForFilename() throws Exception {
+        assertThat(Functions.tryGetIcon("help.svg"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForUrl() throws Exception {
+        assertThat(Functions.tryGetIcon("48x48/green.gif"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForUnknown() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-nosuchicon"), is(nullValue()));
     }
 }
