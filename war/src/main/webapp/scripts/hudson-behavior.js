@@ -1838,13 +1838,6 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-function onBuildHistoryChange(handler) {
-    Event.observe(window, 'jenkins:buildHistoryChanged', handler);
-}
-function fireBuildHistoryChanged() {
-    Event.fire(window, 'jenkins:buildHistoryChanged');
-}
-
 function toQueryString(params) {
     var query = '';
     if (params) {
@@ -1898,52 +1891,6 @@ function getStyle(e,a){
     return e.currentStyle[a];
   return null;
 }
-
-function ElementResizeTracker() {
-    this.trackedElements = [];
-
-    if(isRunAsTest) {
-        return;
-    }
-
-    var thisTracker = this;
-    function checkForResize() {
-        for (var i = 0; i < thisTracker.trackedElements.length; i++) {
-            var element = thisTracker.trackedElements[i];
-            var currDims = Element.getDimensions(element);
-            var lastDims = element.lastDimensions;
-            if (currDims.width !== lastDims.width || currDims.height !== lastDims.height) {
-                Event.fire(element, 'jenkins:resize');
-            }
-            element.lastDimensions = currDims;
-        }
-    }
-    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
-
-    function checkForResizeLoop() {
-        checkForResize();
-        setTimeout(checkForResizeLoop, 200);
-    }
-    checkForResizeLoop();
-}
-ElementResizeTracker.prototype.addElement = function(element) {
-    for (var i = 0; i < this.trackedElements.length; i++) {
-        if (this.trackedElements[i] === element) {
-            // we're already tracking it so no need to add it.
-            return;
-        }
-    }
-    this.trackedElements.push(element);
-}
-ElementResizeTracker.prototype.onResize = function(element, handler) {
-    element.lastDimensions = Element.getDimensions(element);
-    Event.observe(element, 'jenkins:resize', handler);
-    this.addElement(element);
-}
-ElementResizeTracker.fireResizeCheck = function() {
-    Event.fire(window, 'jenkins:resizeCheck');
-}
-var elementResizeTracker = new ElementResizeTracker();
 
 /**
  * Makes sure the given element is within the viewport.
