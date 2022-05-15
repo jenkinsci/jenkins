@@ -313,7 +313,34 @@
   --call-to-action-text-color: var(--alert-info-text-color);
 
   // Colors
-  --green: #1c9146;
-  --orange: #fe820a;
-  --red: #df001c;
+  each(@colors, {
+    --light-@{key}: lighten(@value, 20%);
+    --@{key}: @value;
+    --dark-@{key}: darken(@value, 20%);
+  });
+
+  each(@semantics, {
+    --@{key}-color: @value;
+  })
+}
+
+@colors: {
+  blue: #007aff;
+  brown: #a2845e;
+  cyan: #32ade6;
+  green: #1c9146;
+  indigo: #5856d6;
+  orange: #fe820a;
+  pink: #fb0f45;
+  purple: #af52de;
+  red: #df001c;
+  yellow: #ffcc00;
+}
+
+@semantics: {
+  error: var(--red);
+  warning: var(--orange);
+  success: var(--green);
+  destructive: var(--red);
+  build: var(--green);
 }
