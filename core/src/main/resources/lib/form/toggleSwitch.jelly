@@ -81,7 +81,7 @@ THE SOFTWARE.
            value="${value}"
            id="${id}"
            onclick="${readonly=='true' ? 'return false;' : onclick}"
-           class="jenkins-toggle-switch__input ${class} ${checkUrl!=null?'validated':''}"
+           class="jenkins-toggle-switch__input ${attrs.class} ${checkUrl!=null?'validated':''}"
            checkUrl="${checkUrl}"
            checkDependsOn="${checkDependsOn}" json="${json}"
            disabled="${readOnlyMode ? 'true' : null}"
