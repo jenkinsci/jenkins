@@ -64,32 +64,38 @@ THE SOFTWARE.
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
 
-  <j:choose>
-    <j:when test="${attrs.title!=null}">
-      <div class="optionalBlock-container jenkins-form-item">
-        <div class="help-sibling tr optional-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-          <div class="jenkins-checkbox-help-wrapper">
-            <f:checkbox name="${attrs.name}" class="optional-block-control block-control" onclick="javascript:updateOptionalBlock(this,true)"
-                        negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
-            <f:helpLink url="${attrs.help}" featureName="${title}"/>
-          </div>
-        </div>
-        <j:if test="${attrs.help!=null}">
-          <f:helpArea />
-        </j:if>
-        <div class="rowvg-start tr"></div>
-        <div class="form-container tr">
-          <d:invokeBody />
-        </div>
-        <!-- end marker -->
-        <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end row-group-end"></div>
-      </div>
-    </j:when>
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
 
-    <j:otherwise>
-      <f:rowSet name="${attrs.name}">
-        <d:invokeBody />
-      </f:rowSet>
-    </j:otherwise>
-  </j:choose>
+  <j:if test="${contents.length() != 0}">
+    <j:choose>
+      <j:when test="${attrs.title!=null}">
+        <div class="optionalBlock-container jenkins-form-item">
+          <div class="help-sibling tr optional-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+            <div class="jenkins-checkbox-help-wrapper">
+              <f:checkbox name="${attrs.name}" class="optional-block-control block-control" onclick="javascript:updateOptionalBlock(this,true)"
+                          negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
+              <f:helpLink url="${attrs.help}" featureName="${title}"/>
+            </div>
+          </div>
+          <j:if test="${attrs.help!=null}">
+            <f:helpArea />
+          </j:if>
+          <div class="rowvg-start tr"></div>
+          <div class="form-container tr">
+            <j:out value="${contents}" />
+          </div>
+          <!-- end marker -->
+          <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end row-group-end"></div>
+        </div>
+      </j:when>
+
+      <j:otherwise>
+        <f:rowSet name="${attrs.name}">
+          <j:out value="${contents}" />
+        </f:rowSet>
+      </j:otherwise>
+    </j:choose>
+  </j:if>
 </j:jelly>
