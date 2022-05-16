@@ -172,7 +172,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                 String responseMessage = httpURLConnection.getResponseMessage();
                 if (responseCode == 404) {
                     String responseBody = httpURLConnection.getErrorStream() == null ? "" 
-                        : String.join("", IOUtils.readLines(stream, StandardCharsets.UTF_8));
+                        : String.join("", IOUtils.readLines(httpURLConnection.getErrorStream(), StandardCharsets.UTF_8));
                     if (responseMessage.contains(ERROR_RESPONSE) || responseBody.contains(ERROR_RESPONSE)) {
                         return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
                     }
