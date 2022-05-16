@@ -39,7 +39,6 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -172,9 +171,8 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                 // response is error
                 String responseMessage = httpURLConnection.getResponseMessage();
                 if (responseCode == 404) {
-                    String responseBody = Optional.ofNullable(httpURLConnection.getErrorStream())
-                        .map(stream -> String.join("", IOUtils.readLines(stream, StandardCharsets.UTF_8)))
-                        .orElse("");
+                    String responseBody = httpURLConnection.getErrorStream() == null ? "" 
+                        : String.join("", IOUtils.readLines(stream, StandardCharsets.UTF_8));
                     if (responseMessage.contains(ERROR_RESPONSE) || responseBody.contains(ERROR_RESPONSE)) {
                         return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
                     }
