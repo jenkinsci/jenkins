@@ -673,7 +673,7 @@ public class PluginManagerTest {
         JSONObject json = response.getJSONObject();
         assertTrue(json.has("data"));
         JSONArray data = json.getJSONArray("data");
-        assertEquals("repo plugin should be first hit", "r", data.getJSONObject(0).get("name"));
+        assertEquals("r plugin should be first hit", "r", data.getJSONObject(0).get("name"));
         assertEquals("50 results matching limit", 50, data.size());
     }
 
