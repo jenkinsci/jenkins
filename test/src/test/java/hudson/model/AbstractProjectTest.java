@@ -435,23 +435,6 @@ public class AbstractProjectTest {
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-        tpm.installDetachedPlugin("structs");
-        tpm.installDetachedPlugin("workflow-step-api");
-        tpm.installDetachedPlugin("scm-api");
-        tpm.installDetachedPlugin("workflow-api");
-        tpm.installDetachedPlugin("script-security");
-        tpm.installDetachedPlugin("jquery3-api");
-        tpm.installDetachedPlugin("snakeyaml-api");
-        tpm.installDetachedPlugin("jackson2-api");
-        tpm.installDetachedPlugin("popper-api");
-        tpm.installDetachedPlugin("plugin-util-api");
-        tpm.installDetachedPlugin("font-awesome-api");
-        tpm.installDetachedPlugin("bootstrap4-api");
-        tpm.installDetachedPlugin("echarts-api");
-        tpm.installDetachedPlugin("display-url-api");
-        tpm.installDetachedPlugin("checks-api");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("matrix-project");
 
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
