@@ -89,7 +89,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.TestPluginManager;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 import org.kohsuke.args4j.CmdLineException;
@@ -434,8 +433,6 @@ public class AbstractProjectTest {
      */
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
-        TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
 
