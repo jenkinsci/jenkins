@@ -155,6 +155,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
         private static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
                 @NonNull KeyTypes<PUB, PRIV> type) {
             for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
+                LOGGER.fine(() -> "loaded " + provider + " from " + provider.getClass().getProtectionDomain().getCodeSource().getLocation());
                 try {
                     KeyPair keyPair = provider.getKeyPair();
                     if (keyPair != null
@@ -174,6 +175,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
                             "Instance identity provider " + provider + " propagated an uncaught exception", e);
                 }
             }
+            LOGGER.fine("no providers");
             return null;
         }
 

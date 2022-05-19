@@ -411,7 +411,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.1.0</version>
+                  <version>3.235.v2ee69617b_e92</version> <!-- https://github.com/jenkinsci/sshd-plugin/pull/75 -->
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
