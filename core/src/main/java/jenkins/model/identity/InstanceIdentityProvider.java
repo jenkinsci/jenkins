@@ -77,6 +77,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * @return the {@link KeyPair} that comprises the instance identity. {@code null} could technically be returned in
      * the event that a keypair could not be generated, for example if the specific key type of this provider
      * is not permitted at the required length by the JCA policy.
+     * More commonly it just means that the {@code instance-identity} plugin needs to be installed.
      */
     @CheckForNull
     protected abstract KeyPair getKeyPair();
