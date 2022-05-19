@@ -33,7 +33,8 @@ jaxb 2.163 2.3.0
 trilead-api 2.184 1.0.4
 
 # JENKINS-64107
-sshd 2.281 3.0.1
+# TODO https://github.com/jenkinsci/sshd-plugin/pull/75
+sshd 2.281 3.235.v2ee69617b_e92
 
 javax-activation-api 2.330 1.2.0-2
 javax-mail-api 2.330 1.6.2-5
