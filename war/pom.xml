@@ -435,7 +435,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>instance-identity</artifactId>
-                  <version>3.0.1</version>
+                  <version>3.1</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
