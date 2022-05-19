@@ -22,7 +22,7 @@ updates:
       # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
       - dependency-name: "javax.servlet.servlet-api"
       # needs a jakarta upgrade project, imports changed
-      - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
+      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
       # Starting with version 2.0.2, this library requires Java 11
       - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
         versions: [">=2.0.2"]
