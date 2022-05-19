@@ -163,7 +163,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>jakarta.servlet.jsp.jstl</groupId>
         <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-        <version>1.2.7</version>
+        <version>3.0.0</version>
       </dependency>
       <dependency>
         <groupId>jaxen</groupId>
