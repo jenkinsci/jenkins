@@ -12,7 +12,7 @@ tasks:
       mvn -am -pl war,bom -P quick-build install
     command: |      
       cd war
-      curl https://gist.githubusercontent.com/timja/fe73f0a0f98afe4d9356e7ce6752d95b/raw/a8d772267bed81fb0c11af2c69eaa71ebc7daec0/init.sh | bash
+      curl https://gist.githubusercontent.com/timja/fe73f0a0f98afe4d9356e7ce6752d95b/raw/98ad71080e91ed75824ec410ff905419e3788065/init.sh | bash
       mvn jetty:run
     name: Run
   - command: gp await-port 63342 && gp await-port 8080 && gp url 8080 && gp preview $(gp url 8080)/jenkins/
