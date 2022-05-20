@@ -13,7 +13,7 @@ tasks:
     command: |      
       cd war
       curl https://gist.githubusercontent.com/timja/fe73f0a0f98afe4d9356e7ce6752d95b/raw/98ad71080e91ed75824ec410ff905419e3788065/init.sh | bash
-      mvn jetty:run
+      mvn jetty:run -Dhost=0.0.0.0
     name: Run
   - command: gp await-port 63342 && gp await-port 8080 && gp url 8080 && gp preview $(gp url 8080)/jenkins/
     name: Preview
