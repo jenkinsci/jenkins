@@ -5,11 +5,11 @@ def right = 'text-align: right'
 if (my instanceof SlaveComputer) {
     SlaveComputer c = my
 
-    table(class: 'bigtable') {
+    table(class: 'jenkins-table') {
         tr {
-            th _('Loading Type')
-            th _('Time (s)')
-            th _('Count')
+            th               { text(_('Loading Type')) }
+            th(style: right) { text(_('Time (s)')) }
+            th(style: right) { text(_('Count')) }
         }
         tr {
             td _('Classes')
