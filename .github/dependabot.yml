@@ -15,10 +15,6 @@ updates:
         versions: [">=2.5.0"]
       # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
       - dependency-name: "org.fusesource.jansi:jansi"
-      # see https://github.com/jenkinsci/jenkins/pull/5144#pullrequestreview-559661934
-      # will require source code changes to replace javax.mail with jakarta.mail 
-      # and some handling for plugins that depend on javax.mail being provided by Jenkins core.
-      - dependency-name: "com.sun.mail:jakarta.mail"
       # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
       - dependency-name: "javax.servlet:servlet-api"
       # needs a jakarta upgrade project, imports changed
