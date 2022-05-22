@@ -45,7 +45,8 @@ THE SOFTWARE.
                       insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
               tr.insert(new Element('td').
                   insert(new Element('a', {class: 'jenkins-table__link model-link', href: '${rootURL}/' + e.parentUrl}).
-                      update(e.parentFullDisplayName)).
+                   insert(new Element('span').
+                      update(e.parentFullDisplayName))).
                   insert(new Element('a', {class: 'jenkins-table__link jenkins-table__badge model-link inside', href: '${rootURL}/' + e.url}).
                       update(e.displayName.escapeHTML())));
               tr.insert(new Element('td', {data: e.timestampString2}).
