@@ -70,7 +70,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1158.v7c1b_73a_69a_08</version>
+        <version>1172.v35f6a_0b_8207e</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -145,7 +145,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.714.v79e858ef76a_2</version>
+      <version>6.722.v8165b_a_cf25e9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
