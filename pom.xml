@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.73</version>
+    <version>1.74</version>
     <relativePath />
   </parent>
 
@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.348</revision>
+    <revision>2.349</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -103,6 +103,10 @@ THE SOFTWARE.
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.5.1</mockito.version>
     <spotless.version>2.22.5</spotless.version>
+
+    <!-- TODO 3.x versions expose "GC overhead limit exceeded" errors in this test suite -->
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <maven-surefire-report-plugin.version>2.22.2</maven-surefire-report-plugin.version>
   </properties>
 
   <dependencyManagement>
