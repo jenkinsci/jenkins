@@ -239,7 +239,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>symbol-annotation</artifactId>
-        <version>1.1</version>
+        <version>1.23</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
