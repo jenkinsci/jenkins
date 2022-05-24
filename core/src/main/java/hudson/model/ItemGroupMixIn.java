@@ -265,7 +265,7 @@ public abstract class ItemGroupMixIn {
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         acl.checkPermission(Item.CREATE);
 
-        Jenkins.get().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
         Jenkins.checkGoodName(name);
 
@@ -313,7 +313,7 @@ public abstract class ItemGroupMixIn {
         type.checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, type);
 
-        Jenkins.get().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
         Jenkins.checkGoodName(name);
 
