@@ -1,9 +1,8 @@
 package hudson.cli;
 
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +10,9 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 /**
 keys were generated with ssh-keygen from OpenSSH_7.9p1, LibreSSL 2.7.3
@@ -51,7 +50,7 @@ public class PrivateKeyProviderTest {
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
-    
+
     /**
     key command: ssh-keygen -f rsa -t rsa -b 1024 -m PEM
     */
@@ -70,7 +69,7 @@ public class PrivateKeyProviderTest {
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
-    
+
     /**
     key command: ssh-keygen -f openssh -t rsa -b 1024
     */
@@ -79,7 +78,7 @@ public class PrivateKeyProviderTest {
         File file = new File(this.getClass().getResource("openssh").getFile());
         assertKeyPairNotNull(file, null);
     }
-    
+
     /**
      key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -m PKCS8 -p password
      */
@@ -124,7 +123,7 @@ public class PrivateKeyProviderTest {
     /**
     key command: ssh-keygen -f openssh -t rsa -b 1024
     in this key we remove some lines to break the key.
-    */    
+    */
     @Test
     public void loadKeyBroken() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh-broken").getFile());

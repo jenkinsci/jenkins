@@ -24,6 +24,15 @@
 
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeThat;
+
 import com.google.common.collect.LinkedListMultimap;
 import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionList;
@@ -45,17 +54,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -74,20 +75,22 @@ public class ClassFilterImplTest {
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     @Test
-    public void masterToSlaveBypassesWhitelist() throws Exception {
+    public void controllerToAgentBypassesWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new M2SBuilder());
         r.assertLogContains("sent {}", r.buildAndAssertSuccess(p));
     }
+
     public static class M2SBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("sent " + launcher.getChannel().call(new M2S()));
             return true;
         }
-        @TestExtension("masterToSlaveBypassesWhitelist")
+
+        @TestExtension("controllerToAgentBypassesWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override
@@ -96,8 +99,10 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class M2S extends MasterToSlaveCallable<String, RuntimeException> {
         private final LinkedListMultimap<?, ?> obj = LinkedListMultimap.create();
+
         @Override
         public String call() throws RuntimeException {
             return obj.toString();
@@ -107,20 +112,22 @@ public class ClassFilterImplTest {
     // Note that currently even M2S callables are rejected when using classes blacklisted in ClassFilter.STANDARD, such as JSONObject.
 
     @Test
-    public void slaveToMasterRequiresWhitelist() throws Exception {
+    public void agentToControllerRequiresWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new S2MBuilder());
-        r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0));
+        r.buildAndAssertStatus(Result.FAILURE, p);
     }
+
     public static class S2MBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("received " + launcher.getChannel().call(new S2M()));
             return true;
         }
-        @TestExtension("slaveToMasterRequiresWhitelist")
+
+        @TestExtension("agentToControllerRequiresWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override
@@ -129,6 +136,7 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class S2M extends MasterToSlaveCallable<LinkedListMultimap<?, ?>, RuntimeException> {
         @Override
         public LinkedListMultimap<?, ?> call() throws RuntimeException {
@@ -169,6 +177,7 @@ public class ClassFilterImplTest {
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
         String unrelated;
+
         @Override
         protected XmlFile getConfigFile() {
             return super.getConfigFile();

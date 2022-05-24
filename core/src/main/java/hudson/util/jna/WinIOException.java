@@ -2,7 +2,6 @@ package hudson.util.jna;
 
 import com.sun.jna.Native;
 import hudson.Util;
-
 import java.io.IOException;
 
 /**
@@ -31,7 +30,7 @@ public class WinIOException extends IOException {
 
     @Override
     public String getMessage() {
-        return super.getMessage()+" error="+errorCode+":"+ Util.getWin32ErrorMessage(errorCode);
+        return super.getMessage() + " error=" + errorCode + ":" + Util.getWin32ErrorMessage(errorCode);
     }
 
     public int getErrorCode() {

@@ -6,8 +6,10 @@ import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
@@ -85,7 +87,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     @SuppressWarnings("deprecation") // in this case we really want to use PeriodicWork.logger since it reports the impl class
     public final void doRun() {
         try {
-            if(thread!=null && thread.isAlive()) {
+            if (thread != null && thread.isAlive()) {
                 logger.log(this.getSlowLoggingLevel(), "{0} thread is still running. Execution aborted.", name);
                 return;
             }
@@ -94,9 +96,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                StreamTaskListener l = createListener();
+                LazyTaskListener l = new LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
                 try {
-                    l.getLogger().printf("Started at %tc%n", new Date(startTime));
                     try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                         execute(l);
                     }
@@ -106,16 +107,12 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     Functions.printStackTrace(e, l.fatalError("aborted"));
                 } finally {
                     stopTime = System.currentTimeMillis();
-                    try {
-                        l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
-                    } finally {
-                        l.closeQuietly();
-                    }
+                    l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
                 logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
-            },name+" thread");
+            }, name + " thread");
             thread.start();
         } catch (Throwable t) {
             LogRecord lr = new LogRecord(this.getErrorLoggingLevel(), "{0} thread failed with error");
@@ -123,6 +120,38 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             lr.setParameters(new Object[]{name});
             logger.log(lr);
         }
+    }
+
+    static final class LazyTaskListener implements TaskListener {
+
+        private final Supplier<StreamTaskListener> supplier;
+        private final String openingMessage;
+        private StreamTaskListener delegate;
+
+        LazyTaskListener(Supplier<StreamTaskListener> supplier, String openingMessage) {
+            this.supplier = supplier;
+            this.openingMessage = openingMessage;
+        }
+
+        @Override
+        public synchronized PrintStream getLogger() {
+            if (delegate == null) {
+                delegate = supplier.get();
+                delegate.getLogger().println(openingMessage);
+            }
+            return delegate.getLogger();
+        }
+
+        synchronized void close(String closingMessage) {
+            if (delegate != null) {
+                try {
+                    delegate.getLogger().println(closingMessage);
+                } finally {
+                    delegate.closeQuietly();
+                }
+            }
+        }
+
     }
 
     protected StreamTaskListener createListener() {
@@ -133,7 +162,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             }
         }
         if (f.isFile()) {
-            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
+            if (lastRotateMillis + logRotateMillis < System.currentTimeMillis()
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
                 lastRotateMillis = System.currentTimeMillis();
                 File prev = null;
@@ -185,11 +214,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected File getLogFile() {
         return new File(getLogsRoot(), "/tasks/" + name + ".log");
     }
-    
+
     /**
      * Returns the logging level at which normal messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -197,7 +226,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getNormalLoggingLevel() {
         return Level.INFO;
     }
-    
+
     /**
      * Returns the logging level at which previous task still executing messages is displayed.
      *
@@ -212,8 +241,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     /**
      * Returns the logging level at which error messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -221,7 +250,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getErrorLoggingLevel() {
         return Level.SEVERE;
     }
-    
+
     /**
      * Executes the task.
      *

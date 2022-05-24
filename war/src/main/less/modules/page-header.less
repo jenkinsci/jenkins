@@ -16,7 +16,7 @@
 
 .page-header__brand {
     display: inline-block;
-    height: 100%;
+    height: 3.5rem;
     position: relative;
     flex: 1; // push controls to the end of the block
 }
@@ -51,13 +51,14 @@ a.page-header__brand-link {
 }
 
 .page-header__hyperlinks a {
+    --text-color: var(--header-link-color);
     display: inline-flex;
     align-items: center;
 
     // need to override an existing rule
     padding-right: 0.5rem;
     padding: 0.5rem;
-    margin-right: 0.25rem;
+    margin-right: 0.25rem !important;
     font-weight: bold;
     outline-color: var(--header-link-outline);
 
@@ -80,6 +81,17 @@ a.page-header__brand-link {
     &:active {
         background-color: var(--header-link-bg-classic-active);
     }
+
+  .jenkins-menu-dropdown-chevron {
+    position: relative;
+    top: unset !important;
+    right: unset !important;
+    margin-left: 0.5rem;
+
+    &::after {
+      opacity: 1;
+    }
+  }
 }
 
 .page-header__hyperlinks a span {
@@ -111,16 +123,19 @@ a.page-header__brand-link {
     line-height: var(--line-height-base);
     font-weight: bold;
     color: var(--search-input-color);
-    border-radius: var(--header-item-border-radius);
-    border: 3px solid var(--header-search-border);
+    border-radius: var(--form-input-border-radius);
+    border: 2px solid var(--header-search-border);
     outline: none;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
 
     &::placeholder {
         font-weight: normal;
     }
 
-    &:focus {
-        border-color: var(--header-link-outline);
+    &:active, &:focus {
+        border-color: var(--focus-input-border);
+        box-shadow: 0 0 0 5px var(--focus-input-glow);
     }
 }
 
@@ -130,7 +145,6 @@ a.page-header__brand-link {
     display: inline-flex;
     height: 2.5rem;
     width: 2.5rem;
-    padding: 0.5rem;
     justify-content: center;
     align-items: center;
     background: transparent;
@@ -139,6 +153,11 @@ a.page-header__brand-link {
 .main-search__icon-leading {
     left: 0;
     pointer-events: none;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 .main-search__icon-trailing {
@@ -157,6 +176,11 @@ a.page-header__brand-link {
 
     &:active {
         fill: var(--header-link-bg-classic-active);
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
     }
 }
 

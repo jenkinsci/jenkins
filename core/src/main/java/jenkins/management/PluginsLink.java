@@ -24,14 +24,13 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -43,7 +42,7 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "plugin.png";
+        return "plugin.svg";
     }
 
     @Override
@@ -66,7 +65,7 @@ public class PluginsLink extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
-  
+
     @NonNull
     @Override
     public Category getCategory() {
@@ -74,12 +73,12 @@ public class PluginsLink extends ManagementLink {
     }
 
     @Restricted(NoExternalUse.class)
-    public boolean hasUpdates() {
+    public int getUpdateCount() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         if (!updateCenter.isSiteDataReady()) {
             // Do not display message during this page load, but possibly later.
-            return false;
+            return 0;
         }
-        return !updateCenter.getUpdates().isEmpty();
+        return updateCenter.getUpdates().size();
     }
 }

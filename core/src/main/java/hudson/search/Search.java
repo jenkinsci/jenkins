@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,15 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.EditDistance;
-
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -40,12 +41,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
-
-import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -76,18 +75,18 @@ public class Search implements StaplerProxy {
 
         List<SuggestedItem> foundItem = new ArrayList<>();
 
-        for( int i=l.size()-1; i>=0; i-- ) {
+        for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
-                if(LOGGER.isLoggable(Level.FINE)){
-                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s", smo.getDisplayName(), smo.getSearchName()));
                 }
 
                 SearchIndex index = smo.getSearchIndex();
-                if(query!=null) {
+                if (query != null) {
                     SuggestedItem target = find(index, query, smo);
-                    if(target!=null) {
+                    if (target != null) {
                         // found
                         foundItem.add(target);
                     }
@@ -97,11 +96,11 @@ public class Search implements StaplerProxy {
 
         // Search for builds
         Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
-        for (AbstractProject p: projects){
+        for (AbstractProject p : projects) {
             SearchableModelObject smo = p;
             SearchIndex index = smo.getSearchIndex();
             SuggestedItem target = find(index, query, smo);
-            if(target!=null) {
+            if (target != null) {
                 // found
                 foundItem.add(target);
             }
@@ -110,7 +109,7 @@ public class Search implements StaplerProxy {
         if (foundItem.size() == 1) {
             rsp.sendRedirect2(req.getContextPath() + "/" + foundItem.get(0).item.getSearchUrl());
 
-        } else if (foundItem.size() > 1){
+        } else if (foundItem.size() > 1) {
             // Check if the urls in the list are the same or not.
             // If they are the same, redirect page to the target page.
             // Otherwise, show suggestion page.
@@ -123,7 +122,7 @@ public class Search implements StaplerProxy {
                     return;
                 }
             }
-            rsp.sendRedirect2(req.getContextPath()+ "/" + foundItem.get(0).item.getSearchUrl());
+            rsp.sendRedirect2(req.getContextPath() + "/" + foundItem.get(0).item.getSearchUrl());
 
         } else {
             // found 0 item
@@ -162,7 +161,7 @@ public class Search implements StaplerProxy {
         for (SuggestedItem item : getSuggestions(req, query))
             r.suggestions.add(new Item(item.getPath()));
 
-        rsp.serveExposedBean(req,r,Flavor.JSON);
+        rsp.serveExposedBean(req, r, Flavor.JSON);
     }
 
     /**
@@ -170,7 +169,7 @@ public class Search implements StaplerProxy {
      *
      * @return
      *      can be empty but never null. The size of the list is always smaller than
-     *      a certain threshold to avoid showing too many options. 
+     *      a certain threshold to avoid showing too many options.
      */
     public SearchResult getSuggestions(StaplerRequest req, String query) {
         Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
@@ -178,24 +177,24 @@ public class Search implements StaplerProxy {
         int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
         SearchableModelObject smo = findClosestSearchableModelObject(req);
         for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
-            if(r.size()>=max) {
+            if (r.size() >= max) {
                 r.hasMoreResults = true;
                 break;
             }
-            if(paths.add(i.item.getSearchUrl()))
+            if (paths.add(i.item.getSearchUrl()))
                 r.add(i);
         }
 
         // Search for builds
         Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
-        for (AbstractProject p: projects){
+        for (AbstractProject p : projects) {
             SearchIndex index = p.getSearchIndex();
-            for (SuggestedItem i: suggest(index, query, smo)) {
-                if(r.size()>=max) {
+            for (SuggestedItem i : suggest(index, query, smo)) {
+                if (r.size() >= max) {
                     r.hasMoreResults = true;
                     break;
                 }
-                if(paths.add(i.item.getSearchUrl()))
+                if (paths.add(i.item.getSearchUrl()))
                     r.add(i);
             }
         }
@@ -204,10 +203,10 @@ public class Search implements StaplerProxy {
 
     private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
-        for( int i=l.size()-1; i>=0; i-- ) {
+        for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
-                return (SearchableModelObject)a.getObject();
+                return (SearchableModelObject) a.getObject();
             }
         }
         return null;
@@ -243,9 +242,10 @@ public class Search implements StaplerProxy {
         public List<Item> suggestions = new ArrayList<>();
     }
 
-    @ExportedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility = 999)
     public static class Item {
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
         public Item(String name) {
@@ -275,7 +275,7 @@ public class Search implements StaplerProxy {
      * When there are multiple suggested items, this method can narrow down the resultset
      * to the SuggestedItem that has a url that contains the query. This is useful is one
      * job has a display name that matches another job's project name.
-     * @param r A list of Suggested items. It is assumed that there is at least one 
+     * @param r A list of Suggested items. It is assumed that there is at least one
      * SuggestedItem in r.
      * @param query A query string
      * @return Returns the SuggestedItem which has a search url that contains the query.
@@ -283,20 +283,20 @@ public class Search implements StaplerProxy {
      * SuggestedItem in the List is returned.
      */
     static SuggestedItem findClosestSuggestedItem(List<SuggestedItem> r, String query) {
-        for(SuggestedItem curItem : r) {
-            if(LOGGER.isLoggable(Level.FINE)) {
+        for (SuggestedItem curItem : r) {
+            if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
             }
-            if(curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
+            if (curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
                 return curItem;
             }
         }
-        
+
         // couldn't find an item with the query in the url so just
         // return the first one
-        return r.get(0);        
+        return r.get(0);
     }
-    
+
     /**
      * @deprecated Use {@link Search#find(SearchIndex, String, SearchableModelObject)} instead.
      */
@@ -304,7 +304,7 @@ public class Search implements StaplerProxy {
     public static SuggestedItem find(SearchIndex index, String query) {
         return find(index, query, null);
     }
-    
+
     /**
      * Performs a search and returns the match, or null if no match was found
      * or more than one match was found.
@@ -312,10 +312,10 @@ public class Search implements StaplerProxy {
      */
     public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
         List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
-        if(r.isEmpty()){ 
+        if (r.isEmpty()) {
             return null;
         }
-        else if(1==r.size()){
+        else if (1 == r.size()) {
             return r.get(0);
         }
         else  {
@@ -323,11 +323,11 @@ public class Search implements StaplerProxy {
             // contains the query as this is probably the job's name
             return findClosestSuggestedItem(r, query);
         }
-                    
+
     }
 
     /**
-     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead. 
+     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead.
      */
     @Deprecated
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList) {
@@ -339,7 +339,7 @@ public class Search implements StaplerProxy {
      */
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
 
-        class Tag implements Comparable<Tag>{
+        class Tag implements Comparable<Tag> {
             final SuggestedItem item;
             final int distance;
             /** If the path to this suggestion starts with the token list, 1. Otherwise 0. */
@@ -347,15 +347,15 @@ public class Search implements StaplerProxy {
 
             Tag(SuggestedItem i) {
                 item = i;
-                distance = EditDistance.editDistance(i.getPath(),tokenList);
-                prefixMatch = i.getPath().startsWith(tokenList)?1:0;
+                distance = EditDistance.editDistance(i.getPath(), tokenList);
+                prefixMatch = i.getPath().startsWith(tokenList) ? 1 : 0;
             }
 
             @Override
             public int compareTo(Tag that) {
-                int r = this.prefixMatch -that.prefixMatch;
-                if(r!=0)    return -r;  // ones with head match should show up earlier
-                return this.distance-that.distance;
+                int r = this.prefixMatch - that.prefixMatch;
+                if (r != 0)    return -r;  // ones with head match should show up earlier
+                return this.distance - that.distance;
             }
         }
 
@@ -363,7 +363,7 @@ public class Search implements StaplerProxy {
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
-        for( SuggestedItem i : items)
+        for (SuggestedItem i : items)
             buf.add(new Tag(i));
         Collections.sort(buf);
         items.clear();
@@ -377,7 +377,7 @@ public class Search implements StaplerProxy {
         private final String[] tokens;
 
         TokenList(String tokenList) {
-            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
+            tokens = tokenList != null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         public int length() { return tokens.length; }
@@ -392,67 +392,67 @@ public class Search implements StaplerProxy {
                 @Override
                 public String get(int index) {
                     StringBuilder buf = new StringBuilder();
-                    for(int i=start; i<=start+index; i++ )
+                    for (int i = start; i <= start + index; i++)
                         buf.append(tokens[i]);
                     return buf.toString().trim();
                 }
 
                 @Override
                 public int size() {
-                    return tokens.length-start;
+                    return tokens.length - start;
                 }
             };
         }
-        
-        
+
+
         @Override
         public String toString() {
             StringBuilder s = new StringBuilder("TokenList{");
-            for(String token : tokens) {
+            for (String token : tokens) {
                 s.append(token);
                 s.append(",");
             }
             s.append('}');
-            
+
             return s.toString();
         }
     }
 
     private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList, SearchableModelObject searchContext) {
         TokenList tokens = new TokenList(tokenList);
-        if(tokens.length()==0) return Collections.emptyList();   // no tokens given
+        if (tokens.length() == 0) return Collections.emptyList();   // no tokens given
 
-        List<SuggestedItem>[] paths = new List[tokens.length()+1]; // we won't use [0].
-        for(int i=1;i<=tokens.length();i++)
+        List<SuggestedItem>[] paths = new List[tokens.length() + 1]; // we won't use [0].
+        for (int i = 1; i <= tokens.length(); i++)
             paths[i] = new ArrayList<>();
 
         List<SearchItem> items = new ArrayList<>(); // items found in 1 step
 
         LOGGER.log(Level.FINE, "tokens={0}", tokens);
-        
+
         // first token
-        int w=1;    // width of token
+        int w = 1;    // width of token
         for (String token : tokens.subSequence(0)) {
             items.clear();
-            m.find(index,token,items);
+            m.find(index, token, items);
             for (SearchItem si : items) {
-                paths[w].add(SuggestedItem.build(searchContext ,si));
+                paths[w].add(SuggestedItem.build(searchContext, si));
                 LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
         }
 
         // successive tokens
-        for (int j=1; j<tokens.length(); j++) {
+        for (int j = 1; j < tokens.length(); j++) {
             // for each length
-            w=1;
+            w = 1;
             for (String token : tokens.subSequence(j)) {
                 // for each candidate
                 for (SuggestedItem r : paths[j]) {
                     items.clear();
-                    m.find(r.item.getSearchIndex(),token,items);
+                    m.find(r.item.getSearchIndex(), token, items);
                     for (SearchItem i : items)
-                        paths[j+w].add(new SuggestedItem(r,i));
+                        paths[j + w].add(new SuggestedItem(r, i));
                 }
                 w++;
             }
@@ -473,9 +473,9 @@ public class Search implements StaplerProxy {
     /**
      * Escape hatch for StaplerProxy-based access control
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 
     private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

@@ -1,19 +1,18 @@
 package hudson.model.labels;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.slaves.Cloud;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.empty;
 
 public class LabelAtomTest {
 
@@ -40,9 +39,9 @@ public class LabelAtomTest {
         Label l2 = j.jenkins.getLabel("label2");
         Label l3 = j.jenkins.getLabel("label3");
         assertThat(l.getNodes().size(), is(2));
-        assertThat(l.getNodes(), containsInAnyOrder(n1,n2));
+        assertThat(l.getNodes(), containsInAnyOrder(n1, n2));
         assertThat(l2.getNodes().size(), is(2));
-        assertThat(l2.getNodes(), containsInAnyOrder(n3,n2));
+        assertThat(l2.getNodes(), containsInAnyOrder(n3, n2));
         assertThat(l3.getNodes(), is(empty()));
     }
 

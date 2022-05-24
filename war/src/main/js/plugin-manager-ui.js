@@ -1,5 +1,4 @@
 import debounce from 'lodash/debounce'
-import requestAnimationFrame from 'raf';
 
 import pluginManagerAvailable from './templates/plugin-manager/available.hbs'
 import pluginManager from './api/pluginManager';
@@ -9,8 +8,11 @@ function applyFilter(searchQuery) {
     pluginManager.availablePluginsSearch(searchQuery.toLowerCase().trim(), 50, function (plugins) {
         var pluginsTable = document.getElementById('plugins');
         var tbody = pluginsTable.querySelector('tbody');
-        var selectedPlugins = []
         var admin = pluginsTable.dataset.hasadmin === 'true';
+        var selectedPlugins = [];
+
+        var filterInput = document.getElementById('filter-box');
+        filterInput.parentElement.classList.remove("jenkins-search--loading");
 
         function clearOldResults() {
             if (!admin) {
@@ -22,7 +24,7 @@ function applyFilter(searchQuery) {
                     rows.forEach(function (row) {
                         var input = row.querySelector('input');
                         if (input.checked === true) {
-                            var pluginName = input.name.split('.')[1]
+                            var pluginName = input.name.split('.')[1];
                             selectedPlugins.push(pluginName)
                         } else {
                             row.remove();
@@ -39,11 +41,6 @@ function applyFilter(searchQuery) {
         });
 
         tbody.insertAdjacentHTML('beforeend', rows);
-
-        // @see JENKINS-64504 - Update the sticky buttons position after each search.
-        requestAnimationFrame(() => {
-            layoutUpdateCallback.call()
-        })
     })
 }
 
@@ -55,13 +52,16 @@ var debouncedFilter = debounce(handleFilter, 150);
 
 document.addEventListener("DOMContentLoaded", function () {
     var filterInput = document.getElementById('filter-box');
+    filterInput.addEventListener('input', function (e) {
+        debouncedFilter(e);
+        filterInput.parentElement.classList.add("jenkins-search--loading");
+    });
 
-    filterInput.addEventListener('input', debouncedFilter);
+    filterInput.focus();
 
     applyFilter(filterInput.value);
 
     setTimeout(function () {
         layoutUpdateCallback.call();
     }, 350)
-
 });

@@ -25,30 +25,30 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANTS;
+import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Functions;
 import hudson.PluginWrapper;
+import java.io.IOException;
+import java.util.function.BiPredicate;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
-
-import java.io.IOException;
-import java.util.function.BiPredicate;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANTS;
-import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 
 public class DisablePluginCommandTest {
 
@@ -105,7 +105,7 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i>all/i> strategy
+     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i>all</i> strategy
      */
     @Test
     @Issue("JENKINS-27177")
@@ -149,10 +149,11 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void notRestartAfterDisablePluginWithoutArgumentRestart() {
+    public void notRestartAfterDisablePluginWithoutArgumentRestart() throws Exception {
         assertThat(disablePluginsCLiCommand("dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsNotInQuietMode();
+        j.waitUntilNoActivity();
     }
 
     /**
@@ -172,7 +173,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void disableAlreadyDisabledPluginNotRestart() throws IOException {
+    public void disableAlreadyDisabledPluginNotRestart() throws Exception {
         // Disable before the command call
         disablePlugin("dependee");
 
@@ -180,6 +181,7 @@ public class DisablePluginCommandTest {
         assertThat(disablePluginsCLiCommand("-restart", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsNotInQuietMode();
+        j.waitUntilNoActivity();
     }
 
     /**
@@ -292,7 +294,7 @@ public class DisablePluginCommandTest {
         assertPluginDisabled("depender");
         assertPluginDisabled("mandatory-depender");
 
-        assertTrue("No log in quiet mode if all plugins disabled", StringUtils.isEmpty(result.stdout()));
+        assertThat("No log in quiet mode if all plugins disabled", result.stdout(), is(emptyOrNullString()));
     }
 
     /**

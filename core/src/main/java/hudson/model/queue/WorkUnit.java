@@ -21,13 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -98,14 +99,14 @@ public final class WorkUnit {
      * represented by {@link Task} itself.
      */
     public boolean isMainWork() {
-        return context.task==work;
+        return context.task == work;
     }
 
     @Override
     public String toString() {
-        if (work==context.task)
-            return super.toString()+"[work="+context.task.getFullDisplayName()+"]";
+        if (work == context.task)
+            return super.toString() + "[work=" + context.task.getFullDisplayName() + "]";
         else
-            return super.toString()+"[work="+work+",context.task="+context.task.getFullDisplayName()+"]";
+            return super.toString() + "[work=" + work + ",context.task=" + context.task.getFullDisplayName() + "]";
     }
 }

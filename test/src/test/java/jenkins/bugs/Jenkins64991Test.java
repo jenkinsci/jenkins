@@ -21,7 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.bugs;
+
+import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
+import static org.hamcrest.CoreMatchers.endsWithIgnoringCase;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -31,6 +39,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.model.FreeStyleProject;
 import hudson.security.Messages;
 import hudson.security.Permission;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,17 +51,6 @@ import org.junit.runners.Parameterized;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
-import static org.hamcrest.CoreMatchers.endsWithIgnoringCase;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class Jenkins64991Test {
@@ -81,8 +81,8 @@ public class Jenkins64991Test {
         assertTrue(loginPage.isHtmlPage());
         assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("%2Fmanage"));
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -105,8 +105,8 @@ public class Jenkins64991Test {
         assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2F"));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
-        ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginHtmlPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginHtmlPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginHtmlPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginHtmlPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -120,8 +120,8 @@ public class Jenkins64991Test {
 
         assertTrue(loginPage.isHtmlPage());
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -135,8 +135,8 @@ public class Jenkins64991Test {
 
         assertTrue(loginPage.isHtmlPage());
 
-        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -160,8 +160,8 @@ public class Jenkins64991Test {
         assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2Fjob%2Ffoo%2520bar%2F"));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
-        ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginHtmlPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginHtmlPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginHtmlPage.getElementByName("j_password")).setText("alice");
 
         final Page redirectedPage = HtmlFormUtil.submit(loginHtmlPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
@@ -196,8 +196,8 @@ public class Jenkins64991Test {
         final HtmlPage loginPage = webClient.goTo(loginUrl);
 
         assertTrue(loginPage.isHtmlPage());
-        ((HtmlTextInput)loginPage.getElementById("j_username")).setText("alice");
-        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+        ((HtmlTextInput) loginPage.getElementById("j_username")).setText("alice");
+        ((HtmlPasswordInput) loginPage.getElementByName("j_password")).setText("alice");
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
 
         assertTrue(redirectedPage.isHtmlPage());

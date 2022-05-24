@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.util.AbstractList;
@@ -32,7 +33,7 @@ import java.util.List;
  * where each keyword gets a weight and displayed according to their weight.
  *
  * TODO: define a view on its own.
- * 
+ *
  * @since 1.322
  */
 public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
@@ -46,12 +47,12 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
         }
 
         public float scale() {
-            // TODO: it's not obvious if linear scaling is the right approach or not.  
-            return weight*9/max;
+            // TODO: it's not obvious if linear scaling is the right approach or not.
+            return weight * 9 / max;
         }
 
         public String getClassName() {
-            return "tag"+((int)scale());
+            return "tag" + ((int) scale());
         }
     }
 
@@ -71,7 +72,7 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
     public TagCloud(Iterable<? extends T> inputs, WeightFunction<T> f) {
         for (T input : inputs) {
             float w = Math.abs(f.weight(input));
-            max = Math.max(w,max);
+            max = Math.max(w, max);
             entries.add(new Entry(input, w));
         }
     }

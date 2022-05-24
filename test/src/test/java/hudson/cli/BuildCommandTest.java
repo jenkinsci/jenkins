@@ -24,11 +24,20 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
@@ -51,17 +60,9 @@ import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
-
 import net.sf.json.JSONObject;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,7 +97,7 @@ public class BuildCommandTest {
         OneShotEvent completed = new OneShotEvent();
         p.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
                 started.signal();
                 completed.block();
                 return true;
@@ -107,6 +108,7 @@ public class BuildCommandTest {
         started.block();
         assertTrue(p.getBuildByNumber(1).isBuilding());
         completed.signal();
+        j.waitForCompletion(p.getBuildByNumber(1));
     }
 
     /**
@@ -174,6 +176,7 @@ public class BuildCommandTest {
         assertThat(r.stderr(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
     }
     // <=>
+
     @TestExtension("consoleOutputWhenBuildSchedulingRefused")
     public static class UnschedulingVetoer extends QueueDecisionHandler {
         @Override
@@ -225,7 +228,7 @@ public class BuildCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
 
-        // Create test parameter with Null default value 
+        // Create test parameter with Null default value
         NullDefaultValueParameterDefinition nullDefaultDefinition = new NullDefaultValueParameterDefinition();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "description"),
@@ -296,7 +299,7 @@ public class BuildCommandTest {
             }
         });
         assertThat(new CLICommandInvoker(j, "build").
-                withStdin(new ByteArrayInputStream("uploaded content here".getBytes())).
+                withStdin(new ByteArrayInputStream("uploaded content here".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("-f", "-p", "file=", "myjob"),
             CLICommandInvoker.Matcher.succeeded());
         FreeStyleBuild b = p.getBuildByNumber(1);

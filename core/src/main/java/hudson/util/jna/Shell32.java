@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.Native;
@@ -30,7 +31,7 @@ import com.sun.jna.win32.StdCallLibrary;
  * @author Kohsuke Kawaguchi
  */
 public interface Shell32 extends StdCallLibrary {
-    Shell32 INSTANCE = (Shell32) Native.loadLibrary("shell32", Shell32.class);
+    Shell32 INSTANCE = (Shell32) Native.load("shell32", Shell32.class);
 
     /**
      * @return true if successful. Otherwise false.

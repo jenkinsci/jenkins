@@ -21,28 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
-import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import jenkins.util.SystemProperties;
-
-import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -68,6 +57,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -76,8 +66,10 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
@@ -110,15 +102,22 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
+import jenkins.util.MemoryReductionUtil;
+import jenkins.util.SystemProperties;
+import jenkins.util.io.PathRemover;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -141,10 +140,10 @@ public class Util {
      * @since 1.176
      */
     @NonNull
-    public static <T> List<T> filter( @NonNull Iterable<?> base, @NonNull Class<T> type ) {
+    public static <T> List<T> filter(@NonNull Iterable<?> base, @NonNull Class<T> type) {
         List<T> r = new ArrayList<>();
         for (Object i : base) {
-            if(type.isInstance(i))
+            if (type.isInstance(i))
                 r.add(type.cast(i));
         }
         return r;
@@ -154,8 +153,8 @@ public class Util {
      * Creates a filtered sublist.
      */
     @NonNull
-    public static <T> List<T> filter( @NonNull List<?> base, @NonNull Class<T> type ) {
-        return filter((Iterable)base,type);
+    public static <T> List<T> filter(@NonNull List<?> base, @NonNull Class<T> type) {
+        return filter((Iterable) base, type);
     }
 
     /**
@@ -171,7 +170,7 @@ public class Util {
      *
      */
     @Nullable
-    public static String replaceMacro( @CheckForNull String s, @NonNull Map<String,String> properties) {
+    public static String replaceMacro(@CheckForNull String s, @NonNull Map<String, String> properties) {
         return replaceMacro(s, new VariableResolver.ByMap<>(properties));
     }
 
@@ -183,30 +182,30 @@ public class Util {
      */
     @Nullable
     public static String replaceMacro(@CheckForNull String s, @NonNull VariableResolver<String> resolver) {
-    	if (s == null) {
-    		return null;
-    	}
+        if (s == null) {
+            return null;
+        }
 
-        int idx=0;
-        while(true) {
+        int idx = 0;
+        while (true) {
             Matcher m = VARIABLE.matcher(s);
-            if(!m.find(idx))   return s;
+            if (!m.find(idx))   return s;
 
             String key = m.group().substring(1);
 
             // escape the dollar sign or get the key to resolve
             String value;
-            if(key.charAt(0)=='$') {
+            if (key.charAt(0) == '$') {
                value = "$";
             } else {
-               if(key.charAt(0)=='{')  key = key.substring(1,key.length()-1);
+               if (key.charAt(0) == '{')  key = key.substring(1, key.length() - 1);
                value = resolver.resolve(key);
             }
 
-            if(value==null)
+            if (value == null)
                 idx = m.end(); // skip this
             else {
-                s = s.substring(0,m.start())+value+s.substring(m.end());
+                s = s.substring(0, m.start()) + value + s.substring(m.end());
                 idx = m.start() + value.length();
             }
         }
@@ -241,9 +240,9 @@ public class Util {
     @NonNull
     public static String loadFile(@NonNull File logfile, @NonNull Charset charset) throws IOException {
         // Note: Until charset handling is resolved (e.g. by implementing
-        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
+        // https://issues.jenkins.io/browse/JENKINS-48923 ), this method
         // must be able to handle character encoding errors. As reported at
-        // https://issues.jenkins-ci.org/browse/JENKINS-49112 Run.getLog() calls
+        // https://issues.jenkins.io/browse/JENKINS-49112 Run.getLog() calls
         // loadFile() to fully read the generated log file. This file might
         // contain unmappable and/or malformed byte sequences. We need to make
         // sure that in such cases, no CharacterCodingException is thrown.
@@ -253,7 +252,7 @@ public class Util {
         // from a Charset and the reader returned by Files.newBufferedReader()
         // handle malformed and unmappable byte sequences for the specified
         // encoding; the latter is more picky and will throw an exception.
-        // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
         try {
             return FileUtils.readFileToString(logfile, charset);
         } catch (FileNotFoundException e) {
@@ -418,7 +417,7 @@ public class Util {
         // by default, the permissions of the created directory are 0700&(~umask)
         // whereas the old approach created a temporary directory with permissions
         // 0777&(~umask).
-        // To avoid permissions problems like https://issues.jenkins-ci.org/browse/JENKINS-48407
+        // To avoid permissions problems like https://issues.jenkins.io/browse/JENKINS-48407
         // we can pass POSIX file permissions as an attribute (see, for example,
         // https://github.com/jenkinsci/jenkins/pull/3161 )
         final Path tempPath;
@@ -438,15 +437,15 @@ public class Util {
      * On Windows, error messages for IOException aren't very helpful.
      * This method generates additional user-friendly error message to the listener
      */
-    public static void displayIOException(@NonNull IOException e, @NonNull TaskListener listener ) {
+    public static void displayIOException(@NonNull IOException e, @NonNull TaskListener listener) {
         String msg = getWin32ErrorMessage(e);
-        if(msg!=null)
+        if (msg != null)
             listener.getLogger().println(msg);
     }
 
     @CheckForNull
     public static String getWin32ErrorMessage(@NonNull IOException e) {
-        return getWin32ErrorMessage((Throwable)e);
+        return getWin32ErrorMessage((Throwable) e);
     }
 
     /**
@@ -458,19 +457,19 @@ public class Util {
     @CheckForNull
     public static String getWin32ErrorMessage(Throwable e) {
         String msg = e.getMessage();
-        if(msg!=null) {
+        if (msg != null) {
             Matcher m = errorCodeParser.matcher(msg);
-            if(m.matches()) {
+            if (m.matches()) {
                 try {
                     ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-                    return rb.getString("error"+m.group(1));
-                } catch (Exception ignored) {
+                    return rb.getString("error" + m.group(1));
+                } catch (RuntimeException ignored) {
                     // silently recover from resource related failures
                 }
             }
         }
 
-        if(e.getCause()!=null)
+        if (e.getCause() != null)
             return getWin32ErrorMessage(e.getCause());
         return null; // no message
     }
@@ -485,9 +484,9 @@ public class Util {
     public static String getWin32ErrorMessage(int n) {
         try {
             ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-            return rb.getString("error"+n);
+            return rb.getString("error" + n);
         } catch (MissingResourceException e) {
-            LOGGER.log(Level.WARNING,"Failed to find resource bundle",e);
+            LOGGER.log(Level.WARNING, "Failed to find resource bundle", e);
             return null;
         }
     }
@@ -508,7 +507,7 @@ public class Util {
      * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)}
      */
     @Deprecated
-    public static void copyStream(@NonNull InputStream in,@NonNull OutputStream out) throws IOException {
+    public static void copyStream(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         IOUtils.copy(in, out);
     }
 
@@ -552,23 +551,23 @@ public class Util {
      */
     @NonNull
     public static String[] tokenize(@NonNull String s, @CheckForNull String delimiter) {
-        return QuotedStringTokenizer.tokenize(s,delimiter);
+        return QuotedStringTokenizer.tokenize(s, delimiter);
     }
 
     @NonNull
     public static String[] tokenize(@NonNull String s) {
-        return tokenize(s," \t\n\r\f");
+        return tokenize(s, " \t\n\r\f");
     }
 
     /**
      * Converts the map format of the environment variables to the K=V format in the array.
      */
     @NonNull
-    public static String[] mapToEnv(@NonNull Map<String,String> m) {
+    public static String[] mapToEnv(@NonNull Map<String, String> m) {
         String[] r = new String[m.size()];
-        int idx=0;
+        int idx = 0;
 
-        for (final Map.Entry<String,String> e : m.entrySet()) {
+        for (final Map.Entry<String, String> e : m.entrySet()) {
             r[idx++] = e.getKey() + '=' + e.getValue();
         }
         return r;
@@ -576,8 +575,8 @@ public class Util {
 
     public static int min(int x, @NonNull int... values) {
         for (int i : values) {
-            if(i<x)
-                x=i;
+            if (i < x)
+                x = i;
         }
         return x;
     }
@@ -589,7 +588,7 @@ public class Util {
 
     @NonNull
     public static String removeTrailingSlash(@NonNull String s) {
-        if(s.endsWith("/")) return s.substring(0,s.length()-1);
+        if (s.endsWith("/")) return s.substring(0, s.length() - 1);
         else                return s;
     }
 
@@ -634,7 +633,7 @@ public class Util {
             IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new IOException("MD5 not installed",e);    // impossible
+            throw new IOException("MD5 not installed", e);    // impossible
         } finally {
             source.close();
         }
@@ -690,7 +689,7 @@ public class Util {
             digest.update(s.getBytes(StandardCharsets.UTF_8));
 
             // Due to the stupid US export restriction JDK only ships 128bit version.
-            return new SecretKeySpec(digest.digest(),0,128/8, "AES");
+            return new SecretKeySpec(digest.digest(), 0, 128 / 8, "AES");
         } catch (NoSuchAlgorithmException e) {
             throw new Error(e);
         }
@@ -699,9 +698,9 @@ public class Util {
     @NonNull
     public static String toHexString(@NonNull byte[] data, int start, int len) {
         StringBuilder buf = new StringBuilder();
-        for( int i=0; i<len; i++ ) {
-            int b = data[start+i]&0xFF;
-            if(b<16)    buf.append('0');
+        for (int i = 0; i < len; i++) {
+            int b = data[start + i] & 0xFF;
+            if (b < 16)    buf.append('0');
             buf.append(Integer.toHexString(b));
         }
         return buf.toString();
@@ -709,7 +708,7 @@ public class Util {
 
     @NonNull
     public static String toHexString(@NonNull byte[] bytes) {
-        return toHexString(bytes,0,bytes.length);
+        return toHexString(bytes, 0, bytes.length);
     }
 
     @NonNull
@@ -760,9 +759,9 @@ public class Util {
         else if (seconds >= 10)
             return Messages.Util_second(seconds);
         else if (seconds >= 1)
-            return Messages.Util_second(seconds+(float)(millisecs/100)/10); // render "1.2 sec"
-        else if(millisecs>=100)
-            return Messages.Util_second((float)(millisecs/10)/100); // render "0.12 sec".
+            return Messages.Util_second(seconds + (float) (millisecs / 100) / 10); // render "1.2 sec"
+        else if (millisecs >= 100)
+            return Messages.Util_second((float) (millisecs / 10) / 100); // render "0.12 sec".
         else
             return Messages.Util_millisecond(millisecs);
     }
@@ -812,9 +811,9 @@ public class Util {
     @NonNull
     @Deprecated
     public static String combine(long n, @NonNull String suffix) {
-        String s = Long.toString(n)+' '+suffix;
-        if(n!=1)
-        	// Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
+        String s = Long.toString(n) + ' ' + suffix;
+        if (n != 1)
+            // Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
             s += "s";
         return s;
     }
@@ -823,10 +822,10 @@ public class Util {
      * Create a sub-list by only picking up instances of the specified type.
      */
     @NonNull
-    public static <T> List<T> createSubList(@NonNull Collection<?> source, @NonNull Class<T> type ) {
+    public static <T> List<T> createSubList(@NonNull Collection<?> source, @NonNull Class<T> type) {
         List<T> r = new ArrayList<>();
         for (Object item : source) {
-            if(type.isInstance(item))
+            if (type.isInstance(item))
                 r.add(type.cast(item));
         }
         return r;
@@ -853,7 +852,7 @@ public class Util {
 
             for (int i = 0; i < s.length(); i++) {
                 int c = s.charAt(i);
-                if (c<128 && c!=' ') {
+                if (c < 128 && c != ' ') {
                     out.append((char) c);
                 } else {
                     // 1 char -> UTF8
@@ -876,6 +875,7 @@ public class Util {
     }
 
     private static final boolean[] uriMap = new boolean[123];
+
     static {
         String raw =
     "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
@@ -885,7 +885,22 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = raw.charAt(j) == ' ';
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
+    private static final boolean[] fullUriMap = new boolean[123];
+
+    static {
+        String raw = "               0123456789       ABCDEFGHIJKLMNOPQRSTUVWXYZ      abcdefghijklmnopqrstuvwxyz";
+        //            !"#$%&'()*+,-./0123456789:;<=>?@                          [\]^_`                          {|}~
+        //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) fullUriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            fullUriMap[i] = raw.charAt(j) == ' ';
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
@@ -901,6 +916,23 @@ public class Util {
      */
     @NonNull
     public static String rawEncode(@NonNull String s) {
+        return encode(s, uriMap);
+    }
+
+    /**
+     * Encode a single path component for use in an HTTP URL.
+     * Escapes all special characters including those outside
+     * of the characters specified in RFC1738.
+     * All characters outside numbers and letters without diacritic are encoded.
+     * Note that slash ({@code /}) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
+     */
+    @NonNull
+    public static String fullEncode(@NonNull String s) {
+        return encode(s, fullUriMap);
+    }
+
+    private static String encode(String s, boolean[] map) {
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -908,9 +940,9 @@ public class Util {
         char c;
         for (int i = 0, m = s.length(); i < m; i++) {
             int codePoint = Character.codePointAt(s, i);
-            if((codePoint&0xffffff80)==0) { // 1 byte
+            if ((codePoint & 0xffffff80) == 0) { // 1 byte
                 c = s.charAt(i);
-                if (c > 122 || uriMap[c]) {
+                if (c > 122 || map[c]) {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);
@@ -950,7 +982,7 @@ public class Util {
                     out.append(toDigit(aByte & 0xF));
                 }
 
-                if(Character.charCount(codePoint) > 1) {
+                if (Character.charCount(codePoint) > 1) {
                     i++; // we processed two characters
                 }
             }
@@ -959,14 +991,14 @@ public class Util {
     }
 
     private static char toDigit(int n) {
-        return (char)(n < 10 ? '0' + n : 'A' + n - 10);
+        return (char) (n < 10 ? '0' + n : 'A' + n - 10);
     }
 
     /**
      * Surrounds by a single-quote.
      */
     public static String singleQuote(String s) {
-        return '\''+s+'\'';
+        return '\'' + s + '\'';
     }
 
     /**
@@ -974,34 +1006,34 @@ public class Util {
      */
     @Nullable
     public static String escape(@CheckForNull String text) {
-        if (text==null)     return null;
-        StringBuilder buf = new StringBuilder(text.length()+64);
-        for( int i=0; i<text.length(); i++ ) {
+        if (text == null)     return null;
+        StringBuilder buf = new StringBuilder(text.length() + 64);
+        for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
-            if(ch=='\n')
+            if (ch == '\n')
                 buf.append("<br>");
             else
-            if(ch=='<')
+            if (ch == '<')
                 buf.append("&lt;");
             else
-            if(ch=='>')
+            if (ch == '>')
                 buf.append("&gt;");
             else
-            if(ch=='&')
+            if (ch == '&')
                 buf.append("&amp;");
             else
-            if(ch=='"')
+            if (ch == '"')
                 buf.append("&quot;");
             else
-            if(ch=='\'')
+            if (ch == '\'')
                 buf.append("&#039;");
             else
-            if(ch==' ') {
+            if (ch == ' ') {
                 // All spaces in a block of consecutive spaces are converted to
                 // non-breaking space (&nbsp;) except for the last one.  This allows
                 // significant whitespace to be retained without prohibiting wrapping.
-                char nextCh = i+1 < text.length() ? text.charAt(i+1) : 0;
-                buf.append(nextCh==' ' ? "&nbsp;" : " ");
+                char nextCh = i + 1 < text.length() ? text.charAt(i + 1) : 0;
+                buf.append(nextCh == ' ' ? "&nbsp;" : " ");
             }
             else
                 buf.append(ch);
@@ -1011,16 +1043,16 @@ public class Util {
 
     @NonNull
     public static String xmlEscape(@NonNull String text) {
-        StringBuilder buf = new StringBuilder(text.length()+64);
-        for( int i=0; i<text.length(); i++ ) {
+        StringBuilder buf = new StringBuilder(text.length() + 64);
+        for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
-            if(ch=='<')
+            if (ch == '<')
                 buf.append("&lt;");
             else
-            if(ch=='>')
+            if (ch == '>')
                 buf.append("&gt;");
             else
-            if(ch=='&')
+            if (ch == '&')
                 buf.append("&amp;");
             else
                 buf.append(ch);
@@ -1040,10 +1072,15 @@ public class Util {
 
     /**
      * Copies a single file by using Ant.
+     *
+     * @deprecated since 2.335; use {@link Files#copy(Path, Path, CopyOption...)} directly
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.335")
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
-        cp.setProject(new org.apache.tools.ant.Project());
+        cp.setProject(new Project());
         cp.setTofile(dst);
         cp.setFile(src);
         cp.setOverwrite(true);
@@ -1073,7 +1110,7 @@ public class Util {
      */
     @CheckForNull
     public static String fixEmpty(@CheckForNull String s) {
-        if(s==null || s.length()==0)    return null;
+        if (s == null || s.length() == 0)    return null;
         return s;
     }
 
@@ -1084,7 +1121,7 @@ public class Util {
      */
     @CheckForNull
     public static String fixEmptyAndTrim(@CheckForNull String s) {
-        if(s==null)    return null;
+        if (s == null)    return null;
         return fixEmpty(s.trim());
     }
 
@@ -1150,25 +1187,25 @@ public class Util {
     @NonNull
     public static String getFileName(@NonNull String filePath) {
         int idx = filePath.lastIndexOf('\\');
-        if(idx>=0)
-            return getFileName(filePath.substring(idx+1));
+        if (idx >= 0)
+            return getFileName(filePath.substring(idx + 1));
         idx = filePath.lastIndexOf('/');
-        if(idx>=0)
-            return getFileName(filePath.substring(idx+1));
+        if (idx >= 0)
+            return getFileName(filePath.substring(idx + 1));
         return filePath;
     }
 
     /**
      * Concatenate multiple strings by inserting a separator.
-     * @deprecated since TODO; use {@link String#join(CharSequence, Iterable)}
+     * @deprecated since 2.292; use {@link String#join(CharSequence, Iterable)}
      */
     @Deprecated
     @NonNull
     public static String join(@NonNull Collection<?> strings, @NonNull String separator) {
         StringBuilder buf = new StringBuilder();
-        boolean first=true;
+        boolean first = true;
         for (Object s : strings) {
-            if(first)   first=false;
+            if (first)   first = false;
             else        buf.append(separator);
             buf.append(s);
         }
@@ -1214,14 +1251,14 @@ public class Util {
 
         StringTokenizer tokens;
 
-        tokens = new StringTokenizer(includes,",");
-        while(tokens.hasMoreTokens()) {
+        tokens = new StringTokenizer(includes, ",");
+        while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken().trim();
             fs.createInclude().setName(token);
         }
-        if(excludes!=null) {
-            tokens = new StringTokenizer(excludes,",");
-            while(tokens.hasMoreTokens()) {
+        if (excludes != null) {
+            tokens = new StringTokenizer(excludes, ",");
+            while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken().trim();
                 fs.createExclude().setName(token);
             }
@@ -1231,7 +1268,7 @@ public class Util {
 
     @NonNull
     public static FileSet createFileSet(@NonNull File baseDir, @NonNull String includes) {
-        return createFileSet(baseDir,includes,null);
+        return createFileSet(baseDir, includes, null);
     }
 
     private static void tryToDeleteSymlink(@NonNull File symlink) {
@@ -1271,7 +1308,7 @@ public class Util {
             Path tempSymlinkPath = symlink.toPath();
             Files.createSymbolicLink(tempSymlinkPath, target);
             try {
-                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempSymlinkPath, pathForSymlink, StandardCopyOption.ATOMIC_MOVE);
                 return true;
             } catch (
                 UnsupportedOperationException |
@@ -1348,6 +1385,7 @@ public class Util {
     }
 
     private static final AtomicBoolean warnedSymlinks = new AtomicBoolean();
+
     private static void warnWindowsSymlink() {
         if (warnedSymlinks.compareAndSet(false, true)) {
             LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
@@ -1372,11 +1410,11 @@ public class Util {
     @CheckForNull
     public static File resolveSymlinkToFile(@NonNull File link) throws InterruptedException, IOException {
         String target = resolveSymlink(link);
-        if (target==null)   return null;
+        if (target == null)   return null;
 
         File f = new File(target);
         if (f.isAbsolute()) return f;   // absolute symlink
-        return new File(link.getParentFile(),target);   // relative symlink
+        return new File(link.getParentFile(), target);   // relative symlink
     }
 
     /**
@@ -1402,7 +1440,7 @@ public class Util {
             return null;
         } catch (IOException x) {
             throw x;
-        } catch (Exception x) {
+        } catch (RuntimeException x) {
             throw new IOException(x);
         }
     }
@@ -1422,7 +1460,7 @@ public class Util {
     @Deprecated
     public static String encodeRFC2396(String url) {
         try {
-            return new URI(null,url,null).toASCIIString();
+            return new URI(null, url, null).toASCIIString();
         } catch (URISyntaxException e) {
             LOGGER.log(Level.WARNING, "Failed to encode {0}", url);    // could this ever happen?
             return url;
@@ -1435,7 +1473,7 @@ public class Util {
      */
     @NonNull
     public static String wrapToErrorSpan(@NonNull String s) {
-        s = "<span class=error style='display:inline-block'>"+s+"</span>";
+        s = "<span class=error style='display:inline-block'>" + s + "</span>";
         return s;
     }
 
@@ -1449,7 +1487,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if ((numberStr == null) || (numberStr.length() == 0)) {
+        if (numberStr == null || numberStr.length() == 0) {
             return defaultNumber;
         }
         try {
@@ -1568,8 +1606,8 @@ public class Util {
     public static File changeExtension(@NonNull File dst, @NonNull String ext) {
         String p = dst.getPath();
         int pos = p.lastIndexOf('.');
-        if (pos<0)  return new File(p+ext);
-        else        return new File(p.substring(0,pos)+ext);
+        if (pos < 0)  return new File(p + ext);
+        else        return new File(p.substring(0, pos) + ext);
     }
 
     /**
@@ -1578,7 +1616,7 @@ public class Util {
      */
     @Nullable
     public static String intern(@CheckForNull String s) {
-        return s==null ? s : s.intern();
+        return s == null ? s : s.intern();
     }
 
     /**
@@ -1595,10 +1633,10 @@ public class Util {
     @Restricted(NoExternalUse.class)
     public static boolean isAbsoluteUri(@NonNull String uri) {
         int idx = uri.indexOf(':');
-        if (idx<0)  return false;   // no ':'. can't be absolute
+        if (idx < 0)  return false;   // no ':'. can't be absolute
 
         // #, ?, and / must not be before ':'
-        return idx<_indexOf(uri, '#') && idx<_indexOf(uri,'?') && idx<_indexOf(uri,'/');
+        return idx < _indexOf(uri, '#') && idx < _indexOf(uri, '?') && idx < _indexOf(uri, '/');
     }
 
     /**
@@ -1615,7 +1653,7 @@ public class Util {
      */
     private static int _indexOf(@NonNull String s, char ch) {
         int idx = s.indexOf(ch);
-        if (idx<0)  return s.length();
+        if (idx < 0)  return s.length();
         return idx;
     }
 
@@ -1629,7 +1667,7 @@ public class Util {
         p.load(new StringReader(properties));
         return p;
     }
-    
+
     /**
      * Closes the item and logs error to the log in the case of error.
      * Logging will be performed on the {@code WARNING} level.
@@ -1640,14 +1678,14 @@ public class Util {
      * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
-    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @NonNull Logger logger, 
+    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @NonNull Logger logger,
             @NonNull String closeableName, @NonNull String closeableOwner) {
         if (toClose == null) {
             return;
         }
         try {
             toClose.close();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LogRecord record = new LogRecord(Level.WARNING, "Failed to close {0} of {1}");
             record.setParameters(new Object[] { closeableName, closeableOwner });
             record.setThrown(ex);
@@ -1699,28 +1737,85 @@ public class Util {
             throw new IOException(e);
         }
     }
-    
+
+    /**
+     * Create a directory by creating all nonexistent parent directories first.
+     *
+     * <p>Unlike {@link Files#createDirectory}, an exception is not thrown
+     * if the directory could not be created because it already exists.
+     * Unlike {@link Files#createDirectories}, an exception is not thrown
+     * if the directory (or one of its parents) is a symbolic link.
+     *
+     * <p>The {@code attrs} parameter contains optional {@link FileAttribute file attributes}
+     * to set atomically when creating the nonexistent directories.
+     * Each file attribute is identified by its {@link FileAttribute#name}.
+     * If more than one attribute of the same name is included in the array,
+     * then all but the last occurrence is ignored.
+     *
+     * <p>If this method fails,
+     * then it may do so after creating some, but not all, of the parent directories.
+     *
+     * @param dir The directory to create.
+     * @param attrs An optional list of file attributes to set atomically
+     *     when creating the directory.
+     * @return The directory.
+     * @throws UnsupportedOperationException If the array contains an attribute
+     *     that cannot be set atomically when creating the directory.
+     * @throws FileAlreadyExistsException If {@code dir} exists but is not a directory.
+     * @throws IOException If an I/O error occurs.
+     * @see Files#createDirectories(Path, FileAttribute[])
+     */
+    @Restricted(NoExternalUse.class)
+    public static Path createDirectories(@NonNull Path dir, FileAttribute<?>... attrs) throws IOException {
+        dir = dir.toAbsolutePath();
+
+        Path parent;
+        for (parent = dir.getParent(); parent != null; parent = parent.getParent()) {
+            if (Files.exists(parent)) {
+                break;
+            }
+        }
+
+        if (parent == null) {
+            if (Files.isDirectory(dir)) {
+                return dir;
+            } else {
+                return Files.createDirectory(dir, attrs);
+            }
+        }
+
+        Path child = parent;
+        for (Path name : parent.relativize(dir)) {
+            child = child.resolve(name);
+            if (!Files.isDirectory(child)) {
+                Files.createDirectory(child, attrs);
+            }
+        }
+
+        return dir;
+    }
+
     /**
      * Compute the number of calendar days elapsed since the given date.
      * As it's only the calendar days difference that matter, "11.00pm" to "2.00am the day after" returns 1,
      * even if there are only 3 hours between. As well as "10am" to "2pm" both on the same day, returns 0.
      */
     @Restricted(NoExternalUse.class)
-    public static long daysBetween(@NonNull Date a, @NonNull Date b){
+    public static long daysBetween(@NonNull Date a, @NonNull Date b) {
         LocalDate aLocal = a.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         return ChronoUnit.DAYS.between(aLocal, bLocal);
     }
-    
+
     /**
      * @return positive number of days between the given date and now
      * @see #daysBetween(Date, Date)
      */
     @Restricted(NoExternalUse.class)
-    public static long daysElapsedSince(@NonNull Date date){
+    public static long daysElapsedSince(@NonNull Date date) {
         return Math.max(0, daysBetween(date, new Date()));
     }
-    
+
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
@@ -1734,7 +1829,7 @@ public class Util {
         return t;
     }
 
-    public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
+    public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
     // Note: RFC822 dates must not be localized!
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
@@ -1745,9 +1840,9 @@ public class Util {
     /**
      * On Unix environment that cannot run "ln", set this to true.
      */
-    public static boolean NO_SYMLINK = SystemProperties.getBoolean(Util.class.getName()+".noSymLink");
+    public static boolean NO_SYMLINK = SystemProperties.getBoolean(Util.class.getName() + ".noSymLink");
 
-    public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
+    public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName() + ".symlinkEscapeHatch");
 
     /**
      * The number of additional times we will attempt to delete files/directory trees
@@ -1805,16 +1900,4 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
-
-    /**
-     * If this flag is true, native implementations of {@link FilePath#chmod}
-     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
-     * <p>
-     * This should only be enabled if the setgid/setuid/sticky bits are
-     * intentionally set on the Jenkins installation and they are being
-     * overwritten by Jenkins erroneously.
-     */
-    @Restricted(value = NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

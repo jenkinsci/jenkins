@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import hudson.model.Run;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Represents an entry used by the {@link HistoryPageFilter}.
@@ -59,10 +59,10 @@ public class HistoryPageEntry<T> {
             return ((Queue.Item) entry).getId();
         } else if (entry instanceof Run) {
             Run run = (Run) entry;
-            return (Long.MIN_VALUE + run.getNumber());
+            return Long.MIN_VALUE + run.getNumber();
         } else if (entry instanceof Number) {
             // Used for testing purposes because of JENKINS-30899 and JENKINS-30909
-            return (Long.MIN_VALUE + ((Number) entry).longValue());
+            return Long.MIN_VALUE + ((Number) entry).longValue();
         } else {
             return Run.QUEUE_ID_UNKNOWN;
         }

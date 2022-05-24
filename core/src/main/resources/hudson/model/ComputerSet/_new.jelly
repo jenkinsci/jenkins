@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:layout permission="${it.CREATE}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <f:form method="post" action="doCreateItem" name="config">
+      <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
         <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
           <f:textbox name="name" value="${request.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
         </f:entry>

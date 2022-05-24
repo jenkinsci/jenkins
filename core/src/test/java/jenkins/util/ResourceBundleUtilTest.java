@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
-import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-
-import static org.junit.Assert.assertThrows;
+import net.sf.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -62,8 +62,8 @@ public class ResourceBundleUtilTest {
             Locale.setDefault(new Locale("en", "US"));
 
             JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
-            Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
-        }finally{
+            Assert.assertEquals("Initializing log recorders", bundle.getString("LogRecorderManager.init"));
+        } finally {
             Locale.setDefault(defaultOSLocale);
         }
     }
