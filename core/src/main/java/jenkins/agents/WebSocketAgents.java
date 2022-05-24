@@ -93,7 +93,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         Map<String, String> properties = new HashMap<>();
         properties.put(JnlpConnectionState.CLIENT_NAME_KEY, agent);
         properties.put(JnlpConnectionState.SECRET_KEY, secret);
-        String unsafeCookie = req.getHeader(JnlpConnectionState.COOKIE_KEY);
+        String unsafeCookie = req.getHeader(Engine.WEBSOCKET_COOKIE_KEY);
         String cookie;
         if (unsafeCookie != null) {
             // This will blow up if the client sent us a malformed cookie.
@@ -107,7 +107,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
         rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
-        rsp.setHeader(JnlpConnectionState.COOKIE_KEY, cookie);
+        rsp.setHeader(Engine.WEBSOCKET_COOKIE_KEY, cookie);
         return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
 
