@@ -28,8 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
 
-      
-
+      <!-- Node name and status -->
       <h1>
         <span class="icon-lg">
           <l:icon src="${it.iconClassName}" />
@@ -37,11 +36,13 @@ THE SOFTWARE.
         ${it.caption}
       </h1>
 
+      <!-- Node description -->
       <j:if test="${!empty(it.node.nodeDescription)}">
         <div style="margin-bottom: var(--section-padding);">
           <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
         </div>
       </j:if>
+
       <!-- temporarily offline switch -->
       <div style="float:right">
         <j:choose>
