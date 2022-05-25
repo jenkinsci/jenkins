@@ -68,7 +68,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
      *             if the user has to be informed about an illegal name, forces the user to change the name before submitting. The message of the failure will be presented to the user.
      * @deprecated Use {@link #checkName(String, String)}
      */
-    @Deprecated  
+    @Deprecated
     public void checkName(String name) throws Failure {
         // no op
     }
