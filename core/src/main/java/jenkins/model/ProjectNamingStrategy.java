@@ -84,7 +84,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
      *             if the user has to be informed about an illegal name, forces the user to change the name before submitting. The message of the failure will be presented to the user.
      */
     public void checkName(String parentName, String name) throws Failure {
-      checkName(name);
+        checkName(name);
     }
 
     /**
