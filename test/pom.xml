@@ -70,7 +70,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1172.v35f6a_0b_8207e</version>
+        <version>1175.v4b_d517d6db_f0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -383,7 +383,7 @@ THE SOFTWARE.
           Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
           Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
         -->
-        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
+        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
       </properties>
     </profile>
   </profiles>
