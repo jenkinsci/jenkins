@@ -162,7 +162,7 @@ THE SOFTWARE.
             </manifest>
             <manifestEntries>
               <!-- Make sure to keep the directives in core/pom.xml and test/pom.xml in sync with these. -->
-              <Add-Opens>java.base/java.lang java.base/java.io java.base/java.util</Add-Opens>
+              <Add-Opens>java.base/java.lang java.base/java.io java.base/java.util java.desktop/com.sun.beans.introspect</Add-Opens>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
