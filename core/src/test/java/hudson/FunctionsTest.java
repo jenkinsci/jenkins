@@ -28,6 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -638,5 +640,40 @@ public class FunctionsTest {
             }
             return this;
         }
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForNull() throws Exception {
+        assertThat(Functions.tryGetIcon(null), is(nullValue()));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForSymbol() throws Exception {
+        assertThat(Functions.tryGetIcon("symbol-search"), is(nullValue()));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForExactSpec() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-help icon-sm"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForExtraSpec() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-help icon-sm extra-class"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForFilename() throws Exception {
+        assertThat(Functions.tryGetIcon("help.svg"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnMetadataForUrl() throws Exception {
+        assertThat(Functions.tryGetIcon("48x48/green.gif"), is(not(nullValue())));
+    }
+
+    @Test
+    public void tryGetIcon_shouldReturnNullForUnknown() throws Exception {
+        assertThat(Functions.tryGetIcon("icon-nosuchicon"), is(nullValue()));
     }
 }
