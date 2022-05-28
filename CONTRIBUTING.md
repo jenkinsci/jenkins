@@ -66,7 +66,7 @@ cd war; yarn start
 
 You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/design-library-plugin)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
 
 If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
 which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
