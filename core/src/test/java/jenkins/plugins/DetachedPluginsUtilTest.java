@@ -3,7 +3,6 @@ package jenkins.plugins;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
-import jenkins.util.java.JavaUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -28,19 +26,13 @@ public class DetachedPluginsUtilTest {
 
         DetachedPluginsUtil.DetachedPlugin jaxb = plugins.get(0);
 
-        assertEquals(new VersionNumber("11"), jaxb.getMinimumJavaVersion());
-
         final List<String> detachedPlugins = mapToPluginShortName(DetachedPluginsUtil.getDetachedPlugins());
-        if (JavaUtils.isRunningWithJava8OrBelow()) {
-            assertThat(detachedPlugins, not(hasItem("jaxb")));
-        } else {
-            assertThat(detachedPlugins, hasItem("jaxb"));
+        assertThat(detachedPlugins, hasItem("jaxb"));
 
-            final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
-                    DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
+        final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
+                DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
 
-            assertThat(mapToPluginShortName(detachedPluginsSince2_161), hasItems("jaxb", "trilead-api"));
-        }
+        assertThat(mapToPluginShortName(detachedPluginsSince2_161), hasItems("jaxb", "trilead-api"));
     }
 
     private List<String> mapToPluginShortName(List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins) {
