@@ -24,6 +24,7 @@
 
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
@@ -55,6 +56,7 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      *
      * Users use this name to enable/disable annotations.
      */
+    @NonNull
     @Override
     public String getDisplayName() {
         return super.getDisplayName();

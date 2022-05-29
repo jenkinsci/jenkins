@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -103,6 +104,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
