@@ -1,14 +1,5 @@
 tasks:
   - init: |
-      # remove once latest maven works again or we switch to maven wrapper
-      sed -i 's/sdkman_auto_answer=false/sdkman_auto_answer=true/' $HOME/.sdkman/etc/config
-      sdk selfupdate
-      sdk update
-      sdk install maven 3.8.4
-      sdk use maven 3.8.4
-
-      brew install gh
-
       mvn -am -pl war,bom -P quick-build install
     command: |      
       cd war
@@ -29,3 +20,6 @@ jetbrains:
       - Stapler plugin for IntelliJ IDEA
     prebuilds:
       version: stable
+
+image:
+  file: .gitpod/Dockerfile
