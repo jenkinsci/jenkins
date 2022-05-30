@@ -1,3 +1,4 @@
+---
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -9,30 +10,56 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      # see https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638
-      # it would be good to update it at some point, but requires significant testing
-      - dependency-name: "org.codehaus.groovy:groovy-all"
-        versions: [">=2.5.0"]
-      # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
-      - dependency-name: "org.fusesource.jansi:jansi"
-      # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
-      - dependency-name: "javax.servlet:servlet-api"
-      # needs a jakarta upgrade project, imports changed
-      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
-      # Starting with version 2.0.2, this library requires Java 11
-      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
-        versions: [">=2.0.2"]
-      # see https://github.com/jenkinsci/jenkins/pull/4224 can't be updated without breaking api
-      - dependency-name: "org.jfree:jfreechart"
-      # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
+      # Exclusions in this section have been triaged and determined to be
+      # permanent. We do not anticipate removing exclusions from this section.
+
+      # Provided by Jetty and should be aligned with the version provided by the
+      # version of Jetty we deliver. See:
+      # https://github.com/jenkinsci/jenkins/pull/5211
       - dependency-name: "javax.servlet:javax.servlet-api"
-      # log4j 1.2.17 is the final 1.x release
-      - dependency-name: "log4j:log4j"
-      # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
+
+      # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
+      # to keep their corresponding Jetty versions aligned.
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
-        versions: [">=10.0.0"]
-      # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
       - dependency-name: "org.jenkins-ci:winstone"
-      # Starting with version 10.0, this library requires Java 11
+
+      # Log4j 1.2.17 is the final 1.x release.
+      - dependency-name: "log4j:log4j"
+
+
+      # Here lies technical debt. Exclusions in this section have been triaged
+      # and determined to be temporary. Exclusions should be removed from this
+      # section once the remaining action items have been completed.
+
+      # Fails test automation; needs further investigation.
+      - dependency-name: "com.google.inject:guice-bom"
+
+      # Requires Java 11 starting with version 10.0.
       - dependency-name: "com.puppycrawl.tools:checkstyle"
         versions: [">=10.0"]
+
+      # Contains incompatible API changes and needs compatibility work.
+      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
+
+      # This is a banned dependency, and we have a redundant trick in our POM to
+      # prevent it from being pulled in. If and when the reference is removed in
+      # our POM, this exclusion can also be removed.
+      - dependency-name: "javax.servlet:servlet-api"
+
+      # Needs significant testing. See:
+      # https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487
+      # https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638
+      - dependency-name: "org.codehaus.groovy:groovy-all"
+        versions: [">=2.5.0"]
+
+      # Consumed by Groovy and should be updated in lockstep with Groovy. See:
+      # https://github.com/jenkinsci/jenkins/pull/5184
+      - dependency-name: "org.fusesource.jansi:jansi"
+
+      # Requires Java 11 starting with version 2.0.2.
+      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
+        versions: [">=2.0.2"]
+
+      # Contains incompatible API changes and needs compatibility work. See:
+      # https://github.com/jenkinsci/jenkins/pull/4224
+      - dependency-name: "org.jfree:jfreechart"
