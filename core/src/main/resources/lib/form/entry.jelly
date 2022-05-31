@@ -84,8 +84,6 @@ THE SOFTWARE.
             <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.description) : attrs.description}"/>
           </f:description>
         </j:if>
-        <!-- Needs to have a .tr class otherwise custom uses of findFollowing
-             findFollowingTR(listBox, "validation-error-area") will break -->
         <div class="setting-main">
           <d:invokeBody />
         </div>
