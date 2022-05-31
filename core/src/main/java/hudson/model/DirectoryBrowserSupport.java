@@ -659,16 +659,16 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
         public String getIconName() {
             if (isReadable)
-                return isFolder ? "folder.png" : "text.png";
+                return isFolder ? "folder.svg" : "document.svg";
             else
-                return isFolder ? "folder-error.png" : "text-error.png";
+                return isFolder ? "folder-delete.svg" : "document-delete.svg";
         }
 
         public String getIconClassName() {
             if (isReadable)
-                return isFolder ? "icon-folder" : "icon-text";
+                return isFolder ? "icon-folder" : "icon-document";
             else
-                return isFolder ? "icon-folder-error" : "icon-text-error";
+                return isFolder ? "icon-folder-delete" : "icon-document-delete";
         }
 
         public long getSize() {

@@ -47,7 +47,6 @@ import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -158,7 +157,7 @@ public class FileParameterValue extends ParameterValue {
             @SuppressFBWarnings(value = {"FILE_UPLOAD_FILENAME", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"}, justification = "TODO needs triage")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
+                if (location != null && !location.isEmpty() && file.getName() != null && !file.getName().isEmpty()) {
                     listener.getLogger().println("Copying file to " + location);
                     FilePath ws = build.getWorkspace();
                     if (ws == null) {

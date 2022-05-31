@@ -237,7 +237,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
+        if (launcher == null && agentCommand != null && !agentCommand.isEmpty()) {
             try {
                 launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
                 agentCommand = null;
@@ -303,6 +303,7 @@ public abstract class Slave extends Node implements Serializable {
         this.mode = mode;
     }
 
+    @NonNull
     @Override
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
         assert nodeProperties != null;

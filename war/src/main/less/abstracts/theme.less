@@ -1,6 +1,7 @@
-:root {
+:root, .app-theme-picker__picker[data-theme=none] {
   // Font related properties
   --font-family-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, JetBrainsMono, Consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -21,9 +22,9 @@
   // branding
   --primary: #024cb6;
   --secondary: #4d545d;
-  --success: #138347;
-  --danger: #cc0003;
-  --warning: #ea6b19;
+  --success: var(--green);
+  --danger: var(--red);
+  --warning: var(--orange);
   --focus: #3fb3f7;
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
@@ -65,13 +66,6 @@
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
 
-  // Header new UI colors
-  --header-bg-v2: var(--primary-hover);
-  --brand-link-color-hover-v2: var(--primary-hover);
-  --brand-link-color-active-v2: var(--primary-active);
-  --header-link-bg-hover-v2: var(--primary-hover);
-  --header-link-bg-active-v2: var(--primary-active);
-
   // Header dimensions
   --header-item-border-radius: 4px;
 
@@ -80,14 +74,6 @@
   --breadcrumbs-border: var(--light-grey);
   --breadcrumbs-text-color: #4d545d;
   --breadcrumbs-item-bg-color--hover: var(--light-grey);
-
-  // Non-security Monitor / bell-alert new colors
-  --monitor-bg-v2: #fff3cd;
-  --monitor-color-v2: #856404;
-
-  // Security Monitor / shield new colors
-  --sec-monitor-bg-v2: #f8d7da;
-  --sec-monitor-color-v2: #721c24;
 
   // Alert banners
   // Default
@@ -140,6 +126,7 @@
   --btn-large-font-size: var(--font-size-sm);
   --btn-large-line-height: 1.25rem;
   // Button primary
+  --button-color--primary: var(--background);
   --btn-primary-bg: #063F61;
   --btn-primary-bg-hover: lighten(#063F61, 7.5%);
   --btn-primary-bg-active: lighten(#063F61, 12%);
@@ -174,7 +161,7 @@
   --table-body-background: white;
   --table-body-foreground: black;
   --table-border-radius: 10px;
-  --table-body-radius: 6px;
+  --table-row-border-radius: 4px;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
@@ -192,7 +179,7 @@
   --link-color: var(--primary);
   --link-visited-color: var(--link-color);
   --link-color--hover: var(--link-color);
-  --link-color--active: var(--text-color);
+  --link-color--active: var(--link-color);
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
@@ -267,21 +254,26 @@
   --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
+  --section-padding: 1.85rem;
   --input-color: var(--white);
   --input-border: #C3CCD1;
   --input-border-hover: #5C7889;
   --input-hidden-password-bg-color: #f9f9f9;
-  --form-item-max-width: 650px;
-  --form-item-max-width--small: 300px;
-  --form-item-max-width--medium: 450px;
-  --form-label-font-weight: bold;
-  --form-input-padding: 8px;
+  --form-item-max-width: ~"min(65vw, 1600px)";
+  --form-item-max-width--medium: ~"min(50vw, 1400px)";
+  --form-item-max-width--small: ~"min(35vw, 1200px)";
+  --form-label-font-weight: 500;
+  --form-input-padding: 0.5rem;
   --form-input-border-radius: 6px;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
+  --pre-background: rgba(0, 0, 0, 0.05);
+  --pre-color: var(--text-color);
+  --selection-color: rgba(2, 76, 182, 0.3);
 
   // Animations
   --standard-transition: 0.2s ease;
+  --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Pop out menus
   --menu-text-color: black;
@@ -301,8 +293,6 @@
   --light-bg-color--hover: rgba(255, 255, 255, 0.65);
   --add-item-btn-decorator-border-color: #acb;
   --add-item-btn-decorator-bg-color: rgba(245, 249, 239, 0.75);
-  --configure-job-bottom-sticker-bg-color: rgba(245, 249, 239, 0.75);
-  --configure-job-bottom-sticker-border-color: var(--line-green);
 
   // Plugin manager
   --plugin-manager-bg-color-already-upgraded: var(--light-grey);
@@ -313,6 +303,7 @@
   --plugin-manager-category-text-color: var(--text-color);
   --plugin-manager-category-link-color--hover: var(--text-color);
   --plugin-manager-unavailable-bg-color: #f4f4f4;
+  --plugin-manager-unavailable-label-color: var(--text-color);
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;
@@ -322,7 +313,34 @@
   --call-to-action-text-color: var(--alert-info-text-color);
 
   // Colors
-  --green: #1c9146;
-  --orange: #fe820a;
-  --red: #df001c;
+  each(@colors, {
+    --light-@{key}: lighten(@value, 20%);
+    --@{key}: @value;
+    --dark-@{key}: darken(@value, 20%);
+  });
+
+  each(@semantics, {
+    --@{key}-color: @value;
+  })
+}
+
+@colors: {
+  blue: #007aff;
+  brown: #a2845e;
+  cyan: #32ade6;
+  green: #1c9146;
+  indigo: #5856d6;
+  orange: #fe820a;
+  pink: #fb0f45;
+  purple: #af52de;
+  red: #df001c;
+  yellow: #ffcc00;
+}
+
+@semantics: {
+  error: var(--red);
+  warning: var(--orange);
+  success: var(--green);
+  destructive: var(--red);
+  build: var(--green);
 }

@@ -33,8 +33,6 @@ $(function() {
         tabBar.onShowSection(function() {
             // Scroll to the section.
             scrollTo(this, tabBar);
-            // Hook back into hudson-behavior.js
-            page.fireBottomStickerAdjustEvent();
         });
 
         autoActivateTabs(tabBar);

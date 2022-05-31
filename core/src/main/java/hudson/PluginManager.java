@@ -1412,16 +1412,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (plugin.isForNewerHudson()) {
                         jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
                     }
-                    if (plugin.isForNewerJava()) {
-                        jsonObject.put("newerJavaRequired", Messages.PluginManager_javaWarning(plugin.minimumJavaVersion));
-                    }
-                    if (plugin.isNeededDependenciesForNewerJava()) {
-                        VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
-                        if (javaVersion == null) {
-                            throw new IllegalStateException("java version cannot be null here");
-                        }
-                        jsonObject.put("dependenciesNewerJava", Messages.PluginManager_depJavaWarning(javaVersion.toString()));
-                    }
                     if (plugin.hasWarnings()) {
                         JSONObject unresolvedSecurityWarnings = new JSONObject();
                         unresolvedSecurityWarnings.put("text", Messages.PluginManager_securityWarning());
@@ -1783,8 +1773,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public void copy(File target) throws Exception {
             try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
-            } catch (Exception e) {
-                throw e;
             }
         }
 
@@ -2058,9 +2046,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         if (toInstall.isForNewerHudson()) {
             LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
-        }
-        if (toInstall.isForNewerJava()) {
-            LOGGER.log(WARNING, "{0}@{1} was built for a newer Java", new Object[] {toInstall.name, toInstall.version});
         }
     }
 

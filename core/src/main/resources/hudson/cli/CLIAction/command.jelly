@@ -28,7 +28,6 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
-        <l:icon class="icon-terminal icon-xlg"/>
         Command ${command.name}
       </h1>
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>

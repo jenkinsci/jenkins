@@ -26,6 +26,7 @@ package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -43,6 +44,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -90,7 +92,7 @@ import org.kohsuke.stapler.verb.POST;
  *
  * TODO: still a work in progress.
  *
- * <h3>Access Control</h3>
+ * <p><strong>Access Control</strong>:
  * {@link LogRecorder} is only visible for administrators and system readers, and this access control happens at
  * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *
@@ -107,7 +109,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.324")
     public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
@@ -185,6 +187,31 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             }
         }
         return relevantPrefixes;
+    }
+
+    /**
+     * Validate the name.
+     *
+     * @return {@link FormValidation#ok} if the log target is not empty, otherwise {@link
+     *     FormValidation#warning} with a message explaining the problem.
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public FormValidation doCheckName(@QueryParameter String value, @QueryParameter String level) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        try {
+            if ((Util.fixEmpty(level) == null || Level.parse(level).intValue() <= Level.FINE.intValue())
+                    && Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        } catch (IllegalArgumentException iae) {
+            // We cannot figure out the level, if the name is empty show a warning
+            if (Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        }
+        return FormValidation.ok();
     }
 
     @Restricted(NoExternalUse.class)

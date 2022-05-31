@@ -34,7 +34,7 @@ THE SOFTWARE.
           </h1>
         </div>
       </div>
-      <p>
+      <p class="jenkins-description">
         ${%blurb(rootURL)}
       </p>
       <j:set var="commandArgs" value="help"/>

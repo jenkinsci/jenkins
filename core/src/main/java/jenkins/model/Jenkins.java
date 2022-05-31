@@ -237,6 +237,7 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -247,7 +248,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -498,7 +498,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile List<JDK> jdks = new ArrayList<>();
 
     private transient volatile DependencyGraph dependencyGraph;
-    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
+    private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
+    private transient Object dependencyGraphLock = new Object();
 
     /**
      * Currently active Views tab bar.
@@ -1181,6 +1183,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                getLifecycle().onExtendTimeout(EXTEND_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 if (milestone == PLUGINS_PREPARED) {
                     // set up Guice to enable injection as early as possible
                     // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
@@ -2051,6 +2054,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return null if name is null.
      * @see Label#parseExpression(String) (String)
      */
+    @CheckForNull
     public Label getLabel(String expr) {
         if (expr == null)  return null;
         expr = QuotedStringTokenizer.unquote(expr);
@@ -2254,7 +2258,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     void trimLabels(Node... nodes) {
         Set<LabelAtom> includedLabels = new HashSet<>();
-        Arrays.asList(nodes).stream().filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
+        Arrays.stream(nodes).filter(Objects::nonNull).forEach(n -> includedLabels.addAll(n.getAssignedLabels()));
         trimLabels(includedLabels);
     }
 
@@ -2263,12 +2267,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param includedLabels the labels taken as reference to update labels. If {@code null}, all labels are considered.
      */
     private void trimLabels(@CheckForNull Set<LabelAtom> includedLabels) {
-        Set<Label> nodeLabels = new HashSet<>(this.getAssignedLabels());
-        this.getNodes().forEach(n -> nodeLabels.addAll(n.getAssignedLabels()));
+        Set<Set<LabelAtom>> nodeLabels = new HashSet<>();
+        nodeLabels.add(this.getAssignedLabels());
+        this.getNodes().forEach(n -> nodeLabels.add(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (includedLabels == null || includedLabels.contains(l)) {
-                if (nodeLabels.contains(l) || !l.getClouds().isEmpty()) {
+            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
                     // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.
@@ -2655,7 +2660,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Set the LogRecorderManager.
      *
      * @param log the LogRecorderManager to set
-     * @since TODO
+     * @since 2.323
      */
     public void setLog(LogRecorderManager log) {
         checkPermission(ADMINISTER);
@@ -2980,13 +2985,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the item by its path name from the given context
      *
-     * <h2>Path Names</h2>
-     * <p>
+     * <p><strong>Path Names:</strong>
      * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
      * Otherwise, the name should be something like "foo/bar" and it's interpreted like
      * relative path name in the file system is, against the given context.
+     *
      * <p>For compatibility, as a fallback when nothing else matches, a simple path
      * like {@code foo/bar} can also be treated with {@link #getItemByFullName}.
+     *
      * @param context
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
@@ -3563,7 +3569,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cleanUpStarted = true;
         }
         try {
-            LOGGER.log(Level.INFO, "Stopping Jenkins");
+            getLifecycle().onStatusUpdate("Stopping Jenkins");
 
             final List<Throwable> errors = new ArrayList<>();
 
@@ -3574,6 +3580,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             terminating = true;
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
+
+            _cleanUpCancelDependencyGraphCalculation();
 
             _cleanUpInterruptReloadThread(errors);
 
@@ -3595,7 +3603,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpReleaseAllLoggers(errors);
 
-            LOGGER.log(Level.INFO, "Jenkins stopped");
+            getLifecycle().onStatusUpdate("Jenkins stopped");
 
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
@@ -3922,6 +3930,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to release all loggers", e);
             // save for later
             errors.add(e);
+        }
+    }
+
+    private void _cleanUpCancelDependencyGraphCalculation() {
+        synchronized (dependencyGraphLock) {
+            LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+            if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
+                scheduledFutureDependencyGraph.cancel(true);
+            }
+            if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
+                calculatingFutureDependencyGraph.cancel(true);
+            }
         }
     }
 
@@ -4305,7 +4325,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(MANAGE);
-        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication2().getName());
+        getLifecycle().onReload(getAuthentication2().getName(), null);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         WebApp.get(servletContext).setApp(new HudsonIsLoading());
@@ -4315,6 +4335,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     reload();
+                    getLifecycle().onReady();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE, "Failed to reload Jenkins config", e);
                     new JenkinsReloadFailed(e).publish(servletContext, root);
@@ -4502,8 +4523,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     // give some time for the browser to load the "reloading" page
+                    lifecycle.onStatusUpdate("Restart in 5 seconds");
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                    LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                    lifecycle.onStop(exitUser, null);
                     Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                     lifecycle.restart();
                 } catch (InterruptedException | InterruptedIOException e) {
@@ -4538,13 +4560,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if (isQuietingDown()) {
                         servletContext.setAttribute("app", new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 10 seconds");
+                        lifecycle.onStatusUpdate("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                        LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
+                        lifecycle.onStop(exitUser, null);
                         Listeners.notify(RestartListener.class, true, RestartListener::onRestart);
                         lifecycle.restart();
                     } else {
-                        LOGGER.info("Safe-restart mode cancelled");
+                        lifecycle.onStatusUpdate("Safe-restart mode cancelled");
                     }
                 } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins", e);
@@ -4584,6 +4606,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(ADMINISTER);
+        final String exitUser = getAuthentication2().getName();
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         if (rsp != null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
@@ -4597,8 +4621,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                            getAuthentication2().getName(), req != null ? req.getRemoteAddr() : "???"));
+                    getLifecycle().onStop(exitUser, exitAddr);
 
                     cleanUp();
                     System.exit(0);
@@ -4619,14 +4642,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         checkPermission(ADMINISTER);
         quietDownInfo = new QuietDownInfo();
         final String exitUser = getAuthentication2().getName();
-        final String exitAddr = req != null ? req.getRemoteAddr() : "unknown";
+        final String exitAddr = req != null ? req.getRemoteAddr() : null;
         new Thread("safe-exit thread") {
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                                                exitUser, exitAddr));
+                    getLifecycle().onStop(exitUser, exitAddr);
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0, null);
                     // Make sure isQuietingDown is still true.
@@ -4893,6 +4915,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
+    public Future<DependencyGraph> getFutureDependencyGraph() {
+        synchronized (dependencyGraphLock) {
+            // Scheduled future will be the most recent one --> Return
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+
+            // Calculating future will be the most recent one --> Return
+            if (calculatingFutureDependencyGraph != null) {
+                return calculatingFutureDependencyGraph;
+            }
+
+            // No scheduled or calculating future --> Already completed dependency graph is the most recent one
+            return CompletableFuture.completedFuture(dependencyGraph);
+        }
+    }
+
     /**
      * Rebuilds the dependency map.
      */
@@ -4902,7 +4941,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
-        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -4915,13 +4953,44 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        dependencyGraphDirty.set(true);
-        return Timer.get().schedule(() -> {
-            if (dependencyGraphDirty.get()) {
-                rebuildDependencyGraph();
+        synchronized (dependencyGraphLock) {
+            // Collect calls to this method to avoid unnecessary calculation of the dependency graph
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
             }
+            // Schedule new calculation
+            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
+        return Timer.get().schedule(() -> {
+            // Wait for the currently running calculation to finish without blocking rebuildDependencyGraphAsync()
+            Future<DependencyGraph> temp = null;
+            synchronized (dependencyGraphLock) {
+                if (calculatingFutureDependencyGraph != null) {
+                    temp = calculatingFutureDependencyGraph;
+                }
+            }
+
+            if (temp != null) {
+                temp.get();
+            }
+
+            synchronized (dependencyGraphLock) {
+                // Scheduled future becomes the currently calculating future
+                calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
+                scheduledFutureDependencyGraph = null;
+            }
+
+            rebuildDependencyGraph();
+
+            synchronized (dependencyGraphLock) {
+                calculatingFutureDependencyGraph = null;
+            }
+
             return dependencyGraph;
-        }, 500, TimeUnit.MILLISECONDS);
+        }, delay, unit);
     }
 
     public DependencyGraph getDependencyGraph() {
@@ -5515,6 +5584,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean AUTOMATIC_AGENT_LAUNCH = SystemProperties.getBoolean(Jenkins.class.getName() + ".automaticAgentLaunch", true);
+
+    /**
+     * The amount of time by which to extend the startup notification timeout as each initialization milestone is attained.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final */ int EXTEND_TIMEOUT_SECONDS = SystemProperties.getInteger(Jenkins.class.getName() + ".extendTimeoutSeconds", 15);
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();

@@ -45,7 +45,6 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import org.apache.commons.collections.comparators.ReverseComparator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -160,7 +159,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * @deprecated  as of 1.485
-     *      Use {@link ReverseComparator}
+     *      Use {@link Comparator#reverseOrder}
      */
     @Deprecated
     public static final Comparator<Comparable> COMPARATOR = Comparator.reverseOrder();

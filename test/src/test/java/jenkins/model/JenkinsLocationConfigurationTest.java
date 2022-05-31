@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
-import junit.framework.AssertionFailedError;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -141,7 +140,7 @@ public class JenkinsLocationConfigurationTest {
         HtmlAnchor newViewLink = page.getDocumentElement().getElementsByTagName("a").stream()
                 .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
                 .filter(a -> a.getHrefAttribute().endsWith("newView"))
-                .findFirst().orElseThrow(AssertionFailedError::new);
+                .findFirst().orElseThrow(AssertionError::new);
 
         // last verification
         assertFalse(alertAppeared.get());
@@ -173,7 +172,7 @@ public class JenkinsLocationConfigurationTest {
         HtmlAnchor labelAnchor = projectConfigurePage.getDocumentElement().getElementsByTagName("a").stream()
                 .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
                 .filter(a -> a.getHrefAttribute().contains("/label/"))
-                .findFirst().orElseThrow(AssertionFailedError::new);
+                .findFirst().orElseThrow(AssertionError::new);
 
         assertFalse(alertAppeared.get());
         HtmlElementUtil.click(labelAnchor);

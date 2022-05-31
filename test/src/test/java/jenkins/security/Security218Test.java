@@ -71,7 +71,7 @@ public class Security218Test implements Serializable {
      * returns a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
-    private void check(DumbSlave s) throws Exception {
+    private void check(DumbSlave s) {
         try {
             Object o = s.getComputer().getChannel().call(new EvilReturnValue());
             fail("Expected the connection to die: " + o);

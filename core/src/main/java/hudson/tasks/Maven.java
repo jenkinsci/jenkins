@@ -420,9 +420,9 @@ public class Maven extends Builder {
      * @deprecated as of 1.286
      *      Use {@link jenkins.model.Jenkins#getDescriptorByType(Class)} to obtain the current instance.
      *      For compatibility, this field retains the last created {@link DescriptorImpl}.
-     *      TODO: fix sonar plugin that depends on this. That's the only plugin that depends on this field.
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
     public static DescriptorImpl DESCRIPTOR;
 
     @Extension @Symbol("maven")
@@ -446,6 +446,7 @@ public class Maven extends Builder {
             return super.getHelpFile(fieldName);
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
@@ -684,6 +685,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Maven";
@@ -764,6 +766,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.InstallFromApache();

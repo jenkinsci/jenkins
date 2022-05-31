@@ -622,6 +622,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the {@link ACL} for this object.
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
@@ -914,6 +915,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
 
+        @NonNull
         @Override protected synchronized JSON data() {
             JSONArray r = new JSONArray();
             for (User u : modified) {
@@ -921,7 +923,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 JSONObject entry = new JSONObject().
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
-                        accumulate("url", u.getUrl()).
+                        accumulate("url", u.getUrl() + "/").
                         accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/svgs/person.svg").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());

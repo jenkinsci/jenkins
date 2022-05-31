@@ -28,22 +28,19 @@ THE SOFTWARE.
     <div align="right">
         <a href="rss" class="yui-button link-button">
             <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
+              <l:icon src="symbol-rss" />
             </span>
             <span>${%All}</span>
         </a>
         <a href="rss?level=SEVERE" class="yui-button link-button">
             <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
+              <l:icon src="symbol-rss" />
             </span>
             <span>${%SEVERE}</span>
         </a>
         <a href="rss?level=WARNING" class="yui-button link-button">
             <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
+              <l:icon src="symbol-rss" />
             </span>
             <span>${%WARNING}</span>
         </a>

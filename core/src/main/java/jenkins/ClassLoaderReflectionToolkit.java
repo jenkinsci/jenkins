@@ -27,7 +27,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * but once that is made consistent with production Jenkins we can re-evaluate the fallback code.
  */
 @Restricted(NoExternalUse.class)
-@RestrictedSince("TODO")
+@RestrictedSince("2.324")
 public class ClassLoaderReflectionToolkit {
 
     private static <T extends Exception> Object invoke(Method method, Class<T> exception, Object obj, Object... args) throws T {

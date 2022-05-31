@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
@@ -47,6 +48,7 @@ import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 import jenkins.model.Jenkins;
@@ -114,6 +116,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends Descriptor<AcceptOnlySpecificKeyword> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "AcceptOnlySpecificKeyword";
@@ -150,6 +153,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "KeywordProperty";
@@ -271,7 +275,7 @@ public class RobustReflectionConverterTest {
 
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )
@@ -303,7 +307,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
                     .asUser("test")
-                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes(Charset.defaultCharset())))
                     .withArgs(
                             p.getFullName()
                     )

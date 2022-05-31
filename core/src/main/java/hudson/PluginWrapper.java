@@ -43,7 +43,6 @@ import hudson.model.ModelObject;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
-import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +74,6 @@ import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
-import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
@@ -691,20 +689,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Returns the minimum Java version of this plugin, as specified in the plugin metadata.
-     * Generally coming from the {@code java.level} extracted as MANIFEST's metadata with
-     * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
-     *
-     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>
-     *
-     * @since 2.158
-     */
-    @Exported
-    public @CheckForNull String getMinimumJavaVersion() {
-        return manifest.getMainAttributes().getValue("Minimum-Java-Version");
-    }
-
-    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -956,14 +940,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 VersionNumber actualVersion = Jenkins.getVersion();
                 if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
                     versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
-                }
-            }
-
-            String minimumJavaVersion = getMinimumJavaVersion();
-            if (minimumJavaVersion != null) {
-                JavaSpecificationVersion actualVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
-                if (actualVersion.isOlderThan(new JavaSpecificationVersion(minimumJavaVersion))) {
-                    versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), minimumJavaVersion), actualVersion.toString(), minimumJavaVersion);
                 }
             }
         }

@@ -25,6 +25,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
@@ -59,6 +60,7 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
     }
 
     public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<User.CanonicalIdResolver>() {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "compute default user ID";
