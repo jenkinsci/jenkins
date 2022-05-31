@@ -24,6 +24,7 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
@@ -62,6 +63,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         ignoredJenkinsRestOfUrls.add("configure");
     }
 
+    @NonNull
     @Override
     public String getDisplayName() {
         return Messages.AdministrativeMonitorsDecorator_DisplayName();

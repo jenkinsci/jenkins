@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
@@ -53,6 +54,7 @@ public class BuildDiscarderProperty extends OptionalJobProperty<Job<?, ?>> {
     @Symbol("buildDiscarder")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BuildDiscarderProperty_displayName();
