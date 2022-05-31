@@ -1,5 +1,6 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -41,6 +42,7 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
     @Extension(ordinal = 10)
     public static class DescriptorImpl extends GlobalSettingsProviderDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FilePathGlobalSettingsProvider_DisplayName();

@@ -408,6 +408,7 @@ public class ApiTokenProperty extends UserProperty {
     @Extension
     @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
