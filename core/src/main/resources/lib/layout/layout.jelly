@@ -145,6 +145,7 @@ THE SOFTWARE.
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
+    <script src="${resURL}/jsbundles/components/notifications.js" type="text/javascript" defer="true" />
 
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>

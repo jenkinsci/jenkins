@@ -10,37 +10,70 @@
   border-radius: 10px;
   font-weight: 500;
   line-height: 1.66;
-  background: var(--background);
   color: var(--text-color);
-  box-shadow: 0 10px 30px rgba(darken(#024cb6, 25%), 0.25);
+  box-shadow: 0 0 1px 1px rgba(darken(#024cb6, 50%), 0.075),
+              0 10px 30px rgba(darken(#024cb6, 50%), 0.25),
+              0 0 30px 5px var(--background);
   will-change: opacity, transform;
+  z-index: 1;
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  &::before {
+    backdrop-filter: brightness(2) blur(30px);
+  }
+
+  &::after {
+    background: var(--background);
+    opacity: 0.3;
   }
 }
 
-#notification-bar.notif-alert-success {
-  background-color: var(--green);
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 150, 0, 0.2);
+.jenkins-notification--success {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--success-color);
+    opacity: 1;
+  }
 }
 
-#notification-bar.notif-alert-warn {
-  background-color: var(--orange);
-  color: white;
-  box-shadow: 0 10px 30px rgba(darken(#fe820a, 25%), 0.25);
+.jenkins-notification--warning {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--warning-color);
+    opacity: 1;
+  }
 }
 
-#notification-bar.notif-alert-err {
-  background-color: var(--red);
-  color: white;
-  box-shadow: 0 10px 30px rgba(150, 0, 0, 0.2);
+.jenkins-notification--error {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--error-color);
+    opacity: 1;
+  }
 }
 
 #notification-bar.notif-alert-show {
-  animation: show-notification 200ms ease-out 1 normal forwards;
+  animation: show-notification var(--elastic-transition) 1 normal forwards;
+
+  & > * {
+    animation: show-notification-icon var(--elastic-transition) 1 normal forwards;
+  }
 }
 
 #notification-bar.notif-alert-clear {
@@ -57,6 +90,13 @@
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
+  }
+}
+
+@keyframes show-notification-icon {
+  from {
+    opacity: 0;
+    transform: translateY(0.3rem);
   }
 }
 
