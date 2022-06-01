@@ -2,8 +2,7 @@ tasks:
   - init: |
       mvn -am -pl war,bom -P quick-build install
     command: |      
-      cd war
-      mvn jetty:run -Dhost=0.0.0.0
+      mvn -pl war jetty:run -Dhost=0.0.0.0
     name: Run
   - command: gp await-port 8080 && gp url 8080 && gp preview $(gp url 8080)/jenkins/
     name: Preview
