@@ -16,6 +16,8 @@
               0 0 30px 5px var(--background);
   will-change: opacity, transform;
   z-index: 1;
+  cursor: pointer;
+  transition: var(--standard-transition);
 
   svg {
     width: 1.4rem;
@@ -38,6 +40,14 @@
   &::after {
     background: var(--background);
     opacity: 0.3;
+  }
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  &:active {
+    filter: brightness(0.9);
   }
 }
 
@@ -68,7 +78,7 @@
   }
 }
 
-#notification-bar.notif-alert-show {
+.jenkins-notification--visible {
   animation: show-notification var(--elastic-transition) 1 normal forwards;
 
   & > * {
@@ -76,7 +86,7 @@
   }
 }
 
-#notification-bar.notif-alert-clear {
+.jenkins-notification--hidden {
   animation: hide-notification 150ms ease-in 1 normal forwards;
 }
 

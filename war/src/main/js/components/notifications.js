@@ -26,7 +26,6 @@ window.notificationBar = {
 	init: function () {
 		if (this.div == null) {
 			this.div = document.createElement("div");
-			// this.div.style.opacity = 0;
 			this.div.id = "notification-bar";
 			document.body.insertBefore(this.div, document.body.firstElementChild);
 			const self = this;
@@ -46,8 +45,8 @@ window.notificationBar = {
 	// hide the current notification bar, if it's displayed
 	hide: function () {
 		this.clearTimeout();
-		this.div.classList.remove("notif-alert-show");
-		this.div.classList.add("notif-alert-clear");
+		this.div.classList.remove("jenkins-notification--visible");
+		this.div.classList.add("jenkins-notification--hidden");
 	},
 	// show a notification bar
 	show: function (text, options) {
@@ -59,13 +58,14 @@ window.notificationBar = {
 		message.appendChild(document.createTextNode(text));
 
 		this.div.className = options.alertClass || this.defaultAlertClass;
-		this.div.classList.add("notif-alert-show");
+		this.div.classList.add("jenkins-notification--visible");
 
 		this.clearTimeout();
 		const self = this;
-		if (!options.sticky)
+		if (!options.sticky) {
 			this.token = window.setTimeout(function () {
 				self.hide();
 			}, this.DELAY);
+		}
 	}
 };
