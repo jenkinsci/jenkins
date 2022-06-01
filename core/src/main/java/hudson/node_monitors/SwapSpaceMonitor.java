@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
@@ -101,6 +102,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
             return new MonitorTask();
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SwapSpaceMonitor_DisplayName();

@@ -203,6 +203,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Extension @Symbol({"choice", "choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ChoiceParameterDefinition_DisplayName();
