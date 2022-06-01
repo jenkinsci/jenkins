@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jenkins.org.apache.commons.validator.routines;
 
 import java.util.Arrays;
@@ -176,7 +177,7 @@ public class RegexValidatorTest extends TestCase {
 
         // Single Regular Expression - null
         try {
-            new RegexValidator((String)null);
+            new RegexValidator((String) null);
             fail("Single Null - expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertEquals("Single Null", "Regular expression[0] is missing", e.getMessage());
@@ -192,7 +193,7 @@ public class RegexValidatorTest extends TestCase {
 
         // Multiple Regular Expression - Null array
         try {
-            new RegexValidator((String[])null);
+            new RegexValidator((String[]) null);
             fail("Null Array - expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertEquals("Null Array", "Regular expressions are missing", e.getMessage());
@@ -273,7 +274,7 @@ public class RegexValidatorTest extends TestCase {
 
         // Check Values
         for (int i = 0; i < expect.length; i++) {
-            assertEquals(label +" value[" + i + "]", expect[i], result[i]);
+            assertEquals(label + " value[" + i + "]", expect[i], result[i]);
         }
     }
 

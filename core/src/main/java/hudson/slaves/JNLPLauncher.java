@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -35,7 +36,6 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -66,11 +66,10 @@ public class JNLPLauncher extends ComputerLauncher {
     public final String tunnel;
 
     /**
-     * Additional JVM arguments. Can be null.
-     * @since 1.297
+     * @deprecated No longer used.
      */
-    @CheckForNull
-    public final String vmargs;
+    @Deprecated
+    public final transient String vmargs = null;
 
     @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
@@ -101,11 +100,21 @@ public class JNLPLauncher extends ComputerLauncher {
             setWorkDirSettings(workDirSettings);
         }
     }
-    
+
+    // TODO cannot easily make tunnel into a @DataBoundSetter because then the @DataBoundConstructor would be on a no-arg constructor
+    // which is already defined and deprecated. Could retroactively let no-arg constructor use default for workDirSettings,
+    // which would be a behavioral change only for callers of the Java constructor (unlikely).
     @DataBoundConstructor
+    public JNLPLauncher(@CheckForNull String tunnel) {
+        this.tunnel = Util.fixEmptyAndTrim(tunnel);
+    }
+
+    /**
+     * @deprecated use {@link JNLPLauncher#JNLPLauncher(String)}
+     */
+    @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
-        this.vmargs = Util.fixEmptyAndTrim(vmargs);
     }
 
     /**
@@ -116,15 +125,15 @@ public class JNLPLauncher extends ComputerLauncher {
     public JNLPLauncher() {
         this(false);
     }
-    
+
     /**
      * Constructor with default options.
-     * 
+     *
      * @param enableWorkDir If {@code true}, the work directory will be enabled with default settings.
      */
     public JNLPLauncher(boolean enableWorkDir) {
-        this(null, null, enableWorkDir 
-                ? RemotingWorkDirSettings.getEnabledDefaults() 
+        this(null, null, enableWorkDir
+                ? RemotingWorkDirSettings.getEnabledDefaults()
                 : RemotingWorkDirSettings.getDisabledDefaults());
     }
 
@@ -139,7 +148,7 @@ public class JNLPLauncher extends ComputerLauncher {
 
     /**
      * Returns work directory settings.
-     * 
+     *
      * @since 2.72
      */
     @NonNull
@@ -151,7 +160,7 @@ public class JNLPLauncher extends ComputerLauncher {
     public final void setWorkDirSettings(@NonNull RemotingWorkDirSettings workDirSettings) {
         this.workDirSettings = workDirSettings;
     }
-    
+
     @Override
     public boolean isLaunchSupported() {
         return false;
@@ -182,11 +191,12 @@ public class JNLPLauncher extends ComputerLauncher {
      *      Use {@link Jenkins#getDescriptor(Class)}
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
     /**
      * Gets work directory options as a String.
-     * 
+     *
      * In public API {@code getWorkDirSettings().toCommandLineArgs(computer)} should be used instead
      * @param computer Computer
      * @return Command line options for launching with the WorkDir
@@ -194,12 +204,12 @@ public class JNLPLauncher extends ComputerLauncher {
     @NonNull
     @Restricted(NoExternalUse.class)
     public String getWorkDirOptions(@NonNull Computer computer) {
-        if(!(computer instanceof SlaveComputer)) {
+        if (!(computer instanceof SlaveComputer)) {
             return "";
         }
-        return workDirSettings.toCommandLineString((SlaveComputer)computer);
+        return workDirSettings.toCommandLineString((SlaveComputer) computer);
     }
-    
+
     @Extension @Symbol("jnlp")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
@@ -212,11 +222,11 @@ public class JNLPLauncher extends ComputerLauncher {
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }
-        
+
         /**
          * Checks if Work Dir settings should be displayed.
-         * 
-         * This flag is checked in {@code config.jelly} before displaying the 
+         *
+         * This flag is checked in {@code config.jelly} before displaying the
          * {@link JNLPLauncher#workDirSettings} property.
          * By default the configuration is displayed only for {@link JNLPLauncher},
          * but the implementation can be overridden.
@@ -224,7 +234,7 @@ public class JNLPLauncher extends ComputerLauncher {
          * @since 2.73
          */
         public boolean isWorkDirSupported() {
-            // This property is included only for JNLPLauncher by default. 
+            // This property is included only for JNLPLauncher by default.
             // Causes JENKINS-45895 in the case of includes otherwise
             return DescriptorImpl.class.equals(getClass());
         }
@@ -245,22 +255,6 @@ public class JNLPLauncher extends ComputerLauncher {
             return FormValidation.ok();
         }
 
-    }
-
-    /**
-     * Returns true if Java Web Start button should be displayed.
-     * Java Web Start is only supported when the Jenkins server is
-     * running with Java 8.  Earlier Java versions are not supported by Jenkins.
-     * Later Java versions do not support Java Web Start.
-     *
-     * This flag is checked in {@code config.jelly} before displaying the
-     * Java Web Start button.
-     * @return {@code true} if Java Web Start button should be displayed.
-     * @since 2.153
-     */
-    @Restricted(NoExternalUse.class) // Jelly use
-    public boolean isJavaWebStartSupported() {
-        return JavaUtils.isRunningWithJava8OrBelow();
     }
 
     /**

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -39,7 +40,6 @@ import static org.mockito.Mockito.when;
 
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
@@ -57,6 +57,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,7 +111,7 @@ public class FilePathTest {
     // TODO: this test is much too slow to be a traditional unit test. Should be extracted into some stress test
     // which is no part of the default test harness?
     @Test public void noFileLeakInCopyTo() throws Exception {
-        for (int j=0; j<2500; j++) {
+        for (int j = 0; j < 2500; j++) {
             File tmp = temp.newFile();
             FilePath f = new FilePath(tmp);
             File tmp2 = temp.newFile();
@@ -140,14 +141,14 @@ public class FilePathTest {
         final File tmp = temp.newFile();
 
            int fileSize = 90000;
-        
+
             givenSomeContentInFile(tmp, fileSize);
-        
+
             List<Future<Integer>> results = whenFileIsCopied100TimesConcurrently(tmp);
 
             // THEN copied count was always equal the expected size
             for (Future<Integer> f : results)
-                assertEquals(fileSize,f.get().intValue());
+                assertEquals(fileSize, f.get().intValue());
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
@@ -158,10 +159,10 @@ public class FilePathTest {
             os.write(buf);
         }
     }
-    
+
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
         List<Callable<Integer>> r = new ArrayList<>();
-        for (int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             r.add(() -> {
                 class Sink extends OutputStream {
                     private Exception closed;
@@ -260,75 +261,75 @@ public class FilePathTest {
             FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
             d.zip(NullOutputStream.NULL_OUTPUT_STREAM);
-            d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM, "**/*");
     }
 
     @Test public void normalization() {
-        compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
+        compare("abc/def\\ghi", "abc/def\\ghi"); // allow mixed separators
 
-        {// basic '.' trimming
-            compare("./abc/def","abc/def");
-            compare("abc/./def","abc/def");
-            compare("abc/def/.","abc/def");
+        { // basic '.' trimming
+            compare("./abc/def", "abc/def");
+            compare("abc/./def", "abc/def");
+            compare("abc/def/.", "abc/def");
 
-            compare(".\\abc\\def","abc\\def");
-            compare("abc\\.\\def","abc\\def");
-            compare("abc\\def\\.","abc\\def");
+            compare(".\\abc\\def", "abc\\def");
+            compare("abc\\.\\def", "abc\\def");
+            compare("abc\\def\\.", "abc\\def");
         }
 
-        compare("abc/../def","def");
-        compare("abc/def/../../ghi","ghi");
-        compare("abc/./def/../././../ghi","ghi");   // interleaving . and ..
+        compare("abc/../def", "def");
+        compare("abc/def/../../ghi", "ghi");
+        compare("abc/./def/../././../ghi", "ghi");   // interleaving . and ..
 
-        compare("../abc/def","../abc/def");     // uncollapsible ..
-        compare("abc/def/..","abc");
+        compare("../abc/def", "../abc/def");     // uncollapsible ..
+        compare("abc/def/..", "abc");
 
-        compare("c:\\abc\\..","c:\\");      // we want c:\\, not c:
-        compare("c:\\abc\\def\\..","c:\\abc");
+        compare("c:\\abc\\..", "c:\\");      // we want c:\\, not c:
+        compare("c:\\abc\\def\\..", "c:\\abc");
 
-        compare("/abc/../","/");
-        compare("abc/..",".");
-        compare(".",".");
+        compare("/abc/../", "/");
+        compare("abc/..", ".");
+        compare(".", ".");
 
         // @Issue("JENKINS-5951")
         compare("C:\\Hudson\\jobs\\foo\\workspace/../../otherjob/workspace/build.xml",
                 "C:\\Hudson\\jobs/otherjob/workspace/build.xml");
         // Other cases that failed before
-        compare("../../abc/def","../../abc/def");
-        compare("..\\..\\abc\\def","..\\..\\abc\\def");
-        compare("/abc//../def","/def");
-        compare("c:\\abc\\\\..\\def","c:\\def");
-        compare("/../abc/def","/abc/def");
-        compare("c:\\..\\abc\\def","c:\\abc\\def");
-        compare("abc/def/","abc/def");
-        compare("abc\\def\\","abc\\def");
+        compare("../../abc/def", "../../abc/def");
+        compare("..\\..\\abc\\def", "..\\..\\abc\\def");
+        compare("/abc//../def", "/def");
+        compare("c:\\abc\\\\..\\def", "c:\\def");
+        compare("/../abc/def", "/abc/def");
+        compare("c:\\..\\abc\\def", "c:\\abc\\def");
+        compare("abc/def/", "abc/def");
+        compare("abc\\def\\", "abc\\def");
         // The new code can collapse extra separator chars
-        compare("abc//def/\\//\\ghi","abc/def/ghi");
-        compare("\\\\host\\\\abc\\\\\\def","\\\\host\\abc\\def"); // don't collapse for \\ prefix
-        compare("\\\\\\foo","\\\\foo");
-        compare("//foo","/foo");
+        compare("abc//def/\\//\\ghi", "abc/def/ghi");
+        compare("\\\\host\\\\abc\\\\\\def", "\\\\host\\abc\\def"); // don't collapse for \\ prefix
+        compare("\\\\\\foo", "\\\\foo");
+        compare("//foo", "/foo");
         // Other edge cases
-        compare("abc/def/../../../ghi","../ghi");
-        compare("\\abc\\def\\..\\..\\..\\ghi\\","\\ghi");
+        compare("abc/def/../../../ghi", "../ghi");
+        compare("\\abc\\def\\..\\..\\..\\ghi\\", "\\ghi");
     }
 
     private void compare(String original, String answer) {
-        assertEquals(answer,new FilePath((VirtualChannel)null,original).getRemote());
+        assertEquals(answer, new FilePath((VirtualChannel) null, original).getRemote());
     }
 
     @Issue("JENKINS-6494")
     @Test public void getParent() {
-        FilePath fp = new FilePath((VirtualChannel)null, "/abc/def");
+        FilePath fp = new FilePath((VirtualChannel) null, "/abc/def");
         assertEquals("/abc", (fp = fp.getParent()).getRemote());
         assertEquals("/", (fp = fp.getParent()).getRemote());
         assertNull(fp.getParent());
 
-        fp = new FilePath((VirtualChannel)null, "abc/def\\ghi");
+        fp = new FilePath((VirtualChannel) null, "abc/def\\ghi");
         assertEquals("abc/def", (fp = fp.getParent()).getRemote());
         assertEquals("abc", (fp = fp.getParent()).getRemote());
         assertNull(fp.getParent());
 
-        fp = new FilePath((VirtualChannel)null, "C:\\abc\\def");
+        fp = new FilePath((VirtualChannel) null, "C:\\abc\\def");
         assertEquals("C:\\abc", (fp = fp.getParent()).getRemote());
         assertEquals("C:\\", (fp = fp.getParent()).getRemote());
         assertNull(fp.getParent());
@@ -342,17 +343,17 @@ public class FilePathTest {
         FileUtils.touch(building);
         return new FilePath(building);
     }
-    
+
     /**
      * Performs round-trip archiving for Tar handling methods.
      * @throws Exception test failure
      */
     @Test public void compressTarUntarRoundTrip() throws Exception {
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);   
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100); 
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000); 
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000);
     }
-            
+
     /**
      * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
@@ -366,7 +367,7 @@ public class FilePathTest {
         final String filePrefix = "JENKINS-10629";
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
-     
+
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
         final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
@@ -436,13 +437,13 @@ public class FilePathTest {
         FilePath middle = new FilePath(base, "jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver");
         FilePath full = new FilePath(middle, "acceptance-tests\\distribution.zip");
         assertFalse(full.isUnix());
-        
-        
+
+
         FilePath unixPath = new FilePath(dummy,
                 "/home/test");
         assertTrue(unixPath.isUnix());
     }
-    
+
     /**
      * Tests that permissions are kept when using {@link FilePath#copyToWithPermission(FilePath)}.
      * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
@@ -450,50 +451,31 @@ public class FilePathTest {
      */
     @Test public void copyToWithPermission() throws IOException, InterruptedException {
         File tmp = temp.getRoot();
-            File child = new File(tmp,"child");
+            File child = new File(tmp, "child");
             FilePath childP = new FilePath(child);
             childP.touch(4711);
-            
+
             Chmod chmodTask = new Chmod();
             chmodTask.setProject(new Project());
             chmodTask.setFile(child);
             chmodTask.setPerm("0400");
             chmodTask.execute();
-            
+
             FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
             childP.copyToWithPermission(copy);
-            
-            assertEquals(childP.mode(),copy.mode());
+
+            assertEquals(childP.mode(), copy.mode());
             if (!Functions.isWindows()) {
-                assertEquals(childP.lastModified(),copy.lastModified());
+                assertEquals(childP.lastModified(), copy.lastModified());
             }
-            
+
             // JENKINS-11073:
             // Windows seems to have random failures when setting the timestamp on newly generated
             // files. So test that:
-            for (int i=0; i<100; i++) {
-                copy = new FilePath(channels.british, tmp.getPath()).child("copy"+i);
+            for (int i = 0; i < 100; i++) {
+                copy = new FilePath(channels.british, tmp.getPath()).child("copy" + i);
                 childP.copyToWithPermission(copy);
             }
-    }
-
-    @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows() || Platform.isDarwin());
-        File tmp = temp.getRoot();
-        File original = new File(tmp,"original");
-        FilePath originalP = new FilePath(channels.french, original.getPath());
-        originalP.touch(0);
-        PosixAPI.jnr().chmod(original.getAbsolutePath(), 02777); // Read/write/execute for everyone and setuid.
-
-        File sameChannelCopy = new File(tmp,"sameChannelCopy");
-        FilePath sameChannelCopyP = new FilePath(channels.french, sameChannelCopy.getPath());
-        originalP.copyToWithPermission(sameChannelCopyP);
-        assertEquals("Special permissions should be copied on the same machine", 02777, PosixAPI.jnr().stat(sameChannelCopy.getAbsolutePath()).mode() & 07777);
-
-        File diffChannelCopy = new File(tmp,"diffChannelCopy");
-        FilePath diffChannelCopyP = new FilePath(channels.british, diffChannelCopy.getPath());
-        originalP.copyToWithPermission(diffChannelCopyP);
-        assertEquals("Special permissions should not be copied across machines", 00777, PosixAPI.jnr().stat(diffChannelCopy.getAbsolutePath()).mode() & 07777);
     }
 
     @Test public void symlinkInTar() throws Exception {
@@ -504,14 +486,14 @@ public class FilePathTest {
             in.mkdirs();
             in.child("c").touch(0);
             in.child("b").symlinkTo("c", TaskListener.NULL);
-                        
+
             FilePath tar = tmp.child("test.tar");
             in.tar(tar.write(), "**/*");
 
             FilePath dst = in.child("dst");
             tar.untar(dst, TarCompression.NONE);
 
-            assertEquals("c",dst.child("b").readLink());
+            assertEquals("c", dst.child("b").readLink());
     }
 
     @Issue("JENKINS-13649")
@@ -566,7 +548,7 @@ public class FilePathTest {
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
             assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
-    
+
     @Issue("JENKINS-5253")
     @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
@@ -585,27 +567,27 @@ public class FilePathTest {
             Util.deleteRecursive(tmp);
         }
     }
-   
+
     @Issue("JENKINS-15418")
     @Test public void deleteLongPathOnWindows() throws Exception {
         File tmp = temp.getRoot();
             FilePath d = new FilePath(channels.french, tmp.getPath());
-            
+
             // construct a very long path
             StringBuilder sb = new StringBuilder();
-            while(sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
+            while (sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
                 sb.append("very/");
             }
             sb.append("pivot/very/very/long/path");
-            
-            FilePath longPath = d.child(sb.toString()); 
+
+            FilePath longPath = d.child(sb.toString());
             longPath.mkdirs();
             FilePath childInLongPath = longPath.child("file.txt");
             childInLongPath.touch(0);
-            
+
             File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
             Util.deleteRecursive(firstDirectory);
-            
+
             assertFalse("Could not delete directory!", firstDirectory.exists());
     }
 
@@ -656,15 +638,15 @@ public class FilePathTest {
         when(con.getInputStream()).thenThrow(new ConnectException());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, Charset.defaultCharset()), message));
         verify(con).setIfModifiedSince(123000);
-        String log = baos.toString();
+        String log = baos.toString(Charset.defaultCharset().name());
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
     }
 
     @Issue("JENKINS-23507")
-    @Test public void installIfNecessaryFollowsRedirects() throws Exception{
+    @Test public void installIfNecessaryFollowsRedirects() throws Exception {
         File tmp = temp.getRoot();
         final FilePath d = new FilePath(tmp);
         FilePath.UrlFactory urlFactory = mock(FilePath.UrlFactory.class);
@@ -700,7 +682,7 @@ public class FilePathTest {
         final ZipOutputStream zip = new ZipOutputStream(buf);
 
         zip.putNextEntry(new ZipEntry("abc"));
-        zip.write("abc".getBytes());
+        zip.write("abc".getBytes(StandardCharsets.US_ASCII));
         zip.close();
 
         return new ByteArrayInputStream(buf.toByteArray());
@@ -716,14 +698,14 @@ public class FilePathTest {
 
             subsub.mkdirs();
 
-            final File subFile1 = new File( sub.getAbsolutePath() + "/file1.txt" );
+            final File subFile1 = new File(sub.getAbsolutePath() + "/file1.txt");
             subFile1.createNewFile();
-            final File subFile2 = new File( subsub.getAbsolutePath() + "/file2.txt" );
+            final File subFile2 = new File(subsub.getAbsolutePath() + "/file2.txt");
             subFile2.createNewFile();
 
             final FilePath src = new FilePath(sub);
             final FilePath dst = new FilePath(top);
-            
+
             // test conflict subdir
             src.moveAllChildrenTo(dst);
     }
@@ -828,7 +810,7 @@ public class FilePathTest {
         FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
 
         assertThat(textTempFile.exists(), is(true));
-        
+
         filePath.deleteSuffixesRecursive();
         assertThat(textTempFile.exists(), is(false));
     }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.DescriptorExtensionList;
@@ -72,7 +73,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     }
 
     public final String newInstanceDetailPage() {
-        return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newInstanceDetail.jelly";
+        return '/' + clazz.getName().replace('.', '/').replace('$', '/') + "/newInstanceDetail.jelly";
     }
 
     /**
@@ -85,7 +86,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     public void handleNewNodePage(ComputerSet computerSet, String name, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         computerSet.checkName(name);
         req.setAttribute("descriptor", this);
-        req.getView(computerSet,"_new.jelly").forward(req,rsp);
+        req.getView(computerSet, "_new.jelly").forward(req, rsp);
     }
 
     @Override
@@ -93,9 +94,9 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
         return getViewPage(clazz, "configure-entries.jelly");
     }
 
-    public FormValidation doCheckName(@QueryParameter String value ) {
+    public FormValidation doCheckName(@QueryParameter String value) {
         String name = Util.fixEmptyAndTrim(value);
-        if(name==null)
+        if (name == null)
             return FormValidation.error(Messages.NodeDescriptor_CheckName_Mandatory());
         try {
             Jenkins.checkGoodName(name);
@@ -108,7 +109,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     /**
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
-    public static DescriptorExtensionList<Node,NodeDescriptor> all() {
+    public static DescriptorExtensionList<Node, NodeDescriptor> all() {
         return Jenkins.get().getDescriptorList(Node.class);
     }
 
@@ -123,7 +124,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     public static List<NodeDescriptor> allInstantiable() {
         List<NodeDescriptor> r = new ArrayList<>();
         for (NodeDescriptor d : all())
-            if(d.isInstantiable())
+            if (d.isInstantiable())
                 r.add(d);
         return r;
     }

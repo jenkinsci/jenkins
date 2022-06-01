@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
@@ -54,6 +56,7 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      *
      * Users use this name to enable/disable annotations.
      */
+    @NonNull
     @Override
     public String getDisplayName() {
         return super.getDisplayName();
@@ -63,26 +66,26 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      * Returns true if this descriptor has a JavaScript to be inserted on applicable console page.
      */
     public boolean hasScript() {
-        return hasResource("/script.js") !=null;
+        return hasResource("/script.js") != null;
     }
 
     /**
      * Returns true if this descriptor has a stylesheet to be inserted on applicable console page.
      */
     public boolean hasStylesheet() {
-        return hasResource("/style.css") !=null;
+        return hasResource("/style.css") != null;
     }
 
     private URL hasResource(String name) {
-        return clazz.getClassLoader().getResource(clazz.getName().replace('.','/').replace('$','/')+ name);
+        return clazz.getClassLoader().getResource(clazz.getName().replace('.', '/').replace('$', '/') + name);
     }
 
-    @WebMethod(name="script.js")
+    @WebMethod(name = "script.js")
     public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveFile(req, hasResource("/script.js"), TimeUnit.DAYS.toMillis(1));
     }
 
-    @WebMethod(name="style.css")
+    @WebMethod(name = "style.css")
     public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveFile(req, hasResource("/style.css"), TimeUnit.DAYS.toMillis(1));
     }
@@ -90,7 +93,7 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
     /**
      * Returns all the registered {@link ConsoleAnnotationDescriptor} descriptors.
      */
-    public static DescriptorExtensionList<ConsoleNote<?>,ConsoleAnnotationDescriptor> all() {
+    public static DescriptorExtensionList<ConsoleNote<?>, ConsoleAnnotationDescriptor> all() {
         return (DescriptorExtensionList) Jenkins.get().getDescriptorList(ConsoleNote.class);
     }
 }

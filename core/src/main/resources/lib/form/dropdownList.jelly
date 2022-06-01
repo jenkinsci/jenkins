@@ -39,16 +39,16 @@ THE SOFTWARE.
   </st:documentation>
 
     <div class='jenkins-form-item'>
-        <div class="setting-name help-sibling">
+        <div class="jenkins-form-label help-sibling">
             ${attrs.title}
             <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
         <j:if test="${attrs.help!=null}">
             <f:helpArea/>
         </j:if>
-        <div class="setting-main">
+        <div class="jenkins-select">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList"
+            <select class="jenkins-select__input dropdownList"
                     disabled="${readOnlyMode ? 'true' : null}"
             >
                 <j:set var="dropdownListMode" value="createSelectField"/>

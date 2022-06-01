@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.markup;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
@@ -52,6 +54,7 @@ public class EscapedMarkupFormatter extends MarkupFormatter {
     @Extension @Symbol("plainText")
     public static class DescriptorImpl extends MarkupFormatterDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.EscapedMarkupFormatter_DisplayName();

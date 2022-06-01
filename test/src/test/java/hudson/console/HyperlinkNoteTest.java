@@ -51,7 +51,7 @@ public class HyperlinkNoteTest {
     @Issue("JENKINS-53016")
     @Test
     public void textWithNewlines() throws Exception {
-        String url = r.getURL().toString()+"test";
+        String url = r.getURL().toString() + "test";
         String noteText = "\nthis string\nhas newline\r\ncharacters\n\r";
         String input = HyperlinkNote.encodeTo(url, noteText);
         String noteTextSanitized = input.substring(input.length() - noteText.length());
@@ -72,7 +72,7 @@ public class HyperlinkNoteTest {
         // Throws IndexOutOfBoundsException before https://github.com/jenkinsci/jenkins/pull/3580.
         String output = annotate(input);
         assertThat(output, allOf(
-                containsString("href='" + r.getURL().toString()+p.getUrl() + "'"),
+                containsString("href='" + r.getURL().toString() + p.getUrl() + "'"),
                 containsString(new ModelHyperlinkNote("", 0).extraAttributes()),
                 containsString(">" + noteTextSanitized + "</a>")));
     }
@@ -85,7 +85,7 @@ public class HyperlinkNoteTest {
         r.jenkins.rebuildDependencyGraph();
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
-        HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
+        HtmlPage rsp = r.createWebClient().goTo(b.getUrl() + "console");
         assertThat(rsp.querySelector(".console-output").asNormalizedText(), containsString("Triggering a new build of"));
         assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }

@@ -37,13 +37,16 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
         Computer.threadPoolForRemoting.submit(new Install(c, listener));
     }
+
     private static class Install implements Callable<Void> {
         private final Computer c;
         private final TaskListener listener;
+
         Install(Computer c, TaskListener listener) {
             this.c = c;
             this.listener = listener;
         }
+
         @Override
         public Void call() throws Exception {
             install(c, listener);
@@ -56,7 +59,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
             VirtualChannel ch = c.getChannel();
-            if (ch==null) return;  // defensive check
+            if (ch == null) return;  // defensive check
 
             List<SlaveRestarter> effective = ch.call(new FindEffectiveRestarters(restarters));
 
@@ -65,11 +68,14 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
     }
+
     private static class FindEffectiveRestarters extends MasterToSlaveCallable<List<SlaveRestarter>, IOException> {
         private final List<SlaveRestarter> restarters;
+
         FindEffectiveRestarters(List<SlaveRestarter> restarters) {
             this.restarters = restarters;
         }
+
         @Override
         public List<SlaveRestarter> call() throws IOException {
             Engine e = Engine.current();
@@ -84,27 +90,35 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             // filter out ones that doesn't apply
             restarters.removeIf(r -> !r.canWork());
 
-            e.addListener(new EngineListenerAdapter() {
-                @Override
-                public void onReconnect() {
-                    try {
-                        for (SlaveRestarter r : restarters) {
-                            try {
-                                LOGGER.info("Restarting agent via "+r);
-                                r.restart();
-                            } catch (Exception x) {
-                                LOGGER.log(SEVERE, "Failed to restart agent with "+r, x);
-                            }
-                        }
-                    } finally {
-                        // if we move on to the reconnection without restart,
-                        // don't let the current implementations kick in when the agent loses connection again
-                        restarters.clear();
-                    }
-                }
-            });
+            e.addListener(new EngineListenerAdapterImpl(restarters));
 
             return restarters;
+        }
+    }
+
+    private static final class EngineListenerAdapterImpl extends EngineListenerAdapter {
+        private final List<SlaveRestarter> restarters;
+
+        EngineListenerAdapterImpl(List<SlaveRestarter> restarters) {
+            this.restarters = restarters;
+        }
+
+        @Override
+        public void onReconnect() {
+            try {
+                for (SlaveRestarter r : restarters) {
+                    try {
+                        Logger.getGlobal().info("Restarting agent via " + r);
+                        r.restart();
+                    } catch (Exception x) {
+                        Logger.getGlobal().log(SEVERE, "Failed to restart agent with " + r, x);
+                    }
+                }
+            } finally {
+                // if we move on to the reconnection without restart,
+                // don't let the current implementations kick in when the agent loses connection again
+                restarters.clear();
+            }
         }
     }
 

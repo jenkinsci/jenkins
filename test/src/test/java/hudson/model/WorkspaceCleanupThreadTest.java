@@ -203,6 +203,7 @@ public class WorkspaceCleanupThreadTest {
 
     private static final class VetoSCM extends NullSCM {
         private final boolean answer;
+
         VetoSCM(boolean answer) {
             this.answer = answer;
         }

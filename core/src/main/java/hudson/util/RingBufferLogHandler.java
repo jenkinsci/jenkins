@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,11 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -35,6 +38,9 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(
+        value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+        justification = "to guard against potential future compiler optimizations")
 public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
@@ -43,6 +49,13 @@ public class RingBufferLogHandler extends Handler {
         LogRecordRef(LogRecord referent) {
             super(referent);
         }
+    }
+
+    static {
+        // Preload the LogRecordRef class to avoid an ABBA deadlock between agent class loading and logging.
+        LogRecord r = new LogRecord(Level.INFO, "<preloading>");
+        // We call Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(new LogRecordRef(r).get());
     }
 
     private int start = 0;
@@ -77,7 +90,7 @@ public class RingBufferLogHandler extends Handler {
         int len = records.length;
         records[(start + size) % len] = new LogRecordRef(record);
         if (size == len) {
-            start = (start+1)%len;
+            start = (start + 1) % len;
         } else {
             size++;
         }
@@ -106,6 +119,7 @@ public class RingBufferLogHandler extends Handler {
                     return r != null ? r : new LogRecord(Level.OFF, "<discarded>");
                 }
             }
+
             @Override
             public int size() {
                 synchronized (RingBufferLogHandler.this) {
@@ -122,6 +136,7 @@ public class RingBufferLogHandler extends Handler {
     // noop
     @Override
     public void flush() {}
+
     @Override
     public void close() throws SecurityException {}
 }

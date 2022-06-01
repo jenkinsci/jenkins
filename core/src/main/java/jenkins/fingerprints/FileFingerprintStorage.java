@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
@@ -64,7 +65,7 @@ import org.xmlpull.v1.XmlPullParserException;
  */
 @Symbol("fileFingerprintStorage")
 @Restricted(NoExternalUse.class)
-@Extension(ordinal=-100)
+@Extension(ordinal = -100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
@@ -73,7 +74,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
 
     @DataBoundConstructor
-    public FileFingerprintStorage () {}
+    public FileFingerprintStorage() {}
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -89,9 +90,12 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Load the Fingerprint stored inside the given file.
      */
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "intentional check for fingerprint corruption")
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
-        if(!configFile.exists()) {
+        if (!configFile.exists()) {
             return null;
         }
 
@@ -102,6 +106,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
                         + (loaded != null ? loaded.getClass() : "null"));
             }
             Fingerprint f = (Fingerprint) loaded;
+            if (f.getPersistedFacets() == null) {
+                logger.log(Level.WARNING, "Malformed fingerprint {0}: Missing facets", configFile);
+                Files.deleteIfExists(Util.fileToPath(file));
+                return null;
+            }
             return f;
         } catch (IOException e) {
             if (Files.exists(Util.fileToPath(file)) && Files.size(Util.fileToPath(file)) == 0) {
@@ -213,18 +222,18 @@ public class FileFingerprintStorage extends FingerprintStorage {
             throw new IOException("Error occurred in deleting Fingerprint " + id);
         }
 
-        File inner = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2) + "/" + id.substring(2,4));
+        File inner = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0, 2) + "/" + id.substring(2, 4));
         String[] innerFiles = inner.list();
         if (innerFiles != null && innerFiles.length == 0) {
-            if (!inner.delete()){
+            if (!inner.delete()) {
                 throw new IOException("Error occurred in deleting inner directory of Fingerprint " + id);
             }
         }
 
-        File outer = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2));
+        File outer = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0, 2));
         String[] outerFiles = outer.list();
         if (outerFiles != null && outerFiles.length == 0) {
-            if (!outer.delete()){
+            if (!outer.delete()) {
                 throw new IOException("Error occurred in deleting outer directory of Fingerprint " + id);
             }
         }
@@ -235,7 +244,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     @Override
     public boolean isReady() {
-        return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
+        return new File(Jenkins.get().getRootDir(), "fingerprints").exists();
     }
 
     /**
@@ -246,14 +255,14 @@ public class FileFingerprintStorage extends FingerprintStorage {
         int numFiles = 0;
 
         File root = new File(getRootDir(), FINGERPRINTS_DIR_NAME);
-        File[] files1 = root.listFiles(f -> f.isDirectory() && f.getName().length()==2);
-        if(files1!=null) {
+        File[] files1 = root.listFiles(f -> f.isDirectory() && f.getName().length() == 2);
+        if (files1 != null) {
             for (File file1 : files1) {
-                File[] files2 = file1.listFiles(f -> f.isDirectory() && f.getName().length()==2);
-                for(File file2 : files2) {
+                File[] files2 = file1.listFiles(f -> f.isDirectory() && f.getName().length() == 2);
+                for (File file2 : files2) {
                     File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
-                    for(File file3 : files3) {
-                        if(cleanFingerprint(file3, taskListener))
+                    for (File file3 : files3) {
+                        if (cleanFingerprint(file3, taskListener))
                             numFiles++;
                     }
                     deleteIfEmpty(file2);
@@ -262,13 +271,13 @@ public class FileFingerprintStorage extends FingerprintStorage {
             }
         }
 
-        taskListener.getLogger().println("Cleaned up "+numFiles+" records");
+        taskListener.getLogger().println("Cleaned up " + numFiles + " records");
     }
-    
+
     private boolean cleanFingerprint(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
+            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null)) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 Files.deleteIfExists(fingerprintFile.toPath());
                 return true;
@@ -299,8 +308,8 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Determines the file name from unique id (md5sum).
      */
     private static @NonNull File getFingerprintFile(@NonNull String id) {
-        return new File( Jenkins.get().getRootDir(),
-                "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
+        return new File(Jenkins.get().getRootDir(),
+                "fingerprints/" + id.substring(0, 2) + '/' + id.substring(2, 4) + '/' + id.substring(4) + ".xml");
     }
 
     private static boolean isAllowed(String id) {
@@ -359,6 +368,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     @Extension
     public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FileFingerprintStorage_DisplayName();

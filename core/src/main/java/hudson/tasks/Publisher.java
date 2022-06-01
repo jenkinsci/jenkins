@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -106,7 +107,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      * this is problematic. One of such cases is when a publisher needs to
      * trigger other builds, which in turn need to see this build as a
      * completed build. Those plugins that need to do this can return true
-     * from this method, so that the {@link #perform(AbstractBuild, Launcher, BuildListener)} 
+     * from this method, so that the {@link #perform(AbstractBuild, Launcher, BuildListener)}
      * method is called after the build is marked as completed.
      *
      * <p>
@@ -131,11 +132,11 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      */
     @SuppressFBWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE", justification = "Since the publisher is not Serializable, " +
             "no need for the Comparator")
-    public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
+    public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher, Descriptor<Publisher>>
             implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
 
         public DescriptorExtensionListImpl(Jenkins hudson) {
-            super(hudson,Publisher.class);
+            super(hudson, Publisher.class);
         }
 
         @Override
@@ -147,8 +148,8 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
 
         @Override
         public int compare(ExtensionComponent<Descriptor<Publisher>> lhs, ExtensionComponent<Descriptor<Publisher>> rhs) {
-            int r = classify(lhs.getInstance())-classify(rhs.getInstance());
-            if (r!=0)   return r;
+            int r = classify(lhs.getInstance()) - classify(rhs.getInstance());
+            if (r != 0)   return r;
             return lhs.compareTo(rhs);
         }
 
@@ -157,13 +158,13 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
          * This is used as a sort key.
          */
         private int classify(Descriptor<Publisher> d) {
-            if(d.isSubTypeOf(Recorder.class))    return 0;
-            if(d.isSubTypeOf(Notifier.class))    return 2;
+            if (d.isSubTypeOf(Recorder.class))    return 0;
+            if (d.isSubTypeOf(Notifier.class))    return 2;
 
             // for compatibility, if the descriptor is manually registered in a specific way, detect that.
             Class<? extends Publisher> kind = PublisherList.KIND.get(d);
-            if(kind==Recorder.class)    return 0;
-            if(kind==Notifier.class)    return 2;
+            if (kind == Recorder.class)    return 0;
+            if (kind == Notifier.class)    return 2;
 
             return 1;
         }
@@ -173,7 +174,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      * Returns all the registered {@link Publisher} descriptors.
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
-    public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
+    public static DescriptorExtensionList<Publisher, Descriptor<Publisher>> all() {
         return Jenkins.get().getDescriptorList(Publisher.class);
     }
 }

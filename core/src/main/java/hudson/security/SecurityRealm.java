@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -273,7 +275,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null.
      * @since 2.266
-     * @see #doLogout(StaplerRequest, StaplerResponse) 
+     * @see #doLogout(StaplerRequest, StaplerResponse)
      */
     protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class) && !insideGetPostLogOutUrl.get()) {
@@ -284,8 +286,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 insideGetPostLogOutUrl.set(false);
             }
         }
-        return req.getContextPath()+"/";
+        return req.getContextPath() + "/";
     }
+
     private static final ThreadLocal<Boolean> insideGetPostLogOutUrl = ThreadLocal.withInitial(() -> false);
 
     /**
@@ -320,7 +323,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         HttpSession session = req.getSession(false);
-        if(session!=null)
+        if (session != null)
             session.invalidate();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
@@ -329,7 +332,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         resetRememberMeCookie(req, rsp, contextPath);
         clearStaleSessionCookies(req, rsp, contextPath);
 
-        rsp.sendRedirect2(getPostLogOutUrl2(req,auth));
+        rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
@@ -389,7 +392,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public boolean allowsSignup() {
         Class clz = getClass();
-        return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
+        return clz.getClassLoader().getResource(clz.getName().replace('.', '/') + "/signup.jelly") != null;
     }
 
     /**
@@ -573,7 +576,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
-        
+
         SecurityComponents sc = getSecurityComponents();
         List<Filter> filters = new ArrayList<>();
         {
@@ -659,7 +662,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
         from = StringUtils.defaultIfBlank(from, "/").trim();
-        
+
         // Encode the return value
         try {
             returnValue = URLEncoder.encode(from, "UTF-8");
@@ -708,20 +711,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         private Object readResolve() {
             return NO_AUTHENTICATION;
         }
-        
-        @Extension(ordinal=-100)
+
+        @Extension(ordinal = -100)
         @Symbol("none")
         public static class DescriptorImpl extends Descriptor<SecurityRealm> {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.NoneSecurityRealm_DisplayName();
             }
-            
+
             @Override
             public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
                 return NO_AUTHENTICATION;
-            }    
+            }
         }
     }
 
@@ -732,7 +736,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * <p>
      * None of the fields are ever null.
      *
-     * @see SecurityRealm#createSecurityComponents() 
+     * @see SecurityRealm#createSecurityComponents()
      */
     public static final class SecurityComponents {
         /**
@@ -775,7 +779,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         public SecurityComponents(AuthenticationManager manager) {
             // we use UserDetailsServiceProxy here just as an implementation that fails all the time,
             // not as a proxy. No one is supposed to use this as a proxy.
-            this(manager,new UserDetailsServiceProxy());
+            this(manager, new UserDetailsServiceProxy());
         }
 
         /**
@@ -790,7 +794,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails) {
-            this(manager,userDetails,createRememberMeService(userDetails));
+            this(manager, userDetails, createRememberMeService(userDetails));
         }
 
         /**
@@ -805,7 +809,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails, RememberMeServices rememberMe) {
-            assert manager!=null && userDetails!=null && rememberMe!=null;
+            assert manager != null && userDetails != null && rememberMe != null;
             this.manager2 = manager;
             this.userDetails2 = userDetails;
             this.rememberMe2 = rememberMe;
@@ -842,7 +846,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
-    public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
+    public static DescriptorExtensionList<SecurityRealm, Descriptor<SecurityRealm>> all() {
         return Jenkins.get().getDescriptorList(SecurityRealm.class);
     }
 

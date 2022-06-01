@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -146,7 +147,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
         assertTrue(project.getBuildByNumber(8).getHasArtifacts());
     }
-    
+
     @Test
     @Issue("JENKINS-27836")
     public void artifactsRetainedWhileBuilding() throws Exception {
@@ -179,7 +180,7 @@ public class LogRotatorTest {
         assertThat("run1 is last stable build", p.getLastStableBuild(), is(run1));
         assertThat("run1 is last successful build", p.getLastSuccessfulBuild(), is(run1));
         assertThat("we have artifacts in run1", run1.getHasArtifacts(), is(true));
-        assertThat("CRITICAL ASSERTION: we have artifacts in run2", run2.getHasArtifacts(), is(true)); 
+        assertThat("CRITICAL ASSERTION: we have artifacts in run2", run2.getHasArtifacts(), is(true));
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
         sync.release(run2.getNumber());
         futureRun2.get();
@@ -200,13 +201,13 @@ public class LogRotatorTest {
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
     }
 
-    private static int numberOf(Run<?,?> run) {
+    private static int numberOf(Run<?, ?> run) {
         return run != null ? run.getNumber() : -1;
     }
 
     static class TestsFail extends Publisher {
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.setResult(Result.UNSTABLE);
             return true;
         }
@@ -221,21 +222,21 @@ public class LogRotatorTest {
             return new Descriptor<Publisher>(TestsFail.class) {};
         }
     }
-    
+
     public static class StallBuilder extends TestBuilder {
-        
+
         private int syncBuildNumber;
-        
+
         private final Object syncLock = new Object();
-        
+
         private int waitBuildNumber;
-        
+
         private final Object waitLock = new Object();
-        
+
         private final ArtifactArchiver archiver = new ArtifactArchiver("f");
 
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                 throws IOException, InterruptedException {
             archiver.perform(build, launcher, listener);
             Logger.getAnonymousLogger().log(Level.INFO, "Building #{0}", build.getNumber());
@@ -259,7 +260,7 @@ public class LogRotatorTest {
             Logger.getAnonymousLogger().log(Level.INFO, "Done #{0}", build.getNumber());
             return true;
         }
-        
+
         public void release(int upToBuildNumber) {
             synchronized (syncLock) {
                 if (syncBuildNumber < upToBuildNumber) {
@@ -269,7 +270,7 @@ public class LogRotatorTest {
                 }
             }
         }
-        
+
         public void waitFor(int buildNumber, long timeout, TimeUnit units) throws TimeoutException,
                 InterruptedException {
             long giveUp = System.nanoTime() + units.toNanos(timeout);
@@ -279,7 +280,7 @@ public class LogRotatorTest {
                     if (remaining < 0) {
                         throw new TimeoutException();
                     }
-                    waitLock.wait(remaining/1000000L, (int)(remaining%1000000L));
+                    waitLock.wait(remaining / 1000000L, (int) (remaining % 1000000L));
                 }
             }
         }

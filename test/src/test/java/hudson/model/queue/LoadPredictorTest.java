@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import static org.junit.Assert.assertEquals;
@@ -86,11 +87,11 @@ public class LoadPredictorTest {
 
         // the test load predictor should have pushed down the executor count to 0
         assertTrue(mw.executors.isEmpty());
-        assertEquals(1,mw.works.size());
+        assertEquals(1, mw.works.size());
     }
 
     private BuildableItem wrap(Queue.Task t) {
-        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<>()));
+        return new BuildableItem(new WaitingItem(new GregorianCalendar(), t, new ArrayList<>()));
     }
 
     private JobOffer createMockOffer(Executor e) {
@@ -106,7 +107,7 @@ public class LoadPredictorTest {
 
         List executors = new CopyOnWriteArrayList();
 
-        for (int i=0; i<nExecutors; i++) {
+        for (int i = 0; i < nExecutors; i++) {
             Executor e = mock(Executor.class);
             when(e.isIdle()).thenReturn(true);
             when(e.getOwner()).thenReturn(c);

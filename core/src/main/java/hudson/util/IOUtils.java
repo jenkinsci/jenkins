@@ -4,7 +4,6 @@ import static hudson.Util.fileToPath;
 
 import hudson.Functions;
 import hudson.Util;
-import hudson.os.PosixException;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -86,9 +85,9 @@ public class IOUtils {
     public static InputStream skip(InputStream in, long size) throws IOException {
         DataInputStream di = new DataInputStream(in);
 
-        while (size>0) {
-            int chunk = (int)Math.min(SKIP_BUFFER.length,size);
-            di.readFully(SKIP_BUFFER,0,chunk);
+        while (size > 0) {
+            int chunk = (int) Math.min(SKIP_BUFFER.length, size);
+            di.readFully(SKIP_BUFFER, 0, chunk);
             size -= chunk;
         }
 
@@ -129,15 +128,11 @@ public class IOUtils {
      * care about access permissions.
      * <p>If the file is symlink, the mode is that of the link target, not the link itself.
      * @return a file mode, or -1 if not on Unix
-     * @throws PosixException if the file could not be statted, e.g. broken symlink
+     * @throws IOException if the file could not be statted, e.g. broken symlink
      */
-    public static int mode(File f) throws PosixException {
-        if(Functions.isWindows())   return -1;
-        try {
-            return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
-        } catch (IOException cause) {
-            throw new PosixException("Unable to get file permissions", cause);
-        }
+    public static int mode(File f) throws IOException {
+        if (Functions.isWindows())   return -1;
+        return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
     }
 
     /**

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -75,22 +77,22 @@ public class SetupWizardTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Rule
     public TemporaryFolder tmpdir = new TemporaryFolder();
-    
-    @Before 
+
+    @Before
     public void initSetupWizard() throws IOException, InterruptedException {
         final SetupWizard wizard = j.jenkins.getSetupWizard();
         wizard.init(true);
-        
+
         // Retrieve admin credentials
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
-        final String password = ostream.toString();
+        final String password = ostream.toString(StandardCharsets.UTF_8.name());
     }
-    
+
     @Test
     public void shouldReturnPluginListsByDefault() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -99,7 +101,7 @@ public class SetupWizardTest {
         j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
         // wc.setCredentialsProvider(adminCredentialsProvider);
         // wc.login("admin");
-        
+
         String response = jsonRequest(wc, "setupWizard/platformPluginList");
         assertThat("Missing plugin is suggestions ", response, containsString("active-directory"));
         assertThat("Missing category is suggestions ", response, containsString("Pipelines and Continuous Delivery"));
@@ -350,7 +352,7 @@ public class SetupWizardTest {
                 baseRequest.setHandled(true);
                 response.setContentType("text/plain; charset=utf-8");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getOutputStream().write(responseBody.getBytes());
+                response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
             } else {
                 response.sendError(404);
             }
@@ -455,7 +457,7 @@ public class SetupWizardTest {
         protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
             Set<TrustAnchor> trustAnchors = new HashSet<>();
             try {
-                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+                Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8)));
                 trustAnchors.add(new TrustAnchor((X509Certificate) certificate, null));
             } catch (CertificateException ex) {
                 throw new IOException(ex);

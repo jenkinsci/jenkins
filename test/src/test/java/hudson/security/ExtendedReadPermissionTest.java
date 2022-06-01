@@ -58,7 +58,7 @@ public class ExtendedReadPermissionTest {
 
         HtmlPage page = wc.goTo("job/a/configure");
         HtmlForm form = page.getFormByName("config");
-        HtmlButton saveButton = r.getButtonByCaption(form,"Save");
+        HtmlButton saveButton = r.getButtonByCaption(form, "Save");
         assertNull(saveButton);
     }
 
@@ -68,7 +68,7 @@ public class ExtendedReadPermissionTest {
                 + " MockAuthorizationStrategy does not implement this check.")
     @Test public void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
-        
+
         JenkinsRule.WebClient wc = r.createWebClient();
         wc.withBasicCredentials("charlie");
 

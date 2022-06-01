@@ -63,7 +63,7 @@ public class ContextMenuTest {
         ActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(ActionFactory.class);
         f.visible = true;
         ContextMenu menu = j.executeOnServer(doContextMenu);
-        Map<String,String> parsed = parse(menu);
+        Map<String, String> parsed = parse(menu);
         assertEquals(parsed.toString(), "Hello", parsed.get("testing"));
         f.visible = false;
         menu = j.executeOnServer(doContextMenu);
@@ -81,12 +81,15 @@ public class ContextMenuTest {
                 @Override public boolean isVisible() {
                     return visible;
                 }
+
                 @Override public String getIconFileName() {
                     return "whatever";
                 }
+
                 @Override public String getDisplayName() {
                     return "Hello";
                 }
+
                 @Override public String getUrlName() {
                     return "testing";
                 }
@@ -95,8 +98,8 @@ public class ContextMenuTest {
 
     }
 
-    private static Map<String,String> parse(ContextMenu menu) {
-        Map<String,String> r = new TreeMap<>();
+    private static Map<String, String> parse(ContextMenu menu) {
+        Map<String, String> r = new TreeMap<>();
         for (MenuItem mi : menu.items) {
             r.put(mi.url.replaceFirst("^.*/(.)", "$1"), mi.displayName);
         }

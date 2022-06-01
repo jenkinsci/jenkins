@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -40,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
@@ -115,15 +117,15 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
-    public transient PrintStream stdout,stderr;
+    public transient PrintStream stdout, stderr;
 
     /**
-     * Shared text, which is reported back to CLI if an error happens in commands 
+     * Shared text, which is reported back to CLI if an error happens in commands
      * taking lists of parameters.
      * @since 2.26
      */
     static final String CLI_LISTPARAM_SUMMARY_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
-    
+
     /**
      * Connected to stdin of the CLI agent.
      *
@@ -168,13 +170,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public String getName() {
         String name = getClass().getName();
         name = name.substring(name.lastIndexOf('.') + 1); // short name
-        name = name.substring(name.lastIndexOf('$')+1);
-        if(name.endsWith("Command"))
-            name = name.substring(0,name.length()-7); // trim off the command
+        name = name.substring(name.lastIndexOf('$') + 1);
+        if (name.endsWith("Command"))
+            name = name.substring(0, name.length() - 7); // trim off the command
 
         // convert "FooBarZot" into "foo-bar-zot"
         // Locale is fixed so that "CreateInstance" always become "create-instance" no matter where this is run.
-        return name.replaceAll("([a-z0-9])([A-Z])","$1-$2").toLowerCase(Locale.ENGLISH);
+        return name.replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ENGLISH);
     }
 
     /**
@@ -185,7 +187,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Entry point to the CLI command.
-     * 
+     *
      * <p>
      * The default implementation uses args4j to parse command line arguments and call {@link #run()},
      * but if that processing is undesirable, subtypes can directly override this method and leave {@link #run()}
@@ -280,7 +282,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
-            if(sc != null)
+            if (sc != null)
                 sc.setAuthentication(old); // restore
         }
     }
@@ -335,8 +337,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @since 2.266
      */
     public Authentication getTransportAuthentication2() {
-        Authentication a = transportAuth; 
-        if (a==null)    a = Jenkins.ANONYMOUS2;
+        Authentication a = transportAuth;
+        if (a == null)    a = Jenkins.ANONYMOUS2;
         return a;
     }
 
@@ -365,7 +367,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Executes the command, and return the exit code.
-     * 
+     *
      * <p>
      * This is an internal contract between {@link CLICommand} and its subtype.
      * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
@@ -405,8 +407,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public final String getSingleLineSummary() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printSingleLineUsage(out);
+        Charset charset;
         try {
-            return out.toString(getClientCharset().name());
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -419,8 +429,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public final String getUsage() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         getCmdLineParser().printUsage(out);
+        Charset charset;
         try {
-            return out.toString(getClientCharset().name());
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -432,12 +450,25 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Restricted(NoExternalUse.class)
     public final String getLongDescription() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
+        Charset charset;
+        try {
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        PrintStream ps;
+        try {
+            ps = new PrintStream(out, false, charset.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
 
         printUsageSummary(ps);
         ps.close();
         try {
-            return out.toString(getClientCharset().name());
+            return out.toString(charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -446,7 +477,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Called while producing usage. This is a good method to override
      * to render the general description of the command that goes beyond
-     * a single-line summary. 
+     * a single-line summary.
      */
     protected void printUsageSummary(PrintStream stderr) {
         stderr.println(getShortDescription());
@@ -470,7 +501,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.encoding = encoding;
     }
 
-    protected @NonNull Charset getClientCharset() {
+    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }
@@ -505,9 +536,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader, Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
-                CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
+                CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
             }
         } catch (IOException e) {
             throw new Error(e);
@@ -526,7 +557,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public static CLICommand clone(String name) {
         for (CLICommand cmd : all())
-            if(name.equals(cmd.getName()))
+            if (name.equals(cmd.getName()))
                 return cmd.createClone();
         return null;
     }
@@ -560,10 +591,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             final ResourceClassIterator itr =
                 new DiscoverClasses(cls).findResourceClasses(servicesIter);
 
-            while(itr.hasNext()) {
+            while (itr.hasNext()) {
                 Class h = itr.nextResourceClass().loadClass();
                 Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-                CmdLineParser.registerHandler(c,h);
+                CmdLineParser.registerHandler(c, h);
             }
         }
     }

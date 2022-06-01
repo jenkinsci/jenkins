@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.logging;
 
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
@@ -30,21 +31,26 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.RestrictedSince;
+import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
+import hudson.model.Failure;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.FormValidation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -79,8 +85,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
-    public final transient Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+    @RestrictedSince("2.323")
+    public final transient Map<String, LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
     private List<LogRecorder> recorders;
 
@@ -99,7 +105,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
 
         Map<String, LogRecorder> values = recorders.stream()
                 .collect(toMap(LogRecorder::getName, Function.identity()));
-        ((CopyOnWriteMap<String,LogRecorder>) logRecorders).replaceBy(values);
+        ((CopyOnWriteMap<String, LogRecorder>) logRecorders).replaceBy(values);
     }
 
     @Override
@@ -130,11 +136,11 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public void load() throws IOException {
         recorders.clear();
         File dir = configDir();
-        File[] files = dir.listFiles((FileFilter)new WildcardFileFilter("*.xml"));
-        if(files==null)     return;
+        File[] files = dir.listFiles((FileFilter) new WildcardFileFilter("*.xml"));
+        if (files == null)     return;
         for (File child : files) {
             String name = child.getName();
-            name = name.substring(0,name.length()-4);   // cut off ".xml"
+            name = name.substring(0, name.length() - 4);   // cut off ".xml"
             LogRecorder lr = new LogRecorder(name);
             lr.load();
             recorders.add(lr);
@@ -154,13 +160,27 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         recorders.add(new LogRecorder(name));
 
         // redirect to the config screen
-        return new HttpRedirect(name+"/configure");
+        return new HttpRedirect(name + "/configure");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckNewName(@QueryParameter String name) {
+        if (Util.fixEmpty(name) == null) {
+            return FormValidation.ok();
+        }
+
+        try {
+            Jenkins.checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
-        menu.add("all","All Jenkins Logs");
+        menu.add("all", "All Jenkins Logs");
         for (LogRecorder lr : recorders) {
             menu.add(lr.getSearchUrl(), lr.getDisplayName());
         }
@@ -170,23 +190,32 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * Configure the logging level.
      */
-    @SuppressFBWarnings(value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE", justification = "TODO needs triage")
     @RequirePOST
+    @SuppressFBWarnings(
+            value = "LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE",
+            justification =
+                    "if the logger is known, then we have a reference to it in LogRecorder#loggers")
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Level lv;
-        if(level.equals("inherit"))
+        if (level.equals("inherit"))
             lv = null;
         else
             lv = Level.parse(level.toUpperCase(Locale.ENGLISH));
-        Logger.getLogger(name).setLevel(lv);
-        return new HttpRedirect("levels");
+        Logger target;
+        if (Collections.list(LogManager.getLogManager().getLoggerNames()).contains(name)
+                && (target = Logger.getLogger(name)) != null) {
+            target.setLevel(lv);
+            return new HttpRedirect("levels");
+        } else {
+            throw new Failure(Messages.LogRecorderManager_LoggerNotFound(name));
+        }
     }
 
     /**
      * RSS feed for log entries.
      */
-    public void doRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doRss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doRss(req, rsp, Jenkins.logRecords);
     }
 
@@ -197,18 +226,18 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         // filter log records based on the log level
         String entryType = "all";
         String level = req.getParameter("level");
-        if(level!=null) {
+        if (level != null) {
             Level threshold = Level.parse(level);
             List<LogRecord> filtered = new ArrayList<>();
             for (LogRecord r : logs) {
-                if(r.getLevel().intValue() >= threshold.intValue())
+                if (r.getLevel().intValue() >= threshold.intValue())
                     filtered.add(r);
             }
             logs = filtered;
             entryType = level;
         }
 
-        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)","", logs, new FeedAdapter<LogRecord>() {
+        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)", "", logs, new FeedAdapter<LogRecord>() {
             @Override
             public String getEntryTitle(LogRecord entry) {
                 return entry.getMessage();
@@ -240,10 +269,10 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             public String getEntryAuthor(LogRecord entry) {
                 return JenkinsLocationConfiguration.get().getAdminAddress();
             }
-        },req,rsp);
+        }, req, rsp);
     }
 
-    @Initializer(before=PLUGINS_PREPARED)
+    @Initializer(before = PLUGINS_PREPARED)
     public static void init(Jenkins h) throws IOException {
         h.getLog().load();
     }

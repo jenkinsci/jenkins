@@ -3,6 +3,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
@@ -13,7 +14,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -38,7 +38,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public static boolean areValidChoices(@NonNull String choices) {
         String strippedChoices = choices.trim();
-        return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
+        return strippedChoices != null && !strippedChoices.isEmpty() && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
     public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, @CheckForNull String description) {
@@ -181,6 +181,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EQ_GETCLASS_AND_CLASS_CONSTANT", justification = "ParameterDefinitionTest tests that subclasses are not equal to their parent classes, so the behavior appears to be intentional")
     public boolean equals(Object obj) {
         if (ChoiceParameterDefinition.class != getClass())
             return super.equals(obj);
@@ -200,8 +201,9 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return Objects.equals(defaultValue, other.defaultValue);
     }
 
-    @Extension @Symbol({"choice","choiceParam"})
+    @Extension @Symbol({"choice", "choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ChoiceParameterDefinition_DisplayName();

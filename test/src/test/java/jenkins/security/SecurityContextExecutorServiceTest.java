@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
@@ -71,7 +72,7 @@ public class SecurityContextExecutorServiceTest {
             SecurityContextHolder.clearContext();
             nullContext = SecurityContextHolder.getContext();
 
-            // Create a wrapped service 
+            // Create a wrapped service
             wrappedService = new SecurityContextExecutorService(service);
         }
     };
@@ -112,7 +113,7 @@ public class SecurityContextExecutorServiceTest {
     public void testCallableAgainstAllContexts() throws Exception {
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             @Override
-            public SecurityContext call() throws Exception {
+            public SecurityContext call() {
                 return SecurityContextHolder.getContext();
             }
         };
@@ -138,7 +139,7 @@ public class SecurityContextExecutorServiceTest {
         Collection<Callable<SecurityContext>> callables = new ArrayList<>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             @Override
-            public SecurityContext call() throws Exception {
+            public SecurityContext call() {
                 return SecurityContextHolder.getContext();
             }
         };
@@ -171,7 +172,7 @@ public class SecurityContextExecutorServiceTest {
 
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testFailedRunnableResetsContext() throws Exception {
+    public void testFailedRunnableResetsContext() {
         Runnable r = new Runnable() {
             @Override
             public void run() {

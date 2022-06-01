@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -143,7 +144,7 @@ public class ComputerConfigDotXmlTest {
         final String out = outputStream.toString();
         assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
-        assertThat(out, containsString("<description>dummy</description>"));
+        assertThat(out, containsString("<mode>NORMAL</mode>"));
     }
 
     @Test

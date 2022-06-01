@@ -1,5 +1,6 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -26,6 +27,7 @@ public class DefaultSettingsProvider extends SettingsProvider {
     @Extension(ordinal = 99) @Symbol("standard")
     public static class DescriptorImpl extends SettingsProviderDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.DefaultSettingsProvider_DisplayName();

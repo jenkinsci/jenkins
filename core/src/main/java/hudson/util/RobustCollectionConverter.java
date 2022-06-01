@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.XStream;
@@ -32,9 +33,11 @@ import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.security.InputManipulationException;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
 
 /**
@@ -42,7 +45,7 @@ import jenkins.util.xstream.CriticalXStreamException;
  *
  * <p>
  * This allows Hudson to load XML files that contain non-existent classes
- * (the expected scenario is that those classes belong to plugins that were unloaded.) 
+ * (the expected scenario is that those classes belong to plugins that were unloaded.)
  *
  * @author Kohsuke Kawaguchi
  */
@@ -51,7 +54,7 @@ public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
 
     public RobustCollectionConverter(XStream xs) {
-        this(xs.getMapper(),xs.getReflectionProvider());
+        this(xs.getMapper(), xs.getReflectionProvider());
     }
 
     public RobustCollectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
@@ -61,7 +64,7 @@ public class RobustCollectionConverter extends CollectionConverter {
 
     @Override
     public boolean canConvert(Class type) {
-        return super.canConvert(type) || type==CopyOnWriteArrayList.class || type==CopyOnWriteArraySet.class;
+        return super.canConvert(type) || type == CopyOnWriteArrayList.class || type == CopyOnWriteArraySet.class;
     }
 
     @Override
@@ -69,8 +72,8 @@ public class RobustCollectionConverter extends CollectionConverter {
         // CopyOnWriteArrayList used to serialize as custom serialization,
         // so read it in a compatible fashion.
         String s = reader.getAttribute("serialization");
-        if(s!=null && s.equals("custom")) {
-            return sc.unmarshal(reader,context);
+        if (s != null && s.equals("custom")) {
+            return sc.unmarshal(reader, context);
         } else {
             return super.unmarshal(reader, context);
         }
@@ -82,9 +85,17 @@ public class RobustCollectionConverter extends CollectionConverter {
             reader.moveDown();
             try {
                 Object item = readBareItem(reader, context, collection);
+                long nanoNow = System.nanoTime();
                 collection.add(item);
+                XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
             } catch (CriticalXStreamException e) {
                 throw e;
+            } catch (InputManipulationException e) {
+                Logger.getLogger(RobustCollectionConverter.class.getName()).warning(
+                        "DoS detected and prevented. If the heuristic was too aggressive, " +
+                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
+                                "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
+                throw new CriticalXStreamException(e);
             } catch (XStreamException | LinkageError e) {
                 RobustReflectionConverter.addErrorInContext(context, e);
             }

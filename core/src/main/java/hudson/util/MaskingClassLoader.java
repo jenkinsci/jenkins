@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.io.IOException;
@@ -65,14 +66,14 @@ public class MaskingClassLoader extends ClassLoader {
          * The name of a resource is a '/'-separated path name
          */
         for (String mask : masks) {
-            masksResources.add(mask.replace('.','/'));
+            masksResources.add(mask.replace('.', '/'));
         }
     }
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         for (String mask : masksClasses) {
-            if(name.startsWith(mask))
+            if (name.startsWith(mask))
                 throw new ClassNotFoundException();
         }
 
@@ -95,14 +96,14 @@ public class MaskingClassLoader extends ClassLoader {
 
     public void add(String prefix) {
         masksClasses.add(prefix);
-        if(prefix !=null){
-            masksResources.add(prefix.replace('.','/'));
+        if (prefix != null) {
+            masksResources.add(prefix.replace('.', '/'));
         }
     }
 
     private boolean isMasked(String name) {
         for (String mask : masksResources) {
-            if(name.startsWith(mask))
+            if (name.startsWith(mask))
                 return true;
         }
         return false;

@@ -38,6 +38,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -79,8 +80,7 @@ public class WebSocketAgentsTest {
      * Verify basic functionality of an agent in {@code -webSocket} mode.
      * Requires {@code remoting} to have been {@code mvn install}ed.
      * Does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
-     * Unlike {@link hudson.slaves.JNLPLauncherTest} this does not use {@code javaws};
-     * closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}.
+     * Related to {@link hudson.slaves.JNLPLauncherTest} (also see closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}).
      * @see hudson.remoting.Launcher
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -136,7 +136,7 @@ public class WebSocketAgentsTest {
 
         @Override
         public String call() {
-            return new String(payload);
+            return new String(payload, StandardCharsets.UTF_8);
         }
     }
 

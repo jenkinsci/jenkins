@@ -11,27 +11,21 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-gear icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
+            l.task(icon:"symbol-settings", href:"${rootURL}/manage", title:_("Manage Jenkins"))
         }
     }
+    l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-setting icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
-        }
-
-        p()
         div(class:"behavior-loading") {
             l.spinner(text: _("LOADING"))
         }
 
-        f.form(method:"post",name:"config",action:"configure") {
+        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName) {
+                f.rowSet(name:descriptor.jsonSafeClassName, class: "jenkins-!-margin-bottom-0") {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
             }

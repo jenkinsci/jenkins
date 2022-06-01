@@ -85,7 +85,7 @@ class SSHCLI {
             command.append(' ');
         }
 
-        try(SshClient client = SshClient.setUpDefaultClient()) {
+        try (SshClient client = SshClient.setUpDefaultClient()) {
 
             KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
                 @Override
@@ -116,7 +116,7 @@ class SSHCLI {
 
                     Set<ClientChannelEvent> waitMask = channel.waitFor(Collections.singletonList(ClientChannelEvent.CLOSED), 0L);
 
-                    if(waitMask.contains(ClientChannelEvent.TIMEOUT)) {
+                    if (waitMask.contains(ClientChannelEvent.TIMEOUT)) {
                         throw new SocketTimeoutException("Failed to retrieve command result in time: " + command);
                     }
 

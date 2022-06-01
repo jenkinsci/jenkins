@@ -5,14 +5,7 @@
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  */
 
-def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
-
 def failFast = false
-// Same memory sizing for both builds and ATH
-def javaOpts = [
-  'JAVA_OPTS=-Xmx1536m -Xms512m',
-  'MAVEN_OPTS=-Xmx1536m -Xms512m',
-]
 
 properties([
   buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -20,7 +13,7 @@ properties([
 ])
 
 def buildTypes = ['Linux', 'Windows']
-def jdks = [8, 11]
+def jdks = [8, 11, 17]
 
 def builds = [:]
 for (i = 0; i < buildTypes.size(); i++) {
@@ -29,6 +22,9 @@ for (i = 0; i < buildTypes.size(); i++) {
     def jdk = jdks[j]
     if (buildType == 'Windows' && jdk == 8) {
       continue // unnecessary use of hardware
+    }
+    if (buildType == 'Windows' && jdk == 17) {
+      continue // TODO pending jenkins-infra/helpdesk#2822
     }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
@@ -40,7 +36,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
         stage('Checkout') {
-          checkout scm
+          infra.checkoutSCM()
         }
 
         def changelistF = "${pwd tmp: true}/changelist"
@@ -52,7 +48,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
-                '-Pjapicmp',
+                '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
@@ -65,7 +61,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              infra.runMaven(mavenOptions, jdk.toString(), javaOpts, null, true)
+              infra.runMaven(mavenOptions, jdk)
               if (isUnix()) {
                 sh 'git add . && git diff --exit-code HEAD'
               }
@@ -87,6 +83,7 @@ for (i = 0; i < buildTypes.size(); i++) {
             error 'There were test failures; halting early'
           }
           if (buildType == 'Linux' && jdk == jdks[0]) {
+            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
@@ -123,21 +120,11 @@ for (i = 0; i < buildTypes.size(); i++) {
             dir(m2repo) {
               archiveArtifacts(
                   artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-test*/',
+                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
                   allowEmptyArchive: true, // in case we forgot to reincrementalify
                   fingerprint: true
                   )
             }
-            publishHTML([
-              allowMissing: true,
-              alwaysLinkToLastBuild: false,
-              includes: 'japicmp.html',
-              keepAll: false,
-              reportDir: 'core/target/japicmp',
-              reportFiles: 'japicmp.html',
-              reportName: 'API compatibility',
-              reportTitles: 'japicmp report',
-            ])
           }
         }
       }
@@ -161,7 +148,7 @@ builds.ath = {
         'war',
         'package',
       ]
-      infra.runMaven(mavenOptions, '11', javaOpts, null, true)
+      infra.runMaven(mavenOptions, 11)
       dir('war/target') {
         fileUri = 'file://' + pwd() + '/jenkins.war'
       }

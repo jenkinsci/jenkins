@@ -146,7 +146,7 @@ public class WaitNodeOfflineCommandTest {
             task.cancel(true);
         }
 
-        if(!timeoutOccurred)
+        if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
     }
 }
