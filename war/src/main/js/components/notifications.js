@@ -1,5 +1,5 @@
-import * as Symbols from "../util/symbols";
-import {createElementFromHtml} from "../util/dom";
+import * as Symbols from "@/util/symbols";
+import {createElementFromHtml} from "@/util/dom";
 
 window.notificationBar = {
 	OPACITY: 1,
