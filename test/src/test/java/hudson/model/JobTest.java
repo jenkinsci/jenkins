@@ -201,6 +201,7 @@ public class JobTest {
         }
 
         private static final class DescriptorImpl extends JobPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "";

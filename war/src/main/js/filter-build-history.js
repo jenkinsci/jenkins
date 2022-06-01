@@ -477,10 +477,6 @@ document.addEventListener("DOMContentLoaded", function () {
     createRefreshTimeout();
     checkAllRowCellOverflows();
 
-    onBuildHistoryChange(function() {
-        checkAllRowCellOverflows();
-    });
-
     // Show/hide the nav as the mouse moves into the sidepanel and build history.
     sidePanel.observe('mouseover', function() {
         buildHistoryPageNav.classList.add('mouseOverSidePanel');

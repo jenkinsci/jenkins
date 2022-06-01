@@ -9,6 +9,7 @@ import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelClosedException;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerLauncherFilter;
 import hudson.slaves.DelegatingComputerLauncher;
@@ -188,7 +189,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
-        if (cause instanceof ClosedChannelException) {
+        if (cause instanceof ClosedChannelException || cause instanceof ChannelClosedException) {
             LOGGER.log(Level.INFO, "{0} for {1} terminated: {2}", new Object[] {Thread.currentThread().getName(), nodeName, cause});
         } else if (cause != null) {
             LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated",

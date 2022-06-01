@@ -135,6 +135,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -697,6 +698,13 @@ public class Functions {
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
         return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static long getHourLocalTimezone() {
+        // Work around JENKINS-68215. When JENKINS-68215 is resolved, this logic can be moved back to Jelly.
+        TimeZone tz = TimeZone.getDefault();
+        return TimeUnit.MILLISECONDS.toHours(tz.getRawOffset() + tz.getDSTSavings());
     }
 
     /**
