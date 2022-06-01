@@ -2363,32 +2363,30 @@ public class Functions {
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
-        String iconSource = null;
 
+        String iconSource;
         if (iconMetadata != null) {
-            iconSource = iconMetadata.getQualifiedUrl(context);
+            iconSource = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec(), () -> iconMetadata.getQualifiedUrl(context));
+        } else {
+            iconSource = guessIcon(iconGuess, rootURL);
         }
+        return iconSource;
+    }
 
-        if (iconMetadata == null) {
-            //noinspection HttpUrlsUsage
-            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
-                return iconGuess;
-            }
+    static String guessIcon(String iconGuess, String rootURL) {
+        String iconSource;
+        //noinspection HttpUrlsUsage
+        if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+            iconSource = iconGuess;
+        } else {
             if (!iconGuess.startsWith("/")) {
                 iconGuess = "/" + iconGuess;
             }
-            iconSource = iconGuess.startsWith(rootURL) ? "" : rootURL;
-            iconSource += (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() :
-                           "") + iconGuess;
-        }
-
-        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
-            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
-            if (translatedIcon != null) {
-                return translatedIcon;
+            if (iconGuess.startsWith(rootURL)) {
+                iconGuess = iconGuess.substring(rootURL.length());
             }
+            iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
-
         return iconSource;
     }
 
