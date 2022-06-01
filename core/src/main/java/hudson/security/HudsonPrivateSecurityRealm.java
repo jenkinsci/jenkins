@@ -769,6 +769,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Extension @Symbol("password")
         public static final class DescriptorImpl extends UserPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
@@ -964,6 +965,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
