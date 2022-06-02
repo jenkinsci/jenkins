@@ -271,6 +271,7 @@ public class FingerprintCleanupThreadTest {
         @Extension
         public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestFileFingerprintStorage";
@@ -353,6 +354,7 @@ public class FingerprintCleanupThreadTest {
         @Extension
         public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestExternalFingerprintStorage";
