@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
@@ -174,6 +175,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JDK_DisplayName();

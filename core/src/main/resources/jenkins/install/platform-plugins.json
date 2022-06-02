@@ -94,8 +94,7 @@
         "plugins": [
             { "name": "email-ext", "suggested": true },
             { "name": "emailext-template" },
-            { "name": "mailer", "suggested": true },
-            { "name": "ssh" }
+            { "name": "mailer", "suggested": true }
         ]
     },
     {

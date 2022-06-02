@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -46,6 +47,7 @@ public class ArchitectureMonitor extends NodeMonitor {
             return new GetArchTask();
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ArchitectureMonitor_DisplayName();
