@@ -1136,26 +1136,6 @@ function rowvgStartEachRow(recursive,f) {
 
     // resizable text area
     Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
-        if(Element.hasClassName(textarea,"rich-editor")) {
-            // rich HTML editor
-            try {
-                var editor = new YAHOO.widget.Editor(textarea, {
-                    dompath: true,
-                    animate: true,
-                    handleSubmit: true
-                });
-                // probably due to the timing issue, we need to let the editor know
-                // that DOM is ready
-                editor.DOMReady=true;
-                editor.fireQueue();
-                editor.render();
-                layoutUpdateCallback.call();
-            } catch(e) {
-                alert(e);
-            }
-            return;
-        }
-
         // CodeMirror inserts a wrapper element next to the textarea.
         // textarea.nextSibling may not be the handle.
         var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
