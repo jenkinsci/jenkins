@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.util.Collection;
@@ -59,6 +60,7 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
     @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
