@@ -347,6 +347,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             DESCRIPTOR = this; // backward compatibility
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ArtifactArchiver_DisplayName();

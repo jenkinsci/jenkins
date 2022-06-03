@@ -43,17 +43,22 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
+
   <j:choose>
     <j:when test="${attrs.ref==null and attrs.name==null}">
-      <!-- noop -->
-      <d:invokeBody />
+      <j:out value="${contents}" />
     </j:when>
     <j:otherwise>
-      <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${class}">
-        <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
-        <d:invokeBody />
-        <div class="row-set-end row-group-end tr"></div>
-      </div>
+      <j:if test="${contents.length() != 0}">
+        <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${class}">
+          <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
+          <j:out value="${contents}" />
+          <div class="row-set-end row-group-end tr"></div>
+        </div>
+      </j:if>
     </j:otherwise>
   </j:choose>
 </j:jelly>

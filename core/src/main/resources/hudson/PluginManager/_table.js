@@ -46,7 +46,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
         layoutUpdateCallback.call();
     }
-    e.onkeyup = applyFilter;
+    e.addEventListener("input", () => applyFilter());
 
     (function() {
         var instructionsTd = document.getElementById("hidden-by-default-instructions-td");

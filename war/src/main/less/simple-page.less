@@ -21,58 +21,83 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/*
- * IE11 prevents of the usage of variable,
- * but to show the color theme we left it here
- */
-@import "./simple-page-variables.css";
+@import "./abstracts/mixins";
+@import "./abstracts/theme";
+@import "./base/typography";
+@import "./base/spacing";
+@import "./form/checkbox";
+@import "./form/input";
+@import "./form/layout";
+@import "./modules/buttons-temp";
+
+body {
+  background: var(--background);
+}
+
+a {
+  .link();
+}
+
+.simple-page h1 {
+  font-size: 24px;
+  line-height: normal;
+}
+
+.simple-page h1, .simple-page .signupTag, .simple-page .restarting {
+  text-align: center;
+}
+
+.simple-page--description {
+  margin-top: 0;
+  margin-bottom: var(--section-padding);
+}
+
+.simple-page form {
+  width: 300px;
+}
+
+.simple-page .jenkins-form-item {
+  max-width: 100%;
+}
+
+.simple-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+}
 
 html {
-  color: #4a4a4a;
   color: var(--text-color);
 }
 
+.simple-page .jenkins-button {
+  width: 100%;
+}
+
+.simple-page .jenkins-input {
+  width: 94%;
+}
+
 .simple-page .logo {
-  background-image: url('../images/svgs/logo.svg');
-  background-repeat: no-repeat;
-  background-position: 50% 0;
-  background-size: contain;
+  text-align: center;
+}
+
+.simple-page .logo > img {
   height: 130px;
 }
 
-.simple-page form .submit input:hover {
-  background-color: #3fb3f7;
-  background-color: var(--focus);
-  border: solid 1px;
-  border-color: #3fb3f7;
-  border-color: var(--focus);
-}
-
 .simple-page form .submit input {
-  background-color: #0b6aa2;
-  background-color: var(--btn-primary-bg);
+  background-color: var(--btn-primary-bg, #0b6aa2);
   border: solid 1px;
-  border-color: #0b6aa2;
-  border-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg, #0b6aa2);
 }
 
-.simple-page form .submit input:focus,
-.simple-page input.normal:focus {
-    border: solid 1px;
-    border-color: #3fb3f7;
-    border-color: var(--focus);
-    outline: 0;
-}
-
- .simple-page .danger {
+.simple-page .danger {
   border: 1px solid;
-  border-color: #c4000a;
-  border-color: var(--danger-color);
-  box-shadow: 0 0 1px #c4000a;
-  box-shadow: 0 0 1px var(--danger-color);
+  border-color: var(--danger-color, #c4000a);
 }
 
 .simple-page .alert {
-  color: #c4000a;
-  color: var(--danger-color);
+  color: var(--danger-color, #c4000a);
 }

@@ -121,3 +121,18 @@
     animation: spin 1.5s linear infinite;
   }
 }
+
+@keyframes pulse-animation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.pulse-animation {
+  svg {
+    animation: pulse-animation 2s ease infinite;
+  }
+}
