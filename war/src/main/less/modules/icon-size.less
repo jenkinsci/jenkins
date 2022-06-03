@@ -1,3 +1,5 @@
+@min-button-size: 36px;
+
 .jenkins-icon-size {
   display: flex;
   align-items: center;
@@ -22,7 +24,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        border-radius: 8px;
+        border-radius: 12px;
         background: currentColor;
         opacity: 0;
         transition: var(--standard-transition);
@@ -42,6 +44,7 @@
         padding: 0!important;
         min-width: 0!important;
         aspect-ratio: 1;
+        height: @min-button-size;
       }
     }
 
@@ -51,9 +54,8 @@
       align-items: center;
       justify-content: center;
       aspect-ratio: 1;
-      height: 36px;
-      width: 36px;
-      border-radius: 6px;
+      height: @min-button-size;
+      border-radius: 10px;
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
 
@@ -61,7 +63,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        border-radius: 6px;
+        border-radius: inherit;
         background: currentColor;
         opacity: 0.05;
       }
