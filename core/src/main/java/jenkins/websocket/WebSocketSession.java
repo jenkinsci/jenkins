@@ -24,6 +24,7 @@
 
 package jenkins.websocket;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
@@ -114,45 +115,45 @@ public abstract class WebSocketSession {
         LOGGER.log(Level.WARNING, "unhandled WebSocket service error", cause);
     }
 
-    protected void binary(byte[] payload, int offset, int len) {
+    protected void binary(byte[] payload, int offset, int len) throws IOException {
         LOGGER.warning("unexpected binary frame");
     }
 
-    protected void text(String message) {
+    protected void text(String message) throws IOException {
         LOGGER.warning("unexpected text frame");
     }
 
     @SuppressWarnings("unchecked")
-    protected final Future<Void> sendBinary(ByteBuffer data) {
+    protected final Future<Void> sendBinary(ByteBuffer data) throws IOException {
         try {
             return (Future<Void>) remoteEndpoint.getClass().getMethod("sendBytesByFuture", ByteBuffer.class).invoke(remoteEndpoint, data);
         } catch (Exception x) {
-            throw new RuntimeException(x);
+            throw new IOException(x);
         }
     }
 
-    protected final void sendBinary(ByteBuffer partialByte, boolean isLast) {
+    protected final void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
         try {
             remoteEndpoint.getClass().getMethod("sendPartialBytes", ByteBuffer.class, boolean.class).invoke(remoteEndpoint, partialByte, isLast);
         } catch (Exception x) {
-            throw new RuntimeException(x);
+            throw new IOException(x);
         }
     }
 
     @SuppressWarnings("unchecked")
-    protected final Future<Void> sendText(String text) {
+    protected final Future<Void> sendText(String text) throws IOException {
         try {
             return (Future<Void>) remoteEndpoint.getClass().getMethod("sendStringByFuture", String.class).invoke(remoteEndpoint, text);
         } catch (Exception x) {
-            throw new RuntimeException(x);
+            throw new IOException(x);
         }
     }
 
-    protected final void close() {
+    protected final void close() throws IOException {
         try {
             session.getClass().getMethod("close").invoke(session);
         } catch (Exception x) {
-            throw new RuntimeException(x);
+            throw new IOException(x);
         }
     }
 
