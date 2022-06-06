@@ -24,6 +24,7 @@
 
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -69,6 +70,7 @@ public class NullSCM extends SCM {
             super(null);
         }
 
+        @NonNull
         @Override public String getDisplayName() {
             return Messages.NullSCM_DisplayName();
         }
