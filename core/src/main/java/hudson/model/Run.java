@@ -2414,6 +2414,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public @NonNull EnvVars getEnvironment(@NonNull TaskListener listener) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
+
+        if (c == null) {
+            Executor e = this.getExecutor();
+            c = e.owner;
+        }
+
         Node n = c==null ? null : c.getNode();
 
         EnvVars env = getParent().getEnvironment(n,listener);
