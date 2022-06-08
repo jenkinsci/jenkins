@@ -90,4 +90,10 @@
       box-shadow: 0 0 0 5px var(--longhorn-box-shadow--focus);
     }
   }
+
+  &:focus-visible {
+    &::after {
+      box-shadow: 0 0 0 5px var(--text-color);
+    }
+  }
 }
