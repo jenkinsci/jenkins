@@ -25,7 +25,7 @@
 .jenkins-section__title {
   margin: 0 0 var(--section-padding) 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .jenkins-section__items {
@@ -47,52 +47,15 @@
 }
 
 .jenkins-section__item a {
-  position: relative;
+  .longhorn();
+
   display: flex;
-  z-index: 0;
   text-decoration: none;
   margin: 0;
 
   &::before,
   &::after {
-    position: absolute;
-    content: "";
-    inset: -10px;
-    z-index: -1;
-    border-radius: 10px;
-    transition: var(--standard-transition);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  &::before {
-    background-color: var(--text-color);
-  }
-
-  &::after {
-    box-shadow: 0 0 0 10px currentColor;
-  }
-
-  &:hover,
-  &:focus {
-    &::before {
-      opacity: 0.1;
-    }
-  }
-
-  &:active,
-  &:focus {
-    outline: none !important;
-    z-index: 1;
-
-    &::before {
-      opacity: 0.15;
-    }
-
-    &::after {
-      opacity: 0.075;
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
+    inset: -0.65rem;
   }
 
   dl {
@@ -112,23 +75,13 @@
     flex-shrink: 0;
     color: var(--text-color);
 
-    &::before,
-    &::after {
+    &::before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: 100%;
       pointer-events: none;
-    }
-
-    &::before {
-      background: currentColor;
-      opacity: 0.1;
-    }
-
-    &::after {
-      border: 1px solid currentColor;
-      opacity: 0.015;
+      background: var(--longhorn-background--active);
     }
 
     img,
@@ -172,9 +125,9 @@
   }
 
   dt {
-    font-size: 0.95rem;
+    font-size: 0.925rem;
     font-weight: 600;
-    margin: 0 0 0.25rem 0;
+    margin: 0.1rem 0 0.2rem 0;
     color: var(--text-color);
   }
 
@@ -183,6 +136,7 @@
     font-weight: 500;
     line-height: 1.6;
     margin: 0 10px 0 0;
+    font-size: 0.925rem;
   }
 }
 

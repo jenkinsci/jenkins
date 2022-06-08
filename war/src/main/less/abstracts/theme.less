@@ -17,11 +17,11 @@
   --light-grey: #f2f2f2;
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
-  --black: #333;
+  --black: hsl(240, 0.2, 0.1);
 
   // branding
   --primary: #024cb6;
-  --secondary: #4d545d;
+  --secondary: hsl(240, 0.1, 0.5);
   --success: var(--green);
   --danger: var(--red);
   --warning: var(--orange);
@@ -272,7 +272,7 @@
   --selection-color: rgba(2, 76, 182, 0.3);
 
   // Animations
-  --standard-transition: 0.2s ease;
+  --standard-transition: 0.3s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Pop out menus
@@ -311,6 +311,11 @@
   // Call to action
   --call-to-action-link-color: #000;
   --call-to-action-text-color: var(--alert-info-text-color);
+
+  // Longhorn
+  --longhorn-background--hover: hsla(240, 0.2, 0.6, 0.075);
+  --longhorn-background--active: hsla(240, 0.2, 0.6, 0.15);
+  --longhorn-box-shadow--focus: var(--longhorn-background--hover);
 
   // Colors
   each(@colors, {

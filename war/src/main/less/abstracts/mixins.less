@@ -45,3 +45,49 @@
     text-decoration: var(--link-dark-text-decoration--active);
   }
 }
+
+.longhorn() {
+  position: relative;
+  z-index: 0;
+
+  &::before,
+  &::after {
+    position: absolute;
+    content: "";
+    inset: 0;
+    z-index: -1;
+    border-radius: 10px;
+    transition: var(--standard-transition);
+    pointer-events: none;
+  }
+
+  &::before {
+    background-color: transparent;
+    border: 1px solid transparent;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 10px transparent;
+  }
+
+  &:hover,
+  &:focus {
+    &::before {
+      background-color: var(--longhorn-background--hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    outline: none !important;
+    z-index: 1;
+
+    &::before {
+      background-color: var(--longhorn-background--active);
+    }
+
+    &::after {
+      box-shadow: 0 0 0 5px var(--longhorn-box-shadow--focus);
+    }
+  }
+}
