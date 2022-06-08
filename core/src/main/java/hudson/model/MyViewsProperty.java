@@ -25,6 +25,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -235,6 +236,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     @Extension @Symbol("myView")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.MyViewsProperty_DisplayName();

@@ -446,6 +446,7 @@ public class Maven extends Builder {
             return super.getHelpFile(fieldName);
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
@@ -684,6 +685,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Maven";
@@ -764,6 +766,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.InstallFromApache();

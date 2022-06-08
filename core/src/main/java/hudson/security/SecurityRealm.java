@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -715,6 +716,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         @Symbol("none")
         public static class DescriptorImpl extends Descriptor<SecurityRealm> {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.NoneSecurityRealm_DisplayName();

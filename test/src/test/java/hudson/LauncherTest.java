@@ -158,6 +158,7 @@ public class LauncherTest {
         }
 
         @Extension public static final class DescriptorImpl extends Shell.DescriptorImpl {
+            @NonNull
             @Override public String getDisplayName() {
                 return "QuietShell";
             }
@@ -174,6 +175,7 @@ public class LauncherTest {
         }
 
         @Extension public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @NonNull
             @Override public String getDisplayName() {
                 return "QuietBatchFile";
             }

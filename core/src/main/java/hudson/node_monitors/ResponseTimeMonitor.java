@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -80,6 +81,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return monitoringData;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();
