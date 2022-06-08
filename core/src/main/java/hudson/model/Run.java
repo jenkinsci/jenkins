@@ -2432,7 +2432,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             c = e.owner;
         }
 
-        Node n = c==null ? null : c.getNode();
+        Node n = c == null ? null : c.getNode();
 
         EnvVars env = getParent().getEnvironment(n, listener);
         env.putAll(getCharacteristicEnvVars());
