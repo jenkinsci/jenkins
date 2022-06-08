@@ -2429,7 +2429,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         if (c == null) {
             Executor e = this.getExecutor();
-            c = e.owner;
+            c = e == null ? null : e.owner;
         }
 
         Node n = c == null ? null : c.getNode();
