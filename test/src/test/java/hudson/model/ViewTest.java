@@ -56,6 +56,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
@@ -518,6 +519,7 @@ public class ViewTest {
 
         @TestExtension
         public static class DescriptorImpl extends ViewPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Test property";
@@ -953,6 +955,7 @@ public class ViewTest {
             return customId;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return customDisplayName;

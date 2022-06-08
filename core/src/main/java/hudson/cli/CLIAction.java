@@ -136,7 +136,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 }
             }
 
-            private void doClose() {
+            private void doClose() throws IOException {
                 close();
             }
 

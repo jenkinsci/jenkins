@@ -55,7 +55,6 @@
     "jenkins-js-modules": "^1.5.0",
     "jquery": "3.5.1",
     "lodash": "^4.17.20",
-    "raf": "^3.4.1",
     "sortablejs": "^1.13.0",
     "window-handle": "^1.0.0"
   },
