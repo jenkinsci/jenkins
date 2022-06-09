@@ -1,3 +1,5 @@
+@import "../abstracts/breakpoints";
+
 :root, .app-theme-picker__picker[data-theme=none] {
   // Font related properties
   --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -254,7 +256,12 @@
   --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
-  --section-padding: 1.85rem;
+  --section-padding: 1.9rem;
+
+  @media (max-width: @mobile-breakpoint) {
+    --section-padding: 1.5rem;
+  }
+
   --input-color: var(--white);
   --input-border: #C3CCD1;
   --input-border-hover: #5C7889;

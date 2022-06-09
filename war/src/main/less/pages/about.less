@@ -1,34 +1,4 @@
-.app-about-branding {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-
-  @media (max-width: 970px) {
-    height: 200px;
-  }
-
-  .app-about-branding__logo {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    @media (max-width: 970px) {
-      position: relative;
-    }
-
-    img {
-      height: 16vh;
-    }
-  }
-}
+@import "../abstracts/breakpoints";
 
 .app-about-background {
   position: fixed;
@@ -37,6 +7,12 @@
   width: 340px;
   bottom: 0;
   overflow: hidden;
+
+  @media (max-width: @mobile-breakpoint) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
 
   .app-about-background-aurora {
     position: relative;
@@ -47,11 +23,11 @@
     &::after {
       content: "";
       position: absolute;
-      top: -20vmax;
-      left: -20vmax;
-      bottom: -20vmax;
-      right: -20vmax;
-      object-fit: cover;
+      top: calc(50% - 50vmax);
+      left: calc(50% - 50vmax);
+      height: 100vmax;
+      width: 100vmax;
+      aspect-ratio: 1;
       z-index: -1;
     }
 
@@ -80,6 +56,38 @@
         radial-gradient(at 0% 0%, hsla(167,100%,76%,1) 0, transparent 50%);
       opacity: 0.15;
       animation: aurora-two 8s linear infinite;
+    }
+  }
+}
+
+.app-about-branding {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+
+  @media (max-width: @mobile-breakpoint) {
+    height: 200px;
+  }
+
+  .app-about-branding__logo {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (max-width: @mobile-breakpoint) {
+      position: relative;
+    }
+
+    img {
+      height: 16vh;
     }
   }
 }
@@ -130,10 +138,6 @@
   margin-bottom: var(--section-padding);
   font-weight: 500;
 }
-
-//#breadcrumbBar {
-//  display: none;
-//}
 
 #page-header {
   position: relative;

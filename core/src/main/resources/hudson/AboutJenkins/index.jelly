@@ -84,54 +84,54 @@ THE SOFTWARE.
           </thead>
           <tbody>
             <tr>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://fontawesome.com">Font Awesome</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://twitter.com/davegandy">Dave Gandy</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://scripts.sil.org/OFL">SIL OFL 1.1 License</a>
                 and
                 <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
               </td>
             </tr>
             <tr>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://www.google.com/fonts/specimen/Roboto">Google Fonts:
                   Roboto
                 </a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://twitter.com/cr64">Christian Robertson</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache
                   License, version 2.0
                 </a>
               </td>
             </tr>
             <tr>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
                   Jenkins Contrib Themes
                 </a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
               </td>
             </tr>
             <tr>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
               </td>
-              <td>
+              <td class="jenkins-table__cell--mobile-only">
                 <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
                   License
                 </a>
@@ -152,7 +152,7 @@ THE SOFTWARE.
           <tbody>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
-                <td>
+                <td class="jenkins-table__cell--mobile-only">
                   <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                     <j:choose>
                       <j:when test="${p.active}">

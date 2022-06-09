@@ -3,17 +3,22 @@
   display: flex;
   margin-bottom: var(--section-padding);
   gap: calc(var(--section-padding) / 2.5);
+  padding: 5px var(--section-padding);
+  overflow-x: auto;
+  margin-left: calc(var(--section-padding) * -1);
+  margin-right: calc(var(--section-padding) * -1);
 
   &__tab {
     position: relative;
     cursor: pointer;
     color: var(--text-color-secondary);
     line-height: 1 !important;
-    //transition: var(--standard-transition);
+    transition: var(--standard-transition);
     z-index: 0;
     font-size: 0.85rem;
     font-weight: 500;
     padding: 0.7rem 0.8rem;
+    flex-shrink: 0;
 
     &::before,
     &::after {
@@ -72,10 +77,10 @@
 
   &__tab-backdrop {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    transition: 0.3s ease;
+    top: 5px;
+    left: var(--section-padding);
+    bottom: 5px;
+    transition: var(--standard-transition);
     border-radius: 10px;
     background: currentColor;
     opacity: 0.05;

@@ -1,3 +1,5 @@
+@import "../abstracts/breakpoints";
+
 .jenkins-table {
   --table-padding: 0.55rem;
 
@@ -261,6 +263,55 @@
       left: -8px;
       bottom: -5px;
       right: -8px;
+    }
+  }
+
+  @media (max-width: @mobile-breakpoint) {
+    &:has(td.jenkins-table__cell--mobile-only) {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--section-padding) / 2);
+      background: transparent;
+      border: none;
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: contents;
+
+        tr {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          padding: 0.8rem 1.05rem;
+          gap: 0.4rem;
+          z-index: 0;
+
+          td {
+            margin: 0;
+            padding: 0 !important;
+            height: unset !important;
+          }
+
+          &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: currentColor;
+            opacity: 0.025;
+            z-index: -1;
+            border-radius: 10px;
+          }
+        }
+      }
+
+      td:not(.jenkins-table__cell--mobile-only),
+      th:not(.jenkins-table__cell--mobile-only) {
+        display: none;
+      }
     }
   }
 }

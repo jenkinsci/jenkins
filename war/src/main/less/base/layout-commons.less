@@ -1,4 +1,5 @@
 @import '../abstracts/theme.less';
+@import "../abstracts/breakpoints";
 
 html {
   position: relative;
@@ -67,7 +68,7 @@ body {
 }
 
 #main-panel {
-  padding: 2rem;
+  padding: var(--section-padding);
   display: inline-block;
   width: 100%;
 }
@@ -86,7 +87,15 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
-@media (max-width: 970px) {
+body.two-column #side-panel {
+  width: 340px;
+}
+
+body.two-column #main-panel {
+  width: calc(100% - 370px);
+}
+
+@media (max-width: @mobile-breakpoint) {
   body.two-column #page-body {
     flex-wrap: wrap;
   }
@@ -100,16 +109,6 @@ body.full-screen #main-panel {
   body.two-column #main-panel {
     margin-left: 0;
     width: 100%;
-  }
-}
-
-@media (min-width: 1170px) {
-  body.two-column #side-panel {
-    width: 340px;
-  }
-
-  body.two-column #main-panel {
-    width: calc(100% - 370px);
   }
 }
 
