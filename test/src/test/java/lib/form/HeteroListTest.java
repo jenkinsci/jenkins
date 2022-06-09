@@ -37,6 +37,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAnchorElement;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -217,6 +218,7 @@ public class HeteroListTest {
         public static class DynamicDisplayNameDescriptor extends Descriptor<TestItemDescribable> {
             public String displayName = "NotYetDefined";
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return displayName;
@@ -258,6 +260,7 @@ public class HeteroListTest {
         public static class DescriptorImpl extends ToolDescriptor<Xss> {
             private Xss[] installations = new Xss[0];
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "XSS: <img src=x onerror=console.warn('" + getClass().getName() + "') />";

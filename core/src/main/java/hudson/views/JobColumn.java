@@ -24,6 +24,7 @@
 
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Item;
 import org.jenkinsci.Symbol;
@@ -40,6 +41,7 @@ public class JobColumn extends ListViewColumn {
     // put this in the middle of icons and properties
     @Extension(ordinal = DEFAULT_COLUMNS_ORDINAL_ICON_END + 1) @Symbol("jobName")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JobColumn_DisplayName();

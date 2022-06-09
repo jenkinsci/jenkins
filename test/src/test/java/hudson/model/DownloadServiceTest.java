@@ -3,6 +3,7 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.DownloadService.Downloadable;
 import hudson.tasks.Ant.AntInstaller;
 import hudson.tasks.Maven;
@@ -98,6 +99,7 @@ public class DownloadServiceTest {
         }
 
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<Maven.MavenInstaller> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "";

@@ -57,6 +57,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Launcher;
@@ -1316,6 +1317,7 @@ public class QueueTest {
                 return new BrokenAffinityKeyProject(parent, name);
             }
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Broken Affinity Key Project";

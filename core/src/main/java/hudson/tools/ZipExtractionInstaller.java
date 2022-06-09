@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
@@ -92,6 +93,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
     @Extension @Symbol("zip")
     public static class DescriptorImpl extends ToolInstallerDescriptor<ZipExtractionInstaller> {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ZipExtractionInstaller_DescriptorImpl_displayName();

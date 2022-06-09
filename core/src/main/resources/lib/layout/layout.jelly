@@ -109,7 +109,6 @@ THE SOFTWARE.
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
 
     <link rel="stylesheet" href="${resURL}/jsbundles/styles.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
       <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     </j:if>
@@ -144,8 +143,6 @@ THE SOFTWARE.
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
-    <script src="${resURL}/scripts/polyfills.js" type="text/javascript" />
-    
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
