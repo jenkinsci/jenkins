@@ -550,6 +550,7 @@ THE SOFTWARE.
                 </module>
               </module>
             </checkstyleRules>
+            <suppressionsLocation>${maven.multiModuleProjectDirectory}/src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
           </configuration>
           <dependencies>
             <dependency>
