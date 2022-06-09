@@ -24,6 +24,7 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -68,7 +69,7 @@ public class IconSet {
 
     private static String prependTitleIfRequired(String icon, String title) {
         if (StringUtils.isNotBlank(title)) {
-            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+            return "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + icon;
         }
         return icon;
     }

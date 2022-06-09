@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout>
+    <l:main-panel>
+      <l:ionicon name="play-outline" title="${it.title}" />
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
