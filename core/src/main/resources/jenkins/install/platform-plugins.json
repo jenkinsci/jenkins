@@ -96,8 +96,7 @@
             { "name": "email-ext", "suggested": true },
             { "name": "emailext-template" },
             { "name": "mailer", "suggested": true },
-            { "name": "publish-over-ssh" },
-            { "name": "ssh" }
+            { "name": "publish-over-ssh" }
         ]
     },
     {
