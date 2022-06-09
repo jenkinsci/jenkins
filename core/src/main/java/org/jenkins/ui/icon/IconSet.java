@@ -74,7 +74,7 @@ public class IconSet {
 
     private static String prependTitleIfRequired(String icon, String title) {
         if (StringUtils.isNotBlank(title)) {
-            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+            return "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + icon;
         }
         return icon;
     }
