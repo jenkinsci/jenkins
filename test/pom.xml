@@ -248,7 +248,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
+          <argLine>@{jacocoSurefireArgs} -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${hprofDir} @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>

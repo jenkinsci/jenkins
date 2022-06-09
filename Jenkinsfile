@@ -42,6 +42,16 @@ for (i = 0; i < buildTypes.size(); i++) {
         def changelistF = "${pwd tmp: true}/changelist"
         def m2repo = "${pwd tmp: true}/m2repo"
 
+        def dirSep
+        if (isUnix()) {
+          dirSep = '/'
+          sh 'mkdir hprof'
+        } else {
+          dirSep = '\\'
+          bat 'mkdir hprof'
+        }
+        def hprofDir = env.WORKSPACE + dirSep + 'hprof'
+
         // Now run the actual build.
         stage("${buildType} Build / Test") {
           timeout(time: 5, unit: 'HOURS') {
@@ -58,12 +68,15 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'help:evaluate',
                 '-Dexpression=changelist',
                 "-Doutput=$changelistF",
+                "-DhprofDir=$hprofDir",
                 'clean',
                 'install',
               ]
-              infra.runMaven(mavenOptions, jdk)
-              if (isUnix()) {
-                sh 'git add . && git diff --exit-code HEAD'
+              try {
+                infra.runMaven(mavenOptions, jdk)
+              } finally {
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'hprof/*.hprof'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
               }
             }
           }
@@ -71,7 +84,6 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Once we've built, archive the artifacts and the test results.
         stage("${buildType} Publishing") {
-          archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
           if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the core package'
           }
