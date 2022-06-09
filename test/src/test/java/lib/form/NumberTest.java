@@ -177,7 +177,7 @@ public class NumberTest {
         input.reset();  // Remove the value that already in the <input>
         input.type(value);  // Type value to <input>
         input.fireEvent(Event.TYPE_CHANGE);  // The error message is triggered by change event
-        return input.getParentNode().getNextSibling().getChildNodes().get(1).getChildNodes().get(0).getTextContent();
+        return input.getParentNode().getNextSibling().getTextContent();
     }
 
 

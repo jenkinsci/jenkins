@@ -11,12 +11,12 @@ function updateListBox(listBox,url,config) {
     // form entry using tables-to-divs markup.
     function getStatusElement() {
         function getStatusForTabularForms() {
-            return findFollowingTR(listBox, "validation-error-area").firstElementChild.nextSibling;
+            return listBox.parentNode.querySelector(".validation-error-area");
         }
         function getStatusForDivBasedForms() {
             var settingMain = listBox.closest('.setting-main')
             if (!settingMain) {
-                console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
+                console.warn("Couldn't find the expected validation element (.validation-error-area) for element", listBox.parentNode)
                 return;
             }
 
