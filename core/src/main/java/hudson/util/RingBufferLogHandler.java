@@ -24,42 +24,30 @@
 
 package hudson.util;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.lang.ref.SoftReference;
+import hudson.remoting.ProxyException;
 import java.util.AbstractList;
 import java.util.List;
-import java.util.Objects;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Log {@link Handler} that stores the log records into a ring buffer.
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressFBWarnings(
-        value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
-        justification = "to guard against potential future compiler optimizations")
 public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
-    private static final class LogRecordRef extends SoftReference<LogRecord> {
-        LogRecordRef(LogRecord referent) {
-            super(referent);
-        }
-    }
-
-    static {
-        // Preload the LogRecordRef class to avoid an ABBA deadlock between agent class loading and logging.
-        LogRecord r = new LogRecord(Level.INFO, "<preloading>");
-        // We call Objects.hash() to guard against potential future compiler optimizations.
-        Objects.hash(new LogRecordRef(r).get());
-    }
+    /**
+     * Just to access {@link Formatter#formatMessage} which is not {@code static} though it could have been.
+     */
+    private static final Formatter dummyFormatter = new SimpleFormatter();
 
     private int start = 0;
-    private final LogRecordRef[] records;
+    private final LogRecord[] records;
     private int size;
 
     /**
@@ -73,7 +61,7 @@ public class RingBufferLogHandler extends Handler {
     }
 
     public RingBufferLogHandler(int ringSize) {
-        records = new LogRecordRef[ringSize];
+        records = new LogRecord[ringSize];
     }
 
     /**
@@ -86,13 +74,33 @@ public class RingBufferLogHandler extends Handler {
     }
 
     @Override
-    public synchronized void publish(LogRecord record) {
-        int len = records.length;
-        records[(start + size) % len] = new LogRecordRef(record);
-        if (size == len) {
-            start = (start + 1) % len;
-        } else {
-            size++;
+    public void publish(LogRecord record) {
+        if (record.getParameters() != null) {
+            try {
+                LogRecord clone = new LogRecord(record.getLevel(), dummyFormatter.formatMessage(record));
+                clone.setLoggerName(record.getLoggerName());
+                clone.setMillis(record.getMillis());
+                clone.setSequenceNumber(record.getSequenceNumber());
+                clone.setSourceClassName(record.getSourceClassName());
+                clone.setSourceMethodName(record.getSourceMethodName());
+                clone.setThreadID(record.getThreadID());
+                Throwable t = record.getThrown();
+                if (t != null) {
+                    clone.setThrown(new ProxyException(t));
+                }
+                record = clone;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        synchronized (this) {
+            int len = records.length;
+            records[(start + size) % len] = record;
+            if (size == len) {
+                start = (start + 1) % len;
+            } else {
+                size++;
+            }
         }
     }
 
@@ -114,9 +122,7 @@ public class RingBufferLogHandler extends Handler {
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    LogRecord r = records[(start + (size - (index + 1))) % records.length].get();
-                    // We cannot just omit collected entries due to the List interface.
-                    return r != null ? r : new LogRecord(Level.OFF, "<discarded>");
+                    return records[(start + (size - (index + 1))) % records.length];
                 }
             }
 
