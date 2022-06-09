@@ -13,9 +13,6 @@
     width: 14px !important;
     height: 14px !important;
   }
-  .hidden {
-    display: none;
-  }
   </style>
   <td align="right">
     <div class="expanding-input">
@@ -44,8 +41,10 @@
     </div>
     <j:if test="${count > from.maxLabelCount + 1}">
       <div class="expanding-input__input labelcolumnbox" tooltip="${%View/Hide more labels}" data="${data.computerName}">
-        <span id="icon-down-${data.computerName}" class="jenkins-table__button"><l:icon src="symbol-chevron-down"/></span>
-        <span id="icon-up-${data.computerName}" class="hidden jenkins-table__button"><l:icon src="symbol-chevron-up"/></span>
+        <span class="jenkins-table__button">
+          <l:icon id="icon-down-${data.computerName}" src="symbol-chevron-down"/>
+          <l:icon id="icon-up-${data.computerName}" src="symbol-chevron-up" class="default-hidden"/>
+        </span>
       </div>
     </j:if>
     </div>

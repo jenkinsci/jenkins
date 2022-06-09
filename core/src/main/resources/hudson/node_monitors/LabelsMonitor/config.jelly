@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:entry title="${%Maximum number of labels to show}" field="maxLabelCount">
-    <f:number default="5"/>
+    <f:number default="2"/>
   </f:entry>
   <f:entry title="${%Show dynamic labels}" field="includeDynamic">
     <f:checkbox/>
