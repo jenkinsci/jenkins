@@ -2383,7 +2383,9 @@ public class Functions {
                 iconGuess = "/" + iconGuess;
             }
             if (iconGuess.startsWith(rootURL)) {
-                iconGuess = iconGuess.substring(rootURL.length());
+                if ((!rootURL.equals("/images") && !rootURL.equals("/plugin")) || iconGuess.startsWith(rootURL + rootURL)) {
+                    iconGuess = iconGuess.substring(rootURL.length());
+                }
             }
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
