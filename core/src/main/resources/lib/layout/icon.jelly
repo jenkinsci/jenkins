@@ -43,9 +43,12 @@ THE SOFTWARE.
     </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
-    <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead</st:attribute>
+    <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead, but beware of its support for HTML</st:attribute>
     <st:attribute name="style">style</st:attribute>
-    <st:attribute name="tooltip">tooltip</st:attribute>
+    <st:attribute name="tooltip">
+      tooltip (supports HTML for PNG and symbol icons).
+      Make sure to call h.htmlAttributeEscape on all user-specified parts of the value to prevent cross-site scripting.
+      Icons based on classic (non-symbol) SVG do not support HTML tooltips due to how SECURITY-1955 was fixed in Jenkins 2.252 and 2.235.4, but since such icons can be upgraded to symbols, it is important to still escape user-specified parts of the text (resulting in double escaping while the icon is based on classic SVG).</st:attribute>
     <st:attribute name="alt">alt, adds invisible text suitable for screen-readers for symbols, sets the alt attribute for normal images</st:attribute>
   </st:documentation>
 

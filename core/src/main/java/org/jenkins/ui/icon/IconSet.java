@@ -24,6 +24,7 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.Functions;
 import hudson.PluginWrapper;
 import hudson.Util;
 import java.io.IOException;
@@ -92,9 +93,9 @@ public class IconSet {
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
             }
-            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
@@ -117,10 +118,10 @@ public class IconSet {
         symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
         if (!tooltip.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
         symbolsForLookup.put(translatedName, symbol);
