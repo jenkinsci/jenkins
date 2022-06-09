@@ -35,16 +35,26 @@ THE SOFTWARE.
       </style>
 
       <div class="app-about-branding">
+        <div class="app-about-background">
+
+          <div class="app-about-background-aurora"/>
+        </div>
         <div class="app-about-branding__logo">
           <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
-          <h1>Jenkins <span class="jenkins-visually-hidden">${%Version}</span>
-            <span>${app.VERSION}</span>
-          </h1>
         </div>
       </div>
     </l:side-panel>
 
     <l:main-panel>
+
+      <h1 class="app-about-heading">Jenkins</h1>
+
+      <p class="app-about-version">
+        ${%Version} ${app.VERSION}
+      </p>
+
+      <p class="app-about-paragraph">The leading open source automation server which enables developers around the world to reliably build, test, and deploy their software.</p>
+
       <l:js src="jsbundles/section-to-tabs.js" />
 
       <div class="jenkins-tab-pane">
