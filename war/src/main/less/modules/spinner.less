@@ -2,19 +2,18 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  font-size: 0.7rem;
-  letter-spacing: 2px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
   margin: 0;
 
-  &::before, &::after {
+  &::before,
+  &::after {
     content: "";
     display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 1.3rem;
+    height: 1.3rem;
     border-radius: 100%;
-    border: 2px solid currentColor;
+    border: 0.175rem solid currentColor;
   }
 
   &::before {
@@ -32,6 +31,12 @@
 
     @media (prefers-reduced-motion) {
       animation-duration: 2s;
+    }
+  }
+
+  &:empty {
+    &::before {
+      margin-right: 0;
     }
   }
 }
