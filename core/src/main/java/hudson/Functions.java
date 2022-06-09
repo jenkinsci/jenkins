@@ -2297,8 +2297,6 @@ public class Functions {
             return null;
         }
 
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         Icon iconMetadata = IconSet.icons.getIconByClassSpec(iconGuess);
 
         if (iconMetadata == null) {
@@ -2345,7 +2343,6 @@ public class Functions {
         }
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
         String iconSource = null;
