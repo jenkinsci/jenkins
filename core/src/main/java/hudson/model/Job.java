@@ -512,17 +512,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             token = token.toLowerCase(Locale.ROOT);
         }
 
-        SortedMap<Integer, ? extends RunT> runs = _getRuns();
         final String finalToken = token; // Variable in lambda should be final
 
         // Search the build and put them into result-list
-        runs.values()
+        RunList<RunT> builds = getBuilds();
+        builds
                 .stream()
+                .limit(20)
                 .filter(run -> isCaseSensitive ?
                         run.getDisplayName().equalsIgnoreCase(finalToken) :
                         run.getDisplayName().equals(finalToken)
                 )
-                .limit(20)
                 .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
     }
 
@@ -538,17 +538,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             token = token.toLowerCase(Locale.ROOT);
         }
 
-        SortedMap<Integer, ? extends RunT> runs = _getRuns();
         final String finalToken = token; // Variable in lambda should be final
 
         // Search the build and put them to result-list
-        runs.values()
+        RunList<RunT> builds = getBuilds();
+        builds
                 .stream()
+                .limit(20)
                 .filter(run -> isCaseSensitive ?
                         run.getDisplayName().toLowerCase(Locale.ROOT).contains(finalToken) :
                         run.getDisplayName().contains(finalToken)
                 )
-                .limit(20)
                 .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
     }
 
