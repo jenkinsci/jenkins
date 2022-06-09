@@ -1,4 +1,9 @@
-[![][ButlerImage]][website] 
+<a href="https://jenkins.io">
+  <picture>
+    <source width="400" media="(prefers-color-scheme: dark)" srcset="https://www.jenkins.io/images/jenkins-logo-title-dark.svg">
+    <img width="400" src="https://www.jenkins.io/images/jenkins-logo-title.svg">
+  </picture>
+</a>
 
 # About
 
@@ -68,9 +73,6 @@ See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins
 # License
 Jenkins is **licensed** under the **[MIT License]**.
 
-
-[ButlerImage]: https://www.jenkins.io/sites/default/files/jenkins_logo.png
 [MIT License]: https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt
-[Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
 [website]: https://www.jenkins.io/

@@ -6,6 +6,7 @@
 
 package hudson.security.csrf;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
@@ -127,6 +128,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             super(CRUMB_SALT.get(), SystemProperties.getString("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.DefaultCrumbIssuer_DisplayName();
