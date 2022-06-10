@@ -232,7 +232,7 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                applyErrorMessage(next.target, x);
+                updateValidationArea(next.target, x.responseText);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
                 layoutUpdateCallback.call();
@@ -500,16 +500,53 @@ var tooltip;
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
+
+
+/**
+ * Updates the validation area for a form element
+ * @param {HTMLElement} validationArea The validation area for a given form element
+ * @param {string} content The content to update the validation area with
+ */
+function updateValidationArea(validationArea, content) {
+  validationArea.classList.add("validation-error-area--visible");
+
+  if (content === "<div/>") {
+    validationArea.classList.remove("validation-error-area--visible");
+    validationArea.style.height = "0px";
+    validationArea.innerHTML = content;
+  } else {
+    // Only change content if different, causes an unnecessary animation otherwise
+    if (validationArea.innerHTML !== content) {
+      validationArea.innerHTML = content;
+      validationArea.style.height = validationArea.children[0].offsetHeight + "px";
+
+      // Only include the notice in the validation-error-area, move all other elements out
+      if (validationArea.children.length > 1) {
+        Array.from(validationArea.children).slice(1).forEach((element) => {
+          validationArea.after(element);
+        })
+      }
+
+      Behaviour.applySubtree(validationArea);
+      // For errors with additional details, apply the subtree to the expandable details pane
+      if (validationArea.nextElementSibling) {
+        Behaviour.applySubtree(validationArea.nextElementSibling);
+      }
+    }
+  }
+}
+
 function registerValidator(e) {
 
     // Retrieve the validation error area
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector(".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected validation element (.validation-error-area) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
 
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
@@ -545,19 +582,13 @@ function registerValidator(e) {
     }
 
     var checker = function() {
-        var target = this.targetElement;
+        const validationArea = this.targetElement;
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
-            onComplete : function(x) {
-                if (x.status == 200) {
-                    // All FormValidation responses are 200
-                    target.innerHTML = x.responseText;
-                } else {
-                    // Content is taken from FormValidation#_errorWithMarkup
-                    // TODO Add i18n support
-                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
-                }
-                Behaviour.applySubtree(target);
+            onComplete: function({status, responseText}) {
+              // TODO Add i18n support
+              const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+              updateValidationArea(validationArea, status === 200 ? responseText : errorMessage);
             }
         });
     }
@@ -584,22 +615,25 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "<div/>";
+            if (!set) {
+                updateValidationArea(this.targetElement, `<div/>`)
+            }
         } else {
-            this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
+            updateValidationArea(this.targetElement, `<div class="error">${message}</div>`);
             set = true;
         }
         return set;
@@ -613,13 +647,14 @@ function registerRegexpValidator(e,regexp,message) {
  * @param e Input element
  */
 function registerMinMaxValidator(e) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -638,29 +673,35 @@ function registerMinMaxValidator(e) {
 
                 if (min <= max) {  // Add the validator if min <= max
                     if (parseInt(min) > parseInt(this.value) || parseInt(this.value) > parseInt(max)) {  // The value is out of range
-                        this.targetElement.innerHTML = "<div class=error>This value should be between " + min + " and " + max + "</div>";
+                        updateValidationArea(this.targetElement, `<div class="error">This value should be between ${min} and ${max}</div>`);
                         set = true;
                     } else {
-                        if (!set) this.targetElement.innerHTML = "<div/>";  // The value is valid
+                        if (!set) {
+                          updateValidationArea(this.targetElement, `<div/>`)
+                        }
                     }
                 }
 
             } else if ((min !== null && isInteger(min)) && (max === null || !isInteger(max))) {  // There is only 'min' available
 
                 if (parseInt(min) > parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be larger than " + min + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be larger than ${min}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
 
             } else if ((min === null || !isInteger(min)) && (max !== null && isInteger(max))) {  // There is only 'max' available
 
                 if (parseInt(max) < parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be less than " + max + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be less than ${max}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
             }
         }
@@ -2324,15 +2365,16 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = $(button).up("DIV").next();
-  var target = spinner.next();
+  var spinner = button.up("DIV").children[0];
+  var target = spinner.next().next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          applyErrorMessage(target, rsp);
+          target.innerHTML = `<div class="validation-error-area" />`;
+          updateValidationArea(target.children[0], rsp.responseText);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           try {
@@ -2342,26 +2384,6 @@ function validateButton(checkUrl,paramList,button) {
           }
       }
   });
-}
-
-function applyErrorMessage(elt, rsp) {
-    if (rsp.status == 200) {
-        elt.innerHTML = rsp.responseText;
-    } else {
-        var id = 'valerr' + (iota++);
-        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
-        + '\').style.display=\'block\';return false">ERROR</a><div id="'
-        + id + '" style="display:none">' + rsp.responseText + '</div>';
-        var error = document.getElementById('error-description'); // cf. oops.jelly
-        if (error) {
-            var div = document.getElementById(id);
-            while (div.firstElementChild) {
-                div.removeChild(div.firstElementChild);
-            }
-            div.appendChild(error);
-        }
-    }
-    Behaviour.applySubtree(elt);
 }
 
 // create a combobox.
