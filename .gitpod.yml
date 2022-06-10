@@ -1,6 +1,6 @@
 tasks:
   - init: |
-      mvn -am -pl war,bom -P quick-build install
+      mvn -am -pl war,bom -P quick-build clean install
     command: |      
       mvn -pl war jetty:run -Dhost=0.0.0.0
     name: Run
@@ -18,6 +18,10 @@ jetbrains:
       - Stapler plugin for IntelliJ IDEA
     prebuilds:
       version: stable
+
+vscode:
+  extensions:
+    - vscjava.vscode-java-pack
 
 image:
   file: .gitpod/Dockerfile
