@@ -31,6 +31,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import jenkins.util.JenkinsJVM;
 
 /**
  * Log {@link Handler} that stores the log records into a ring buffer.
@@ -75,7 +76,7 @@ public class RingBufferLogHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        if (record.getParameters() != null) {
+        if (JenkinsJVM.isJenkinsJVM() && record.getParameters() != null) {
             try {
                 LogRecord clone = new LogRecord(record.getLevel(), dummyFormatter.formatMessage(record));
                 clone.setLoggerName(record.getLoggerName());
