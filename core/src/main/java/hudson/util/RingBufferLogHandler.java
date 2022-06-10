@@ -76,6 +76,9 @@ public class RingBufferLogHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
+        if (record == null) {
+            return;
+        }
         if (JenkinsJVM.isJenkinsJVM() && record.getParameters() != null) {
             try {
                 LogRecord clone = new LogRecord(record.getLevel(), dummyFormatter.formatMessage(record));
