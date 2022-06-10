@@ -89,7 +89,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.TestPluginManager;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 import org.kohsuke.args4j.CmdLineException;
@@ -434,25 +433,6 @@ public class AbstractProjectTest {
      */
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
-        TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-        tpm.installDetachedPlugin("structs");
-        tpm.installDetachedPlugin("workflow-step-api");
-        tpm.installDetachedPlugin("scm-api");
-        tpm.installDetachedPlugin("workflow-api");
-        tpm.installDetachedPlugin("script-security");
-        tpm.installDetachedPlugin("jquery3-api");
-        tpm.installDetachedPlugin("snakeyaml-api");
-        tpm.installDetachedPlugin("jackson2-api");
-        tpm.installDetachedPlugin("popper-api");
-        tpm.installDetachedPlugin("plugin-util-api");
-        tpm.installDetachedPlugin("font-awesome-api");
-        tpm.installDetachedPlugin("bootstrap4-api");
-        tpm.installDetachedPlugin("echarts-api");
-        tpm.installDetachedPlugin("display-url-api");
-        tpm.installDetachedPlugin("checks-api");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("matrix-project");
-
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -633,17 +613,16 @@ public class AbstractProjectTest {
          * </div>
          */
         DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*");
-        assertThat(domNodes, hasSize(5));
+        assertThat(domNodes, hasSize(4));
         assertEquals("head", domNodes.get(0).getNodeName());
         assertEquals("body", domNodes.get(1).getNodeName());
         assertEquals("div", domNodes.get(2).getNodeName());
-        assertEquals("img", domNodes.get(3).getNodeName());
-        assertEquals("a", domNodes.get(4).getNodeName());
+        assertEquals("a", domNodes.get(3).getNodeName());
 
         // only: "><img src=x onerror=alert(123)>
         // the first double quote was escaped during creation (with the backslash)
         String unquotedLabel = Label.parseExpression(label).getName();
-        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(4);
+        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(3);
         assertThat(anchor.getHrefAttribute(), containsString(Util.rawEncode(unquotedLabel)));
 
         assertThat(responseContent, containsString("ok"));

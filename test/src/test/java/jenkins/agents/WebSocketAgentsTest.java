@@ -80,8 +80,7 @@ public class WebSocketAgentsTest {
      * Verify basic functionality of an agent in {@code -webSocket} mode.
      * Requires {@code remoting} to have been {@code mvn install}ed.
      * Does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
-     * Unlike {@link hudson.slaves.JNLPLauncherTest} this does not use {@code javaws};
-     * closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}.
+     * Related to {@link hudson.slaves.JNLPLauncherTest} (also see closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}).
      * @see hudson.remoting.Launcher
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")

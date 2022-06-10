@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
@@ -115,6 +116,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends Descriptor<AcceptOnlySpecificKeyword> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "AcceptOnlySpecificKeyword";
@@ -151,6 +153,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "KeywordProperty";

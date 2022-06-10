@@ -24,6 +24,7 @@
 
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.StatusIcon;
 import org.jenkinsci.Symbol;
@@ -41,6 +42,7 @@ public class StatusColumn extends ListViewColumn {
 
     @Extension(ordinal = DEFAULT_COLUMNS_ORDINAL_ICON_START - 1) @Symbol("status")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.StatusColumn_DisplayName();

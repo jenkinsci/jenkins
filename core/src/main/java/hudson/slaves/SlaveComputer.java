@@ -921,7 +921,7 @@ public class SlaveComputer extends Computer {
         if (c != null) {
             try {
                 c.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));
