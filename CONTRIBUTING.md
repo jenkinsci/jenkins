@@ -65,6 +65,7 @@ cd war; yarn start
 ### Gitpod
 
 You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
+You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
 
