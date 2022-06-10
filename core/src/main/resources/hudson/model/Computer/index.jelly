@@ -30,9 +30,7 @@ THE SOFTWARE.
 
       <!-- Node name and status -->
       <h1>
-        <span class="icon-md">
-          <l:icon src="${it.iconClassName}" />
-        </span>
+        <l:icon src="${it.iconClassName}" class="icon-xlg" />
         ${it.caption}
       </h1>
 
