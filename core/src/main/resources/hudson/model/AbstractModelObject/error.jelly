@@ -30,7 +30,7 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task href="configure" icon="icon-up" title="${%Back to Configure}"/>
+        <l:task href="configure" icon="icon-up" title="${%Back to user configuration}"/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
