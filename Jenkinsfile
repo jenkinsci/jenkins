@@ -42,6 +42,12 @@ for (i = 0; i < buildTypes.size(); i++) {
         def changelistF = "${pwd tmp: true}/changelist"
         def m2repo = "${pwd tmp: true}/m2repo"
 
+        if (isUnix()) {
+          sh 'mkdir hprof'
+        } else {
+          bat 'mkdir hprof'
+        }
+
         // Now run the actual build.
         stage("${buildType} Build / Test") {
           timeout(time: 5, unit: 'HOURS') {
@@ -63,10 +69,8 @@ for (i = 0; i < buildTypes.size(); i++) {
               ]
               try {
                 infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
               } finally {
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'hprof/*.hprof'
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
               }
             }
