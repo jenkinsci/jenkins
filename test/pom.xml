@@ -85,7 +85,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1752.v86627a_c48d91</version>
+      <version>1753.v45c760e2400f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -145,7 +145,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.722.v8165b_a_cf25e9</version>
+      <version>6.729.v2b_9d1a_74d673</version>
       <scope>test</scope>
     </dependency>
     <dependency>

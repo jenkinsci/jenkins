@@ -31,7 +31,7 @@ You can read a description of the [building and debugging process here].
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
 ```sh
-mvn -am -pl war,bom -P quick-build clean install
+mvn -am -pl war,bom -Pquick-build clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
