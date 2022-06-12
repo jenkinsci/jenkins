@@ -103,10 +103,6 @@ THE SOFTWARE.
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.6.1</mockito.version>
     <spotless.version>2.22.7</spotless.version>
-
-    <!-- TODO 3.x versions expose "GC overhead limit exceeded" errors in this test suite -->
-    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-    <maven-surefire-report-plugin.version>2.22.2</maven-surefire-report-plugin.version>
   </properties>
 
   <dependencyManagement>
