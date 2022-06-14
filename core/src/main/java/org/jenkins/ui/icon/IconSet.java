@@ -24,20 +24,14 @@
 
 package org.jenkins.ui.icon;
 
-import hudson.PluginWrapper;
-import hudson.Util;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,15 +44,12 @@ public class IconSet {
 
 
     public static final IconSet icons = new IconSet();
-    // keyed by plugin name / core, and then symbol name returning the SVG as a string
-    private static final Map<String, Map<String, String>> SYMBOLS = new ConcurrentHashMap<>();
 
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
     private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
 
-    private static final String PLACEHOLDER_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" height=\"48\" viewBox=\"0 0 512 512\"><title>Close</title><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M368 368L144 144M368 144L144 368\"/></svg>";
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
     public IconSet() {
@@ -72,82 +63,19 @@ public class IconSet {
         context.setVariable("icons", icons);
     }
 
-    private static String prependTitleIfRequired(String icon, String title) {
-        if (StringUtils.isNotBlank(title)) {
-            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
-        }
-        return icon;
-    }
-
     // for Jelly
+    @SuppressWarnings("unused")
     @Restricted(NoExternalUse.class)
     public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id) {
-        String translatedName = cleanName(name);
-
-        String identifier = Util.fixEmpty(pluginName) == null ? "core" : pluginName;
-        Map<String, String> symbolsForLookup = SYMBOLS.computeIfAbsent(identifier, (key) -> new ConcurrentHashMap<>());
-
-        if (symbolsForLookup.containsKey(translatedName)) {
-            String symbol = symbolsForLookup.get(translatedName);
-            symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
-            symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
-            symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
-            if (!tooltip.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
-            }
-            if (!id.isEmpty()) {
-                 symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
-            }
-            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
-            return prependTitleIfRequired(symbol, title);
-        }
-
-        // Load symbol if it exists
-        InputStream inputStream = getClassLoader(identifier).getResourceAsStream("images/symbols/" + translatedName + ".svg");
-        String symbol = null;
-
-        try {
-            if (inputStream != null) {
-                symbol = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            }
-        } catch (IOException e) {
-            // ignored
-        }
-        if (symbol == null) {
-            symbol = PLACEHOLDER_SVG;
-        }
-
-        symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
-        symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
-        symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
-        if (!tooltip.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
-        }
-        if (!id.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
-        }
-        symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
-        symbol = symbol.replace("stroke:#000", "stroke:currentColor");
-
-        symbolsForLookup.put(translatedName, symbol);
-        SYMBOLS.put(identifier, symbolsForLookup);
-
-        return prependTitleIfRequired(symbol, title);
-    }
-
-    private static ClassLoader getClassLoader(String pluginName) {
-        if (pluginName.equals("core")) {
-            return IconSet.class.getClassLoader();
-        }
-
-        PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(pluginName);
-        if (plugin != null) {
-            return plugin.classLoader;
-        }
-
-        return IconSet.class.getClassLoader();
+        return Symbol.get(new SymbolRequest.Builder()
+                                 .withName(name)
+                                 .withTitle(title)
+                                 .withTooltip(tooltip)
+                                 .withClasses(classes)
+                                 .withPluginName(pluginName)
+                                 .withId(id)
+                                 .build()
+        );
     }
 
     public IconSet addIcon(Icon icon) {
@@ -603,7 +531,8 @@ public class IconSet {
         return translations.getOrDefault(cleanedTangoIcon, null);
     }
 
-    private static String cleanName(String tangoIcon) {
+    @Restricted(NoExternalUse.class) // only for Symbol.get()
+    public static String cleanName(String tangoIcon) {
         if (tangoIcon != null) {
             tangoIcon = tangoIcon.split(" ")[0];
         }
