@@ -691,6 +691,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
+        LOGGER.log(Level.WARNING, "deprecated function call {0}", new Throwable().getStackTrace());
         setTemporarilyOffline(temporarilyOffline, null);
     }
 
@@ -703,6 +704,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        if (temporarilyOffline && cause == null) {
+            LOGGER.log(Level.WARNING, "Parameter mismatch in setTemporarilyOffline. You want set node temporarily-offline, but the cause is null, {0}", new Throwable().getStackTrace());
+        }
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
         Node node = getNode();

@@ -1,0 +1,19 @@
+<!--
+The MIT License
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  
+  <f:entry title="${%groovyScript}" field="groovyScript" description="${%groovyScript.description}">
+    <textarea id="${it.name}.script" name="${it.name}.script" class="script">${it.groovyScript}</textarea>
+  </f:entry>
+
+  <f:entry title="${%executorNodeName}" field="executorNodeName" description="${%executorNodeName.description}">
+    <f:textbox value="${it.executorNodeName}"  name="${it.name}.executorNodeName" />
+  </f:entry>
+  
+  <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
+  <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+
+</j:jelly>

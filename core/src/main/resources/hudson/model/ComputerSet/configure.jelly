@@ -40,6 +40,21 @@ THE SOFTWARE.
                           descriptors="${it.nodeMonitorDescriptors}"
                           instances="${it.nonIgnoredMonitors}" />
 
+        <!-- node_monitor groovy callbacks -->
+        <f:entry title="${%nodeMonitorCallbacks}" description="${%nodeMonitorCallbacks.description}">
+        
+          <f:entry title="${%On-Online change callback}">
+            <j:getStatic var="onOnlineGroovyCommand" className="hudson.node_monitors.NodeMonitor" field="onOnlineGroovyCommand"/>
+            <st:include page="computerGroovyCommands.jelly" it="${onOnlineGroovyCommand}"/>
+          </f:entry>
+
+          <f:entry title="${%On-Offline change callback}">
+            <j:getStatic var="onOfflineGroovyCommand" className="hudson.node_monitors.NodeMonitor" field="onOfflineGroovyCommand"/>
+            <st:include page="computerGroovyCommands.jelly" it="${onOfflineGroovyCommand}"/>
+          </f:entry>
+
+        </f:entry>
+
         <l:hasAdministerOrManage>
           <f:bottomButtonBar>
             <f:submit value="${%OK}" />

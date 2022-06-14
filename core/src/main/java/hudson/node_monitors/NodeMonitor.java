@@ -26,15 +26,14 @@ package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
+import hudson.model.ComputerGroovyCommands;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.tasks.Publisher;
-import hudson.util.DescriptorList;
 import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
@@ -66,6 +65,10 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMonitor> {
+
+    public static ComputerGroovyCommands onOnlineGroovyCommand = new ComputerGroovyCommands("monitor.onOnline");
+    public static ComputerGroovyCommands onOfflineGroovyCommand = new ComputerGroovyCommands("monitor.onOffline");
+
     private volatile boolean ignored;
 
     /**
@@ -133,14 +136,6 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }
-
-    /**
-     * All registered {@link NodeMonitor}s.
-     * @deprecated as of 1.286.
-     *      Use {@link #all()} for read access and {@link Extension} for registration.
-     */
-    @Deprecated
-    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<>(NodeMonitor.class);
 
     /**
      * Returns all the registered {@link NodeMonitor} descriptors.
