@@ -39,4 +39,4 @@ javax-activation-api 2.330 1.2.0-2
 javax-mail-api 2.330 1.6.2-5
 
 # JENKINS-55582
-instance-identity 2.354 3.1
+instance-identity 2.355 3.1
