@@ -24,15 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:statusCode value="400" /><!-- clearly indicate that this page is an error page -->
+  <st:statusCode value="400" /><!-- clearly indicate that this page is an error page --> 
   <st:setHeader name="X-Error" value="${message}"/>
   <l:layout title="Jenkins">
     <l:header />
-    <l:side-panel>
-      <l:tasks>
-        <l:task href="configure" icon="icon-up" title="${%Back to user configuration}"/>
-      </l:tasks>
-    </l:side-panel>
+    <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
       <j:choose>
@@ -43,7 +39,7 @@ THE SOFTWARE.
           <p>${message}</p>
         </j:otherwise>
       </j:choose>
-
+      
       <j:if test="${exception!=null}">
         <div>
           <!-- use Behavior rule: A.showDetails -->
