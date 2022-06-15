@@ -29,6 +29,8 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+    "pages/manage-jenkins/system-information": [path.join(__dirname,
+      "src/main/js/pages/manage-jenkins/system-information/system-information.js")],
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
