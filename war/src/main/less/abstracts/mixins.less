@@ -46,7 +46,7 @@
   }
 }
 
-.longhorn() {
+.item() {
   position: relative;
   z-index: 0;
 
@@ -73,7 +73,7 @@
   &:hover,
   &:focus {
     &::before {
-      background-color: var(--longhorn-background--hover);
+      background-color: var(--item-background--hover);
     }
   }
 
@@ -83,11 +83,11 @@
     z-index: 1;
 
     &::before {
-      background-color: var(--longhorn-background--active);
+      background-color: var(--item-background--active);
     }
 
     &::after {
-      box-shadow: 0 0 0 0.33rem var(--longhorn-box-shadow--focus);
+      box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
     }
   }
 
