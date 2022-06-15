@@ -28,7 +28,7 @@ THE SOFTWARE.
   <st:setHeader name="X-Error" value="${message}"/>
   <l:layout title="Jenkins">
     <l:header />
-    <l:side-panel/>
+    <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
       <j:choose>
