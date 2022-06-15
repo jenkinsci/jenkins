@@ -92,9 +92,9 @@ THE SOFTWARE.
         <f:entry title="${%Timespan}" class="jenkins-form-item--small">
           <div class="jenkins-select">
             <select id="timespan-select" class="jenkins-select__input">
-              <option value="sec10">Every ten seconds</option>
-              <option value="min" selected="true">Every minute</option>
-              <option value="hour">Every hour</option>
+              <option value="sec10">${%Every ten seconds}</option>
+              <option value="min" selected="true">${%Every minute}</option>
+              <option value="hour">${%Every hour}</option>
             </select>
           </div>
         </f:entry>
