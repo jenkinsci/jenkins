@@ -42,13 +42,13 @@ THE SOFTWARE.
     </d:tag>
     <d:tag name="dependency">
       <tr>
-        <td class="jenkins-table__cell--mobile-only">
+        <td>
           <a href="${attrs.url}" rel="noopener noreferrer" class="jenkins-table__link" target="_blank">${attrs.name}</a>
         </td>
-        <td class="jenkins-table__cell--mobile-only">
+        <td>
           ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
         </td>
-        <td class="jenkins-table__cell--mobile-only">
+        <td>
           <d:invokeBody />
         </td>
       </tr>
