@@ -21,26 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
-
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.model.UnprotectedRootAction;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+
+import com.gargoylesoftware.htmlunit.ScriptResult;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.model.UnprotectedRootAction;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 public class SvgIconTest  {
 
@@ -58,7 +58,7 @@ public class SvgIconTest  {
         HtmlPage p = j.createWebClient().goTo(testRootAction.getUrlName());
         assertThat(p.getWebResponse().getContentAsString(), containsString(desiredTooltip));
     }
-    
+
     @Test
     @Issue("JENKINS-60920")
     public void onlyQuotesAreEscaped() throws Exception {
@@ -77,7 +77,7 @@ public class SvgIconTest  {
                 not(containsString(pristineTooltip))
         ));
     }
-   
+
     @Test
     @Issue("SECURITY-1955")
     public void preventXssFromTooltip() throws Exception {
@@ -107,7 +107,7 @@ public class SvgIconTest  {
         assertThat(jsControlResult, instanceOf(String.class));
         String jsControlString = (String) jsControlResult;
         assertThat("The title attribute is not populated", jsControlString, containsString(validationPart));
-        
+
         page.executeJavaScript("document.querySelector('#test-panel svg').dispatchEvent(new Event('mouseover'));");
         wc.waitForBackgroundJavaScript(1000);
         ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");

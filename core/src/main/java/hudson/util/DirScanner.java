@@ -1,22 +1,22 @@
 package hudson.util;
 
+import static hudson.Util.fixEmpty;
+
 import hudson.FilePath;
 import hudson.Util;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.types.selectors.FileSelector;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import static hudson.Util.fixEmpty;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.selectors.FileSelector;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Visits a directory and its contents and pass them to the {@link FileVisitor}.
@@ -61,16 +61,16 @@ public abstract class DirScanner implements Serializable {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
             if (f.canRead()) {
                 scanSingle(f, path + f.getName(), visitor);
-                if(f.isDirectory()) {
-                    for( File child : f.listFiles() )
-                        scan(child,path+f.getName()+'/',visitor);
+                if (f.isDirectory()) {
+                    for (File child : f.listFiles())
+                        scan(child, path + f.getName() + '/', visitor);
                 }
             }
         }
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            scan(dir,"",visitor);
+            scan(dir, "", visitor);
         }
 
         private static final long serialVersionUID = 1L;
@@ -89,7 +89,7 @@ public abstract class DirScanner implements Serializable {
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            super.scan(dir,visitor.with(filter));
+            super.scan(dir, visitor.with(filter));
         }
 
         private static final long serialVersionUID = 1L;
@@ -129,19 +129,19 @@ public abstract class DirScanner implements Serializable {
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            if(fixEmpty(includes)==null && excludes==null) {
+            if (fixEmpty(includes) == null && excludes == null) {
                 // optimization
-                new Full().scan(dir,visitor);
+                new Full().scan(dir, visitor);
                 return;
             }
 
-            FileSet fs = Util.createFileSet(dir,includes,excludes);
+            FileSet fs = Util.createFileSet(dir, includes, excludes);
             fs.setFollowSymlinks(followSymlinks);
             fs.setDefaultexcludes(useDefaultExcludes);
 
-            if(dir.exists()) {
-                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                for( String f : ds.getIncludedFiles()) {
+            if (dir.exists()) {
+                DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+                for (String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
                 }
@@ -150,18 +150,18 @@ public abstract class DirScanner implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-    
-    private static class DescendantFileSelector implements FileSelector{
+
+    private static class DescendantFileSelector implements FileSelector {
         private final Set<String> alreadyDeselected;
         private final FilePath baseDirFP;
         private final int baseDirPathLength;
 
-        private DescendantFileSelector(File basedir){
+        private DescendantFileSelector(File basedir) {
             this.baseDirFP = new FilePath(basedir);
             this.baseDirPathLength = basedir.getPath().length();
             this.alreadyDeselected = new HashSet<>();
         }
-        
+
         @Override
         public boolean isSelected(File basedir, String filename, File file) throws BuildException {
             String parentName = file.getParent();

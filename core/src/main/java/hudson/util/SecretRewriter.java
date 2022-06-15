@@ -3,24 +3,23 @@ package hudson.util;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 /**
  * Rewrites XML files by looking for Secrets that are stored with the old key and replaces them
@@ -54,8 +53,8 @@ public class SecretRewriter {
         this();
     }
 
-    private String tryRewrite(String s) throws IOException, InvalidKeyException {
-        if (s.length()<24)
+    private String tryRewrite(String s) throws InvalidKeyException {
+        if (s.length() < 24)
             return s;   // Encrypting "" in Secret produces 24-letter characters, so this must be the minimum length
         if (!isBase64(s))
             return s;   // decode throws IOException if the input is not base64, and this is also a very quick way to filter
@@ -68,7 +67,7 @@ public class SecretRewriter {
         }
         cipher.init(Cipher.DECRYPT_MODE, key);
         Secret sec = HistoricalSecrets.tryDecrypt(cipher, in);
-        if(sec!=null) // matched
+        if (sec != null) // matched
             return sec.getEncryptedValue(); // replace by the new encrypted value
         else // not encrypted with the legacy key. leave it unmodified
             return s;
@@ -82,7 +81,7 @@ public class SecretRewriter {
 
     public boolean rewrite(File f) throws InvalidKeyException, IOException {
 
-        AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
+        AtomicFileWriter w = new AtomicFileWriter(f.toPath(), StandardCharsets.UTF_8);
         try {
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
@@ -110,7 +109,7 @@ public class SecretRewriter {
                         copied = eidx;
                     }
                     buf.append(line.substring(copied));
-                    out.println(buf.toString());
+                    out.println(buf);
                 }
             }
 
@@ -134,8 +133,9 @@ public class SecretRewriter {
      */
     // synchronized to prevent accidental concurrent use. this instance is not thread safe
     public synchronized int rewriteRecursive(File dir, TaskListener listener) throws InvalidKeyException {
-        return rewriteRecursive(dir,"",listener);
+        return rewriteRecursive(dir, "", listener);
     }
+
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
@@ -144,23 +144,23 @@ public class SecretRewriter {
             canonical = dir.getAbsolutePath(); //
         }
         if (!callstack.add(canonical)) {
-            listener.getLogger().println("Cycle detected: "+dir);
+            listener.getLogger().println("Cycle detected: " + dir);
             return 0;
         }
 
         try {
             File[] children = dir.listFiles();
-            if (children==null)     return 0;
+            if (children == null)     return 0;
 
-            int rewritten=0;
+            int rewritten = 0;
             for (File child : children) {
                 String cn = child.getName();
                 if (cn.endsWith(".xml")) {
                     if (count++ % 100 == 0)
-                        listener.getLogger().println("Scanning "+child);
+                        listener.getLogger().println("Scanning " + child);
                     try {
                         if (rewrite(child)) {
-                            listener.getLogger().println("Rewritten "+child);
+                            listener.getLogger().println("Rewritten " + child);
                             rewritten++;
                         }
                     } catch (IOException e) {
@@ -170,7 +170,7 @@ public class SecretRewriter {
                 if (child.isDirectory()) {
                     if (!isIgnoredDir(child))
                         rewritten += rewriteRecursive(child,
-                                relative.length()==0 ? cn : relative+'/'+ cn,
+                                relative.length() == 0 ? cn : relative + '/' + cn,
                                 listener);
                 }
             }
@@ -193,20 +193,21 @@ public class SecretRewriter {
     }
 
     private static boolean isBase64(char ch) {
-        return ch<128 && IS_BASE64[ch];
+        return ch < 128 && IS_BASE64[ch];
     }
 
     private static boolean isBase64(String s) {
-        for (int i=0; i<s.length(); i++)
+        for (int i = 0; i < s.length(); i++)
             if (!isBase64(s.charAt(i)))
                 return false;
         return true;
     }
 
     private static final boolean[] IS_BASE64 = new boolean[128];
+
     static {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-        for (int i=0; i<chars.length();i++)
+        for (int i = 0; i < chars.length(); i++)
             IS_BASE64[chars.charAt(i)] = true;
     }
 }

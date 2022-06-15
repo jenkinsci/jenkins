@@ -5,133 +5,164 @@
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  */
 
-def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
-
-// TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
-def runTests = true
 def failFast = false
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
+properties([
+  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  disableConcurrentBuilds(abortPrevious: true)
+])
 
-// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-def buildTypes = ['Linux']
-def jdks = [8, 11]
+def buildTypes = ['Linux', 'Windows']
+def jdks = [8, 11, 17]
 
 def builds = [:]
-for(i = 0; i < buildTypes.size(); i++) {
-for(j = 0; j < jdks.size(); j++) {
+for (i = 0; i < buildTypes.size(); i++) {
+  for (j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
+    if (buildType == 'Windows' && jdk == 8) {
+      continue // unnecessary use of hardware
+    }
+    if (buildType == 'Windows' && jdk == 17) {
+      continue // TODO pending jenkins-infra/helpdesk#2822
+    }
     builds["${buildType}-jdk${jdk}"] = {
-        // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
-                // First stage is actually checking out the source. Since we're using Multibranch
-                // currently, we can use "checkout scm".
-                stage('Checkout') {
-                    checkout scm
-                }
-
-                def changelistF = "${pwd tmp: true}/changelist"
-                def m2repo = "${pwd tmp: true}/m2repo"
-
-                // Now run the actual build.
-                stage("${buildType} Build / Test") {
-                    timeout(time: 180, unit: 'MINUTES') {
-                        // See below for what this method does - we're passing an arbitrary environment
-                        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
-                            // Actually run Maven!
-                            // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -e"
-
-                            if(isUnix()) {
-                                sh mvnCmd
-                                sh 'git add . && git diff --exit-code HEAD'
-                            } else {
-                                bat mvnCmd
-                            }
-                        }
-                    }
-                }
-
-                // Once we've built, archive the artifacts and the test results.
-                stage("${buildType} Publishing") {
-                    if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
-                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-                    }
-                    if (buildType == 'Linux' && jdk == jdks[0]) {
-                        def changelist = readFile(changelistF)
-                        dir(m2repo) {
-                            archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
-                                             excludes: '**/*.lastUpdated,**/jenkins-test*/',
-                                             allowEmptyArchive: true, // in case we forgot to reincrementalify
-                                             fingerprint: true
-                        }
-                        publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, includes: 'japicmp.html', keepAll: false, reportDir: 'core/target/japicmp', reportFiles: 'japicmp.html', reportName: 'API compatibility', reportTitles: 'japicmp report'])
-                    }
-                }
+      // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
+      def agentContainerLabel = jdk == 8 ? 'maven' : 'maven-' + jdk
+      if (buildType == 'Windows') {
+        agentContainerLabel += '-windows'
+      }
+      node(agentContainerLabel) {
+        // First stage is actually checking out the source. Since we're using Multibranch
+        // currently, we can use "checkout scm".
+        stage('Checkout') {
+          infra.checkoutSCM()
         }
-    }
-}}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
+        def changelistF = "${pwd tmp: true}/changelist"
+        def m2repo = "${pwd tmp: true}/m2repo"
+
+        // Now run the actual build.
+        stage("${buildType} Build / Test") {
+          timeout(time: 5, unit: 'HOURS') {
+            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
+              def mavenOptions = [
+                '-Pdebug',
+                '-Penable-jacoco',
+                '--update-snapshots',
+                "-Dmaven.repo.local=$m2repo",
+                '-Dmaven.test.failure.ignore',
+                '-Dspotbugs.failOnError=false',
+                '-Dcheckstyle.failOnViolation=false',
+                '-Dset.changelist',
+                'help:evaluate',
+                '-Dexpression=changelist',
+                "-Doutput=$changelistF",
+                'clean',
+                'install',
+              ]
+              try {
+                infra.runMaven(mavenOptions, jdk)
+                if (isUnix()) {
+                  sh 'git add . && git diff --exit-code HEAD'
+                }
+              } finally {
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+              }
+            }
+          }
+        }
+
+        // Once we've built, archive the artifacts and the test results.
+        stage("${buildType} Publishing") {
+          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+            error 'JUnit 4 tests are no longer being run for the core package'
+          }
+          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+            error 'JUnit 4 tests are no longer being run for the test package'
+          }
+          // cli has been migrated to JUnit 5
+          if (failFast && currentBuild.result == 'UNSTABLE') {
+            error 'There were test failures; halting early'
+          }
+          if (buildType == 'Linux' && jdk == jdks[0]) {
+            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
+            def folders = env.JOB_NAME.split('/')
+            if (folders.length > 1) {
+              discoverGitReferenceBuild(scm: folders[1])
+            }
+
+            echo "Recording static analysis results for '${buildType}'"
+            recordIssues(
+                enabledForFailure: true,
+                tools: [java(), javaDoc()],
+                filters: [excludeFile('.*Assert.java')],
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY'
+                )
+            recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'NEW', unstable: true],
+              ]])
+            recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'TOTAL', unstable: true],
+              ]])
+            if (failFast && currentBuild.result == 'UNSTABLE') {
+              error 'Static analysis quality gates not passed; halting early'
+            }
+
+            def changelist = readFile(changelistF)
+            dir(m2repo) {
+              archiveArtifacts(
+                  artifacts: "**/*$changelist/*$changelist*",
+                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
+                  allowEmptyArchive: true, // in case we forgot to reincrementalify
+                  fingerprint: true
+                  )
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 builds.ath = {
-    node("docker&&highmem") {
-        // Just to be safe
-        deleteDir()
-        def fileUri
-        def metadataPath
-        dir("sources") {
-            checkout scm
-            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                          "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
-                sh "mvn --batch-mode --show-version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo"
-            }
-            dir("war/target") {
-                fileUri = "file://" + pwd() + "/jenkins.war"
-            }
-            metadataPath = pwd() + "/essentials.yml"
-        }
-        dir("ath") {
-            runATH jenkins: fileUri, metadataFile: metadataPath
-        }
+  node('docker-highmem') {
+    // Just to be safe
+    deleteDir()
+    def fileUri
+    def metadataPath
+    dir('sources') {
+      checkout scm
+      def mavenOptions = [
+        '-Pquick-build',
+        '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
+        '-am',
+        '-pl',
+        'war',
+        'package',
+      ]
+      infra.runMaven(mavenOptions, 11)
+      dir('war/target') {
+        fileUri = 'file://' + pwd() + '/jenkins.war'
+      }
+      metadataPath = pwd() + '/essentials.yml'
     }
+    dir('ath') {
+      runATH jenkins: fileUri, metadataFile: metadataPath
+    }
+  }
 }
 
 builds.failFast = failFast
 parallel builds
 infra.maybePublishIncrementals()
-
-// This method sets up the Maven and JDK tools, puts them in the environment along
-// with whatever other arbitrary environment variables we passed in, and runs the
-// body we passed in within that environment.
-void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
-    if (buildType == 'Linux') {
-        // I.e., a Maven container using ACI. No need to install tools.
-        return withEnv(envVars) {
-            body.call()
-        }
-    }
-    
-    // The names here are currently hardcoded for my test environment. This needs
-    // to be made more flexible.
-    // Using the "tool" Workflow call automatically installs those tools on the
-    // node.
-    String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
-
-    // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
-    // using.
-    List mvnEnv = ["PATH+MVN=${mvntool}/bin", "PATH+JDK=${jdktool}/bin", "JAVA_HOME=${jdktool}", "MAVEN_HOME=${mvntool}"]
-
-    // Add any additional environment variables.
-    mvnEnv.addAll(envVars)
-
-    // Invoke the body closure we're passed within the environment we've created.
-    withEnv(mvnEnv) {
-        body.call()
-    }
-}

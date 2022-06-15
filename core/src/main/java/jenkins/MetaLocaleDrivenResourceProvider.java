@@ -21,18 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
-import org.apache.log4j.Logger;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.LocaleDrivenResourceProvider;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.net.URL;
 
 /**
  * Look up plugin-provided localized resources for the given URL.
@@ -52,8 +53,8 @@ public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResource
                 if (url != null) {
                     return url;
                 }
-            } catch (Exception e) {
-                LOGGER.warn("Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
             }
         }
         return null;

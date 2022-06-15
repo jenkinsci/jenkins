@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
-import java.util.Collection;
-
+import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.Extension;
-import jenkins.model.ModifiableTopLevelItemGroup;
+import java.util.Collection;
 import jenkins.model.Jenkins;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
 /**
  * Lists all jobs (in a specific view).
- * 
+ *
  * @author Michael Koch
  */
 @Extension
@@ -45,7 +45,7 @@ public class ListJobsCommand extends CLICommand {
         return Messages.ListJobsCommand_ShortDescription();
     }
 
-    @Argument(metaVar="NAME",usage="Name of the view",required=false)
+    @Argument(metaVar = "NAME", usage = "Name of the view", required = false)
     public String name;
 
     @Override

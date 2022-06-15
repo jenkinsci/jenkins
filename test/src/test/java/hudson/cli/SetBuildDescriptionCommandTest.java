@@ -24,6 +24,13 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -37,13 +44,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author pjanouse
@@ -61,7 +61,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailWithoutJobReadPermission() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -74,7 +74,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailWithoutRunUpdatePermission1() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Jenkins.READ)
@@ -87,8 +87,8 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldSucceed() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        assertThat(build.getLog(), containsString("echo 1"));
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        j.assertLogContains("echo 1", build);
         assertThat(build.getDescription(), equalTo(null));
 
         CLICommandInvoker.Result result = command
@@ -110,7 +110,7 @@ public class SetBuildDescriptionCommandTest {
         assertThat(build.getDescription(), equalTo(" "));
     }
 
-    @Test public void setBuildDescriptionShouldFailIfJobDoesNotExist() throws Exception {
+    @Test public void setBuildDescriptionShouldFailIfJobDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -133,7 +133,7 @@ public class SetBuildDescriptionCommandTest {
     @Test public void setBuildDescriptionShouldFailIfBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Jenkins.READ)

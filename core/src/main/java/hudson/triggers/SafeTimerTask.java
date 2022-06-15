@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,20 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.PeriodicWork;
 import hudson.security.ACL;
-
+import hudson.security.ACLContext;
 import java.io.File;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -48,6 +48,7 @@ import jenkins.util.Timer;
  * @author Kohsuke Kawaguchi
  * @since 1.124
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public abstract class SafeTimerTask extends TimerTask {
 
     /**
@@ -66,6 +67,7 @@ public abstract class SafeTimerTask extends TimerTask {
      * @see #of
      * @since 2.216
      */
+
     @FunctionalInterface
     public interface ExceptionRunnable {
         void run() throws Exception;
@@ -76,7 +78,7 @@ public abstract class SafeTimerTask extends TimerTask {
      * <p><strong>Beware: changing it while Jenkins is running gives no guarantee logs will be sent to the new location
      * until it is restarted.</strong></p>
      */
-    static final String LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName()+".logsTargetDir";
+    static final String LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName() + ".logsTargetDir";
 
     /**
      * Local marker to know if the information about using non default root directory for logs has already been logged at least once.
@@ -90,8 +92,8 @@ public abstract class SafeTimerTask extends TimerTask {
         // just like executors get it.
         try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             doRun();
-        } catch(Throwable t) {
-            LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);
+        } catch (Throwable t) {
+            LOGGER.log(Level.SEVERE, "Timer task " + this + " failed", t);
         }
     }
 

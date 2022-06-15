@@ -21,7 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -34,7 +38,8 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import java.io.IOException;
+import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -43,12 +48,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 public class ApiCrumbExclusionTest {
     @Rule
@@ -59,8 +58,6 @@ public class ApiCrumbExclusionTest {
     @Test
     @Issue("JENKINS-22474")
     public void callUsingApiTokenDoesNotRequireCSRFToken() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setCrumbIssuer(null);
         User foo = User.getOrCreateByIdOrFullName("foo");

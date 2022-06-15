@@ -24,39 +24,81 @@
 
 package hudson.slaves;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
-
+import java.nio.charset.Charset;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class ComputerLauncherTest {
 
     @Test public void jdk7() {
-        assertThrows(IOException.class, () -> assertChecked("java version \"1.7.0_05\"\nJava(TM) SE Runtime Environment (build 1.7.0_05-b05)\nJava HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n", "1.7.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "java version \"1.7.0_05\"\n"
+                                    + "Java(TM) SE Runtime Environment (build 1.7.0_05-b05)\n"
+                                    + "Java HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n",
+                                "1.7.0"));
     }
 
     @Test public void openJDK7() {
-        assertThrows(IOException.class, () -> assertChecked("openjdk version \"1.7.0-internal\"\nOpenJDK Runtime Environment (build 1.7.0-internal-pkgsrc_2010_01_03_06_54-b00)\nOpenJDK 64-Bit Server VM (build 17.0-b04, mixed mode)\n", "1.7.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "openjdk version \"1.7.0-internal\"\n"
+                                    + "OpenJDK Runtime Environment (build"
+                                    + " 1.7.0-internal-pkgsrc_2010_01_03_06_54-b00)\n"
+                                    + "OpenJDK 64-Bit Server VM (build 17.0-b04, mixed mode)\n",
+                                "1.7.0"));
     }
 
     @Test public void jdk6() {
-        assertThrows(IOException.class, () -> assertChecked("java version \"1.6.0_33\"\nJava(TM) SE Runtime Environment (build 1.6.0_33-b03)\nJava HotSpot(TM) Server VM (build 20.8-b03, mixed mode)\n", "1.6.0"));
+        assertThrows(
+                IOException.class,
+                () ->
+                        assertChecked(
+                                "java version \"1.6.0_33\"\n"
+                                    + "Java(TM) SE Runtime Environment (build 1.6.0_33-b03)\n"
+                                    + "Java HotSpot(TM) Server VM (build 20.8-b03, mixed mode)\n",
+                                "1.6.0"));
     }
 
     @Test public void jdk5() {
-        assertThrows(IOException.class, () -> ComputerLauncher.checkJavaVersion(new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM), "-", new BufferedReader(new StringReader("java version \"1.5.0_22\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\nJava HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n"))));
+        assertThrows(
+            IOException.class,
+            () ->
+                ComputerLauncher.checkJavaVersion(
+                    new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM),
+                    "-",
+                    new BufferedReader(
+                        new StringReader(
+                            "java version \"1.5.0_22\"\n"
+                                + "Java(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\n"
+                                + "Java HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n"))));
     }
 
     @Test public void j2sdk4() {
-        assertThrows(IOException.class, () -> ComputerLauncher.checkJavaVersion(new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM), "-", new BufferedReader(new StringReader("java version \"1.4.2_19\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.4.2_19-b04)\nJava HotSpot(TM) Client VM (build 1.4.2_19-b04, mixed mode)\n"))));
+        assertThrows(
+            IOException.class,
+            () ->
+                ComputerLauncher.checkJavaVersion(
+                    new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM),
+                    "-",
+                    new BufferedReader(
+                        new StringReader(
+                            "java version \"1.4.2_19\"\n"
+                                + "Java(TM) 2 Runtime Environment, Standard Edition (build 1.4.2_19-b04)\n"
+                                + "Java HotSpot(TM) Client VM (build 1.4.2_19-b04, mixed mode)\n"))));
     }
 
     @Test public void jdk8() throws IOException {
@@ -98,11 +140,11 @@ public class ComputerLauncherTest {
                 "OpenJDK Runtime Environment Zulu11.35+15-CA (build 11.0.5+10-LTS)\n" +
                 "OpenJDK 64-Bit Server VM Zulu11.35+15-CA (build 11.0.5+10-LTS, mixed mode)", "11.0.5");
     }
-    
+
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ComputerLauncher.checkJavaVersion(new PrintStream(os), "bin/java", new BufferedReader(new StringReader(text)));
-        String logged = os.toString();
+        ComputerLauncher.checkJavaVersion(new PrintStream(os, false, Charset.defaultCharset().name()), "bin/java", new BufferedReader(new StringReader(text)));
+        String logged = os.toString(Charset.defaultCharset().name());
         assertTrue(logged.contains(Messages.ComputerLauncher_JavaVersionResult("bin/java", spec)), logged);
     }
 }

@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
-
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -32,7 +31,7 @@ public class ExceptionAnnotationTest {
 
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
 
-        j.createWebClient().getPage(b,"console");
+        j.createWebClient().getPage(b, "console");
 
         // TODO: check if the annotation is placed
         // TODO: test an exception with cause and message

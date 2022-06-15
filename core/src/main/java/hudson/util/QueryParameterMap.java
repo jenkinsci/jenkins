@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Parses the query string of the URL into a key/value pair.
@@ -48,14 +49,14 @@ import java.util.Map;
  * @since 1.394
  */
 public class QueryParameterMap {
-    private final Map<String,List<String>> store = new HashMap<>();
+    private final Map<String, List<String>> store = new HashMap<>();
 
     /**
      * @param queryString
      *      String that looks like {@code abc=def&ghi=jkl}
      */
     public QueryParameterMap(String queryString) {
-        if (queryString==null || queryString.length()==0)   return;
+        if (queryString == null || queryString.length() == 0)   return;
         try {
             for (String param : queryString.split("&")) {
                 String[] kv = param.split("=");
@@ -75,11 +76,11 @@ public class QueryParameterMap {
 
     public String get(String name) {
         List<String> v = store.get(name);
-        return v!=null?v.get(0):null;
+        return v != null ? v.get(0) : null;
     }
 
     public List<String> getAll(String name) {
         List<String> v = store.get(name);
-        return v!=null? Collections.unmodifiableList(v) : Collections.emptyList();
+        return v != null ? Collections.unmodifiableList(v) : Collections.emptyList();
     }
 }

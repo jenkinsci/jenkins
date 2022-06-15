@@ -1,18 +1,18 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.nio.charset.StandardCharsets;
 
 public class ApplyButtonTest {
 
@@ -27,7 +27,7 @@ public class ApplyButtonTest {
     public void editDescription() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE); // need something using CodeMirror
         FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
 
         HtmlPage config = j.createWebClient().getPage(b, "configure");
         HtmlForm form = config.getFormByName("config");

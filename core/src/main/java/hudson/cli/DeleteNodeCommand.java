@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Node;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * CLI command, which deletes Jenkins nodes.
@@ -41,7 +41,7 @@ import java.util.List;
 public class DeleteNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
+    @Argument(usage = "Names of nodes to delete", required = true, multiValued = true)
     private List<String> nodes;
 
     @Override
@@ -70,7 +70,7 @@ public class DeleteNodeCommand extends CLICommand {
 
                 node.toComputer().doDoDelete();
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if (hs.size() == 1) {
                     throw e;
                 }
 

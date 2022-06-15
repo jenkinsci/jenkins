@@ -21,7 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.management;
+
+import static org.junit.Assert.assertEquals;
 
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
@@ -34,8 +37,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-
-import static org.junit.Assert.assertEquals;
 
 public class AdministrativeMonitorsDecoratorTest {
 

@@ -167,7 +167,13 @@ a.yui-button:visited {
   }
 
   .leading-icon {
+    display: flex;
     margin-right: 0.25rem;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   .trailing-icon {
@@ -302,5 +308,44 @@ a.yui-button.icon-button.large-button {
     width: 1.25rem;
     height: 1.25rem;
     font-size: 1.25rem;
+  }
+}
+
+.jenkins-buttons-row {
+  display: flex;
+  align-items: center;
+
+  .jenkins-button {
+    margin-left: 0!important;
+    margin-right: 1rem!important;
+  }
+
+  .yui-button {
+    margin-left: 0!important;
+    margin-right: 0.5rem!important;
+  }
+
+  .jenkins-table__button {
+    margin-left: 0!important;
+    margin-right: 1.5rem!important;
+  }
+
+  &--invert {
+    justify-content: flex-end;
+
+    .jenkins-button {
+      margin-left: 1rem!important;
+      margin-right: 0!important;
+    }
+
+    .yui-button {
+      margin-left: 0.5rem!important;
+      margin-right: 0!important;
+    }
+
+    .jenkins-table__button {
+      margin-left: 1.5rem!important;
+      margin-right: 0!important;
+    }
   }
 }

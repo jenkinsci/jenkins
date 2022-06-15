@@ -47,10 +47,7 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <t:buildCaption>
-        ${%Build} ${it.displayName}
-        (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
-      </t:buildCaption>
+      <t:buildCaption>${%Build} ${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" />
@@ -61,7 +58,7 @@ THE SOFTWARE.
           permission="${it.ARTIFACTS}" />
 
         <j:set var="set" value="${it.changeSet}" />
-        <t:summary icon="notepad.png">
+        <t:summary icon="symbol-changes">
           <j:choose>
             <j:when test="${it.hasChangeSetComputed()}">
               <st:include it="${set}" page="digest.jelly" />

@@ -24,13 +24,10 @@
 
 package hudson.cli;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import hudson.Extension;
 import hudson.model.Node;
-
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -40,7 +37,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class UpdateNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NODE", usage="Name of the node", required=true)
+    @Argument(metaVar = "NODE", usage = "Name of the node", required = true)
     public Node node;
 
     @Override

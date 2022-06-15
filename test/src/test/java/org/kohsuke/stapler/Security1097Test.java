@@ -5,15 +5,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.json.SubmittedForm;
-
-import javax.servlet.ServletException;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class Security1097Test {
     @Rule
@@ -56,7 +56,7 @@ public class Security1097Test {
             final HtmlPage htmlPage2 = webClient.goTo("security1097/get2");
             j.submit(htmlPage2.getFormByName("config"));
         } finally {
-            allowed_http_verbs_for_forms.set(null, Arrays.asList("POST"));
+            allowed_http_verbs_for_forms.set(null, Collections.singletonList("POST"));
         }
     }
 

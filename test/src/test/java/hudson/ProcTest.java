@@ -13,17 +13,16 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import jenkins.security.MasterToSlaveCallable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -44,7 +43,7 @@ public class ProcTest {
 
         // keep the pipe fairly busy
         final Pipe p = Pipe.createRemoteToLocal();
-        for (int i=0; i<10; i++)
+        for (int i = 0; i < 10; i++)
             ch.callAsync(new ChannelFiller(p.getOut()));
         new Thread() {
             @Override
@@ -58,14 +57,14 @@ public class ProcTest {
 
         RemoteLauncher launcher = new RemoteLauncher(TaskListener.NULL, ch, true);
 
-        String str="";
-        for (int i=0; i<256; i++)
+        String str = "";
+        for (int i = 0; i < 256; i++)
             str += "oxox";
 
-        for (int i=0; i<1000; i++) {
+        for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            launcher.launch().cmds("echo",str).stdout(baos).join();
-            assertEquals(str, baos.toString().trim());
+            launcher.launch().cmds("echo", str).stdout(baos).join();
+            assertEquals(str, baos.toString(Charset.defaultCharset().name()).trim());
         }
 
         ch.close();
@@ -74,15 +73,15 @@ public class ProcTest {
     private VirtualChannel createSlaveChannel() throws Exception {
         DumbSlave s = j.createSlave();
         s.toComputer().connect(false).get();
-        VirtualChannel ch=null;
-        while (ch==null) {
+        VirtualChannel ch = null;
+        while (ch == null) {
             ch = s.toComputer().getChannel();
             Thread.sleep(100);
         }
         return ch;
     }
 
-    private static class ChannelFiller extends MasterToSlaveCallable<Void,IOException> {
+    private static class ChannelFiller extends MasterToSlaveCallable<Void, IOException> {
         private final OutputStream o;
 
         private ChannelFiller(OutputStream o) {
@@ -116,21 +115,21 @@ public class ProcTest {
         String[] ECHO_BACK_CMD = {"cat"};   // TODO: what is the echo back command for Windows? "cmd /C copy CON CON"?
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).stdout(out).join();
-        assertEquals("Hello",out.toString());
+        l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).stdout(out).join();
+        assertEquals("Hello", out.toString(Charset.defaultCharset().name()));
 
-        Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes())).readStdout().start();
+        Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).readStdout().start();
         p.join();
-        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout()));
+        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout(), Charset.defaultCharset()));
         assertNull(p.getStderr());
         assertNull(p.getStdin());
 
 
         p = l.launch().cmds(ECHO_BACK_CMD).writeStdin().readStdout().start();
-        p.getStdin().write("Hello".getBytes());
+        p.getStdin().write("Hello".getBytes(Charset.defaultCharset()));
         p.getStdin().close();
         p.join();
-        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout()));
+        assertEquals("Hello", org.apache.commons.io.IOUtils.toString(p.getStdout(), Charset.defaultCharset()));
         assertNull(p.getStderr());
     }
 }

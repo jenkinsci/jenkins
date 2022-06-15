@@ -16,19 +16,17 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
-import junit.framework.AssertionFailedError;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -39,7 +37,7 @@ public class JenkinsLocationConfigurationTest {
     private boolean lastRootUrlSet;
 
     @Rule
-    public JenkinsRule j = new JenkinsRule(){
+    public JenkinsRule j = new JenkinsRule() {
         @Override
         public URL getURL() throws IOException {
             // first call for the "Running on xxx" log message, Jenkins not being set at that point
@@ -52,7 +50,7 @@ public class JenkinsLocationConfigurationTest {
             return super.getURL();
         }
     };
-    
+
     /**
      * Makes sure the use of "localhost" in the Hudson URL reports a warning.
      */
@@ -142,7 +140,7 @@ public class JenkinsLocationConfigurationTest {
         HtmlAnchor newViewLink = page.getDocumentElement().getElementsByTagName("a").stream()
                 .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
                 .filter(a -> a.getHrefAttribute().endsWith("newView"))
-                .findFirst().orElseThrow(AssertionFailedError::new);
+                .findFirst().orElseThrow(AssertionError::new);
 
         // last verification
         assertFalse(alertAppeared.get());
@@ -174,7 +172,7 @@ public class JenkinsLocationConfigurationTest {
         HtmlAnchor labelAnchor = projectConfigurePage.getDocumentElement().getElementsByTagName("a").stream()
                 .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
                 .filter(a -> a.getHrefAttribute().contains("/label/"))
-                .findFirst().orElseThrow(AssertionFailedError::new);
+                .findFirst().orElseThrow(AssertionError::new);
 
         assertFalse(alertAppeared.get());
         HtmlElementUtil.click(labelAnchor);

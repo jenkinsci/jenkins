@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
@@ -32,15 +34,14 @@ import hudson.model.ComputerSet;
 import hudson.model.Environment;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.Stapler;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * {@link NodeProperty} that sets additional environment variables.
@@ -53,7 +54,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
      * Agent-specific environment variables
      */
     private final EnvVars envVars;
-    
+
     @DataBoundConstructor
     public EnvironmentVariablesNodeProperty(List<Entry> env) {
         this.envVars = toMap(env);
@@ -62,9 +63,9 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     public EnvironmentVariablesNodeProperty(Entry... env) {
         this(Arrays.asList(env));
     }
-	
+
     public EnvVars getEnvVars() {
-    	return envVars;
+        return envVars;
     }
 
     /**
@@ -77,8 +78,8 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws IOException, InterruptedException {
-    	return Environment.create(envVars);
+            BuildListener listener) throws IOException, InterruptedException {
+        return Environment.create(envVars);
     }
 
     @Override
@@ -89,10 +90,11 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     @Extension @Symbol("envVars")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
+        @NonNull
         @Override
-		public String getDisplayName() {
-			return Messages.EnvironmentVariablesNodeProperty_displayName();
-		}
+        public String getDisplayName() {
+            return Messages.EnvironmentVariablesNodeProperty_displayName();
+        }
 
         public String getHelpPage() {
             // yes, I know this is a hack.
@@ -106,27 +108,27 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
             }
         }
     }
-	
-	public static class Entry {
-		public String key, value;
 
-		private Entry(Map.Entry<String,String> e) {
-		    this(e.getKey(), e.getValue());
+    public static class Entry {
+        public String key, value;
+
+        private Entry(Map.Entry<String, String> e) {
+            this(e.getKey(), e.getValue());
         }
 
-		@DataBoundConstructor
-		public Entry(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
-	}
-	
-	private static EnvVars toMap(List<Entry> entries) {
-		EnvVars map = new EnvVars();
-        if (entries!=null)
-            for (Entry entry: entries)
-                map.put(entry.key,entry.value);
-		return map;
-	}
+        @DataBoundConstructor
+        public Entry(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    private static EnvVars toMap(List<Entry> entries) {
+        EnvVars map = new EnvVars();
+        if (entries != null)
+            for (Entry entry : entries)
+                map.put(entry.key, entry.value);
+        return map;
+    }
 
 }

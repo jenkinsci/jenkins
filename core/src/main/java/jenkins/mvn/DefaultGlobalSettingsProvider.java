@@ -1,10 +1,10 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -27,6 +27,7 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
     @Extension(ordinal = 99) @Symbol("standard")
     public static class DescriptorImpl extends GlobalSettingsProviderDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.DefaultGlobalSettingsProvider_DisplayName();

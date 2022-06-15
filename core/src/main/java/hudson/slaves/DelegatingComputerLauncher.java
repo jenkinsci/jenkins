@@ -21,18 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -94,6 +94,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
          * The default implementation avoids all delegating descriptors, as that creates infinite recursion.
          * @deprecated use {@link #applicableDescriptors(Slave, Slave.SlaveDescriptor)}
          */
+
         @Deprecated
         @Restricted(DoNotUse.class)
         @RestrictedSince("2.12")

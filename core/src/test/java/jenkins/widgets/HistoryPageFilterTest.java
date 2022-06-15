@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
 import hudson.model.Build;
@@ -35,12 +36,6 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.mockito.Mockito;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +43,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.junit.Assert;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.mockito.Mockito;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -493,7 +492,7 @@ public class HistoryPageFilterTest {
             return this;
         }
 
-        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) throws IOException {
+        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) {
             addAction(new ParametersAction(buildPropertiesMapToParameterValues(buildParametersAsMap), buildParametersAsMap.keySet()));
             return this;
         }

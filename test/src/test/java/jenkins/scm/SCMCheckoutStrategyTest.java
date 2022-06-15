@@ -7,19 +7,17 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.AbstractBuild.AbstractBuildExecution;
+import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
-
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import hudson.model.AbstractProject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import hudson.model.AbstractBuild.AbstractBuildExecution;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -31,7 +29,7 @@ public class SCMCheckoutStrategyTest {
 
     @Test
     public void configRoundtrip1() throws Exception {
-        assertEquals(1,SCMCheckoutStrategyDescriptor.all().size());
+        assertEquals(1, SCMCheckoutStrategyDescriptor.all().size());
         FreeStyleProject p = j.createFreeStyleProject();
         assertFalse(pageHasUI(p));   // no configuration UI because there's only one option
     }
@@ -41,15 +39,15 @@ public class SCMCheckoutStrategyTest {
      */
     @Test
     public void configRoundtrip2() throws Exception {
-        assertEquals(2,SCMCheckoutStrategyDescriptor.all().size());
+        assertEquals(2, SCMCheckoutStrategyDescriptor.all().size());
         FreeStyleProject p = j.createFreeStyleProject();
         System.out.println(SCMCheckoutStrategyDescriptor.all());
 
         TestSCMCheckoutStrategy before = new TestSCMCheckoutStrategy();
         p.setScmCheckoutStrategy(before);
-        j.configRoundtrip((Item)p);
+        j.configRoundtrip((Item) p);
         SCMCheckoutStrategy after = p.getScmCheckoutStrategy();
-        assertNotSame(before,after);
+        assertNotSame(before, after);
         assertSame(before.getClass(), after.getClass());
 
         assertTrue(pageHasUI(p));

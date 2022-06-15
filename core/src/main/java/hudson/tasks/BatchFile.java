@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,14 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
-import hudson.FilePath;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import hudson.util.LineEndingConversion;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import org.jenkinsci.Symbol;
@@ -39,11 +44,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes commands by using Windows batch file.
@@ -71,12 +71,12 @@ public class BatchFile extends CommandInterpreter {
 
     @Override
     public String[] buildCommandLine(FilePath script) {
-        return new String[] {"cmd","/c","call",script.getRemote()};
+        return new String[] {"cmd", "/c", "call", script.getRemote()};
     }
 
     @Override
     protected String getContents() {
-        return LineEndingConversion.convertEOL(command+"\r\nexit %ERRORLEVEL%",LineEndingConversion.EOLType.Windows);
+        return LineEndingConversion.convertEOL(command + "\r\nexit %ERRORLEVEL%", LineEndingConversion.EOLType.Windows);
     }
 
     @Override
@@ -114,6 +114,7 @@ public class BatchFile extends CommandInterpreter {
             return "/help/project-config/batch.html";
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BatchFile_DisplayName();

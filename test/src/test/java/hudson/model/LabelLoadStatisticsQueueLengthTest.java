@@ -1,5 +1,11 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor.FormException;
 import hudson.model.LoadStatistics.LoadStatisticsUpdater;
@@ -10,19 +16,13 @@ import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import java.io.IOException;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.util.Collections;
-
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test that a {@link Label}'s {@link LoadStatistics#queueLength} correctly
@@ -91,9 +91,9 @@ public class LabelLoadStatisticsQueueLengthTest {
 
         // Add the job to the build queue several times with an assigned label.
         for (int i = 0; i < 3; i++) {
-            project.scheduleBuild(0, CAUSE, new LabelAssignmentActionImpl(),
+            assertNotNull(project.scheduleBuild2(0, CAUSE, new LabelAssignmentActionImpl(),
                     new ParametersAction(new StringParameterValue(
-                            PARAMETER_NAME, String.valueOf(i))));
+                            PARAMETER_NAME, String.valueOf(i)))));
         }
 
         // Verify that the real queue length is 3.
@@ -144,9 +144,9 @@ public class LabelLoadStatisticsQueueLengthTest {
 
         // Add the job to the build queue several times.
         for (int i = 0; i < 3; i++) {
-            project.scheduleBuild(0, CAUSE,
+            assertNotNull(project.scheduleBuild2(0, CAUSE,
                     new ParametersAction(new StringParameterValue(
-                            PARAMETER_NAME, String.valueOf(i))));
+                            PARAMETER_NAME, String.valueOf(i)))));
         }
 
         // Verify that the real queue length is 3.

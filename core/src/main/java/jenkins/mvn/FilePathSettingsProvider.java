@@ -1,11 +1,10 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -29,20 +28,21 @@ public class FilePathSettingsProvider extends SettingsProvider {
 
     @Override
     public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
-        if (StringUtils.isEmpty(path)) {
+        if (path == null || path.isEmpty()) {
             return null;
         }
 
         try {
             return SettingsPathHelper.getSettings(build, listener, getPath());
         } catch (Exception e) {
-            throw new IllegalStateException("failed to prepare settings.xml");
+            throw new IllegalStateException("failed to prepare settings.xml", e);
         }
     }
 
     @Extension(ordinal = 10) @Symbol("filePath")
     public static class DescriptorImpl extends SettingsProviderDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FilePathSettingsProvider_DisplayName();

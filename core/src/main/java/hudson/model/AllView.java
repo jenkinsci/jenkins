@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,26 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Descriptor.FormException;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.servlet.ServletException;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.Collection;
-
-import hudson.model.Descriptor.FormException;
-import hudson.Extension;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -74,7 +73,7 @@ public class AllView extends View {
         this(name);
         this.owner = owner;
     }
-    
+
     @Override
     public boolean isEditable() {
         return false;
@@ -96,13 +95,13 @@ public class AllView extends View {
             throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup)
-            return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            return ((ModifiableItemGroup<? extends TopLevelItem>) ig).doCreateItem(req, rsp);
         return null;
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return (Collection)getOwner().getItemGroup().getItems();
+        return (Collection) getOwner().getItemGroup().getItems();
     }
 
     @Override
@@ -140,14 +139,14 @@ public class AllView extends View {
             // modern name, we are safe
             return primaryView;
         }
-        if (SystemProperties.getBoolean(AllView.class.getName()+".JENKINS-38606", true)) {
+        if (SystemProperties.getBoolean(AllView.class.getName() + ".JENKINS-38606", true)) {
             AllView allView = null;
             for (View v : views) {
                 if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {
                     // name conflict, we cannot rename the all view anyway
                     return primaryView;
                 }
-                if (StringUtils.equals(v.getViewName(), primaryView)) {
+                if (Objects.equals(v.getViewName(), primaryView)) {
                     if (v instanceof AllView) {
                         allView = (AllView) v;
                     } else {
@@ -185,6 +184,7 @@ public class AllView extends View {
             return true;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Hudson_ViewName();

@@ -24,15 +24,14 @@
 
 package hudson.os;
 
-import hudson.Functions;
-import org.apache.commons.io.IOUtils;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Utilities for the Windows Platform.

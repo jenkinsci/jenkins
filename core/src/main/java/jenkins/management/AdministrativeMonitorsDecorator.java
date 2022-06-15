@@ -21,14 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -36,12 +43,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Show notifications and popups for active administrative monitors on all pages.
@@ -62,6 +63,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         ignoredJenkinsRestOfUrls.add("configure");
     }
 
+    @NonNull
     @Override
     public String getDisplayName() {
         return Messages.AdministrativeMonitorsDecorator_DisplayName();

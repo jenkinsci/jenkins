@@ -1,14 +1,15 @@
 package hudson.node_monitors;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
-import jenkins.model.Jenkins;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,9 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
 
 /**
  * Sophisticated version of {@link AbstractNodeMonitorDescriptor} that
@@ -52,14 +51,14 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     /**
      * Creates a {@link Callable} that performs the monitoring when executed.
      */
-    protected abstract @CheckForNull Callable<T,IOException> createCallable(Computer c);
+    protected abstract @CheckForNull Callable<T, IOException> createCallable(Computer c);
 
     @Override
     protected T monitor(Computer c) throws IOException, InterruptedException {
         VirtualChannel ch = c.getChannel();
         if (ch != null) {
-            Callable<T,IOException> cc = createCallable(c);
-            if (cc!=null)
+            Callable<T, IOException> cc = createCallable(c);
+            if (cc != null)
                 return ch.call(cc);
         }
         return null;
@@ -81,17 +80,17 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * Perform monitoring with detailed reporting.
      */
     protected final @NonNull Result<T> monitorDetailed() throws InterruptedException {
-        Map<Computer,Future<T>> futures = new HashMap<>();
+        Map<Computer, Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
         for (Computer c : Jenkins.get().getComputers()) {
             try {
                 VirtualChannel ch = c.getChannel();
-                futures.put(c,null);    // sentinel value
-                if (ch!=null) {
+                futures.put(c, null);    // sentinel value
+                if (ch != null) {
                     Callable<T, ?> cc = createCallable(c);
-                    if (cc!=null)
-                        futures.put(c,ch.callAsync(cc));
+                    if (cc != null)
+                        futures.put(c, ch.callAsync(cc));
                 }
             } catch (RuntimeException | IOException e) {
                 error(c, e);
@@ -101,16 +100,16 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         final long now = System.currentTimeMillis();
         final long end = now + getMonitoringTimeOut();
 
-        final Map<Computer,T> data = new HashMap<>();
+        final Map<Computer, T> data = new HashMap<>();
 
         for (Map.Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();
             Future<T> f = futures.get(c);
             data.put(c, null);  // sentinel value
 
-            if (f!=null) {
+            if (f != null) {
                 try {
-                    data.put(c,f.get(Math.max(0,end-System.currentTimeMillis()), MILLISECONDS));
+                    data.put(c, f.get(Math.max(0, end - System.currentTimeMillis()), MILLISECONDS));
                 } catch (RuntimeException | TimeoutException | ExecutionException x) {
                     error(c, x);
                 }

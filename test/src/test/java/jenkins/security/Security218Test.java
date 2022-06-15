@@ -1,5 +1,9 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.fail;
+
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
@@ -7,23 +11,18 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import java.io.File;
-import org.apache.tools.ant.util.JavaEnvUtils;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.util.JavaEnvUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
-import static org.hamcrest.Matchers.containsString;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
 /**
@@ -72,7 +71,7 @@ public class Security218Test implements Serializable {
      * returns a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
-    private void check(DumbSlave s) throws Exception {
+    private void check(DumbSlave s) {
         try {
             Object o = s.getComputer().getChannel().call(new EvilReturnValue());
             fail("Expected the connection to die: " + o);
@@ -80,6 +79,7 @@ public class Security218Test implements Serializable {
             assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
         }
     }
+
     private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
         @Override
         public Object call() {
@@ -104,14 +104,14 @@ public class Security218Test implements Serializable {
      * Launch a JNLP agent created by {@link #createJnlpSlave(String)}
      */
     public Channel launchJnlpSlave(Slave slave) throws Exception {
-        j.createWebClient().goTo("computer/"+slave.getNodeName()+"/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
+        j.createWebClient().goTo("computer/" + slave.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         File slaveJar = tmp.newFile();
         FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"),
                 "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", j.getURL() + "computer/"+slave.getNodeName()+"/jenkins-agent.jnlp", "-secret", secret);
+                "-jnlpUrl", j.getURL() + "computer/" + slave.getNodeName() + "/jenkins-agent.jnlp", "-secret", secret);
 
         pb.inheritIO();
         System.err.println("Running: " + pb.command());
@@ -130,7 +130,7 @@ public class Security218Test implements Serializable {
 
     @After
     public void tearDown() {
-        if (jnlp !=null)
+        if (jnlp != null)
             jnlp.destroy();
     }
 }

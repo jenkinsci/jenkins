@@ -7,12 +7,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-
 import hudson.model.User;
+import java.io.IOException;
+import java.net.URL;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
@@ -22,11 +22,8 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.net.URL;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -78,7 +75,7 @@ public class LoginTest {
         form.getInputByName("j_password").setValueAttribute("oops I forgot");
         wc.setThrowExceptionOnFailingStatusCode(false);
         page = (HtmlPage) HtmlFormUtil.submit(form, null);
-        assertThat(page.asText(), containsString("Invalid username or password"));
+        assertThat(page.asNormalizedText(), containsString("Invalid username or password"));
     }
 
     private HtmlForm prepareLoginFormWithRememberMeChecked(WebClient wc) throws IOException, org.xml.sax.SAXException {
@@ -88,7 +85,7 @@ public class LoginTest {
         HtmlForm form = page.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");
         form.getInputByName("j_password").setValueAttribute("alice");
-        ((HtmlCheckBoxInput)form.getInputByName("remember_me")).setChecked(true);
+        form.getInputByName("remember_me").setChecked(true);
         return form;
     }
 

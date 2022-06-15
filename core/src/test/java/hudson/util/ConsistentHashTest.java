@@ -21,24 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Random;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -79,15 +79,15 @@ public class ConsistentHashTest {
     @Test
     public void unevenDistribution() {
         ConsistentHash<String> hash = new ConsistentHash<>();
-        hash.add("Even",10);
-        hash.add("Odd",100);
+        hash.add("Even", 10);
+        hash.add("Odd", 100);
 
         Random r = new Random(0);
         int even = 0;
         int odd = 0;
-        for(int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000; i++) {
             String v = hash.lookup(r.nextInt());
-            if(v.equals("Even")) {
+            if (v.equals("Even")) {
                 even++;
             } else {
                 odd++;
@@ -120,7 +120,7 @@ public class ConsistentHashTest {
         hash.remove(0);
 
         // verify that the mapping remains consistent
-        for (Map.Entry<Integer,Integer> e : before.entrySet()) {
+        for (Map.Entry<Integer, Integer> e : before.entrySet()) {
             int m = hash.lookup(e.getKey());
             assertTrue(e.getValue() == 0 || e.getValue() == m);
         }
@@ -170,13 +170,9 @@ public class ConsistentHashTest {
             throw exception;
         };
 
-        try {
-            ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
-            hash.add("foo");
-            fail("Didn't use custom hash function");
-        } catch (RuntimeException e) {
-            assertSame(exception, e);
-        }
+        ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
+        final RuntimeException e = assertThrows(RuntimeException.class, () -> hash.add("foo"));
+        assertSame(exception, e);
     }
 
     /**
@@ -185,7 +181,7 @@ public class ConsistentHashTest {
     @Test
     @Ignore("Helper test for performance, no assertion")
     public void speed() {
-        Map<String,Integer> data = new CopyOnWriteMap.Hash<>();
+        Map<String, Integer> data = new CopyOnWriteMap.Hash<>();
         for (int i = 0; i < 1000; i++) {
             data.put("node" + i, 100);
         }

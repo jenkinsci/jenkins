@@ -31,6 +31,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-<l:icon alt="${job.iconColor.description}" class="${job.buildStatusIconClassName} icon-sm"/>
-<a href="${h.getRelativeLinkTo(job)}" class="model-link"><l:breakable value="${job.fullDisplayName}"/></a>
+  <l:icon alt="${job.iconColor.description}" class="${job.buildStatusIconClassName} icon-sm"/>
+  <a href="${h.getRelativeLinkTo(job)}" class="model-link jenkins-icon-adjacent">
+    <l:breakable value="${job.fullDisplayName}"/>
+  </a>
 </j:jelly>
