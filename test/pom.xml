@@ -85,7 +85,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1753.v45c760e2400f</version>
+      <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/438 -->
+      <version>1785.v779d34f50ea_0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -176,6 +177,30 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>318.va_f3ccb_729b_71</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
