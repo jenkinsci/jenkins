@@ -104,7 +104,11 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         this.recorders = recorders;
 
         Map<String, LogRecorder> values = recorders.stream()
-                .collect(toMap(LogRecorder::getName, Function.identity()));
+                .collect(toMap(
+                        LogRecorder::getName,
+                        Function.identity(),
+                        // see JENKINS-68752, ignore duplicates
+                        (recorder1, recorder2) -> recorder1));
         ((CopyOnWriteMap<String, LogRecorder>) logRecorders).replaceBy(values);
     }
 
