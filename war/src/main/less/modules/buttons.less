@@ -1,4 +1,8 @@
 .jenkins-button {
+  --item-background--hover: var(--button-background--hover);
+  --item-background--active: var(--button-background--active);
+  --item-box-shadow--focus: var(--button-box-shadow--focus);
+
   .item();
 
   appearance: none;
@@ -21,7 +25,7 @@
   gap: 1ch;
 
   &::before {
-    background: var(--item-background);
+    background: var(--button-background);
   }
 
   svg {

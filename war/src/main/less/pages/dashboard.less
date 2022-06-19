@@ -25,7 +25,7 @@
         position: absolute;
         inset: 0;
         border-radius: 12px;
-        background: var(--item-background);
+        background: var(--button-background);
         opacity: 0;
         transition: var(--standard-transition);
       }
@@ -58,14 +58,7 @@
       border-radius: 10px;
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: var(--item-background--hover);
-      }
+      background: var(--button-background--hover);
     }
   }
 }
