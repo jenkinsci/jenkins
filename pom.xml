@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.74</version>
+    <version>1.76</version>
     <relativePath />
   </parent>
 
@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.351</revision>
+    <revision>2.356</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- TODO pending https://github.com/jenkinsci/pom/pull/209 remove this -->
@@ -94,7 +94,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3025.vf64a_a_3da_6b_55</remoting.version>
+    <remoting.version>3028.va_a_436db_35078</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -106,11 +106,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.22.5</spotless.version>
-
-    <!-- TODO 3.x versions expose "GC overhead limit exceeded" errors in this test suite -->
-    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-    <maven-surefire-report-plugin.version>2.22.2</maven-surefire-report-plugin.version>
+    <spotless.version>2.22.8</spotless.version>
   </properties>
 
   <dependencyManagement>
@@ -475,7 +471,7 @@ THE SOFTWARE.
           <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests javadoc:javadoc deploy</goals>
+          <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>

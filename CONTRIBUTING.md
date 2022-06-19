@@ -31,7 +31,7 @@ You can read a description of the [building and debugging process here].
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
 ```sh
-mvn -am -pl war,bom -DskipTests -Dspotbugs.skip -Dspotless.check.skip clean install
+mvn -am -pl war,bom -Pquick-build clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
@@ -61,6 +61,16 @@ On another terminal, move to the war folder and start a [webpack](https://webpac
 ```sh
 cd war; yarn start
 ```
+
+### Gitpod
+
+You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
+You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
+
+If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
+which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 ## Testing changes
 
