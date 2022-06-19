@@ -155,10 +155,10 @@
   }
 
   &::after {
-    background: currentColor;
-    box-shadow: inset 0 -2px 0 currentColor, 0 0 0 10px transparent;
-    opacity: 0.05;
+    background: var(--item-background--hover);
+    box-shadow: 0 0 0 10px transparent;
     transition: var(--standard-transition);
+    opacity: 0.75;
   }
 
   svg {
@@ -266,14 +266,14 @@
 
   &:hover {
     &::after {
-      opacity: 0.075;
+      background: var(--item-background--active);
     }
   }
 
   &:focus-within {
     &::after {
-      opacity: 0.1;
-      box-shadow: inset 0 -2px 0 currentColor, 0 0 0 5px var(--primary);
+      background: var(--item-background--active);
+      box-shadow: 0 0 0 5px var(--item-box-shadow--focus);
     }
   }
 }
