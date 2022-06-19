@@ -4,18 +4,22 @@
 // e.g. .jenkins-!-color-blue, .jenkins-!-color-light-blue, .jenkins-!-color-dark-blue
 each(@colors, {
   .jenkins-\!-color-light-@{key} {
+    --color: ~"var(--light-@{key})";
     color: ~"var(--light-@{key})" !important;
   }
   .jenkins-\!-color-@{key} {
+    --color: ~"var(--@{key})";
     color: ~"var(--@{key})" !important;
   }
   .jenkins-\!-color-dark-@{key} {
+    --color: ~"var(--dark-@{key})";
     color: ~"var(--dark-@{key})" !important;
   }
 });
 
 each(@semantics, {
   .jenkins-\!-@{key}-color {
+    --color: @value;
     color: @value !important;
   }
 });

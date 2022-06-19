@@ -25,7 +25,7 @@
         position: absolute;
         inset: 0;
         border-radius: 12px;
-        background: currentColor;
+        background: var(--item-background--hover);
         opacity: 0;
         transition: var(--standard-transition);
       }
@@ -33,7 +33,7 @@
       &:hover {
         &::before {
           inset: -0.2rem;
-          opacity: 0.05;
+          opacity: 1;
         }
       }
     }
@@ -64,8 +64,7 @@
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        background: currentColor;
-        opacity: 0.05;
+        background: var(--item-background--hover);
       }
     }
   }

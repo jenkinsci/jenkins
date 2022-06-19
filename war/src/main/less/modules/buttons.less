@@ -1,6 +1,7 @@
 .jenkins-button {
+  .item();
+
   appearance: none;
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -13,57 +14,25 @@
   text-decoration: none !important;
   background: transparent;
   color: var(--text-color) !important;
-  z-index: 0;
   border-radius: 10px;
   cursor: pointer;
   min-height: 36px;
   white-space: nowrap;
   gap: 1ch;
 
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    z-index: -1;
-    opacity: 0.075;
-    border-radius: inherit;
-    transition: 0.2s ease;
-  }
-
   &::before {
-    background: currentColor;
-  }
-
-  &::after {
-    opacity: 0;
-    box-shadow: 0 0 0 10px currentColor;
-  }
-
-  &:hover {
-    &::before {
-      opacity: 0.1125;
-    }
-  }
-
-  &:active,
-  &:focus {
-    &::before {
-      opacity: 0.15;
-    }
-
-    &::after {
-      opacity: 0.075;
-      box-shadow: 0 0 0 5px currentColor;
-    }
+    background: var(--item-background--hover);
   }
 
   svg {
-    width: 1rem;
-    height: 1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    filter: saturate(0.6);
   }
 }
 
@@ -71,13 +40,13 @@
   color: var(--button-color--primary) !important;
   font-weight: 600;
 
-  &::before,
-  &::after {
-    color: var(--primary);
+  &::before {
+    background: var(--primary) !important;
   }
 
-  &::before {
-    opacity: 1;
+  &::after {
+    box-shadow: 0 0 0 10px var(--primary);
+    opacity: 0;
   }
 
   &:hover {
@@ -92,17 +61,91 @@
       opacity: 0.8;
     }
     &::after {
-      opacity: 0.3;
+      box-shadow: 0 0 0 5px var(--primary);
+      opacity: 0.2;
     }
   }
 }
 
 .jenkins-button--transparent {
   &::before {
+    background: transparent;
+  }
+}
+
+// Support for custom colors
+// Modifier classes must include 'color' in name to work
+.jenkins-button[class*="color"]  {
+  background: transparent;
+  color: var(--color) !important;
+
+  &::before {
+    background: currentColor !important;
+    opacity: 0.1;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 10px currentColor;
+    opacity: 0;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.15;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+    &::after {
+      box-shadow: 0 0 0 5px currentColor;
+      opacity: 0.1;
+    }
+  }
+}
+
+.jenkins-button--primary[class*="color"] {
+  background: transparent;
+  color: var(--background) !important;
+
+  &::before {
+    background: var(--color) !important;
+    opacity: 1;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 10px var(--color);
+    opacity: 0;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.9;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.8;
+    }
+    &::after {
+      box-shadow: 0 0 0 5px var(--color);
+      opacity: 0.3;
+    }
+  }
+}
+
+.jenkins-button--transparent[class*="color"]  {
+  &::before {
     opacity: 0;
   }
 }
 
+// Additional button related classes
 .jenkins-buttons-row {
   display: flex;
   align-items: center;
