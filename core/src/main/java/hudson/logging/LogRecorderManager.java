@@ -78,6 +78,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Kohsuke Kawaguchi
  */
 public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren, StaplerProxy {
+
+    private static final Logger LOGGER = Logger.getLogger(LogRecorderManager.class.getName());
+
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#getName()}  name}.
      *
@@ -108,7 +111,10 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
                         LogRecorder::getName,
                         Function.identity(),
                         // see JENKINS-68752, ignore duplicates
-                        (recorder1, recorder2) -> recorder1));
+                        (recorder1, recorder2) -> {
+                            LOGGER.warning(String.format("Ignoring duplicate log recorder '%s', check $JENKINS_HOME/log and remove the duplicate recorder", recorder2.getName()));
+                            return recorder1;
+                        }));
         ((CopyOnWriteMap<String, LogRecorder>) logRecorders).replaceBy(values);
     }
 
