@@ -25,8 +25,8 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
+import hudson.util.Graph;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -85,7 +85,7 @@ public class OverallLoadStatistics extends LoadStatistics {
      * When drawing the overall load statistics, use the total queue length,
      * not {@link #queueLength}, which just shows jobs that are to be run on the master.
      */
-    protected TrendChart createOverallTrendChart(TimeScale timeScale) {
+    protected Graph createOverallTrendChart(TimeScale timeScale) {
         return MultiStageTimeSeries.createTrendChart(timeScale, busyExecutors, onlineExecutors, queueLength, availableExecutors);
     }
 }

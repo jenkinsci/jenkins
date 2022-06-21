@@ -31,6 +31,7 @@ import static org.junit.Assume.assumeFalse;
 import hudson.Functions;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
-import org.jfree.chart.JFreeChart;
 import org.junit.Test;
 
 /**
@@ -90,8 +90,8 @@ public class LoadStatisticsTest {
             ls.queueLength.update(1);
         }
 
-        JFreeChart chart = ls.createTrendChart(TimeScale.SEC10).createChart();
-        BufferedImage image = chart.createBufferedImage(400, 200);
+        BufferedImage image = ls.createTrendChart(TimeScale.SEC10)
+                .renderGraph(new Dimension(400, 400), 1, null);
 
         File tempFile = File.createTempFile("chart-", "png");
         try (OutputStream os = Files.newOutputStream(tempFile.toPath(), StandardOpenOption.DELETE_ON_CLOSE)) {

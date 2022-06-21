@@ -28,34 +28,21 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
-import hudson.util.ColorPalette;
-import hudson.util.NoOverlapCategoryAxis;
-import java.awt.BasicStroke;
-import java.awt.Color;
+import hudson.util.Graph;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.jenkinsci.Symbol;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.ui.RectangleInsets;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Utilization statistics for a node or a set of nodes.
@@ -140,19 +127,19 @@ public abstract class LoadStatistics {
 
     protected LoadStatistics(int initialOnlineExecutors, int initialBusyExecutors) {
         this.definedExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_DefinedExecutors(),
-                ColorPalette.YELLOW, initialOnlineExecutors, DECAY);
+                Result.UNSTABLE, initialOnlineExecutors, DECAY);
         this.onlineExecutors = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_OnlineExecutors(), ColorPalette.BLUE, initialOnlineExecutors, DECAY);
+                Messages._LoadStatistics_Legends_OnlineExecutors(), Result.SUCCESS, initialOnlineExecutors, DECAY);
         this.connectingExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_ConnectingExecutors(),
-                ColorPalette.YELLOW, 0, DECAY);
+                Result.UNSTABLE, 0, DECAY);
         this.busyExecutors = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_BusyExecutors(), ColorPalette.RED, initialBusyExecutors, DECAY);
+                Messages._LoadStatistics_Legends_BusyExecutors(), Result.FAILURE, initialBusyExecutors, DECAY);
         this.idleExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_IdleExecutors(),
-                ColorPalette.YELLOW, initialOnlineExecutors - initialBusyExecutors, DECAY);
+                Result.UNSTABLE, initialOnlineExecutors - initialBusyExecutors, DECAY);
         this.availableExecutors = new MultiStageTimeSeries(Messages._LoadStatistics_Legends_AvailableExecutors(),
-                ColorPalette.YELLOW, initialOnlineExecutors - initialBusyExecutors, DECAY);
+                Result.UNSTABLE, initialOnlineExecutors - initialBusyExecutors, DECAY);
         this.queueLength = new MultiStageTimeSeries(
-                Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0, DECAY);
+                Messages._LoadStatistics_Legends_QueueLength(), Result.NOT_BUILT, 0, DECAY);
         this.totalExecutors = onlineExecutors;
         modern = isModern(getClass());
     }
@@ -215,66 +202,18 @@ public abstract class LoadStatistics {
     public abstract int computeQueueLength();
 
     /**
-     * Creates a trend chart.
-     */
-    public JFreeChart createChart(CategoryDataset ds) {
-        final JFreeChart chart = ChartFactory.createLineChart(null, // chart title
-                null, // unused
-                null, // range axis label
-                ds, // data
-                PlotOrientation.VERTICAL, // orientation
-                true, // include legend
-                true, // tooltips
-                false // urls
-                );
-
-        chart.setBackgroundPaint(Color.white);
-
-        final CategoryPlot plot = chart.getCategoryPlot();
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setOutlinePaint(null);
-        plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.black);
-
-        final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-        renderer.setBaseStroke(new BasicStroke(3));
-        configureRenderer(renderer);
-
-        final CategoryAxis domainAxis = new NoOverlapCategoryAxis(null);
-        plot.setDomainAxis(domainAxis);
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        domainAxis.setLowerMargin(0.0);
-        domainAxis.setUpperMargin(0.0);
-        domainAxis.setCategoryMargin(0.0);
-
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-
-        // crop extra space around the graph
-        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-
-        return chart;
-    }
-
-    protected void configureRenderer(LineAndShapeRenderer renderer) {
-        renderer.setSeriesPaint(0, ColorPalette.BLUE);  // online
-        renderer.setSeriesPaint(1, ColorPalette.RED);   // busy
-        renderer.setSeriesPaint(2, ColorPalette.GREY);  // queue
-        renderer.setSeriesPaint(3, ColorPalette.YELLOW); // available
-    }
-
-    /**
-     * Creates {@link CategoryDataset} which then becomes the basis
+     * Creates {@link Graph} which then becomes the basis
      * of the load statistics graph.
      */
-    public TrendChart createTrendChart(TimeScale timeScale) {
+    public Graph createTrendChart(TimeScale timeScale) {
         return MultiStageTimeSeries.createTrendChart(timeScale, onlineExecutors, busyExecutors, queueLength, availableExecutors);
     }
 
     /**
      * Generates the load statistics graph.
      */
-    public TrendChart doGraph(@QueryParameter String type) throws IOException {
+    @Exported
+    public Graph getGraph(@QueryParameter String type) throws IOException {
         return createTrendChart(TimeScale.parse(type));
     }
 

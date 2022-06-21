@@ -27,9 +27,10 @@ package hudson.diagnosis;
 import hudson.Extension;
 import hudson.model.MultiStageTimeSeries;
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.PeriodicWork;
+import hudson.model.Result;
 import hudson.util.ColorPalette;
+import hudson.util.Graph;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
@@ -41,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Monitors the memory usage of the system in OS specific way.
@@ -59,11 +61,11 @@ public final class MemoryUsageMonitor extends PeriodicWork {
          * Trend of the memory usage, after GCs.
          * So this shows the accurate snapshot of the footprint of live objects.
          */
-        public final MultiStageTimeSeries used = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_USED(), ColorPalette.RED, 0, 0);
+        public final MultiStageTimeSeries used = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_USED(), Result.FAILURE, 0, 0);
         /**
          * Trend of the maximum memory size, after GCs.
          */
-        public final MultiStageTimeSeries max = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_TOTAL(), ColorPalette.BLUE, 0, 0);
+        public final MultiStageTimeSeries max = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_TOTAL(), Result.SUCCESS, 0, 0);
 
         private MemoryGroup(List<MemoryPoolMXBean> pools, MemoryType type) {
             for (MemoryPoolMXBean pool : pools) {
@@ -93,7 +95,8 @@ public final class MemoryUsageMonitor extends PeriodicWork {
         /**
          * Generates the memory usage statistics graph.
          */
-        public TrendChart doGraph(@QueryParameter String type) throws IOException {
+        @Exported
+        public Graph getGraph(@QueryParameter String type) throws IOException {
             Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
             return MultiStageTimeSeries.createTrendChart(TimeScale.parse(type), used, max);
         }

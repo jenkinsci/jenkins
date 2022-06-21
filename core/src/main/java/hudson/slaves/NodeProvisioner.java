@@ -55,6 +55,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import hudson.model.Result;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -155,7 +157,7 @@ public class NodeProvisioner {
      * the comparison with other low-frequency only variables won't leave spikes.
      */
     private final MultiStageTimeSeries plannedCapacitiesEMA =
-            new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(), Color.WHITE, 0, DECAY);
+            new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(), Result.NOT_BUILT, 0, DECAY);
 
     public NodeProvisioner(@CheckForNull Label label, LoadStatistics loadStatistics) {
         this.label = label;

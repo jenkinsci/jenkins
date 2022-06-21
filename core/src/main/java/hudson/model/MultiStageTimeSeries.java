@@ -24,12 +24,13 @@
 
 package hudson.model;
 
-import hudson.util.ChartUtil;
-import hudson.util.NoOverlapCategoryAxis;
-import java.awt.BasicStroke;
+import hudson.util.Graph;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
 import java.awt.Color;
-import java.awt.Font;
-import java.io.IOException;
+import java.awt.Paint;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,23 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.ui.RectangleInsets;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Maintains several {@link TimeSeries} with different update frequencies to satisfy three goals;
@@ -72,6 +56,8 @@ public class MultiStageTimeSeries implements Serializable {
      * Used to render a line in the trend chart.
      */
     public final Color color;
+
+    public final Result result;
 
     /**
      * Updated every 10 seconds. Keep data up to 6 hours.
@@ -91,12 +77,10 @@ public class MultiStageTimeSeries implements Serializable {
 
     private int counter;
 
-    private static final Font CHART_FONT = Font.getFont(MultiStageTimeSeries.class.getName() + ".chartFont",
-            new Font(Font.SANS_SERIF, Font.PLAIN, 10));
-
-    public MultiStageTimeSeries(Localizable title, Color color, float initialValue, float decay) {
+    public MultiStageTimeSeries(Localizable title, Result result, float initialValue, float decay) {
         this.title = title;
-        this.color = color;
+        this.result = result;
+        this.color = Graph.getColor(result);
         this.sec10 = new TimeSeries(initialValue, decay, 6 * (int) TimeUnit.HOURS.toMinutes(6));
         this.min = new TimeSeries(initialValue, decay, (int) TimeUnit.DAYS.toMinutes(2));
         this.hour = new TimeSeries(initialValue, decay, (int) TimeUnit.DAYS.toHours(56));
@@ -104,11 +88,11 @@ public class MultiStageTimeSeries implements Serializable {
 
     /**
      * @deprecated since 2009-04-05.
-     *      Use {@link #MultiStageTimeSeries(Localizable, Color, float, float)}
+     *      Use {@link #MultiStageTimeSeries(Localizable, Result, float, float)}
      */
     @Deprecated
     public MultiStageTimeSeries(float initialValue, float decay) {
-        this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Color.WHITE, initialValue, decay);
+        this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Result.NOT_BUILT, initialValue, decay);
     }
 
     /**
@@ -190,121 +174,68 @@ public class MultiStageTimeSeries implements Serializable {
      * <p>
      * This object is renderable as HTTP response.
      */
-    public static class TrendChart implements HttpResponse {
+    public static class TrendChart implements Graph.GraphSource {
         public final TimeScale timeScale;
         public final List<MultiStageTimeSeries> series;
-        public final DefaultCategoryDataset dataset;
+        private List<String> columnKeys;
 
         public TrendChart(TimeScale timeScale, MultiStageTimeSeries... series) {
             this.timeScale = timeScale;
             this.series = new ArrayList<>(Arrays.asList(series));
-            this.dataset = createDataset();
-        }
-
-        /**
-         * Creates a {@link DefaultCategoryDataset} for rendering a graph from a set of {@link MultiStageTimeSeries}.
-         */
-        protected DefaultCategoryDataset createDataset() {
-            float[][] dataPoints = new float[series.size()][];
-            for (int i = 0; i < series.size(); i++)
-                dataPoints[i] = series.get(i).pick(timeScale).getHistory();
-
-            int dataLength = dataPoints[0].length;
-            for (float[] dataPoint : dataPoints)
-                assert dataLength == dataPoint.length;
-
-            DefaultCategoryDataset ds = new DefaultCategoryDataset();
-
-            DateFormat format = timeScale.createDateFormat();
-
-            Date dt = new Date(System.currentTimeMillis() - timeScale.tick * dataLength);
-            for (int i = dataLength - 1; i >= 0; i--) {
-                dt = new Date(dt.getTime() + timeScale.tick);
-                String l = format.format(dt);
-                for (int j = 0; j < dataPoints.length; j++)
-                    ds.addValue(dataPoints[j][i], series.get(j).title.toString(), l);
-            }
-            return ds;
-        }
-
-        /**
-         * Draws a chart into {@link JFreeChart}.
-         */
-        public JFreeChart createChart() {
-            final JFreeChart chart = ChartFactory.createLineChart(null, // chart title
-                    null, // unused
-                    null, // range axis label
-                    dataset, // data
-                    PlotOrientation.VERTICAL, // orientation
-                    true, // include legend
-                    true, // tooltips
-                    false // urls
-                    );
-
-            chart.setBackgroundPaint(Color.white);
-            chart.getLegend().setItemFont(CHART_FONT);
-
-            final CategoryPlot plot = chart.getCategoryPlot();
-            configurePlot(plot);
-
-            configureRangeAxis((NumberAxis) plot.getRangeAxis());
-
-            crop(plot);
-
-            return chart;
-        }
-
-        protected void configureRangeAxis(NumberAxis rangeAxis) {
-            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-            rangeAxis.setTickLabelFont(CHART_FONT);
-            rangeAxis.setLabelFont(CHART_FONT);
-        }
-
-        protected void crop(CategoryPlot plot) {
-            // crop extra space around the graph
-            plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-        }
-
-        protected CategoryAxis configureDomainAxis(CategoryPlot plot) {
-            final CategoryAxis domainAxis = new NoOverlapCategoryAxis(null);
-            plot.setDomainAxis(domainAxis);
-            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-            domainAxis.setLowerMargin(0.0);
-            domainAxis.setUpperMargin(0.0);
-            domainAxis.setCategoryMargin(0.0);
-            domainAxis.setLabelFont(CHART_FONT);
-            domainAxis.setTickLabelFont(CHART_FONT);
-            return domainAxis;
-        }
-
-        protected void configureRenderer(LineAndShapeRenderer renderer) {
-            renderer.setBaseStroke(new BasicStroke(3));
-
-            for (int i = 0; i < series.size(); i++)
-                renderer.setSeriesPaint(i, series.get(i).color);
-        }
-
-        protected void configurePlot(CategoryPlot plot) {
-            plot.setBackgroundPaint(Color.WHITE);
-            plot.setOutlinePaint(null);
-            plot.setRangeGridlinesVisible(true);
-            plot.setRangeGridlinePaint(Color.black);
-
-            configureRenderer((LineAndShapeRenderer) plot.getRenderer());
-            configureDomainAxis(plot);
         }
 
         /**
          * Renders this object as an image.
          */
-        @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-            ChartUtil.generateGraph(req, rsp, createChart(), 500, 400);
+        public Graph getGraph() {
+            return new Graph(-1, 500, 400, this);
         }
+
+        @Override
+        public String getRowKey(int j) {
+            return series.get(j).title.toString();
+        }
+
+        @Override
+        public String getColumnKey(int idx) {
+            if (columnKeys == null) {
+                columnKeys = new ArrayList<>();
+                DateFormat format = timeScale.createDateFormat();
+                int dataLength = series.get(0).pick(timeScale).getHistory().length;
+                Date dt = new Date(System.currentTimeMillis() - timeScale.tick * dataLength);
+                for (int i = dataLength - 1; i >= 0; i--) {
+                    dt = new Date(dt.getTime() + timeScale.tick);
+                    String l = format.format(dt);
+                    columnKeys.add(l);
+                }
+            }
+            return columnKeys.get(idx);
+        }
+
+        @Override
+        public float[] getDataPoints(int i) {
+            return series.get(i).pick(timeScale).getHistory();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return series.size();
+        }
+
+        @Override
+        public Result getColor(int i) {
+            return series.get(i).result;
+        }
+
+        @Override
+        public String getTooltip(int column, int row) {
+            return null;
+        }
+
     }
 
-    public static TrendChart createTrendChart(TimeScale scale, MultiStageTimeSeries... data) {
-        return new TrendChart(scale, data);
+    public static Graph createTrendChart(TimeScale scale, MultiStageTimeSeries... data) {
+        return new TrendChart(scale, data).getGraph();
     }
 
     private static final long serialVersionUID = 1L;

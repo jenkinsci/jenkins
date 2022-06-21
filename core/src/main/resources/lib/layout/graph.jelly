@@ -1,0 +1,57 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Jenkins contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler">
+  <s:documentation>
+    Adds a graph to the page either as image or JS widget (if suitable extension is present)
+    <s:attribute name="baseUrl">
+      URL of the graph object
+    </s:attribute>
+    <s:attribute name="height">
+      Height in pixels
+    </s:attribute>
+    <s:attribute name="width">
+      Width in pixels
+    </s:attribute>
+    <s:attribute name="alt">
+      Height in pixels
+    </s:attribute>
+    <s:attribute name="hasMap">
+      Whether to add click map
+    </s:attribute>
+  </s:documentation>
+  <s:adjunct includes="hudson.model.LoadStatistics.resources"/>
+  <div class="js-load-graph"
+     data-graph-parent-selector="${attrs.width != null ? '' : '#main-panel'}"
+     data-graph-base-url="${attrs.baseUrl}" data-graph-alt="${attrs.alt}"
+     data-graph-width="${attrs.width}" data-graph-height="${attrs.height}"
+     data-graph-has-map="${attrs.hasMap}">
+  <!-- The graph will be loaded dynamically by JS -->
+</div>
+<noscript>
+<!-- The noscript alternative does not have the possibility to adjust the image to the available space -->
+<img src="${attrs.baseUrl}/png?width=500&amp;height=${attrs.height}" srcset="${attrs.baseUrl}/png?width=500&amp;height=${attrs.height}&amp;scale=2 2x" alt="[${attrs.alt}]" />
+</noscript>
+</j:jelly>

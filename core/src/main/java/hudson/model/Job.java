@@ -30,7 +30,6 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -54,23 +53,16 @@ import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AlternativeUiTextProvider;
-import hudson.util.ChartUtil;
-import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
-import hudson.util.DataSetBuilder;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
 import hudson.util.ProcessTree;
 import hudson.util.RunList;
-import hudson.util.ShiftedCategoryAxis;
-import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
-import java.awt.Color;
-import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -101,16 +93,7 @@ import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.StackedAreaRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1411,141 +1394,63 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getIconClassName();
     }
 
-    private static class ChartLabel implements Comparable<ChartLabel> {
-        final Run run;
 
-        ChartLabel(Run r) {
-            this.run = r;
+
+    private String getLabel(Run run) {
+        String l = run.getDisplayName();
+        if (run instanceof Build) {
+            String s = ((Build) run).getBuiltOnStr();
+            if (s != null)
+                l += ' ' + s;
         }
-
-        @Override
-        public int compareTo(ChartLabel that) {
-            return this.run.number - that.run.number;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            // JENKINS-2682 workaround for Eclipse compilation bug
-            // on (c instanceof ChartLabel)
-            if (o == null || !ChartLabel.class.isAssignableFrom(o.getClass()))  {
-                return false;
-            }
-            ChartLabel that = (ChartLabel) o;
-            return run == that.run;
-        }
-
-        public Color getColor() {
-            // TODO: consider gradation. See
-            // http://www.javadrive.jp/java2d/shape/index9.html
-            Result r = run.getResult();
-            if (r == Result.FAILURE)
-                return ColorPalette.RED;
-            else if (r == Result.UNSTABLE)
-                return ColorPalette.YELLOW;
-            else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                return ColorPalette.DARK_GREY;
-            else
-                return ColorPalette.BLUE;
-        }
-
-        @Override
-        public int hashCode() {
-            return run.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            String l = run.getDisplayName();
-            if (run instanceof Build) {
-                String s = ((Build) run).getBuiltOnStr();
-                if (s != null)
-                    l += ' ' + s;
-            }
-            return l;
-        }
-    }
-
-    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "category dataset is only relevant for coloring, not equality")
-    private static class ChartLabelStackedAreaRenderer2 extends StackedAreaRenderer2 {
-        private final CategoryDataset categoryDataset;
-
-        ChartLabelStackedAreaRenderer2(CategoryDataset categoryDataset) {
-            this.categoryDataset = categoryDataset;
-        }
-
-        @Override
-        public Paint getItemPaint(int row, int column) {
-            ChartLabel key = (ChartLabel) categoryDataset.getColumnKey(column);
-            return key.getColor();
-        }
-
-        @Override
-        public String generateURL(CategoryDataset dataset, int row, int column) {
-            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-            return String.valueOf(label.run.number);
-        }
-
-        @Override
-        public String generateToolTip(CategoryDataset dataset, int row, int column) {
-            ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-            return label.run.getDisplayName() + " : " + label.run.getDurationString();
-        }
+        return l;
     }
 
     public Graph getBuildTimeGraph() {
         return new Graph(getLastBuildTime(), 500, 400) {
             @Override
             protected JFreeChart createGraph() {
-                DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<>();
-                for (Run r : getNewBuilds()) {
-                    if (r.isBuilding())
-                        continue;
-                    data.add(((double) r.getDuration()) / (1000 * 60), "min",
-                            new ChartLabel(r));
-                }
+                ArrayList<Run<?, ?>> builds = new ArrayList<>(getNewBuilds().filter(b -> !b.isBuilding()));
+                GraphSource source = new GraphSource() {
+                    @Override
+                    public String getRowKey(int j) {
+                        Run<?, ?> r = builds.get(j);
+                        return r.getDisplayName() + " : " + r.getDurationString();
+                    }
 
-                final CategoryDataset dataset = data.build();
+                    @Override
+                    public String getColumnKey(int i) {
+                        return "min";
+                    }
 
-                final JFreeChart chart = ChartFactory.createStackedAreaChart(null, // chart
-                                                                                    // title
-                        null, // unused
-                        Messages.Job_minutes(), // range axis label
-                        dataset, // data
-                        PlotOrientation.VERTICAL, // orientation
-                        false, // include legend
-                        true, // tooltips
-                        false // urls
-                        );
+                    @Override
+                    public float[] getDataPoints(int i) {
+                        float[] ret = new float[builds.size()];
+                        int idx = 0;
+                        for (Run<?, ?> r: builds) {
+                            ret[idx++] = ((float) r.getDuration()) / (1000 * 60);
+                        }
+                        return ret;
+                    }
 
-                chart.setBackgroundPaint(Color.white);
+                    @Override
+                    public int getColumnCount() {
+                        return 1;
+                    }
 
-                final CategoryPlot plot = chart.getCategoryPlot();
+                    @Override
+                    public Result getColor(int i) {
+                        Run<?, ?> r = builds.get(i);
+                        return r.getResult();
+                    }
 
-                // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
-                plot.setBackgroundPaint(Color.WHITE);
-                plot.setOutlinePaint(null);
-                plot.setForegroundAlpha(0.8f);
-                plot.setRangeGridlinesVisible(true);
-                plot.setRangeGridlinePaint(Color.black);
-
-                CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
-                plot.setDomainAxis(domainAxis);
-                domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                domainAxis.setLowerMargin(0.0);
-                domainAxis.setUpperMargin(0.0);
-                domainAxis.setCategoryMargin(0.0);
-
-                final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-                ChartUtil.adjustChebyshev(dataset, rangeAxis);
-                rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-
-                StackedAreaRenderer ar = new ChartLabelStackedAreaRenderer2(dataset);
-                plot.setRenderer(ar);
-
-                // crop extra space around the graph
-                plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-
-                return chart;
+                    @Override
+                    public String getTooltip(int column, int row) {
+                        Run<?, ?> r = builds.get(row);
+                        return getLabel(r);
+                    }
+                };
+                return createJobGraph(source);
             }
         };
     }
