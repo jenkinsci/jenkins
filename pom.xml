@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.356</revision>
+    <revision>2.357</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- TODO pending https://github.com/jenkinsci/pom/pull/209 remove this -->
