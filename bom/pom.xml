@@ -257,11 +257,6 @@ THE SOFTWARE.
         <version>${remoting.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>instance-identity</artifactId>
-        <version>2.2</version>
-      </dependency>
-      <dependency>
         <groupId>org.jfree</groupId>
         <artifactId>jfreechart</artifactId>
         <version>1.0.19</version>
