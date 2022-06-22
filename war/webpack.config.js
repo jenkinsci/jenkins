@@ -2,6 +2,7 @@
 
 const path = require('path');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
 const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
@@ -150,7 +151,10 @@ module.exports = (env, argv) => ({
            chunks: 'all'
          }
        }
-    }
+    },
+    minimizer: [
+      new CssMinimizerPlugin(),
+    ],
   },
   resolve: {
     alias:{

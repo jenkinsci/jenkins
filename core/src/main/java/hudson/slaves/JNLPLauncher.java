@@ -34,6 +34,7 @@ import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
@@ -250,6 +251,9 @@ public class JNLPLauncher extends ComputerLauncher {
             } else {
                 if (Jenkins.get().getTcpSlaveAgentListener() == null) {
                     return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
+                }
+                if (InstanceIdentityProvider.RSA.getCertificate() == null || InstanceIdentityProvider.RSA.getPrivateKey() == null) {
+                    return FormValidation.error("You must install the instance-identity plugin to use inbound agents in TCP mode");
                 }
             }
             return FormValidation.ok();

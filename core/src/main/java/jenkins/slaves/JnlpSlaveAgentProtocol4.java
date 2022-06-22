@@ -103,11 +103,11 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
         if (identityCertificate == null) {
-            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity plugin is not installed");
         }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
         if (privateKey == null) {
-            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity plugin is not installed");
         }
 
         // prepare our keyStore so we can provide our authentication

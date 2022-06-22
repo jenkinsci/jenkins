@@ -1437,7 +1437,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
                     if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest, plugin.wiki));
                     }
                     return jsonObject;
                 })

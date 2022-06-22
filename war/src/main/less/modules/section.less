@@ -2,7 +2,6 @@
   border-top: 2px solid var(--panel-border-color);
   padding: var(--section-padding) 0 0 0;
   max-width: 1800px;
-  margin-bottom: 24px;
 
   &:first-of-type {
     border-top: none;
@@ -25,7 +24,7 @@
 .jenkins-section__title {
   margin: 0 0 var(--section-padding) 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .jenkins-section__items {
@@ -47,55 +46,15 @@
 }
 
 .jenkins-section__item a {
-  position: relative;
+  .item();
+
   display: flex;
-  z-index: 0;
   text-decoration: none;
   margin: 0;
 
   &::before,
   &::after {
-    position: absolute;
-    content: "";
-    top: -10px;
-    left: -10px;
-    bottom: -10px;
-    right: -10px;
-    z-index: -1;
-    border-radius: 10px;
-    transition: var(--standard-transition);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  &::before {
-    background-color: var(--text-color);
-  }
-
-  &::after {
-    box-shadow: 0 0 0 10px transparent;
-  }
-
-  &:hover,
-  &:focus {
-    &::before {
-      opacity: 0.1;
-    }
-  }
-
-  &:active,
-  &:focus {
-    outline: none !important;
-    z-index: 1;
-
-    &::before {
-      opacity: 0.15;
-    }
-
-    &::after {
-      opacity: 0.075;
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
+    inset: -0.65rem;
   }
 
   dl {
@@ -110,30 +69,25 @@
     align-items: center;
     justify-content: center;
     margin: 0 1rem 0 0;
-    width: 48px;
-    height: 48px;
-    margin: 0 1rem 0 0;
+    width: 3rem;
+    height: 3rem;
     flex-shrink: 0;
     color: var(--text-color);
 
     &::before {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      inset: 0;
       border-radius: 100%;
-      background: currentColor;
-      opacity: 0.1;
       pointer-events: none;
+      background: var(--item-background--active);
     }
 
     img,
     svg {
       position: relative;
-      width: 24px !important;
-      height: 24px !important;
+      width: 50% !important;
+      height: 50% !important;
       color: currentColor;
     }
 
@@ -152,6 +106,7 @@
       padding: 0 0.4rem;
       box-shadow: 0 1px 1px rgba(black, 0.1);
       color: white;
+      animation: animate-in-badge var(--elastic-transition) 0.1s both;
 
       &::after {
         content: "";
@@ -169,17 +124,23 @@
   }
 
   dt {
-    font-size: 0.95rem;
+    font-size: 0.925rem;
     font-weight: 600;
-    margin: 0 0 2px 0;
+    margin: 0.1rem 0 0.2rem 0;
     color: var(--text-color);
   }
 
   dd {
     color: var(--text-color-secondary);
     font-weight: 500;
-    margin: 0;
-    line-height: 1.66;
-    margin-right: 10px;
+    line-height: 1.6;
+    margin: 0 0.66rem 0 0;
+    font-size: 0.925rem;
+  }
+}
+
+@keyframes animate-in-badge {
+  from {
+    transform: scale(0);
   }
 }

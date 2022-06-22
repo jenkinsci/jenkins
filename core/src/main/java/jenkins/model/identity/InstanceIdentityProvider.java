@@ -40,10 +40,13 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A source of instance identity.
- *
+ * <p>Should not be used from plugins, except to be implemented by {@code instance-identity}.
+ * Other plugins wishing to get the RSA key may depend on {@code instance-identity} directly.
  * @param <PUB>  the type of public key.
  * @param <PRIV> the type of private key.
  * @since 2.16
@@ -58,16 +61,23 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
     /**
      * RSA keys.
      */
+    @Restricted(NoExternalUse.class)
     public static final KeyTypes<RSAPublicKey, RSAPrivateKey> RSA =
             new KeyTypes<>(RSAPublicKey.class, RSAPrivateKey.class);
     /**
      * DSA keys.
+     * @deprecated unused
      */
+    @Restricted(NoExternalUse.class)
+    @Deprecated
     public static final KeyTypes<DSAPublicKey, DSAPrivateKey> DSA =
             new KeyTypes<>(DSAPublicKey.class, DSAPrivateKey.class);
     /**
      * EC keys
+     * @deprecated unused
      */
+    @Restricted(NoExternalUse.class)
+    @Deprecated
     public static final KeyTypes<ECPublicKey, ECPrivateKey> EC =
             new KeyTypes<>(ECPublicKey.class, ECPrivateKey.class);
 
@@ -77,6 +87,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * @return the {@link KeyPair} that comprises the instance identity. {@code null} could technically be returned in
      * the event that a keypair could not be generated, for example if the specific key type of this provider
      * is not permitted at the required length by the JCA policy.
+     * More commonly it just means that the {@code instance-identity} plugin needs to be installed.
      */
     @CheckForNull
     protected abstract KeyPair getKeyPair();
@@ -120,6 +131,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * @param <PUB>  the type of public key.
      * @param <PRIV> the type of private key.
      */
+    @Restricted(NoExternalUse.class)
     public static final class KeyTypes<PUB extends PublicKey, PRIV extends PrivateKey> {
         /**
          * The interface for the public key.
@@ -154,6 +166,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
         private static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
                 @NonNull KeyTypes<PUB, PRIV> type) {
             for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
+                LOGGER.fine(() -> "loaded " + provider + " from " + provider.getClass().getProtectionDomain().getCodeSource().getLocation());
                 try {
                     KeyPair keyPair = provider.getKeyPair();
                     if (keyPair != null
@@ -173,6 +186,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
                             "Instance identity provider " + provider + " propagated an uncaught exception", e);
                 }
             }
+            LOGGER.fine("no providers");
             return null;
         }
 
