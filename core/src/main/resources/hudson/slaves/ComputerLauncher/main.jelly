@@ -29,9 +29,9 @@ THE SOFTWARE.
       <j:when test="${it.isConnecting()}">
         <p>
           ${%launchingDescription}
-          <l:isAdmin>
+          <l:hasPermission permission="${it.EXTENDED_READ_AND_CONNECT}">
             <a href="log">${%See log for more details}</a>
-          </l:isAdmin>
+          </l:hasPermission>
         </p>
 
         <l:hasPermission permission="${it.CONNECT}">
