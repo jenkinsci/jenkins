@@ -90,7 +90,7 @@ THE SOFTWARE.
     <!-- Bundled Remoting version -->
     <remoting.version>3028.va_a_436db_35078</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
