@@ -24,6 +24,7 @@
 
 package org.jenkins.ui.icon;
 
+import hudson.Functions;
 import hudson.PluginWrapper;
 import hudson.Util;
 import java.io.IOException;
@@ -74,7 +75,7 @@ public class IconSet {
 
     private static String prependTitleIfRequired(String icon, String title) {
         if (StringUtils.isNotBlank(title)) {
-            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+            return "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + icon;
         }
         return icon;
     }
@@ -93,12 +94,12 @@ public class IconSet {
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
             symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
             }
             if (!id.isEmpty()) {
-                 symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
+                 symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
             }
-            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
@@ -122,13 +123,13 @@ public class IconSet {
         symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
         if (!tooltip.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
         if (!id.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
         }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
         symbolsForLookup.put(translatedName, symbol);
