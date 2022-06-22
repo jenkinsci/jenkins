@@ -1175,65 +1175,6 @@ function rowvgStartEachRow(recursive,f) {
             });
     });
 
-    // resizable text area
-    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
-        if(Element.hasClassName(textarea,"rich-editor")) {
-            // rich HTML editor
-            try {
-                var editor = new YAHOO.widget.Editor(textarea, {
-                    dompath: true,
-                    animate: true,
-                    handleSubmit: true
-                });
-                // probably due to the timing issue, we need to let the editor know
-                // that DOM is ready
-                editor.DOMReady=true;
-                editor.fireQueue();
-                editor.render();
-                layoutUpdateCallback.call();
-            } catch(e) {
-                alert(e);
-            }
-            return;
-        }
-
-        // CodeMirror inserts a wrapper element next to the textarea.
-        // textarea.nextSibling may not be the handle.
-        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
-        if(handles.length != 1) return;
-        var handle = handles[0];
-
-        var Event = YAHOO.util.Event;
-
-        function getCodemirrorScrollerOrTextarea(){
-            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
-        }
-        handle.onmousedown = function(ev) {
-            ev = Event.getEvent(ev);
-            var s = getCodemirrorScrollerOrTextarea();
-            var offset = s.offsetHeight-Event.getPageY(ev);
-            s.style.opacity = 0.5;
-            document.onmousemove = function(ev) {
-                ev = Event.getEvent(ev);
-                function max(a,b) { if(a<b) return b; else return a; }
-                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
-                layoutUpdateCallback.call();
-                return false;
-            };
-            document.onmouseup = function() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-                var s = getCodemirrorScrollerOrTextarea();
-                s.style.opacity = 1;
-            }
-        };
-        handle.ondblclick = function() {
-            var s = getCodemirrorScrollerOrTextarea();
-            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
-            s.style.height = s.scrollHeight + 'px';
-        }
-    });
-
     // structured form submission
     Behaviour.specify("FORM", "form", ++p, function(form) {
         crumb.appendToForm(form);
