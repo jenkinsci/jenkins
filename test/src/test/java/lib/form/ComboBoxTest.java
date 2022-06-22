@@ -30,6 +30,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.RelativePath;
 import hudson.model.AbstractDescribableImpl;
@@ -153,6 +154,7 @@ public class ComboBoxTest {
         @TestExtension("testEnsureXssNotPossible")
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "XSS Property";

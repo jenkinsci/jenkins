@@ -104,6 +104,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.333
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class UpdateSite {
     /**
      * What's the time stamp of data file?

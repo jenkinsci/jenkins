@@ -193,6 +193,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     @Extension @Symbol("upstream")
     public static final class DescriptorImpl extends TriggerDescriptor {
 
+        @NonNull
         @Override public String getDisplayName() {
             return Messages.ReverseBuildTrigger_build_after_other_projects_are_built();
         }

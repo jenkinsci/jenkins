@@ -26,6 +26,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -499,6 +500,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Extension @Symbol("list")
     public static class DescriptorImpl extends ViewDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
