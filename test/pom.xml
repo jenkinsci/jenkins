@@ -139,7 +139,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>3.1</version>
+      <version>3.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
