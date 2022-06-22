@@ -24,5 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <p class="error">${it} <a href="log">${%See log for more details}</a></p>
+  <p class="error">${it}
+    <l:isAdmin>
+      <a href="log">${%See log for more details}</a>
+    </l:isAdmin>
+  </p>
 </j:jelly>
