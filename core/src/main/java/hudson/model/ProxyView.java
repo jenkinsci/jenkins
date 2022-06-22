@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -129,6 +130,7 @@ public class ProxyView extends View implements StaplerFallback {
     @Extension @Symbol("proxy")
     public static class DescriptorImpl extends ViewDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ProxyView_DisplayName();
