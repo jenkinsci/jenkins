@@ -1175,6 +1175,42 @@ function rowvgStartEachRow(recursive,f) {
             });
     });
 
+    // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
+    Behaviour.specify(".CodeMirror", "codemirror", ++p, function(codemirror) {
+      const MIN_HEIGHT = 200;
+
+      const resizer = document.createElement("div");
+      resizer.className = "jenkins-codemirror-resizer";
+
+      let start_x;
+      let start_y;
+      let start_h;
+
+      function height_of($el) {
+        return parseInt(window.getComputedStyle($el).height.replace(/px$/, ""));
+      }
+
+      function on_drag(e) {
+        codemirror.CodeMirror.setSize(null, Math.max(MIN_HEIGHT, (start_h + e.y - start_y)) + "px");
+      }
+
+      function on_release() {
+        document.body.removeEventListener("mousemove", on_drag);
+        window.removeEventListener("mouseup", on_release);
+      }
+
+      resizer.addEventListener("mousedown", function (e) {
+        start_x = e.x;
+        start_y = e.y;
+        start_h = height_of(codemirror);
+
+        document.body.addEventListener("mousemove", on_drag);
+        window.addEventListener("mouseup", on_release);
+      });
+
+      codemirror.parentNode.insertBefore(resizer, codemirror.nextSibling);
+    });
+
     // structured form submission
     Behaviour.specify("FORM", "form", ++p, function(form) {
         crumb.appendToForm(form);
