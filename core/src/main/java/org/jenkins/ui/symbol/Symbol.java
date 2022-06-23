@@ -3,7 +3,9 @@ package org.jenkins.ui.symbol;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Functions;
 import hudson.PluginWrapper;
+import hudson.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -84,16 +86,16 @@ public final class Symbol {
         result = result.replaceAll("(tooltip=\")[^&]*?(\")", "");
         result = result.replaceAll("(id=\")[^&]*?(\")", "");
         if (StringUtils.isNotBlank(tooltip)) {
-            result = result.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            result = result.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
         if (StringUtils.isNotBlank(id)) {
-            result = result.replaceAll("<svg", "<svg id=\"" + id + "\"");
+            result = result.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
         }
         if (StringUtils.isNotBlank(classes)) {
-            result = result.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            result = result.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         }
         if (StringUtils.isNotBlank(title)) {
-            result = "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + result;
+            result = "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + result;
         }
         return result;
     }

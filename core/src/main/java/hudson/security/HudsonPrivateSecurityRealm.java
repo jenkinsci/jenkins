@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -205,7 +206,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Override
     protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
-        Details u = load(username);
+        Details u;
+        try {
+            u = load(username);
+        } catch (UsernameNotFoundException ex) {
+            // Waste time to prevent timing attacks distinguishing existing and non-existing user
+            PASSWORD_ENCODER.matches(password, ENCODED_INVALID_USER_PASSWORD);
+            throw ex;
+        }
         if (!u.isPasswordCorrect(password)) {
             throw new BadCredentialsException("Bad credentials");
         }
@@ -962,6 +970,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
+
+    /**
+     * This value is used to prevent timing discrepancies when trying to authenticate with an invalid username
+     * compared to just a wrong password. If the user doesn't exist, compare the provided password with this value.
+     */
+    private static final String ENCODED_INVALID_USER_PASSWORD = PASSWORD_ENCODER.encode(generatePassword());
+
+    @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
+    private static String generatePassword() {
+        String password = new Random().ints(20, 33, 127).mapToObj(i -> (char) i)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+        return password;
+    }
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {

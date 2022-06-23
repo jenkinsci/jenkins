@@ -85,7 +85,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1753.v45c760e2400f</version>
+      <version>1784.v83a_b_3ce99392</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -137,6 +137,12 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
       <version>2.7</version>
@@ -151,7 +157,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1119.va_a_5e9068da_d7</version>
+      <version>1119.1121.vc43d0fc45561</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -233,7 +239,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>3.13</version>
+                  <version>4.2</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
