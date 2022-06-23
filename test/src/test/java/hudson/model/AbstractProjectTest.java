@@ -613,17 +613,16 @@ public class AbstractProjectTest {
          * </div>
          */
         DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*");
-        assertThat(domNodes, hasSize(5));
+        assertThat(domNodes, hasSize(4));
         assertEquals("head", domNodes.get(0).getNodeName());
         assertEquals("body", domNodes.get(1).getNodeName());
         assertEquals("div", domNodes.get(2).getNodeName());
-        assertEquals("img", domNodes.get(3).getNodeName());
-        assertEquals("a", domNodes.get(4).getNodeName());
+        assertEquals("a", domNodes.get(3).getNodeName());
 
         // only: "><img src=x onerror=alert(123)>
         // the first double quote was escaped during creation (with the backslash)
         String unquotedLabel = Label.parseExpression(label).getName();
-        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(4);
+        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(3);
         assertThat(anchor.getHrefAttribute(), containsString(Util.rawEncode(unquotedLabel)));
 
         assertThat(responseContent, containsString("ok"));
