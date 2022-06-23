@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
     <j:choose>
-      <j:when test="${!it.isConnecting()}">
+      <j:when test="${it.isConnecting()}">
         <p>
           ${%launchingDescription}
           <j:if test="${it.hasPermission(it.CONFIGURE) or (it.hasPermission(it.CONNECT))}">
