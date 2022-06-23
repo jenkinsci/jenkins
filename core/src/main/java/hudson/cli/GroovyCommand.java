@@ -73,7 +73,7 @@ public class GroovyCommand extends CLICommand {
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
         String script = loadScript();
-        ScriptListener.fireScriptFromCLIEvent(script, User.current());
+        ScriptListener.fireScriptEvent(script, "CLI", User.current());
         groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }

@@ -81,7 +81,7 @@ public class GroovyshCommand extends CLICommand {
         }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
-        ScriptListener.fireScriptFromCLIEvent(commandLine.toString(), User.current());
+        ScriptListener.fireScriptEvent(commandLine.toString(), "CLI", User.current());
         return shell.run(commandLine.toString());
     }
 
