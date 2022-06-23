@@ -26,12 +26,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
     <j:choose>
-      <j:when test="${it.isConnecting()}">
+      <j:when test="${!it.isConnecting()}">
         <p>
           ${%launchingDescription}
-          <l:hasPermission permission="${it.EXTENDED_READ_AND_CONNECT}">
+          <j:if test="${it.hasPermission(it.CONFIGURE) or (it.hasPermission(it.CONNECT))}">
             <a href="log">${%See log for more details}</a>
-          </l:hasPermission>
+          </j:if>
         </p>
 
         <l:hasPermission permission="${it.CONNECT}">
