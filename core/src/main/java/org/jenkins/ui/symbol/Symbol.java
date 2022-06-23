@@ -56,7 +56,7 @@ public final class Symbol {
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(translatedName, key -> loadSymbol(identifier, key));
-        return replaceAttributes(symbol, title, tooltip, classes, id);
+        return appendAttributes(symbol, title, tooltip, classes, id);
     }
 
 
@@ -83,7 +83,7 @@ public final class Symbol {
                      .replace("stroke:#000", "stroke:currentColor");
     }
 
-    private static String replaceAttributes(String symbol, String title, String tooltip, String classes, String id) {
+    private static String appendAttributes(String symbol, String title, String tooltip, String classes, String id) {
         String result = symbol;
         if (StringUtils.isNotBlank(tooltip)) {
             result = result.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
