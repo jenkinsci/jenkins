@@ -1175,63 +1175,40 @@ function rowvgStartEachRow(recursive,f) {
             });
     });
 
-    // resizable text area
-    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
-        if(Element.hasClassName(textarea,"rich-editor")) {
-            // rich HTML editor
-            try {
-                var editor = new YAHOO.widget.Editor(textarea, {
-                    dompath: true,
-                    animate: true,
-                    handleSubmit: true
-                });
-                // probably due to the timing issue, we need to let the editor know
-                // that DOM is ready
-                editor.DOMReady=true;
-                editor.fireQueue();
-                editor.render();
-                layoutUpdateCallback.call();
-            } catch(e) {
-                alert(e);
-            }
-            return;
-        }
+    // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
+    Behaviour.specify(".CodeMirror", "codemirror", ++p, function(codemirror) {
+      const MIN_HEIGHT = 200;
 
-        // CodeMirror inserts a wrapper element next to the textarea.
-        // textarea.nextSibling may not be the handle.
-        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
-        if(handles.length != 1) return;
-        var handle = handles[0];
+      const resizer = document.createElement("div");
+      resizer.className = "jenkins-codemirror-resizer";
 
-        var Event = YAHOO.util.Event;
+      let start_x;
+      let start_y;
+      let start_h;
 
-        function getCodemirrorScrollerOrTextarea(){
-            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
-        }
-        handle.onmousedown = function(ev) {
-            ev = Event.getEvent(ev);
-            var s = getCodemirrorScrollerOrTextarea();
-            var offset = s.offsetHeight-Event.getPageY(ev);
-            s.style.opacity = 0.5;
-            document.onmousemove = function(ev) {
-                ev = Event.getEvent(ev);
-                function max(a,b) { if(a<b) return b; else return a; }
-                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
-                layoutUpdateCallback.call();
-                return false;
-            };
-            document.onmouseup = function() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-                var s = getCodemirrorScrollerOrTextarea();
-                s.style.opacity = 1;
-            }
-        };
-        handle.ondblclick = function() {
-            var s = getCodemirrorScrollerOrTextarea();
-            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
-            s.style.height = s.scrollHeight + 'px';
-        }
+      function height_of($el) {
+        return parseInt(window.getComputedStyle($el).height.replace(/px$/, ""));
+      }
+
+      function on_drag(e) {
+        codemirror.CodeMirror.setSize(null, Math.max(MIN_HEIGHT, (start_h + e.y - start_y)) + "px");
+      }
+
+      function on_release() {
+        document.body.removeEventListener("mousemove", on_drag);
+        window.removeEventListener("mouseup", on_release);
+      }
+
+      resizer.addEventListener("mousedown", function (e) {
+        start_x = e.x;
+        start_y = e.y;
+        start_h = height_of(codemirror);
+
+        document.body.addEventListener("mousemove", on_drag);
+        window.addEventListener("mouseup", on_release);
+      });
+
+      codemirror.parentNode.insertBefore(resizer, codemirror.nextSibling);
     });
 
     // structured form submission

@@ -58,7 +58,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -163,14 +162,6 @@ public class ClassFilterImplTest {
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
         assertEquals(Collections.singleton(config), data.keySet());
         assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
-    }
-
-    @Test
-    @Issue("JENKINS-49543")
-    public void moduleClassesShouldBeWhitelisted() {
-        ClassFilterImpl filter = new ClassFilterImpl();
-        filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
-        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
     @TestExtension("xstreamRequiresWhitelist")
