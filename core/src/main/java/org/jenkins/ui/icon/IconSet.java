@@ -24,11 +24,14 @@
 
 package org.jenkins.ui.icon;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import org.apache.commons.jelly.JellyContext;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
@@ -493,16 +496,9 @@ public class IconSet {
         }
     }
 
-    /**
-     * This is a temporary function to replace Tango icons across Jenkins and plugins with
-     * appropriate Jenkins Symbols
-     *
-     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
-     * @return a Jenkins Symbol (if one exists) otherwise null
-     */
-    @Restricted(NoExternalUse.class)
-    public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+    private static final Map<String, String> ICON_TO_SYMBOL_TRANSLATIONS;
 
+    static {
         Map<String, String> translations = new HashMap<>();
         translations.put("icon-application-certificate", "symbol-ribbon");
         translations.put("icon-document", "symbol-document-text");
@@ -526,9 +522,32 @@ public class IconSet {
         translations.put("icon-text", "symbol-details");
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
+        ICON_TO_SYMBOL_TRANSLATIONS = translations;
+    }
 
-        String cleanedTangoIcon = cleanName(tangoIcon);
-        return translations.getOrDefault(cleanedTangoIcon, null);
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @return a Jenkins Symbol (if one exists) otherwise null
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(@CheckForNull String tangoIcon) {
+        return tryTranslateTangoIconToSymbol(tangoIcon, () -> null);
+    }
+
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @param defaultValueSupplier A supplier function that will be called if no icon translation is found
+     * @return a Jenkins Symbol (if one exists) otherwise the value returned by the supplier
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(@CheckForNull String tangoIcon, @NonNull Supplier<String> defaultValueSupplier) {
+        return tangoIcon == null ? null : ICON_TO_SYMBOL_TRANSLATIONS.getOrDefault(cleanName(tangoIcon), defaultValueSupplier.get());
     }
 
     @Restricted(NoExternalUse.class) // only for Symbol.get()
