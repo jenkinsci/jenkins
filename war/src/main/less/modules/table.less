@@ -181,15 +181,14 @@
   }
 
   &__button, .sortheader, &__link {
+    .item();
     align-items: center;
     justify-content: center;
     appearance: none;
-    position: relative;
     outline: none;
     border: none;
     margin: 0;
     padding: 0;
-    z-index: 0;
     cursor: pointer;
     color: inherit;
     font-weight: inherit;
@@ -201,45 +200,11 @@
 
     &::before,
     &::after {
-      content: "";
-      position: absolute;
       top: -7px;
       left: -10px;
       bottom: -7px;
       right: -10px;
       border-radius: 6px;
-      z-index: -1;
-      transition: var(--standard-transition);
-    }
-
-    &::before {
-      background: var(--text-color);
-      opacity: 0;
-    }
-
-    &::after {
-      opacity: 0.05;
-      box-shadow: 0 0 0 10px transparent;
-    }
-
-    &:hover {
-      &::before {
-        opacity: 0.05 !important;
-        border-radius: 6px;
-        background: var(--text-color);
-      }
-    }
-
-    &:focus, &:active {
-      &::before {
-        opacity: 0.1 !important;
-        border-radius: 6px;
-        background: var(--text-color);
-      }
-
-      &::after {
-        box-shadow: 0 0 0 5px var(--text-color);
-      }
     }
   }
 
@@ -261,6 +226,27 @@
       left: -8px;
       bottom: -5px;
       right: -8px;
+      box-shadow: 0 0 0 10px currentColor;
+      opacity: 0;
+    }
+
+    &:hover {
+      &::before {
+        background: currentColor;
+        border-radius: 6px;
+      }
+    }
+
+    &:active,
+    &:focus {
+      &::before {
+        background: currentColor;
+        border-radius: 6px;
+      }
+      &::after {
+        box-shadow: 0 0 0 5px currentColor;
+        opacity: 0.025;
+      }
     }
   }
 }
