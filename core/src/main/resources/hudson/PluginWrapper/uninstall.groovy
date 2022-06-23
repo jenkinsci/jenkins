@@ -18,7 +18,7 @@ l.layout(permission: Jenkins.ADMINISTER) {
         h1 {
             text(title)
         }
-        p { raw _("msg", my.displayName) }
+        p { raw _("msg", my.displayName, my.url) }
         f.form(method:"post",action:"doUninstall") {
             f.submit(value:_("Yes"))
         }
