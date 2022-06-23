@@ -75,16 +75,16 @@ public final class Symbol {
                 LOGGER.log(Level.FINE, "Failed to load symbol " + name, e);
             }
         }
-        return markup.replaceAll("(<title>)[^&]*(</title>)", "$1$2")
+        return markup.replaceAll("(<title>).*?(</title>)", "$1$2")
                      .replaceAll("<svg", "<svg aria-hidden=\"true\"")
+                     .replaceAll("(class=\").*?(\")", "")
+                     .replaceAll("(tooltip=\").*?(\")", "")
+                     .replaceAll("(id=\").*?(\")", "")
                      .replace("stroke:#000", "stroke:currentColor");
     }
 
     private static String replaceAttributes(String symbol, String title, String tooltip, String classes, String id) {
         String result = symbol;
-        result = result.replaceAll("(class=\")[^&]*?(\")", "$1$2");
-        result = result.replaceAll("(tooltip=\")[^&]*?(\")", "");
-        result = result.replaceAll("(id=\")[^&]*?(\")", "");
         if (StringUtils.isNotBlank(tooltip)) {
             result = result.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }

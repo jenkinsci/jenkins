@@ -24,7 +24,6 @@
 
 package org.jenkins.ui.icon;
 
-import hudson.Functions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
