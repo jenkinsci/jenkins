@@ -103,4 +103,19 @@ public class SymbolTest {
         );
         assertThat(symbol, containsString(Symbol.PLACEHOLDER_MATCHER));
     }
+
+    @Test
+    @DisplayName("If tooltip is not provided symbol should never have a tooltip")
+    void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
+        SymbolRequest.Builder builder = new SymbolRequest.Builder()
+                .withName("science")
+                .withTitle("Title")
+                .withTooltip("With&Ampersand")
+                .withClasses("class1 class2")
+                .withId("id");
+        assertThat(Symbol.get(builder.build()), containsString("tooltip"));
+        // Remove tooltip
+        builder.withTooltip(null);
+        assertThat(Symbol.get(builder.build()), not(containsString("tooltip")));
+    }
 }

@@ -50,31 +50,22 @@ public final class Symbol {
         String translatedName = IconSet.cleanName(name);
 
         String identifier = StringUtils.defaultIfBlank(pluginName, "core");
-        Map<String, String> symbolsForLookup = SYMBOLS.computeIfAbsent(identifier, key -> new ConcurrentHashMap<>());
 
-        if (symbolsForLookup.containsKey(translatedName)) {
-            String symbol = symbolsForLookup.get(translatedName);
-            return replaceAttributes(symbol, title, tooltip, classes, id);
-        }
-
-        String symbol = loadSymbol(identifier, translatedName);
-        symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
-        symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        symbol = symbol.replace("stroke:#000", "stroke:currentColor");
-        symbol = replaceAttributes(symbol, title, tooltip, classes, id);
-
-        symbolsForLookup.put(translatedName, symbol);
-
-        return symbol;
+        String symbol = SYMBOLS
+                .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
+                .computeIfAbsent(translatedName, key -> loadSymbol(identifier, key));
+        return replaceAttributes(symbol, title, tooltip, classes, id);
     }
+
 
     @SuppressFBWarnings(value = {"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"}, justification = "Spotbugs doesn't grok try-with-resources")
     private static String loadSymbol(String namespace, String name) {
+        String markup = PLACEHOLDER_SVG;
         ClassLoader classLoader = getClassLoader(namespace);
         if (classLoader != null) {
             try (InputStream inputStream = classLoader.getResourceAsStream("images/symbols/" + name + ".svg")) {
                 if (inputStream != null) {
-                    return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                    markup = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
                 } else {
                     LOGGER.log(Level.FINE, "Missing symbol " + name + " in " + namespace);
                 }
@@ -82,8 +73,9 @@ public final class Symbol {
                 LOGGER.log(Level.FINE, "Failed to load symbol " + name, e);
             }
         }
-        // Fallback to the placeholder symbol
-        return PLACEHOLDER_SVG;
+        return markup.replaceAll("(<title>)[^&]*(</title>)", "$1$2")
+                     .replaceAll("<svg", "<svg aria-hidden=\"true\"")
+                     .replace("stroke:#000", "stroke:currentColor");
     }
 
     private static String replaceAttributes(String symbol, String title, String tooltip, String classes, String id) {
