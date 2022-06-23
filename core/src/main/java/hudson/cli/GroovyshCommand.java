@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import hudson.Extension;
+import hudson.model.User;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +81,7 @@ public class GroovyshCommand extends CLICommand {
         }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
-        ScriptListener.fireScriptFromCLIEvent(commandLine.toString());
+        ScriptListener.fireScriptFromCLIEvent(commandLine.toString(), User.current());
         return shell.run(commandLine.toString());
     }
 

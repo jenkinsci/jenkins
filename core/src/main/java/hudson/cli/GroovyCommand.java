@@ -27,6 +27,7 @@ package hudson.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
+import hudson.model.User;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -72,7 +73,7 @@ public class GroovyCommand extends CLICommand {
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
         String script = loadScript();
-        ScriptListener.fireScriptFromCLIEvent(script);
+        ScriptListener.fireScriptFromCLIEvent(script, User.current());
         groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }

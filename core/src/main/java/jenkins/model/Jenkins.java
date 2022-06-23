@@ -4728,7 +4728,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (!(channel instanceof LocalChannel)) {
                     runner = ((Channel) channel).getName();
                 }
-                ScriptListener.fireScriptConsoleEvent(text, runner);
+                ScriptListener.fireScriptConsoleEvent(text, runner, User.current());
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
