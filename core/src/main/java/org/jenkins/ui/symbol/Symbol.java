@@ -56,7 +56,19 @@ public final class Symbol {
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(translatedName, key -> loadSymbol(identifier, key));
-        return appendAttributes(symbol, title, tooltip, classes, id);
+        if (StringUtils.isNotBlank(tooltip)) {
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+        }
+        if (StringUtils.isNotBlank(id)) {
+            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
+        }
+        if (StringUtils.isNotBlank(classes)) {
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
+        }
+        if (StringUtils.isNotBlank(title)) {
+            symbol = "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + symbol;
+        }
+        return symbol;
     }
 
 
@@ -81,23 +93,6 @@ public final class Symbol {
                      .replaceAll("(tooltip=\").*?(\")", "")
                      .replaceAll("(id=\").*?(\")", "")
                      .replace("stroke:#000", "stroke:currentColor");
-    }
-
-    private static String appendAttributes(String symbol, String title, String tooltip, String classes, String id) {
-        String result = symbol;
-        if (StringUtils.isNotBlank(tooltip)) {
-            result = result.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
-        }
-        if (StringUtils.isNotBlank(id)) {
-            result = result.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
-        }
-        if (StringUtils.isNotBlank(classes)) {
-            result = result.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
-        }
-        if (StringUtils.isNotBlank(title)) {
-            result = "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + result;
-        }
-        return result;
     }
 
     @CheckForNull
