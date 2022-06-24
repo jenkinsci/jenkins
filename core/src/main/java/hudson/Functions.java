@@ -135,6 +135,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -697,6 +698,13 @@ public class Functions {
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
         return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static long getHourLocalTimezone() {
+        // Work around JENKINS-68215. When JENKINS-68215 is resolved, this logic can be moved back to Jelly.
+        TimeZone tz = TimeZone.getDefault();
+        return TimeUnit.MILLISECONDS.toHours(tz.getRawOffset() + tz.getDSTSavings());
     }
 
     /**
@@ -2352,33 +2360,34 @@ public class Functions {
         }
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
-        String iconSource = null;
 
+        String iconSource;
         if (iconMetadata != null) {
-            iconSource = iconMetadata.getQualifiedUrl(context);
+            iconSource = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec(), () -> iconMetadata.getQualifiedUrl(context));
+        } else {
+            iconSource = guessIcon(iconGuess, rootURL);
         }
+        return iconSource;
+    }
 
-        if (iconMetadata == null) {
-            //noinspection HttpUrlsUsage
-            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
-                return iconGuess;
-            }
+    static String guessIcon(String iconGuess, String rootURL) {
+        String iconSource;
+        //noinspection HttpUrlsUsage
+        if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+            iconSource = iconGuess;
+        } else {
             if (!iconGuess.startsWith("/")) {
                 iconGuess = "/" + iconGuess;
             }
+            if (iconGuess.startsWith(rootURL)) {
+                if ((!rootURL.equals("/images") && !rootURL.equals("/plugin")) || iconGuess.startsWith(rootURL + rootURL)) {
+                    iconGuess = iconGuess.substring(rootURL.length());
+                }
+            }
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
-
-        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
-            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
-            if (translatedIcon != null) {
-                return translatedIcon;
-            }
-        }
-
         return iconSource;
     }
 

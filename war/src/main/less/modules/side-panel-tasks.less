@@ -20,6 +20,8 @@
 }
 
 #tasks .task .task-link {
+  .item();
+
   position: relative;
   display: flex;
   align-items: center;
@@ -36,51 +38,13 @@
   border: none;
   text-decoration: none;
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: var(--text-color);
-    border-radius: 10px;
-    opacity: 0;
-    transition: 0.2s ease;
-    z-index: -1;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    border-radius: 10px;
-    opacity: 0.05;
-    transition: 0.2s ease;
-    box-shadow: 0 0 0 10px transparent;
-  }
-
-  &:hover {
-    &::before {
-      opacity: 0.05;
-    }
-  }
-
   .task-icon-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    width: 1.4rem;
-    height: 1.4rem;
+    display: contents;
 
     svg,
     img {
-      width: 100% !important;
-      height: 100% !important;
+      width: 1.4rem !important;
+      height: 1.4rem !important;
       color: var(--text-color);
 
       * {
@@ -89,26 +53,23 @@
     }
   }
 
-  &:active,
-  &:focus {
-    &::before {
-      opacity: 0.1;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
+  .task-link-text {
+    display: contents;
   }
 
   &--active {
     font-weight: 600 !important;
+    cursor: default;
 
     svg * {
       stroke-width: 38px;
     }
 
     &::before {
-      opacity: 0.1 !important;
+      background-color: var(--item-background--active) !important;
+    }
+    &::after {
+      box-shadow: none !important;
     }
   }
 }

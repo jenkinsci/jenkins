@@ -12,13 +12,13 @@ l.layout(permission: Jenkins.ADMINISTER) {
             l.task(icon: "icon-gear icon-md", href: "${rootURL}/manage", title: _("Manage Jenkins"))
         }
     }
-    def title = _("title", my.shortName)
+    def title = _("title", my.displayName)
     l.header(title:title)
     l.main_panel {
         h1 {
             text(title)
         }
-        p { raw _("msg",my.shortName) }
+        p { raw _("msg", my.displayName) }
         f.form(method:"post",action:"doUninstall") {
             f.submit(value:_("Yes"))
         }
