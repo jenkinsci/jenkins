@@ -569,19 +569,19 @@ public class QueueTest {
     }
 
 
-    @TestExtension("upstreamProjectsInQueueBlock")
+    @TestExtension({"upstreamProjectsInQueueBlock", "downstreamProjectsInQueueBlock"})
     public static class BlockingQueueTaskDispatcher extends QueueTaskDispatcher {
 
-        public static final String NAME_OF_PROJECT_B = "projectB";
+        public static final String NAME_OF_BLOCKED_PROJECT = "blocked project";
 
         @Override
         public CauseOfBlockage canRun(hudson.model.Queue.Item item) {
-            if (item.task.getOwnerTask().getDisplayName().equals(NAME_OF_PROJECT_B)) {
+            if (item.task.getOwnerTask().getDisplayName().equals(NAME_OF_BLOCKED_PROJECT)) {
                 return new CauseOfBlockage() {
 
                     @Override
                     public String getShortDescription() {
-                        return NAME_OF_PROJECT_B + " is permanently blocked.";
+                        return NAME_OF_BLOCKED_PROJECT + " is permanently blocked.";
                     }
 
                 };
@@ -591,41 +591,72 @@ public class QueueTest {
 
     }
 
+    private void waitUntilWaitingListIsEmpty(Queue q) {
+        boolean waitingItemsPresent = true;
+        while (waitingItemsPresent) {
+            waitingItemsPresent = false;
+            for (Queue.Item i : q.getItems()) {
+                if (i instanceof WaitingItem) {
+                    waitingItemsPresent = true;
+                }
+            }
+        }
+    }
+
     @Issue("JENKINS-68780")
     @Test
     public void upstreamProjectsInQueueBlock() throws Exception {
-       /*
-        * ┌──A
-        * │  │
-        * │  ▼
-        * │  B
-        * │  │
-        * │  ▼
-        * └─►C
-        */
-       FreeStyleProject a = r.createFreeStyleProject();
-       FreeStyleProject b = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_PROJECT_B);
-       FreeStyleProject c = r.createFreeStyleProject();
 
-       a.getPublishersList().add(new BuildTrigger(String.format("%s, %s", b.getName(), c.getName()), true));
-       b.getPublishersList().add(new BuildTrigger(c.getName(), true));
-
-       c.setBlockBuildWhenUpstreamBuilding(true);
+       FreeStyleProject a = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_BLOCKED_PROJECT);
+       FreeStyleProject b = r.createFreeStyleProject();
+       a.getPublishersList().add(new BuildTrigger(b.getName(), true));
+       b.setBlockBuildWhenUpstreamBuilding(true);
 
        r.jenkins.rebuildDependencyGraph();
-       r.buildAndAssertSuccess(a);
+
+       a.scheduleBuild(0, new UserIdCause());
+
        Queue q = r.jenkins.getQueue();
 
-       // Wait until the projects have left the waitingList
-       boolean waitingItemsPresent = true;
-       while (waitingItemsPresent) {
-           waitingItemsPresent = false;
-           for (Queue.Item i : q.getItems()) {
-               if (i instanceof WaitingItem) {
-                   waitingItemsPresent = true;
-               }
-           }
-       }
+       waitUntilWaitingListIsEmpty(q);
+
+       b.scheduleBuild(0, new UserIdCause());
+
+       waitUntilWaitingListIsEmpty(q);
+
+       // This call is necessary because the queue blocks projects
+       // at first only temporarily. By calling the maintain method
+       // all temporarily blocked projects either become buildable or
+       // become permanently blocked
+       q.scheduleMaintenance().get();
+
+       assertEquals("Queue should contain two blocked items but didn't.", 2, q.getBlockedItems().size());
+
+       //Ensure orderly shutdown
+       q.clear();
+       r.waitUntilNoActivity();
+    }
+
+    @Issue("JENKINS-68780")
+    @Test
+    public void downstreamProjectsInQueueBlock() throws Exception {
+
+       FreeStyleProject a = r.createFreeStyleProject();
+       FreeStyleProject b = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_BLOCKED_PROJECT);
+       a.getPublishersList().add(new BuildTrigger(b.getName(), true));
+       a.setBlockBuildWhenDownstreamBuilding(true);
+
+       r.jenkins.rebuildDependencyGraph();
+       
+       b.scheduleBuild(0, new UserIdCause());
+       
+       Queue q = r.jenkins.getQueue();
+
+       waitUntilWaitingListIsEmpty(q);
+
+       a.scheduleBuild(0, new UserIdCause());
+
+       waitUntilWaitingListIsEmpty(q);
 
        // This call is necessary because the queue blocks projects
        // at first only temporarily. By calling the maintain method
