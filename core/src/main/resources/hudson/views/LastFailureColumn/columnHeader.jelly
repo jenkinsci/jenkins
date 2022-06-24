@@ -24,5 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <th style="width: 18.25%">${%Last Failure}</th>
+    <th style="width: 20.25%">${%Last Failure}</th>
 </j:jelly>
