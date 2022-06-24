@@ -171,6 +171,7 @@ import org.springframework.security.core.Authentication;
  * @see QueueTaskDispatcher
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Queue extends ResourceController implements Saveable {
 
     /**
