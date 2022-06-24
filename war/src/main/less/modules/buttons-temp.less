@@ -132,6 +132,22 @@ each(@variants, {
   }
 });
 
+.jenkins-validate-button__container {
+  &__status {
+    .validation-error-area {
+      min-height: 36px !important;
+    }
+  }
+
+  .validation-error-area--visible {
+    margin-top: 0;
+  }
+
+  & > span {
+    float: right;
+  }
+}
+
 .jenkins-copy-button {
   .jenkins-copy-button__icon {
     position: relative;
