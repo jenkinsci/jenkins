@@ -647,9 +647,9 @@ public class QueueTest {
        a.setBlockBuildWhenDownstreamBuilding(true);
 
        r.jenkins.rebuildDependencyGraph();
-       
+
        b.scheduleBuild(0, new UserIdCause());
-       
+
        Queue q = r.jenkins.getQueue();
 
        waitUntilWaitingListIsEmpty(q);

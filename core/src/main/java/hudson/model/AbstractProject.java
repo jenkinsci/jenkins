@@ -1107,10 +1107,13 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingDownstream() {
-        Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
+        Set<Task> tasks = new HashSet<>();
+        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
+            tasks.add(item.task);
+        }
 
         for (AbstractProject tup : getTransitiveDownstreamProjects()) {
-            if (tup != this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup != this && (tup.isBuilding() || tasks.contains(tup)))
                 return tup;
         }
         return null;
