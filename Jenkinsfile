@@ -41,7 +41,7 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Now run the actual build.
         stage("${buildType} Build / Test") {
-          timeout(time: 5, unit: 'HOURS') {
+          timeout(time: 6, unit: 'HOURS') {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
