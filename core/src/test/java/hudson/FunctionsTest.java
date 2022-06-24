@@ -676,4 +676,22 @@ public class FunctionsTest {
     public void tryGetIcon_shouldReturnNullForUnknown() throws Exception {
         assertThat(Functions.tryGetIcon("icon-nosuchicon"), is(nullValue()));
     }
+
+    @Test
+    public void guessIcon() throws Exception {
+        Jenkins.RESOURCE_PATH = "/static/12345678";
+        assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("jenkins/images/48x48/green.gif", "/jenkins"));
+        assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("/jenkins/images/48x48/green.gif", "/jenkins"));
+        assertEquals("/static/12345678/images/48x48/green.gif", Functions.guessIcon("images/48x48/green.gif", ""));
+        assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("images/48x48/green.gif", "/jenkins"));
+        assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("/images/48x48/green.gif", "/jenkins"));
+        assertEquals("/images/static/12345678/images/48x48/green.gif", Functions.guessIcon("/images/48x48/green.gif", "/images"));
+        assertEquals("/static/12345678/plugin/myartifactId/images/48x48/green.gif", Functions.guessIcon("/plugin/myartifactId/images/48x48/green.gif", ""));
+        assertEquals("/jenkins/static/12345678/plugin/myartifactId/images/48x48/green.gif", Functions.guessIcon("/plugin/myartifactId/images/48x48/green.gif", "/jenkins"));
+        assertEquals("/jenkins/static/12345678/plugin/myartifactId/images/48x48/green.gif", Functions.guessIcon("/jenkins/plugin/myartifactId/images/48x48/green.gif", "/jenkins"));
+        assertEquals("/plugin/static/12345678/plugin/myartifactId/images/48x48/green.gif", Functions.guessIcon("/plugin/myartifactId/images/48x48/green.gif", "/plugin"));
+        assertEquals("/plugin/static/12345678/plugin/myartifactId/images/48x48/green.gif", Functions.guessIcon("/plugin/plugin/myartifactId/images/48x48/green.gif", "/plugin"));
+        assertEquals("http://acme.com/icon.svg", Functions.guessIcon("http://acme.com/icon.svg", "/jenkins"));
+        assertEquals("https://acme.com/icon.svg", Functions.guessIcon("https://acme.com/icon.svg", "/jenkins"));
+    }
 }

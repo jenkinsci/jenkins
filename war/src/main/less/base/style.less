@@ -1076,7 +1076,7 @@ table.fingerprint-in-build td {
   margin-bottom: calc(var(--section-padding) / 3);
 
   &:last-of-type {
-    margin-bottom: 0;
+    margin-bottom: var(--section-padding);
   }
 }
 
@@ -1125,25 +1125,6 @@ table.fingerprint-in-build td {
 textarea {
     margin-bottom: 0;
     resize: vertical;
-}
-
-// Remove styling + textarea-handle.gif when IE11 is no longer supported
-div.textarea-handle {
-    height: 6px;
-    font-size: 0;
-    background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
-    border: 1px solid var(--medium-grey);
-    border-top: none;
-    cursor: s-resize;
-
-    // Hide .textarea-handle on devices that support native textarea resizing
-    @supports (resize: both) {
-        display: none;
-    }
-}
-
-textarea.rich-editor {
-  visibility: hidden;
 }
 
 /*
