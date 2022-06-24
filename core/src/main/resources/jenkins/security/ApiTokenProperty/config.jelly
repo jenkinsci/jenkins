@@ -143,7 +143,7 @@ THE SOFTWARE.
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <local:revokeIcon title="${%RevokeToken}" />
                             </a>
-                            <l:copyButton message="${%Copied}" text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" />
+                            <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" />
                             <div class="error token-error-message"><!-- filled in case of error --></div>
                             <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
                         </div>
