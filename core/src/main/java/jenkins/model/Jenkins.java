@@ -4695,7 +4695,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-
         _doScript(req, rsp, req.getView(this, "_script.jelly"), FilePath.localChannel, getACL());
     }
 

@@ -6,7 +6,7 @@ import jenkins.util.Listeners;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * A listener to track Groovy scripts from the CLI and console.
+ * A listener to track Groovy scripts.
  *
  * @see Jenkins#_doScript(StaplerRequest, org.kohsuke.stapler.StaplerResponse, javax.servlet.RequestDispatcher, hudson.remoting.VirtualChannel, hudson.security.ACL)
  * @see hudson.cli.GroovyCommand#run()
