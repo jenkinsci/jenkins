@@ -25,7 +25,7 @@ for (i = 0; i < buildTypes.size(); i++) {
     }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-      def agentContainerLabel = jdk == 8 ? 'maven' : 'maven-' + jdk
+      def agentContainerLabel = 'maven-' + jdk
       if (buildType == 'Windows') {
         agentContainerLabel += '-windows'
       }
