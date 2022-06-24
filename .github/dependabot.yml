@@ -34,10 +34,6 @@ updates:
       # Fails test automation; needs further investigation.
       - dependency-name: "com.google.inject:guice-bom"
 
-      # Requires Java 11 starting with version 10.0.
-      - dependency-name: "com.puppycrawl.tools:checkstyle"
-        versions: [">=10.0"]
-
       # Contains incompatible API changes and needs compatibility work.
       - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
 
