@@ -103,6 +103,7 @@ java.util.GregorianCalendar
 java.util.HashMap
 java.util.HashSet
 java.util.Hashtable
+java.util.ImmutableCollections$List12
 java.util.LinkedHashMap
 java.util.LinkedHashSet
 java.util.LinkedList
