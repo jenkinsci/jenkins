@@ -598,7 +598,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
             super(parent);
             this._for = archive;
-            this.dependencies = Collections.unmodifiableList(new ArrayList<>(dependencies));
+            this.dependencies = List.copyOf(dependencies);
             this.pluginManager = pluginManager;
         }
 

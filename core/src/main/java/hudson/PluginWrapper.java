@@ -174,7 +174,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final List<Dependency> optionalDependencies;
 
     public List<String> getDependencyErrors() {
-        return Collections.unmodifiableList(new ArrayList<>(dependencyErrors.keySet()));
+        return List.copyOf(dependencyErrors.keySet());
     }
 
     @Restricted(NoExternalUse.class) // Jelly use

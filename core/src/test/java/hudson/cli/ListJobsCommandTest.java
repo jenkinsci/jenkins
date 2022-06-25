@@ -16,7 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
@@ -166,11 +165,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                try {
-                    return item.toString(charset.name()).isEmpty();
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                return item.toString(charset).isEmpty();
             }
 
             @Override
@@ -197,11 +192,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                try {
-                    jobs = new HashSet<>(Arrays.asList(item.toString(charset.name()).split(System.getProperty("line.separator"))));
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

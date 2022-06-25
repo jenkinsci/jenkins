@@ -506,10 +506,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static String createBackRef(int times) {
         if (times == 0)    return "./";
-        StringBuilder buf = new StringBuilder(3 * times);
-        for (int i = 0; i < times; i++)
-            buf.append("../");
-        return buf.toString();
+        return "../".repeat(times);
     }
 
     private static void zip(StaplerResponse rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {

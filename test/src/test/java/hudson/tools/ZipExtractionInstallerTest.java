@@ -83,7 +83,7 @@ public class ZipExtractionInstallerTest {
         User.getById(USER, true);
 
         WebRequest request = new WebRequest(new URL(j.getURL() + "descriptorByName/hudson.tools.ZipExtractionInstaller/checkUrl"), HttpMethod.POST);
-        request.setRequestBody(URLEncoder.encode("value=https://www.google.com", StandardCharsets.UTF_8.name()));
+        request.setRequestBody(URLEncoder.encode("value=https://www.google.com", StandardCharsets.UTF_8));
 
         JenkinsRule.WebClient adminWc = j.createWebClient();
         adminWc.login(ADMIN);
@@ -114,7 +114,7 @@ public class ZipExtractionInstallerTest {
         HtmlPage page = wc.goTo("configureTools");
 
         XMLHttpRequest lastRequest = jsEngine.getLastRequest();
-        String body = URLDecoder.decode(getPrivateWebRequestField(lastRequest).getRequestBody(), "UTF-8");
+        String body = URLDecoder.decode(getPrivateWebRequestField(lastRequest).getRequestBody(), StandardCharsets.UTF_8);
         assertThat(body, containsString(VALID_URL));
         assertEquals(FormValidation.ok().renderHtml(), lastRequest.getResponseText());
 
@@ -130,7 +130,7 @@ public class ZipExtractionInstallerTest {
         wc.goTo("configureTools");
 
         lastRequest = jsEngine.getLastRequest();
-        body = URLDecoder.decode(getPrivateWebRequestField(lastRequest).getRequestBody(), "UTF-8");
+        body = URLDecoder.decode(getPrivateWebRequestField(lastRequest).getRequestBody(), StandardCharsets.UTF_8);
         assertThat(body, containsString(INVALID_URL));
         assertThat(lastRequest.getResponseText(), containsString(Messages.ZipExtractionInstaller_malformed_url()));
     }

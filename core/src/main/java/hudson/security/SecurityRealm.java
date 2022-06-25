@@ -37,8 +37,8 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -663,9 +663,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         from = StringUtils.defaultIfBlank(from, "/").trim();
 
         // Encode the return value
-        try {
-            returnValue = URLEncoder.encode(from, "UTF-8");
-        } catch (UnsupportedEncodingException e) { }
+        returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);
 
         // Return encoded value or at least "/" in the case exception occurred during encode()
         // or if the encoded content is blank value

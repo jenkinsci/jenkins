@@ -177,7 +177,7 @@ public class PasswordTest {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
             getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
-            assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset().name()));
+            assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset()));
             CopyJobCommand copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(adminAuth);
             String pAdminName = pName + "-admin";
@@ -200,7 +200,7 @@ public class PasswordTest {
             getJobCommand.setTransportAuth2(devAuth);
             baos = new ByteArrayOutputStream();
             getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
-            assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset().name()));
+            assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset()));
             copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(devAuth);
             String pDevName = pName + "-dev";
