@@ -563,7 +563,10 @@
       </And>
       <And>
         <Bug pattern="SSD_DO_NOT_USE_INSTANCE_LOCK_ON_SHARED_STATIC_DATA"/>
-        <Class name="hudson.model.ViewJob"/>
+        <Or>
+          <Class name="hudson.model.ViewJob"/>
+          <Class name="hudson.TcpSlaveAgentListener$ConnectionHandler"/>
+        </Or>
       </And>
       <And>
         <Bug pattern="STATIC_IV"/>
