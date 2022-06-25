@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -162,7 +161,7 @@ public class BootFailureTest {
         d.mkdirs();
         FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
         j.newHudson();
-        assertEquals(Collections.singletonList("1"), runRecord);
+        assertEquals(List.of("1"), runRecord);
     }
 
     @TestExtension("interruptedStartup")

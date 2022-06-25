@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,8 +83,8 @@ public class XStreamDOMTest {
 
     private Foo createSomeFoo() {
         Foo foo = new Foo();
-        foo.bar = new XStreamDOM("test1", Collections.singletonMap("key", "value"), "text!");
-        foo.zot = new XStreamDOM("test2", Collections.singletonMap("key", "value"), Collections.singletonList(foo.bar));
+        foo.bar = new XStreamDOM("test1", Map.of("key", "value"), "text!");
+        foo.zot = new XStreamDOM("test2", Map.of("key", "value"), List.of(foo.bar));
         return foo;
     }
 

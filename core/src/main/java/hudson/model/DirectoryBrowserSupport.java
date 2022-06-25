@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
@@ -764,7 +763,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 for (VirtualFile f : files) {
                     Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead(), f.lastModified());
                     if (!f.isDirectory()) {
-                        r.add(Collections.singletonList(p));
+                        r.add(List.of(p));
                     } else {
                         // find all empty intermediate directory
                         List<Path> l = new ArrayList<>();

@@ -47,7 +47,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -104,8 +103,8 @@ public class ZipExtractionInstallerTest {
 
         ZipExtractionInstaller installer = new ZipExtractionInstaller("", VALID_URL, "");
 
-        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), Collections.singletonList(
-                new InstallSourceProperty(Collections.<ToolInstaller>singletonList(installer)))));
+        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), List.of(
+                new InstallSourceProperty(List.of(installer)))));
 
         JenkinsRule.WebClient wc = j.createWebClient();
 

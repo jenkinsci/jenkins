@@ -77,7 +77,6 @@ import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -382,7 +381,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", Collections.singletonList("label1"))
+                new LabelAxis("label", List.of("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");

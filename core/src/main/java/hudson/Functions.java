@@ -1945,7 +1945,7 @@ public class Functions {
     }
 
     public <T> List<T> singletonList(T t) {
-        return Collections.singletonList(t);
+        return List.of(t);
     }
 
     /**

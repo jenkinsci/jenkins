@@ -693,7 +693,7 @@ public class Maven extends Builder {
 
             @Override
             public List<? extends ToolInstaller> getDefaultInstallers() {
-                return Collections.singletonList(new MavenInstaller(null));
+                return List.of(new MavenInstaller(null));
             }
 
             // overriding them for backward compatibility.

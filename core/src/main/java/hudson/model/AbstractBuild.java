@@ -925,7 +925,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
     @Override
     @NonNull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
         ChangeLogSet<? extends ChangeLogSet.Entry> cs = getChangeSet();
-        return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
+        return cs.isEmptySet() ? Collections.emptyList() : List.of(cs);
     }
 
     /**

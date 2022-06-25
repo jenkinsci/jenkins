@@ -402,7 +402,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      *      to correspond to the null return value from {@link #getAssignedLabel()}.
      */
     public Set<Label> getRelevantLabels() {
-        return Collections.singleton(getAssignedLabel());
+        return Set.of(getAssignedLabel());
     }
 
     /**

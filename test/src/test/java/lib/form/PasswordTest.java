@@ -67,7 +67,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import jenkins.model.GlobalConfiguration;
@@ -176,7 +176,7 @@ public class PasswordTest {
             getJobCommand.setTransportAuth2(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
-            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             CopyJobCommand copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(adminAuth);
@@ -199,7 +199,7 @@ public class PasswordTest {
             Authentication devAuth = User.get("dev").impersonate2();
             getJobCommand.setTransportAuth2(devAuth);
             baos = new ByteArrayOutputStream();
-            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(devAuth);
@@ -662,7 +662,7 @@ public class PasswordTest {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Job target) {
-            return Collections.singletonList(new ActionImpl());
+            return List.of(new ActionImpl());
         }
     }
 

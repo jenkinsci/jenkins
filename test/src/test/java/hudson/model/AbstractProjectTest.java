@@ -71,9 +71,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
@@ -514,10 +514,10 @@ public class AbstractProjectTest {
     public void upstreamDownstreamExportApi() throws Exception {
         FreeStyleProject us = j.createFreeStyleProject("upstream-project");
         FreeStyleProject ds = j.createFreeStyleProject("downstream-project");
-        us.getPublishersList().add(new BuildTrigger(Collections.singleton(ds), Result.SUCCESS));
+        us.getPublishersList().add(new BuildTrigger(Set.of(ds), Result.SUCCESS));
         j.jenkins.rebuildDependencyGraph();
-        assertEquals(Collections.singletonList(ds), us.getDownstreamProjects());
-        assertEquals(Collections.singletonList(us), ds.getUpstreamProjects());
+        assertEquals(List.of(ds), us.getDownstreamProjects());
+        assertEquals(List.of(us), ds.getUpstreamProjects());
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().toEveryone().

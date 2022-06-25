@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -55,7 +55,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         String[] roles = this.roles;    // capture to a variable for immutability
 
         if (roles == null) {
-            return Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2);
+            return Set.of(SecurityRealm.AUTHENTICATED_AUTHORITY2);
         }
 
         String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY2.getAuthority();

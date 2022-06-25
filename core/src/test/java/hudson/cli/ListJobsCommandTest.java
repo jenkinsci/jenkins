@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +113,7 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
+        when(rightView.getItems()).thenReturn(List.of(rightJob));
 
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {

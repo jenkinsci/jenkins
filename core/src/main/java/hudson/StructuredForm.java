@@ -67,7 +67,7 @@ public class StructuredForm {
         if (v == null)
             return Collections.emptyList();
         if (v instanceof JSONObject)
-            return Collections.singletonList((JSONObject) v);
+            return List.of((JSONObject) v);
         if (v instanceof JSONArray)
             return (List) v;
 

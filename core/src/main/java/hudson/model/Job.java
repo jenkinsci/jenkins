@@ -81,6 +81,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -505,7 +506,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public Collection<? extends Job> getAllJobs() {
-        return Collections.<Job>singleton(this);
+        return Set.of(this);
     }
 
     /**

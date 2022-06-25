@@ -41,7 +41,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -617,7 +616,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
     protected final List<Filter> commonFilters() {
         // like Jenkins.ANONYMOUS:
-        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", Collections.singletonList(new SimpleGrantedAuthority("anonymous")));
+        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", List.of(new SimpleGrantedAuthority("anonymous")));
         ExceptionTranslationFilter etf = new ExceptionTranslationFilter(new HudsonAuthenticationEntryPoint("/" + getLoginUrl() + "?from={0}"));
         etf.setAccessDeniedHandler(new AccessDeniedHandlerImpl());
         UnwrapSecurityExceptionFilter usef = new UnwrapSecurityExceptionFilter();
