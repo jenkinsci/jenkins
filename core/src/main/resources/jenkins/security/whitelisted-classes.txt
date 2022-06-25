@@ -95,6 +95,7 @@ java.util.Collections$UnmodifiableRandomAccessList
 java.util.Collections$UnmodifiableSet
 java.util.Collections$UnmodifiableSortedMap
 java.util.Collections$UnmodifiableSortedSet
+java.util.CollSer
 
 java.util.Date
 java.util.EnumMap
