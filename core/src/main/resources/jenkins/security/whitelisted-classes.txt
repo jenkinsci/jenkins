@@ -58,6 +58,7 @@ java.time.Ser
 java.util.ArrayDeque
 java.util.ArrayList
 java.util.Arrays$ArrayList
+java.util.CollSer
 java.util.Collections$AsLIFOQueue
 java.util.Collections$CheckedCollection
 java.util.Collections$CheckedList
@@ -95,7 +96,6 @@ java.util.Collections$UnmodifiableRandomAccessList
 java.util.Collections$UnmodifiableSet
 java.util.Collections$UnmodifiableSortedMap
 java.util.Collections$UnmodifiableSortedSet
-java.util.CollSer
 
 java.util.Date
 java.util.EnumMap
