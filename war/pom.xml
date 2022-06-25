@@ -138,7 +138,8 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.25</version>
+      <!-- TODO https://github.com/jenkinsci/winstone/pull/181 -->
+      <version>6.0-rc723.85cb_40656494</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -499,7 +500,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.46.v20220331</version>
+        <version>10.0.11</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
