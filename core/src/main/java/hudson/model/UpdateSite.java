@@ -530,7 +530,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      * @deprecated
      *      Will be removed, currently returns always false.
-     * @since TODO
+     * @since 2.343
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
