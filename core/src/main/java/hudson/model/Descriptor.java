@@ -599,7 +599,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Replacement for {@link StaplerRequest#bindJSON(Class, JSONObject)} which honors {@link #newInstance(StaplerRequest, JSONObject)}.
      * This is automatically used inside {@link #newInstance(StaplerRequest, JSONObject)} so a direct call would only be necessary
      * in case the top level binding might use a {@link Descriptor} which overrides {@link #newInstance(StaplerRequest, JSONObject)}.
-     * @since TODO
+     * @since 2.342
      */
     public static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src) {
         return bindJSON(req, type, src, false);
