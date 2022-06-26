@@ -29,8 +29,10 @@ import static org.junit.Assert.assertFalse;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -39,6 +41,8 @@ public class QueueRestartTest {
 
     @Rule public RealJenkinsRule rr = new RealJenkinsRule();
 
+    @Ignore("Pending JENKINS-68319 sometimes fails, in CI & locally")
+    @Issue("JENKINS-68319")
     @LocalData("quietDown")
     @Test
     public void persistQueueOnRestart() throws Throwable {
@@ -49,6 +53,8 @@ public class QueueRestartTest {
         rr.then(QueueRestartTest::assertBuildFinishes);
     }
 
+    @Ignore("Pending JENKINS-68319 sometimes fails, in CI & locally")
+    @Issue("JENKINS-68319")
     @LocalData("quietDown")
     @Test
     public void persistQueueOnConsecutiveRestarts() throws Throwable {

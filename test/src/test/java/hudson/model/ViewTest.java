@@ -496,7 +496,7 @@ public class ViewTest {
     @Test
     public void testGetProperties() throws Exception {
         View view = listView("foo");
-        Thread.sleep(100000);
+        Thread.sleep(1000);
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
