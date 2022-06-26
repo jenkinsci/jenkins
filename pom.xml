@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.76</version>
+    <version>1.77</version>
     <relativePath />
   </parent>
 
@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.356</revision>
+    <revision>2.357</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -85,14 +85,12 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
     <remoting.version>3028.va_a_436db_35078</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -381,10 +379,6 @@ THE SOFTWARE.
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
           <!-- Version specified in parent POM -->
@@ -406,7 +400,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>9.3</version>
+              <version>10.3</version>
             </dependency>
           </dependencies>
           <executions>
@@ -471,7 +465,7 @@ THE SOFTWARE.
           <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Danimal.sniffer.skip=false -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
+          <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
@@ -645,28 +639,6 @@ THE SOFTWARE.
       </activation>
       <properties>
         <failIfNoTests>false</failIfNoTests>
-      </properties>
-    </profile>
-    <profile>
-      <id>jdk-17-and-above</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <properties>
-        <!--
-          Animal Sniffer does not work on Java 17, but we cannot remove it from our configuration
-          entirely until we drop support for Java 8. As a temporary solution, we skip it when
-          running on Java 17. When JENKINS-54842 is resolved, this can be deleted.
-        -->
-        <animal.sniffer.skip>true</animal.sniffer.skip>
-
-        <!--
-          Spotless requires custom arguments to be added to .mvn/jvm.config when running on Java 17,
-          but we cannot add those custom arguments until we drop support for Java 8. As a temporary
-          workaround, we skip Spotless when running on Java 17. When JENKINS-68015 is resolved, this
-          can be deleted.
-        -->
-        <spotless.check.skip>true</spotless.check.skip>
       </properties>
     </profile>
   </profiles>

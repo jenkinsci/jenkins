@@ -1127,25 +1127,6 @@ textarea {
     resize: vertical;
 }
 
-// Remove styling + textarea-handle.gif when IE11 is no longer supported
-div.textarea-handle {
-    height: 6px;
-    font-size: 0;
-    background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
-    border: 1px solid var(--medium-grey);
-    border-top: none;
-    cursor: s-resize;
-
-    // Hide .textarea-handle on devices that support native textarea resizing
-    @supports (resize: both) {
-        display: none;
-    }
-}
-
-textarea.rich-editor {
-  visibility: hidden;
-}
-
 /*
  * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
  *                  remove once there are no more dependencies
