@@ -183,7 +183,6 @@ public class ListJobsCommandTest {
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                Set<String> jobs;
                 Charset charset;
                 try {
                     charset = command.getClientCharset();
@@ -192,7 +191,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

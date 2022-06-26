@@ -639,7 +639,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Restricted(DoNotUse.class)
     public static String getFrom() {
-        String from = null, returnValue = null;
+        String from = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
         // Try to obtain a return point from the query parameter
@@ -663,7 +663,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         from = StringUtils.defaultIfBlank(from, "/").trim();
 
         // Encode the return value
-        returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);
+        String returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);
 
         // Return encoded value or at least "/" in the case exception occurred during encode()
         // or if the encoded content is blank value

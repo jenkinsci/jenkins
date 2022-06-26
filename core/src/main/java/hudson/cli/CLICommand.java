@@ -449,8 +449,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        PrintStream ps;
-        ps = new PrintStream(out, false, charset);
+        PrintStream ps = new PrintStream(out, false, charset);
 
         printUsageSummary(ps);
         ps.close();

@@ -85,8 +85,7 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
         @Override
         public void flush() throws IOException {
             if (baos.size() > 0) {
-                LogRecord lr;
-                lr = new LogRecord(level, baos.toString(StandardCharsets.UTF_8));
+                LogRecord lr = new LogRecord(level, baos.toString(StandardCharsets.UTF_8));
                 lr.setLoggerName(logger.getName());
                 lr.setSourceClassName(caller.getClassName());
                 lr.setSourceMethodName(caller.getMethodName());

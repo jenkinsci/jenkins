@@ -1351,8 +1351,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line;
-                line = buf.toString(StandardCharsets.UTF_8);
+                String line = buf.toString(StandardCharsets.UTF_8);
                 if (LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix + " was " + line);
                 return line;
@@ -1623,8 +1622,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line;
-                line = buf.toString(StandardCharsets.UTF_8);
+                String line = buf.toString(StandardCharsets.UTF_8);
                 if (LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix + " was " + line);
                 return line;
