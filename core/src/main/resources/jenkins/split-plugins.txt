@@ -33,7 +33,10 @@ jaxb 2.163 2.3.0
 trilead-api 2.184 1.0.4
 
 # JENKINS-64107
-sshd 2.281 3.0.1
+sshd 2.281 3.236.ved5e1b_cb_50b_2
 
 javax-activation-api 2.330 1.2.0-2
 javax-mail-api 2.330 1.6.2-5
+
+# JENKINS-55582
+instance-identity 2.356 3.1

@@ -8,14 +8,14 @@ import hudson.model.FreeStyleProject;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.junit.jupiter.EnableJenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 class ExceptionAnnotationTest {
 
-    @EnableJenkins
+    @WithJenkins
     @Test
     void test(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
