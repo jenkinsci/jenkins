@@ -43,7 +43,7 @@ function registerTooltips(container) {
     }
   })
 
-  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"]):not([html-tooltip])"), Object.assign({
+  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"]):not([data-html-tooltip])"), Object.assign({
     content: element => element.getAttribute("tooltip").replace(/<br[ /]?\/?>|\\n/g, '\n'),
     container: container,
     onCreate(instance) {
@@ -57,8 +57,8 @@ function registerTooltips(container) {
     }
   }, TOOLTIP_BASE))
 
-  tippy(container.querySelectorAll("[html-tooltip]"), Object.assign({
-    content: element => element.getAttribute("html-tooltip"),
+  tippy(container.querySelectorAll("[data-html-tooltip]"), Object.assign({
+    content: element => element.getAttribute("data-html-tooltip"),
     allowHTML: true,
     container: container,
   }, TOOLTIP_BASE))

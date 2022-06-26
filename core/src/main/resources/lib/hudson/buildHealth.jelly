@@ -39,7 +39,7 @@ THE SOFTWARE.
       <x:attribute name="data">${buildHealth.score}</x:attribute>
       <x:attribute name="class">jenkins-table__cell--tight jenkins-table__icon</x:attribute>
       <j:if test="${!empty(healthReports)}">
-        <x:attribute name="html-tooltip">
+        <x:attribute name="data-html-tooltip">
           <div class="jenkins-tooltip--table-wrapper">
             <table class="jenkins-table">
               <thead>
