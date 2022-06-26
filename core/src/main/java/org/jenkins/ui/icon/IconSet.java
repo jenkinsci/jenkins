@@ -98,7 +98,7 @@ public class IconSet {
                 symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
             }
             if (!htmlTooltip.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg html-tooltip=\"" + htmlTooltip + "\"");
+                symbol = symbol.replaceAll("<svg", "<svg html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
             }
             if (!id.isEmpty()) {
                  symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
