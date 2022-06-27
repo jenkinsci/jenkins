@@ -2,7 +2,7 @@ function checkPluginsWithoutWarnings() {
     var inputs = document.getElementsByTagName('input');
     for(var i = 0; i < inputs.length; i++) {
         var candidate = inputs[i];
-        if(candidate.type === "checkbox") {
+        if(candidate.type === "checkbox" && !candidate.disabled) {
             candidate.checked = candidate.dataset.compatWarning === 'false';
         }
     }
