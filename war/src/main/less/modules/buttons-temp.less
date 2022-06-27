@@ -151,54 +151,48 @@ each(@variants, {
 .jenkins-copy-button {
   .jenkins-copy-button__icon {
     position: relative;
-    width: 1rem;
-    height: 1rem;
+    width: 0.875rem;
+    height: 1.125rem;
     transition: var(--standard-transition);
 
     &::before,
     &::after {
       content: "";
       position: absolute;
-      width: 0.75rem;
-      height: 0.75rem;
+      width: 75%;
+      height: 75%;
       border: 0.1rem solid currentColor;
-      border-radius: 0.25rem;
+      border-radius: 0.225rem;
       transition: var(--standard-transition);
     }
 
     &::before {
-      top: 0;
-      left: 0;
-      clip-path: polygon(100% 0, 100% 0.25rem, 0.25rem 0.25rem, 0.25rem 100%, 0 100%, 0 0);
+      top: 4%;
+      left: 1.5%;
+      clip-path: polygon(100% 0, 100% 22.5%, 22.5% 22.5%, 30% 100%, 0 100%, 0 0);
     }
 
     &::after {
-      bottom: 0;
-      right: 0;
+      bottom: 4%;
+      right: 1.5%;
     }
   }
 
   &:hover {
     .jenkins-copy-button__icon {
       &::before {
-        transform: translate(0.05rem, 0.05rem);
+        transform: translate(5%, 5%);
       }
 
       &::after {
-        transform: translate(-0.05rem, -0.05rem);
+        transform: translate(-5%, -5%);
       }
     }
   }
 
   &:active {
     .jenkins-copy-button__icon {
-      &::before {
-        transform: translate(0.05rem, 0.05rem) scale(0.85);
-      }
-
-      &::after {
-        transform: translate(-0.05rem, -0.05rem) scale(0.85);
-      }
+      transform: scale(0.85);
     }
   }
 }
