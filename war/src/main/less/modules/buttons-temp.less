@@ -151,42 +151,41 @@ each(@variants, {
 .jenkins-copy-button {
   .jenkins-copy-button__icon {
     position: relative;
-    width: 18px;
-    height: 18px;
+    width: 1rem;
+    height: 1rem;
     transition: var(--standard-transition);
 
     &::before,
     &::after {
       content: "";
       position: absolute;
-      width: 12px;
-      height: 12px;
-      border: 1.5px solid currentColor;
-      border-radius: 4px;
+      width: 0.75rem;
+      height: 0.75rem;
+      border: 0.1rem solid currentColor;
+      border-radius: 0.25rem;
       transition: var(--standard-transition);
     }
 
     &::before {
-      top: 1px;
-      left: 1px;
-      clip-path: polygon(100% 0, 100% 4px, 4px 4px, 4px 100%, 0 100%, 0 0);
+      top: 0;
+      left: 0;
+      clip-path: polygon(100% 0, 100% 0.25rem, 0.25rem 0.25rem, 0.25rem 100%, 0 100%, 0 0);
     }
 
     &::after {
-      bottom: 1px;
-      right: 1px;
+      bottom: 0;
+      right: 0;
     }
   }
 
   &:hover {
     .jenkins-copy-button__icon {
       &::before {
-        transform: translate(1px, 1px);
-        clip-path: polygon(100% 0, 100% 3px, 3px 3px, 3px 100%, 0 100%, 0 0);
+        transform: translate(0.05rem, 0.05rem);
       }
 
       &::after {
-        transform: translate(-1px, -1px);
+        transform: translate(-0.05rem, -0.05rem);
       }
     }
   }
@@ -194,12 +193,11 @@ each(@variants, {
   &:active {
     .jenkins-copy-button__icon {
       &::before {
-        transform: translate(1px, 1px) scale(0.85);
-        clip-path: polygon(100% 0, 100% 3px, 3px 3px, 3px 100%, 0 100%, 0 0);
+        transform: translate(0.05rem, 0.05rem) scale(0.85);
       }
 
       &::after {
-        transform: translate(-1px, -1px) scale(0.85);
+        transform: translate(-0.05rem, -0.05rem) scale(0.85);
       }
     }
   }
