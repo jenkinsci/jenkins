@@ -2212,7 +2212,7 @@ function buildFormTree(form) {
 var toggleCheckboxes = function(toggle) {
     var inputs = document.getElementsByTagName("input");
     for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox") {
+        if(inputs[i].type === "checkbox" && !inputs[i].disabled) {
             inputs[i].checked = toggle;
         }
     }
