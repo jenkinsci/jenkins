@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.not;
 import hudson.util.VersionNumber;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -43,7 +42,7 @@ public class JenkinsLogRecordsTest {
                     return "collect me";
                 }
             };
-            Logger.getLogger(Jenkins.class.getName()).log(Level.INFO, "formatting {0}", x);
+            use(x);
             WeakReference<Object> ref = new WeakReference<>(x);
             x = null;
             MemoryAssert.assertGC(ref, true);
@@ -52,4 +51,9 @@ public class JenkinsLogRecordsTest {
                 hasItem("formatting collect me"));
         }
     }
+
+    private static void use(Object x) {
+        Logger.getLogger(Jenkins.class.getName()).info(() -> "formatting " + x);
+    }
+
 }

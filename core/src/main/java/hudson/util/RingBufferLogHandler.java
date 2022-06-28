@@ -24,14 +24,10 @@
 
 package hudson.util;
 
-import hudson.remoting.ProxyException;
 import java.util.AbstractList;
 import java.util.List;
-import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
-import jenkins.util.JenkinsJVM;
 
 /**
  * Log {@link Handler} that stores the log records into a ring buffer.
@@ -41,11 +37,6 @@ import jenkins.util.JenkinsJVM;
 public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
-
-    /**
-     * Just to access {@link Formatter#formatMessage} which is not {@code static} though it could have been.
-     */
-    private static final Formatter dummyFormatter = new SimpleFormatter();
 
     private int start = 0;
     private final LogRecord[] records;
@@ -78,24 +69,6 @@ public class RingBufferLogHandler extends Handler {
     public void publish(LogRecord record) {
         if (record == null) {
             return;
-        }
-        if (JenkinsJVM.isJenkinsJVM() && record.getParameters() != null) {
-            try {
-                LogRecord clone = new LogRecord(record.getLevel(), dummyFormatter.formatMessage(record));
-                clone.setLoggerName(record.getLoggerName());
-                clone.setMillis(record.getMillis());
-                clone.setSequenceNumber(record.getSequenceNumber());
-                clone.setSourceClassName(record.getSourceClassName());
-                clone.setSourceMethodName(record.getSourceMethodName());
-                clone.setThreadID(record.getThreadID());
-                Throwable t = record.getThrown();
-                if (t != null) {
-                    clone.setThrown(new ProxyException(t));
-                }
-                record = clone;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
         synchronized (this) {
             int len = records.length;
