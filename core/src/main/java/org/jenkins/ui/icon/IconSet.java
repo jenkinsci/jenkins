@@ -24,6 +24,9 @@
 
 package org.jenkins.ui.icon;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import hudson.PluginWrapper;
 import hudson.Util;
 import java.io.IOException;
@@ -34,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.JellyContext;
@@ -74,7 +78,7 @@ public class IconSet {
 
     private static String prependTitleIfRequired(String icon, String title) {
         if (StringUtils.isNotBlank(title)) {
-            return "<span class=\"jenkins-visually-hidden\">" + title + "</span>" + icon;
+            return "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + icon;
         }
         return icon;
     }
@@ -93,12 +97,12 @@ public class IconSet {
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
             symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty()) {
-                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+                symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
             }
             if (!id.isEmpty()) {
-                 symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
+                 symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
             }
-            symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
             return prependTitleIfRequired(symbol, title);
         }
 
@@ -122,13 +126,13 @@ public class IconSet {
         symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
         if (!tooltip.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + tooltip + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
         if (!id.isEmpty()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + id + "\"");
+            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
         }
         symbol = symbol.replaceAll("<svg", "<svg aria-hidden=\"true\"");
-        symbol = symbol.replaceAll("<svg", "<svg class=\"" + classes + "\"");
+        symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         symbol = symbol.replace("stroke:#000", "stroke:currentColor");
 
         symbolsForLookup.put(translatedName, symbol);
@@ -565,16 +569,9 @@ public class IconSet {
         }
     }
 
-    /**
-     * This is a temporary function to replace Tango icons across Jenkins and plugins with
-     * appropriate Jenkins Symbols
-     *
-     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
-     * @return a Jenkins Symbol (if one exists) otherwise null
-     */
-    @Restricted(NoExternalUse.class)
-    public static String tryTranslateTangoIconToSymbol(String tangoIcon) {
+    private static final Map<String, String> ICON_TO_SYMBOL_TRANSLATIONS;
 
+    static {
         Map<String, String> translations = new HashMap<>();
         translations.put("icon-application-certificate", "symbol-ribbon");
         translations.put("icon-document", "symbol-document-text");
@@ -598,9 +595,32 @@ public class IconSet {
         translations.put("icon-text", "symbol-details");
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
+        ICON_TO_SYMBOL_TRANSLATIONS = translations;
+    }
 
-        String cleanedTangoIcon = cleanName(tangoIcon);
-        return translations.getOrDefault(cleanedTangoIcon, null);
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @return a Jenkins Symbol (if one exists) otherwise null
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(@CheckForNull String tangoIcon) {
+        return tryTranslateTangoIconToSymbol(tangoIcon, () -> null);
+    }
+
+    /**
+     * This is a temporary function to replace Tango icons across Jenkins and plugins with
+     * appropriate Jenkins Symbols
+     *
+     * @param tangoIcon A tango icon in the format 'icon-* size-*', e.g. 'icon-gear icon-lg'
+     * @param defaultValueSupplier A supplier function that will be called if no icon translation is found
+     * @return a Jenkins Symbol (if one exists) otherwise the value returned by the supplier
+     */
+    @Restricted(NoExternalUse.class)
+    public static String tryTranslateTangoIconToSymbol(@CheckForNull String tangoIcon, @NonNull Supplier<String> defaultValueSupplier) {
+        return tangoIcon == null ? null : ICON_TO_SYMBOL_TRANSLATIONS.getOrDefault(cleanName(tangoIcon), defaultValueSupplier.get());
     }
 
     private static String cleanName(String tangoIcon) {
