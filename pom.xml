@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.77</version>
+    <version>1.78</version>
     <relativePath />
   </parent>
 
@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.357</revision>
+    <revision>2.358</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -400,7 +400,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3</version>
+              <version>10.3.1</version>
             </dependency>
           </dependencies>
           <executions>
