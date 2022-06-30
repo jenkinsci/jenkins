@@ -63,3 +63,5 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - jenkinsci/sig-ux
