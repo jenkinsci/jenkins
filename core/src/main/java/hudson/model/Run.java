@@ -319,6 +319,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Creates a new {@link Run}.
      * @param job Owner job
+     * @see LazyBuildMixIn#newBuild
      */
     protected Run(@NonNull JobT job) throws IOException {
         this(job, System.currentTimeMillis());
@@ -347,6 +348,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Loads a run from a log file.
+     * @see LazyBuildMixIn#loadBuild
      */
     protected Run(@NonNull JobT project, @NonNull File buildDir) throws IOException {
         this.project = project;
