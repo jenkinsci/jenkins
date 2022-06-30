@@ -47,7 +47,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -267,7 +266,7 @@ public class CLI {
         }
 
         if (args.isEmpty())
-            args = Collections.singletonList("help"); // default to help
+            args = List.of("help"); // default to help
 
         if (mode == null) {
             mode = Mode.HTTP;
@@ -346,7 +345,7 @@ public class CLI {
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
-                    headers.put("Authorization", Collections.singletonList(factory.authorization));
+                    headers.put("Authorization", List.of(factory.authorization));
                 }
             }
         }

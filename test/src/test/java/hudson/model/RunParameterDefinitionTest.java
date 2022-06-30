@@ -32,7 +32,7 @@ import hudson.model.RunParameterDefinition.RunParameterFilter;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.LogTaskListener;
-import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Rule;
@@ -93,16 +93,16 @@ public class RunParameterDefinitionTest {
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.UNSTABLE)));
         FreeStyleBuild unstableBuild = j.buildAndAssertStatus(Result.UNSTABLE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.FAILURE)));
         FreeStyleBuild failedBuild = j.buildAndAssertStatus(Result.FAILURE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
@@ -125,16 +125,16 @@ public class RunParameterDefinitionTest {
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.UNSTABLE)));
         FreeStyleBuild unstableBuild = j.buildAndAssertStatus(Result.UNSTABLE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.FAILURE)));
         FreeStyleBuild failedBuild = j.buildAndAssertStatus(Result.FAILURE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
@@ -156,16 +156,16 @@ public class RunParameterDefinitionTest {
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.UNSTABLE)));
         FreeStyleBuild unstableBuild = j.buildAndAssertStatus(Result.UNSTABLE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.FAILURE)));
         FreeStyleBuild failedBuild = j.buildAndAssertStatus(Result.FAILURE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
@@ -187,16 +187,16 @@ public class RunParameterDefinitionTest {
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.UNSTABLE)));
         FreeStyleBuild unstableBuild = j.buildAndAssertStatus(Result.UNSTABLE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.FAILURE)));
         FreeStyleBuild failedBuild = j.buildAndAssertStatus(Result.FAILURE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
@@ -219,16 +219,16 @@ public class RunParameterDefinitionTest {
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.UNSTABLE)));
         FreeStyleBuild unstableBuild = j.buildAndAssertStatus(Result.UNSTABLE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.FAILURE)));
         FreeStyleBuild failedBuild = j.buildAndAssertStatus(Result.FAILURE, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.NOT_BUILT)));
         FreeStyleBuild notBuiltBuild = j.buildAndAssertStatus(Result.NOT_BUILT, project);
 
-        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        project.getPublishersList().replaceBy(Set.of(new ResultPublisher(Result.ABORTED)));
         FreeStyleBuild abortedBuild = j.buildAndAssertStatus(Result.ABORTED, project);
 
         FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");

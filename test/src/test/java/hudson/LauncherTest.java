@@ -231,7 +231,7 @@ public class LauncherTest {
                             fos.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
                             fos.write(b, 0, len);
                         }
-                    }, true, "UTF-8");
+                    }, true, StandardCharsets.UTF_8);
                 } catch (IOException x) {
                     throw new AssertionError(x);
                 }
@@ -293,11 +293,11 @@ public class LauncherTest {
         psCustomizer.run(ps, baos1, baos2, listener);
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), is(emptyString()));
         } else {
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), is(emptyString()));
         }
     }
 

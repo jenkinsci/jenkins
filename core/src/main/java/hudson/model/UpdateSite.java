@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -215,7 +216,7 @@ public class UpdateSite {
 
     @Restricted(NoExternalUse.class)
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
-        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
+        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
     }
 
     private FormValidation updateData(String json, boolean signatureCheck)
