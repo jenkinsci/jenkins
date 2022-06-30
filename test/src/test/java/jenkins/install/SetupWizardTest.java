@@ -90,7 +90,7 @@ public class SetupWizardTest {
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
-        final String password = ostream.toString(StandardCharsets.UTF_8.name());
+        final String password = ostream.toString(StandardCharsets.UTF_8);
     }
 
     @Test

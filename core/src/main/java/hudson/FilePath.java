@@ -2382,7 +2382,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return new String(Files.readAllBytes(fileToPath(f)), Charset.defaultCharset());
+            return Files.readString(fileToPath(f), Charset.defaultCharset());
         }
     }
 

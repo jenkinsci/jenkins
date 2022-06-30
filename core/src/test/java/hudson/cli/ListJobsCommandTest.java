@@ -16,11 +16,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +112,7 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
+        when(rightView.getItems()).thenReturn(List.of(rightJob));
 
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
@@ -167,11 +165,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                try {
-                    return item.toString(charset.name()).isEmpty();
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                return item.toString(charset).isEmpty();
             }
 
             @Override
@@ -189,7 +183,6 @@ public class ListJobsCommandTest {
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                Set<String> jobs;
                 Charset charset;
                 try {
                     charset = command.getClientCharset();
@@ -198,11 +191,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                try {
-                    jobs = new HashSet<>(Arrays.asList(item.toString(charset.name()).split(System.getProperty("line.separator"))));
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

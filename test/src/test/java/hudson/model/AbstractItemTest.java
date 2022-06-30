@@ -18,7 +18,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import org.apache.commons.io.FileUtils;
@@ -114,14 +114,14 @@ public class AbstractItemTest {
 
         WebClient w = j.createWebClient();
         WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "bar")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "bar")));
         w.login("alice", "alice");
         Page page = w.getPage(wr);
         assertThat(getPath(page.getUrl()), equalTo(p.getUrl()));
         assertThat(p.getName(), equalTo("bar"));
 
         wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "baz")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "baz")));
         w.login("bob", "bob");
 
         w.setThrowExceptionOnFailingStatusCode(false);

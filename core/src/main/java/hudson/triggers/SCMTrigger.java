@@ -205,7 +205,7 @@ public class SCMTrigger extends Trigger<Item> {
             return Collections.emptyList();
         }
 
-        return Collections.singleton(new SCMAction());
+        return Set.of(new SCMAction());
     }
 
     /**
