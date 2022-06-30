@@ -59,13 +59,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -863,7 +863,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
-        return getViewPage(clazz, Collections.singleton(pageName), defaultValue);
+        return getViewPage(clazz, Set.of(pageName), defaultValue);
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
@@ -978,7 +978,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
-                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL", req.getContextPath())));
+                    rsp.getWriter().println(Util.replaceMacro(literal, Map.of("rootURL", req.getContextPath())));
                 }
                 return;
             }

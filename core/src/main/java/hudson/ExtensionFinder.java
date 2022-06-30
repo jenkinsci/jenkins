@@ -560,7 +560,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
-                return Collections.unmodifiableList(new ArrayList<>(loadedIndex));
+                return List.copyOf(loadedIndex);
             }
 
             @Override
@@ -645,7 +645,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 5. dead lock
             if (indices == null) {
                 ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                indices = Collections.unmodifiableList(StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false).collect(Collectors.toList()));
+                indices = StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false).collect(Collectors.toUnmodifiableList());
             }
             return indices;
         }

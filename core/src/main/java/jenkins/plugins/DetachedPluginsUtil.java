@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -49,18 +48,18 @@ public class DetachedPluginsUtil {
 
     static {
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
-            DETACHED_LIST = Collections.unmodifiableList(configLines(is).map(line -> {
+            DETACHED_LIST = configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
 
                 return new DetachedPluginsUtil.DetachedPlugin(pieces[0],
                                                               pieces[1] + ".*",
                                                               pieces[2]);
-            }).collect(Collectors.toList()));
+            }).collect(Collectors.toUnmodifiableList());
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugin-cycles.txt")) {
-            BREAK_CYCLES = Collections.unmodifiableSet(configLines(is).collect(Collectors.toSet()));
+            BREAK_CYCLES = configLines(is).collect(Collectors.toUnmodifiableSet());
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }
@@ -103,7 +102,7 @@ public class DetachedPluginsUtil {
      */
     public static @NonNull
     List<DetachedPlugin> getDetachedPlugins() {
-        return Collections.unmodifiableList(new ArrayList<>(DETACHED_LIST));
+        return List.copyOf(DETACHED_LIST);
     }
 
     /**
