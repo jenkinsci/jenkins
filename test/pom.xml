@@ -206,6 +206,13 @@ THE SOFTWARE.
         <extensions>true</extensions>
         <executions>
           <execution>
+           <id>prepare-test-plugins</id>
+           <goals>
+             <goal>resolve-test-dependencies</goal>
+           </goals>
+           <phase>generate-test-resources</phase>
+          </execution>
+          <execution>
             <id>test-runtime</id>
             <goals>
               <goal>test-runtime</goal>
