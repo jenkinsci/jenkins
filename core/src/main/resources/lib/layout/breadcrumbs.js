@@ -32,6 +32,10 @@ var breadcrumbs = (function() {
 
         if (icon === null) return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
 
+        if (icon === '/jenkins/symbol-jenkins') {
+          icon = '/jenkins/plugin/credentials/images/system-store.svg';
+        }
+
         // TODO: move this to the API response in a clean way
         var isSvgSprite = icon.toLowerCase().indexOf('svg#') !== -1;
         return isSvgSprite
