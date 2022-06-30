@@ -97,6 +97,10 @@ THE SOFTWARE.
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
