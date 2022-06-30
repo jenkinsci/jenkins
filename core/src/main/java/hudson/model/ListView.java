@@ -143,7 +143,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 includePattern = Pattern.compile(includeRegex);
             } catch (PatternSyntaxException x) {
                 includeRegex = null;
-                OldDataMonitor.report(this, Collections.singleton(x));
+                OldDataMonitor.report(this, Set.of(x));
             }
         }
         synchronized (this) {

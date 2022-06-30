@@ -114,7 +114,6 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.jenkinsci.Symbol;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -1422,8 +1421,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
                     }
                 } else {
-                    try (InputStream is = connection.getInputStream()) {
-                        IOUtils.copy(is, NullOutputStream.NULL_OUTPUT_STREAM);
+                    try (InputStream is = connection.getInputStream(); OutputStream os = OutputStream.nullOutputStream()) {
+                        IOUtils.copy(is, os);
                     }
                 }
             } catch (SSLHandshakeException e) {

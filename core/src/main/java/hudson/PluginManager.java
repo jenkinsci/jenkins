@@ -930,7 +930,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (batch != null) {
                     batch.add(p);
                 } else {
-                    start(Collections.singletonList(p));
+                    start(List.of(p));
                 }
 
             } catch (Exception e) {

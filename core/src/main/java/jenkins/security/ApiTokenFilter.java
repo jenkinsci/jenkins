@@ -1,6 +1,5 @@
 package jenkins.security;
 
-import java.util.Collections;
 import java.util.List;
 import javax.servlet.Filter;
 
@@ -20,6 +19,6 @@ import javax.servlet.Filter;
 public class ApiTokenFilter extends BasicHeaderProcessor {
     @Override
     protected List<? extends BasicHeaderAuthenticator> all() {
-        return Collections.singletonList(new BasicHeaderApiTokenAuthenticator());
+        return List.of(new BasicHeaderApiTokenAuthenticator());
     }
 }
