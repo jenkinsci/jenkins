@@ -28,6 +28,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:ajax>
-    <t:executors computers="${h.singletonList(it)}" />
+    <j:invokeStatic var="computerList" className="java.util.List" method="of">
+        <j:arg value="${it}" type="java.lang.Object" />
+    </j:invokeStatic>
+    <t:executors computers="${computerList}" />
   </l:ajax>
 </j:jelly>
