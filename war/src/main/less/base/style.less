@@ -95,7 +95,7 @@ td.center-align {
     margin-bottom: var(--section-padding);
     padding: 0.5em;
     -moz-border-radius: 0.5em;
-    border-radius: var(--form-input-border-radius)
+    border-radius: var(--form-input-border-radius);
 }
 
 /* #header .login {
@@ -495,7 +495,7 @@ div.behavior-loading {
     top: -30px;
     left: 0;
     right: 0;
-    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
     max-width: 100%;
     height: 30px;
     opacity: 0;
@@ -721,6 +721,7 @@ table.parameters > tbody:hover {
   display: none;
   margin-left: 20px;
   padding: 0;
+
   --table-border-radius: 7px;
 
   table {
@@ -786,7 +787,8 @@ table.parameters > tbody:hover {
 #buildHistoryPage {
   position: relative;
 
-  .build-search-row, .build-search-no-results-row {
+  .build-search-row,
+ .build-search-no-results-row {
     &:hover {
       background: transparent !important;
     }
@@ -797,12 +799,12 @@ table.parameters > tbody:hover {
   }
 
   .build-search-no-results-row {
-    border: none!important;
-    width: 100%!important;
+    border: none !important;
+    width: 100% !important;
     background: transparent;
 
     td {
-      padding-top: 0!important;
+      padding-top: 0 !important;
     }
   }
 }
@@ -841,7 +843,7 @@ table.parameters > tbody:hover {
     padding: 0 8px;
     height: 30px;
     cursor: pointer;
-    transition: opacity .2s ease;
+    transition: opacity 0.2s ease;
 
     &:hover {
       opacity: 0.5;
@@ -1164,7 +1166,7 @@ td.progress-bar-done {
 }
 
 td.progress-bar-left {
-  background-color: #EBECF0;
+  background-color: #ebecf0;
 }
 
 table.progress-bar.red {

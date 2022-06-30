@@ -85,6 +85,7 @@
         & > td:first-of-type {
           border-top-left-radius: var(--table-border-radius);
         }
+
         & > td:last-of-type {
           border-top-right-radius: var(--table-border-radius);
         }
@@ -95,6 +96,7 @@
         & > td:first-of-type {
           border-bottom-left-radius: var(--table-border-radius);
         }
+
         & > td:last-of-type {
           border-bottom-right-radius: var(--table-border-radius);
         }
@@ -129,7 +131,8 @@
     display: inline-flex;
   }
 
-  &__link, .sortheader {
+  &__link,
+ .sortheader {
     display: inline-flex;
   }
 
@@ -139,8 +142,11 @@
     }
   }
 
-  &__button, &__icon {
-    svg, .build-status-icon__wrapper, img {
+  &__button,
+ &__icon {
+    svg,
+ .build-status-icon__wrapper,
+ img {
       width: 24px !important;
       height: 24px !important;
     }
@@ -153,8 +159,12 @@
       height: 40px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
+    .jenkins-table__button,
+ .jenkins-table__link,
+ .jenkins-table__icon {
+      svg,
+ .build-status-icon__wrapper,
+ img {
         width: 20px !important;
         height: 20px !important;
       }
@@ -168,20 +178,28 @@
       height: 34px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
+    .jenkins-table__button,
+ .jenkins-table__link,
+ .jenkins-table__icon {
+      svg,
+ .build-status-icon__wrapper,
+ img {
         width: 16px !important;
         height: 16px !important;
       }
     }
   }
 
-  &__button, &__link {
+  &__button,
+ &__link {
     color: var(--link-color);
   }
 
-  &__button, .sortheader, &__link {
+  &__button,
+ .sortheader,
+ &__link {
     .item();
+
     align-items: center;
     justify-content: center;
     appearance: none;
@@ -243,6 +261,7 @@
         background: currentColor;
         border-radius: 6px;
       }
+
       &::after {
         box-shadow: 0 0 0 5px currentColor;
         opacity: 0.025;
