@@ -67,7 +67,7 @@ public class MarkFindingOutputStreamTest {
     }
 
     private void assertOutput(String s) throws IOException {
-        assertEquals(s, baos.toString("UTF-8"));
+        assertEquals(s, baos.toString(StandardCharsets.UTF_8));
     }
 
     private void assertCount(int n) {

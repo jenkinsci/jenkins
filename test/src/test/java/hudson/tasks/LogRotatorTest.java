@@ -45,6 +45,7 @@ import hudson.tasks.ArtifactArchiverTest.CreateArtifact;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -69,7 +70,7 @@ public class LogRotatorTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 2, -1, -1));
         j.buildAndAssertSuccess(project); // #1
-        project.getBuildersList().replaceBy(Collections.singleton(new FailureBuilder()));
+        project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #2
         j.buildAndAssertStatus(Result.FAILURE, project); // #3
         assertEquals(1, numberOf(project.getLastSuccessfulBuild()));
@@ -87,7 +88,7 @@ public class LogRotatorTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 2, -1, -1));
         j.buildAndAssertSuccess(project); // #1
-        project.getPublishersList().replaceBy(Collections.singleton(new TestsFail()));
+        project.getPublishersList().replaceBy(Set.of(new TestsFail()));
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #2
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #3
         assertEquals(1, numberOf(project.getLastStableBuild()));
@@ -102,10 +103,10 @@ public class LogRotatorTest {
     public void artifactDelete() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 6, -1, 2));
-        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
+        project.getPublishersList().replaceBy(Set.of(new ArtifactArchiver("f", "", true, false)));
         j.buildAndAssertStatus(Result.FAILURE, project); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
+        project.getBuildersList().replaceBy(Set.of(new CreateArtifact()));
         j.buildAndAssertSuccess(project); // #2
         assertTrue(project.getBuildByNumber(2).getHasArtifacts());
         project.getBuildersList().replaceBy(Arrays.asList(new CreateArtifact(), new FailureBuilder()));
@@ -121,7 +122,7 @@ public class LogRotatorTest {
         assertFalse("no better than #4", project.getBuildByNumber(3).getHasArtifacts());
         assertTrue(project.getBuildByNumber(4).getHasArtifacts());
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
+        project.getBuildersList().replaceBy(Set.of(new CreateArtifact()));
         j.buildAndAssertSuccess(project); // #6
         assertFalse("#2 is still lastSuccessful until #6 is complete", project.getBuildByNumber(2).getHasArtifacts());
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());

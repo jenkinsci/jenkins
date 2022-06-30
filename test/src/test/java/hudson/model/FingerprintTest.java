@@ -56,11 +56,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -650,7 +650,7 @@ public class FingerprintTest {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
 
         Map<Permission, Set<String>> permissions = new HashMap<>();
-        HashSet<String> userSpec = new HashSet<>(Collections.singletonList(username));
+        HashSet<String> userSpec = new HashSet<>(List.of(username));
 
         for (Permission p : s) {
             permissions.put(p, userSpec);
