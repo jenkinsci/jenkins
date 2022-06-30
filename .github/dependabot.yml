@@ -52,10 +52,6 @@ updates:
       # https://github.com/jenkinsci/jenkins/pull/5184
       - dependency-name: "org.fusesource.jansi:jansi"
 
-      # Requires Java 11 starting with version 2.0.2.
-      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
-        versions: [">=2.0.2"]
-
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
