@@ -181,6 +181,7 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      <!-- JENKINS-68021: Work around JDK-8206937 by clearing the release=8 flag. -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
