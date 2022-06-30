@@ -150,7 +150,7 @@ public class BootFailureTest {
     }
 
     private static int bootFailures(File home) throws IOException {
-        return FileUtils.readLines(BootFailure.getBootFailureFile(home), StandardCharsets.UTF_8).size();
+        return new BootFailure() { }.loadAttempts(home).size();
     }
 
     @Issue("JENKINS-24696")
