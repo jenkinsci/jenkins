@@ -1936,6 +1936,17 @@ public class Functions {
         return url.endsWith(href);
     }
 
+    /**
+     * Returns an immutable list containing only the specified object.
+     * The returned list is serializable.
+     *
+     * @param <T> The class of the objects in the list.
+     * @param t The sole object to be stored in the returned list.
+     * @return An immutable list containing only the specified object.
+     * @since 1.312
+     * @deprecated use {@link List#of}
+     */
+    @Deprecated(forRemoval = true, since = "TODO")
     public <T> List<T> singletonList(T t) {
         return List.of(t);
     }
