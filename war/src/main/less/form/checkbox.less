@@ -27,8 +27,7 @@
   clip-path: inset(50%);
 
   &:not(:disabled) {
-    &:active,
-    &:focus {
+    &:active, &:focus {
       & + label {
         &::before {
           box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
@@ -37,8 +36,7 @@
     }
 
     &:checked {
-      &:active,
-      &:focus {
+      &:active, &:focus {
         & + label {
           &::before {
             box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
@@ -50,8 +48,7 @@
 
   &:checked {
     & + label {
-      &:active,
-      &:focus {
+      &:active, &:focus {
         &::before {
           box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
         }
@@ -146,8 +143,7 @@
     }
   }
 
-  &:active,
-  &:focus {
+  &:active, &:focus {
     &::before {
       box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
     }
