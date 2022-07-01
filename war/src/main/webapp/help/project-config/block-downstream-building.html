@@ -1,3 +1,6 @@
 <div>
  When this option is checked, Jenkins will prevent the project from building when a child of this project is in the queue, or building. The children include the direct as well as the transitive children.
 </div>
+<div>
+ However, if projects are circular dependent on each other, Jenkins will break the cycle by starting with the oldest requested build from the cycle.
+</div>
