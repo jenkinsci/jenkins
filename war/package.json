@@ -18,7 +18,7 @@
     "lint:js": "eslint . --ext js",
     "lint:css": "stylelint src/main/less --syntax less",
     "lint:css:fix": "stylelint src/main/less --fix --syntax less",
-    "lint": "yarn lint:js && yarn lint:css"
+    "lint": "yarn lint:css"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.4",
