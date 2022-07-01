@@ -86,7 +86,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1107,8 +1106,16 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingDownstream() {
-        Set<Task> tasks = new HashSet<>();
-        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
+        // Unblocked downstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked downstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
             tasks.add(item.task);
         }
 
@@ -1127,8 +1134,16 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingUpstream() {
-        Set<Task> tasks = new HashSet<>();
-        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
+        // Unblocked upstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked upstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
             tasks.add(item.task);
         }
 
