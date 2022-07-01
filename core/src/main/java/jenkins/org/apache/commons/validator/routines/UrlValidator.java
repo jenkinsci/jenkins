@@ -340,12 +340,7 @@ public class UrlValidator implements Serializable {
         if (!isValidQuery(uri.getRawQuery())) {
             return false;
         }
-
-        if (!isValidFragment(uri.getRawFragment())) {
-            return false;
-        }
-
-        return true;
+        return isValidFragment(uri.getRawFragment());
     }
 
     /**

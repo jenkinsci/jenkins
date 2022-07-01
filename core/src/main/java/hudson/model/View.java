@@ -516,9 +516,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // Check root project for sub-job projects (e.g. matrix jobs).
         if (item.task instanceof AbstractProject<?, ?>) {
             AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
-            if (viewItems.contains(project.getRootProject())) {
-                return true;
-            }
+            return viewItems.contains(project.getRootProject());
         }
         return false;
     }
