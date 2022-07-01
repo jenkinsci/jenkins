@@ -12,8 +12,7 @@ def canSetUpDistributedBuilds = Jenkins.get().hasPermission(Computer.CREATE) &&
         Jenkins.get().clouds.isEmpty() &&
         Jenkins.get().getNodes().isEmpty();
 def hasAdministerJenkinsPermission = Jenkins.get().hasPermission(Jenkins.ADMINISTER);
-def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE) &&
-        Jenkins.get().hasPermission(Job.CREATE);
+def hasItemCreatePermission = my.owner.itemGroup.hasPermission(Item.CREATE);
 
 div {
 
