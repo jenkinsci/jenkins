@@ -1938,7 +1938,7 @@ public class Functions {
 
     /**
      * @deprecated From JEXL expressions ({@code ${…}}) in {@code *.jelly} files
-     *             you can use {@code [obj]} syntax to construct an {@link Object[]}
+     *             you can use {@code [obj]} syntax to construct an {@code Object[]}
      *             (which may be usable where a {@link List} is expected)
      *             rather than {@code h.singletonList(obj)}.
      */
