@@ -46,9 +46,6 @@ THE SOFTWARE.
      <j:forEach var="box" items="${it.computerPanelBoxs}">
         <st:include it="${box}" page="box.jelly" />
     </j:forEach>
-    <j:invokeStatic var="computerList" className="java.util.List" method="of">
-        <j:arg value="${it}" type="java.lang.Object" />
-    </j:invokeStatic>
-    <t:executors computers="${computerList}" />
+    <t:executors computers="${h.singletonList(it)}" />
   </l:side-panel>
 </j:jelly>
