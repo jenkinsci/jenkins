@@ -72,7 +72,7 @@ public class PathRemover {
     public void forceRemoveFile(@NonNull Path path) throws IOException {
         for (int retryAttempts = 0; ; retryAttempts++) {
             Optional<IOException> maybeError = tryRemoveFile(path);
-            if (!maybeError.isPresent()) return;
+            if (maybeError.isEmpty()) return;
             if (retryStrategy.shouldRetry(retryAttempts)) continue;
             IOException error = maybeError.get();
             throw new IOException(retryStrategy.failureMessage(path, retryAttempts), error);

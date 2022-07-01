@@ -41,7 +41,6 @@ import hudson.Functions;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -68,7 +67,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
 
@@ -108,7 +107,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("dir/../../../pwned", null)
         )));
 
@@ -135,7 +134,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../pwned", null)
         )));
 
@@ -173,7 +172,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("..\\..\\..\\..\\..\\root-level.txt", null)
         )));
 
@@ -204,7 +203,7 @@ public class FileParameterValueTest {
         // this case was not working even before the patch
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition(".", null)
         )));
 
@@ -232,7 +231,7 @@ public class FileParameterValueTest {
         // this case was not working even before the patch
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("..", null)
         )));
 
@@ -262,7 +261,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
 
@@ -333,7 +332,7 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("weird..name.txt", null)
         )));
 
@@ -361,7 +360,7 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_TildeInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("~name", null)
         )));
 

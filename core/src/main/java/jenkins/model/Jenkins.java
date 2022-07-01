@@ -4162,7 +4162,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 r.put(e.getKey(), e.getValue().get(endTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
-                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump", Functions.printThrowable(x)));
+                r.put(e.getKey(), Map.of("Failed to retrieve thread dump", Functions.printThrowable(x)));
             }
         }
         return Collections.unmodifiableSortedMap(new TreeMap<>(r));
@@ -5678,7 +5678,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new AnonymousAuthenticationToken(
                     "anonymous",
                     "anonymous",
-                    Collections.singleton(new SimpleGrantedAuthority("anonymous")));
+                    Set.of(new SimpleGrantedAuthority("anonymous")));
 
     /**
      * @deprecated use {@link #ANONYMOUS2}

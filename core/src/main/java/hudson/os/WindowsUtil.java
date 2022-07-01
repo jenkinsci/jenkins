@@ -70,9 +70,7 @@ public class WindowsUtil {
             }
             // else backslashes have no special meaning and don't need to be escaped here
 
-            for (int j = 0; j < nrBackslashes; j++) {
-                sb.append('\\');
-            }
+            sb.append("\\".repeat(Math.max(0, nrBackslashes)));
 
             if (i < end) {
                 sb.append(argument.charAt(i));

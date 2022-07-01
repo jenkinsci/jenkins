@@ -14,6 +14,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -172,7 +173,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
         @JsonResponse // does not support list
         public Map<String, Object> doAnnotatedJsonResponse() {
-            return Collections.singletonMap("a", "b");
+            return Map.of("a", "b");
         }
 
         @LimitedTo("admin")
@@ -391,7 +392,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         // WebClient forces us to use POST to have the possibility to send requestBody
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Content-Type", "application/json");
-        settings.setRequestBody(JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString());
+        settings.setRequestBody(JSONObject.fromObject(Map.of("name", "Test")).toString());
         assertReachableWithSettings(settings);
     }
 
@@ -400,10 +401,10 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
         settings.setHttpMethod(HttpMethod.POST);
 
-        settings.setRequestParameters(Collections.singletonList(
+        settings.setRequestParameters(List.of(
                 new NameValuePair(
                         "json",
-                        JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString()
+                        JSONObject.fromObject(Map.of("name", "Test")).toString()
                 )
         ));
         assertReachableWithSettings(settings);

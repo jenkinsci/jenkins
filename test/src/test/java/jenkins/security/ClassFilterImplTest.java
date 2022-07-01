@@ -49,8 +49,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -160,7 +160,7 @@ public class ClassFilterImplTest {
         assertNull(config.obj);
         assertEquals("modified", config.unrelated);
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
-        assertEquals(Collections.singleton(config), data.keySet());
+        assertEquals(Set.of(config), data.keySet());
         assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
     }
 

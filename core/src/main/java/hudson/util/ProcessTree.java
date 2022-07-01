@@ -56,7 +56,6 @@ import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1352,12 +1351,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line;
-                try {
-                    line = buf.toString(StandardCharsets.UTF_8.name());
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                String line = buf.toString(StandardCharsets.UTF_8);
                 if (LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix + " was " + line);
                 return line;
@@ -1628,12 +1622,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     buf.write(ch);
                     addr++;
                 }
-                String line;
-                try {
-                    line = buf.toString(StandardCharsets.UTF_8.name());
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                String line = buf.toString(StandardCharsets.UTF_8);
                 if (LOGGER.isLoggable(FINEST))
                     LOGGER.finest(prefix + " was " + line);
                 return line;
@@ -1801,11 +1790,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             byte ch;
                             while (offset < length && (ch = getByte(offset++)) != '\0')
                                 baos.write(ch);
-                            try {
-                                return baos.toString(StandardCharsets.UTF_8.name());
-                            } catch (UnsupportedEncodingException e) {
-                                throw new AssertionError(e);
-                            }
+                            return baos.toString(StandardCharsets.UTF_8);
                         }
 
                         void skip0() {
@@ -2119,11 +2104,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     while ((ch = m.getByte(offset++)) != '\0') {
                         baos.write(ch);
                     }
-                    try {
-                        consumer.accept(baos.toString(StandardCharsets.UTF_8.name()));
-                    } catch (UnsupportedEncodingException e) {
-                        throw new AssertionError(e);
-                    }
+                    consumer.accept(baos.toString(StandardCharsets.UTF_8));
                     baos.reset();
                 }
             }

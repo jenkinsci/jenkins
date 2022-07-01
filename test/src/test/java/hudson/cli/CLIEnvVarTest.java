@@ -118,7 +118,7 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -135,7 +135,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: anonymous"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: anonymous"));
         }
     }
 
@@ -153,7 +153,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -204,7 +204,7 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
