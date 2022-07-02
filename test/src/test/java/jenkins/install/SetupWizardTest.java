@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -54,7 +56,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -184,11 +185,11 @@ public class SetupWizardTest {
         }
 
         public void init() throws IOException {
-            File newFile = new File(tmpdir, "platform-plugins.json");
-            FileUtils.write(newFile, "[ { "
+            Path newPath = tmpdir.toPath().resolve("platform-plugins.json");
+            Files.writeString(newPath, "[ { "
                     + "\"category\":\"Organization and Administration\", "
                     + "\"plugins\": [ { \"name\": \"antisamy-markup-formatter\" } ]"
-                    + "} ]");
+                    + "} ]", StandardCharsets.UTF_8);
         }
     }
 
@@ -202,11 +203,11 @@ public class SetupWizardTest {
         }
 
         public void init() throws IOException {
-            File newFile = new File(tmpdir, "platform-plugins.json");
-            FileUtils.write(newFile, "{ \"categories\" : [ { "
+            Path newPath = tmpdir.toPath().resolve("platform-plugins.json");
+            Files.writeString(newPath, "{ \"categories\" : [ { "
                     + "\"category\":\"Administration and Organization\", "
                     + "\"plugins\": [ { \"name\": \"dashboard-view\"} ]"
-                    + "} ] }");
+                    + "} ] }", StandardCharsets.UTF_8);
         }
     }
 
