@@ -117,12 +117,6 @@ THE SOFTWARE.
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>executable-war</artifactId>
-      <version>2.8</version>
-      <scope>provided</scope>
-    </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency
       <groupId>com.yourkit.api</groupId>
@@ -141,11 +135,71 @@ THE SOFTWARE.
       <version>5.25</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <finalName>jenkins</finalName>
     <plugins>
+      <!-- TODO When Java 8 usage declines to a terminal level, this can be deleted. -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>display-info</id>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>1.8</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.8</maxJdkVersion>
+                  <excludes>
+                    <exclude>org.jenkins-ci.main:cli</exclude>
+                    <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- JENKINS-68021: Work around JDK-8206937 by clearing the release=8 flag. -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <testSource>1.8</testSource>
+          <testTarget>1.8</testTarget>
+          <release combine.self="override" />
+          <testRelease combine.self="override" />
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <release combine.self="override" />
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -154,7 +208,7 @@ THE SOFTWARE.
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
-              <mainClass>Main</mainClass>
+              <mainClass>executable.Main</mainClass>
             </manifest>
             <manifestEntries>
               <!-- Make sure to keep the directives in core/pom.xml and test/pom.xml in sync with these. -->
@@ -184,21 +238,6 @@ THE SOFTWARE.
             </configuration>
           </execution>
           <execution>
-            <!-- put executable war header -->
-            <id>executable-war-header</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>org.jenkins-ci</includeGroupIds>
-              <includeArtifactIds>executable-war</includeArtifactIds>
-              <includeScope>provided</includeScope>
-              <includes>**/*.class</includes>
-              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
             <id>resgen</id>
             <goals>
               <goal>copy</goal>
@@ -210,7 +249,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>
-                  <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/executable</outputDirectory>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
               </artifactItems>
@@ -475,6 +514,27 @@ THE SOFTWARE.
               <overWriteIfNewer>true</overWriteIfNewer>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>classes-copy</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <tasks>
+                <move todir="${project.build.directory}/${project.build.finalName}">
+                  <fileset dir="${project.build.directory}/classes">
+                    <include name="executable/**/*.class" />
+                  </fileset>
+                </move>
+              </tasks>
             </configuration>
           </execution>
         </executions>
