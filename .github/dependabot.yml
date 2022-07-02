@@ -59,3 +59,9 @@ updates:
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
+  - package-ecosystem: "npm"
+    directory: "/war"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - jenkinsci/sig-ux
