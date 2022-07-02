@@ -324,8 +324,7 @@ public abstract class Proc {
             Thread t = Thread.currentThread();
             String oldName = t.getName();
             if (SHOW_PID) {
-                ProcessTree.OSProcess p = ProcessTree.get().get(proc);
-                t.setName(oldName + " " + (p != null ? "waiting for pid=" + p.getPid() : "waiting for " + name));
+                t.setName(oldName + " " + "waiting for pid=" + proc.pid());
             }
 
             try {
