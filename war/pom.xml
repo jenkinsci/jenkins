@@ -47,7 +47,7 @@ THE SOFTWARE.
     <!-- HTTP listener port -->
     <port>8080</port>
     <node.version>16.15.1</node.version>
-    <yarn.version>1.22.10</yarn.version>
+    <yarn.version>1.22.19</yarn.version>
   </properties>
 
   <dependencyManagement>
