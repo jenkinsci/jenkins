@@ -29,7 +29,7 @@ THE SOFTWARE.
     ${%Check now}
   </f:link>
   <j:if test="${isUpdates}">
-    <span style="margin-left: 0.5em;">
+    <span style="margin-left: 0.5rem;">
       <l:isAdmin>
         ${%Select}: <a href="javascript:toggleCheckboxes(true);">${%All}</a>,
         <a href="javascript:checkPluginsWithoutWarnings();">${%Compatible}</a>,
