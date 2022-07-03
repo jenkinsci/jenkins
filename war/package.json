@@ -31,7 +31,7 @@
     "css-minimizer-webpack-plugin": "^1.0.0",
     "eslint": "^7.1.0",
     "eslint-plugin-only-warn": "^1.0.2",
-    "file-loader": "^6.0.0",
+    "file-loader": "^6.2.0",
     "handlebars": "^3.0.8",
     "handlebars-loader": "^1.7.1",
     "jest": "^26.0.1",
