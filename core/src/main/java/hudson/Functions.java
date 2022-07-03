@@ -1845,7 +1845,7 @@ public class Functions {
 
     /**
      * Escapes the character unsafe for e-mail address.
-     * See http://en.wikipedia.org/wiki/E-mail_address for the details,
+     * See <a href="https://en.wikipedia.org/wiki/Email_address">the Wikipedia page</a> for the details,
      * but here the vocabulary is even more restricted.
      */
     public static String toEmailSafeString(String projectName) {
