@@ -35,7 +35,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import java.util.AbstractSet;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -97,7 +96,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         }
 
         return new AbstractSet<User>() {
-            private Set<String> culpritIds = Collections.unmodifiableSet(new HashSet<>(getCulpritIds()));
+            private Set<String> culpritIds = Set.copyOf(getCulpritIds());
 
             @Override
             public Iterator<User> iterator() {

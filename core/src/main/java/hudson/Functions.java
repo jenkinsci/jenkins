@@ -100,7 +100,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -747,10 +746,7 @@ public class Functions {
     public static String nbspIndent(String size) {
         int i = size.indexOf('x');
         i = Integer.parseInt(i > 0 ? size.substring(0, i) : size) / 10;
-        StringBuilder buf = new StringBuilder(30);
-        for (int j = 2; j <= i; j++)
-            buf.append("&nbsp;");
-        return buf.toString();
+        return "&nbsp;".repeat(Math.max(0, i - 1));
     }
 
     public static String getWin32ErrorMessage(IOException e) {
@@ -777,11 +773,7 @@ public class Functions {
         if (s == null) {
             return "";
         }
-        try {
-            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e); // impossible
-        }
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
     public static String escape(String s) {
@@ -1933,11 +1925,11 @@ public class Functions {
      *
      * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
-    public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
+    public boolean hyperlinkMatchesCurrentPage(String href) {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
         if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
-        url = URLDecoder.decode(url, "UTF-8");
-        href = URLDecoder.decode(href, "UTF-8");
+        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        href = URLDecoder.decode(href, StandardCharsets.UTF_8);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
@@ -1945,7 +1937,7 @@ public class Functions {
     }
 
     public <T> List<T> singletonList(T t) {
-        return Collections.singletonList(t);
+        return List.of(t);
     }
 
     /**

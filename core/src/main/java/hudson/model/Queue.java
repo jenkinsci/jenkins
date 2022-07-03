@@ -1987,7 +1987,7 @@ public class Queue extends ResourceController implements Saveable {
          * @since 1.377
          */
         default Collection<? extends SubTask> getSubTasks() {
-            return Collections.singleton(this);
+            return Set.of(this);
         }
 
         /**
