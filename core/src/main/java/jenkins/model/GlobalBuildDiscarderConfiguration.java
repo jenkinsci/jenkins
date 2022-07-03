@@ -28,7 +28,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.DescribableList;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -53,7 +53,7 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
     }
 
     private final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
-            new DescribableList<>(this, Collections.singletonList(new JobGlobalBuildDiscarderStrategy()));
+            new DescribableList<>(this, List.of(new JobGlobalBuildDiscarderStrategy()));
 
     private Object readResolve() {
         configuredBuildDiscarders.setOwner(this);

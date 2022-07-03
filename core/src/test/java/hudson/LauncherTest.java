@@ -95,7 +95,7 @@ public class LauncherTest {
         EnvVars env = new EnvVars("key1", "val1");
         Launcher decorated = base.decorateByEnv(env);
         int res = decorated.launch().envs("key2=val2").cmds(Functions.isWindows() ? new String[] {"cmd", "/q", "/c", "echo %key1% %key2%"} : new String[] {"sh", "-c", "echo $key1 $key2"}).stdout(l).join();
-        String log = baos.toString(Charset.defaultCharset().name());
+        String log = baos.toString(Charset.defaultCharset());
         assertEquals(log, 0, res);
         assertTrue(log, log.contains("val1 val2"));
     }

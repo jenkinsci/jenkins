@@ -246,7 +246,7 @@ public class UtilTest {
                 buf.append((char) ('0' + (i % 10)));
             Util.createSymlink(d, buf.toString(), "x", l);
 
-            String log = baos.toString(Charset.defaultCharset().name());
+            String log = baos.toString(Charset.defaultCharset());
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
