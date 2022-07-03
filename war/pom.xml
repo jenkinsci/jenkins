@@ -46,8 +46,8 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <node.version>14.16.0</node.version>
-    <yarn.version>1.22.10</yarn.version>
+    <node.version>16.15.1</node.version>
+    <yarn.version>1.22.19</yarn.version>
   </properties>
 
   <dependencyManagement>
