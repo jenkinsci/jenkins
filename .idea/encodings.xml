@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/cli/src/filter/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cli/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cli/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cli/src/test/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cli/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/src/filter/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/src/test/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test/src/test/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/war/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/war/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/war/src/test/java" charset="UTF-8" />
+  </component>
+</project>
