@@ -485,10 +485,8 @@ public class CLI {
         try {
             InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
             if (is != null) {
-                try {
+                try (is) {
                     props.load(is);
-                } finally {
-                    is.close();
                 }
             }
         } catch (IOException e) {

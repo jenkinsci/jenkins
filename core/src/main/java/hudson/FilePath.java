@@ -533,10 +533,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
                 Archiver a = factory.create(out);
-                try {
+                try (a) {
                     scanner.scan(f, ignoringSymlinks(a, verificationRoot, noFollowLinks));
-                } finally {
-                    a.close();
                 }
                 return a.countEntries();
             }
@@ -708,10 +706,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-        ZipFile zip = new ZipFile(zipFile);
-        Enumeration<ZipEntry> entries = zip.getEntries();
 
-        try {
+        try (ZipFile zip = new ZipFile(zipFile)) {
+            Enumeration<ZipEntry> entries = zip.getEntries();
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
@@ -740,8 +737,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
                 }
             }
-        } finally {
-            zip.close();
         }
     }
 
@@ -922,11 +917,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.292
      */
     public void untarFrom(InputStream _in, final TarCompression compression) throws IOException, InterruptedException {
-        try {
+        try (_in) {
             final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
             act(new UntarFrom(compression, in));
-        } finally {
-            _in.close();
         }
     }
 
@@ -2947,10 +2940,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
-        try {
+        try (tw) {
             scanner.scan(baseDir, tw);
-        } finally {
-            tw.close();
         }
         return tw.countEntries();
     }
