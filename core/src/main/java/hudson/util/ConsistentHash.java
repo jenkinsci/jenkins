@@ -145,7 +145,7 @@ public class ConsistentHash<T> {
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
-            return new DuplicateFilterIterator<>(new Iterator<T>() {
+            return new DuplicateFilterIterator<>(new Iterator<>() {
                 int pos = 0;
 
                 @Override

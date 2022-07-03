@@ -95,12 +95,12 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
             return calculateCulprits();
         }
 
-        return new AbstractSet<User>() {
+        return new AbstractSet<>() {
             private Set<String> culpritIds = Set.copyOf(getCulpritIds());
 
             @Override
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String, User>(culpritIds.iterator()) {
+                return new AdaptedIterator<>(culpritIds.iterator()) {
                     @Override
                     protected User adapt(String id) {
                         // TODO: Probably it should not auto-create users
