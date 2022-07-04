@@ -532,11 +532,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                Archiver a = factory.create(out);
-                try (a) {
+                try (Archiver a = factory.create(out)) {
                     scanner.scan(f, ignoringSymlinks(a, verificationRoot, noFollowLinks));
+                    return a.countEntries();
                 }
-                return a.countEntries();
             }
 
             private static final long serialVersionUID = 1L;
