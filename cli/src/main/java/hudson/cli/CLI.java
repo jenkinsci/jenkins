@@ -491,12 +491,9 @@ public class CLI {
 
     private static String computeVersion() {
         Properties props = new Properties();
-        try {
-            InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
+        try (InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties")) {
             if (is != null) {
-                try (is) {
-                    props.load(is);
-                }
+                props.load(is);
             }
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
