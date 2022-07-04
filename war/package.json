@@ -45,7 +45,7 @@
     "postcss-loader": "^3.0.0",
     "style-loader": "^1.2.1",
     "stylelint": "^14.9.1",
-    "stylelint-config-standard": "^20.0.0",
+    "stylelint-config-standard": "^26.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-fix-style-only-entries": "^0.5.0"
