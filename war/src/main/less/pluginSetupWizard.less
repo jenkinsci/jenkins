@@ -2,8 +2,7 @@
 @import (css) '../fonts/icomoon/css/icomoon.css';
 @import (css) '../fonts/google-fonts/roboto/css/roboto.css';
 
-.bootstrap-3 *,
-.bootstrap-3 [class*='col-'] {
+.bootstrap-3 *, .bootstrap-3 [class*='col-'] {
     // simple reset
     margin: initial;
     padding: initial;
@@ -20,16 +19,13 @@
     text-align: initial;
     font-size: 13px;
 
-    input,
-password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
+    input, password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
         &::-ms-clear { width: 0; height: 0; }
         &::-ms-reveal { width: 0; height: 0; }
     }
 
-    a,
- button {
-        &:focus,
- &:active { outline: 0; }
+    a, button {
+        &:focus, &:active { outline: 0; }
     }
 
     .spin(@duration: 2s) {
@@ -195,8 +191,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
               margin-top: 0;
             }
 
-            .plugin-select-actions,
- .plugin-selected-info {
+            .plugin-select-actions, .plugin-selected-info {
                 position: absolute;
                 top: 0;
                 left: 10px;
@@ -244,8 +239,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                     text-decoration: none;
                     font-weight: bold;
 
-                    &:hover,
- &:focus {
+                    &:hover, &:focus {
                         color: #444;
                     }
                 }
@@ -455,13 +449,11 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 						color: @badge-background;
 					}
 
-					.website-link:hover::before,
- .website-link:focus::before {
+					.website-link:hover::before, .website-link:focus::before {
 						background: #fff;
 					}
 
-					.website-link:hover::after,
- .website-link:focus::after {
+					.website-link:hover::after, .website-link:focus::after {
 						color: @link-color;
 						width: 16px;
 						height: 16px;
@@ -500,9 +492,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 							}
 						}
 
-						&:hover,
- &.active,
- &:focus {
+						&:hover, &.active, &:focus {
 							text-decoration: none;
 							outline: none;
 
@@ -543,9 +533,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 								font: 11px FontAwesome;
 							}
 
-							&:hover,
- &:active,
- &:focus {
+							&:hover, &:active, &:focus {
 								color: #fff;
 								background: @link-color;
 								text-decoration: none;
@@ -603,8 +591,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                         background: #337ab7;
                     }
 
-                    &:hover,
- &:focus {
+                    &:hover, &:focus {
                       background: rgba(100, 200, 255, 0.1);
                       box-shadow: inset -200px 0 200px -200px rgba(100, 200, 255, 0.33);
                         color: #337ab7;
@@ -876,8 +863,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
     }
 
     .security-panel {
-        &.security-panel,
- > iframe {
+        &.security-panel, > iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -922,9 +908,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 
 @fb-loader-color: #E6E6E6;
 
-.loader,
-.loader::before,
-.loader::after {
+.loader, .loader::before, .loader::after {
     background: @fb-loader-color;
     -webkit-animation: fb-loader 1s infinite ease-in-out;
     animation: fb-loader 1s infinite ease-in-out;
@@ -932,8 +916,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     height: 8px;
 }
 
-.loader::before,
-.loader::after {
+.loader::before, .loader::after {
     position: absolute;
     top: 0;
     content: '';
@@ -963,9 +946,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 @-webkit-keyframes fb-loader {
-    0%,
-    80%,
-    100% {
+    0%, 80%, 100% {
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
@@ -977,9 +958,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 @keyframes fb-loader {
-    0%,
-    80%,
-    100% {
+    0%, 80%, 100% {
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
@@ -1000,8 +979,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     padding: initial;
 }
 
-.bootstrap-3 .categories,
-.bootstrap-3 .plugins {
+.bootstrap-3 .categories, .bootstrap-3 .plugins {
     padding-left: 0;
     padding-right: 0;
 }
