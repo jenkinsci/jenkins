@@ -350,7 +350,7 @@ public class LabelExpressionTest {
 
     @Test
     public void formValidation() throws Exception {
-        j.executeOnServer(new Callable<Object>() {
+        j.executeOnServer(new Callable<>() {
             @Override
             public Object call() throws Exception {
                 Label l = j.jenkins.getLabel("foo");

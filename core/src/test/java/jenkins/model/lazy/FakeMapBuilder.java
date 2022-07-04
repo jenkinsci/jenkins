@@ -27,6 +27,7 @@ package jenkins.model.lazy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -49,8 +50,8 @@ public class FakeMapBuilder implements TestRule {
 
     public FakeMapBuilder add(int n) throws IOException {
         File build = new File(dir, Integer.toString(n));
-        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(n), StandardCharsets.US_ASCII);
-        build.mkdir();
+        Files.createDirectory(build.toPath());
+        Files.writeString(build.toPath().resolve("n"), Integer.toString(n), StandardCharsets.US_ASCII);
         return this;
     }
 

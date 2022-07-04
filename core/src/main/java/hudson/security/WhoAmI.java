@@ -6,9 +6,6 @@ import hudson.Functions;
 import hudson.model.Api;
 import hudson.model.UnprotectedRootAction;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -31,11 +28,11 @@ import org.springframework.security.core.GrantedAuthority;
 @Extension @Symbol("whoAmI")
 @ExportedBean
 public class WhoAmI implements UnprotectedRootAction {
-    private static final Set<String> dangerousHeaders = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    private static final Set<String> dangerousHeaders = Set.of(
             "cookie",
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Authentication
             "authorization", "www-authenticate", "proxy-authenticate", "proxy-authorization"
-    )));
+    );
 
     public Api getApi() {
         return new Api(this);

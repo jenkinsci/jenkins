@@ -16,7 +16,7 @@ updates:
       # Provided by Jetty and should be aligned with the version provided by the
       # version of Jetty we deliver. See:
       # https://github.com/jenkinsci/jenkins/pull/5211
-      - dependency-name: "javax.servlet:javax.servlet-api"
+      - dependency-name: "jakarta.servlet:jakarta.servlet-api"
 
       # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
       # to keep their corresponding Jetty versions aligned.
@@ -59,3 +59,9 @@ updates:
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
+  - package-ecosystem: "npm"
+    directory: "/war"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - jenkinsci/sig-ux
