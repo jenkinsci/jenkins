@@ -8,6 +8,7 @@ work
 /.idea/*
 !/.idea/icon.svg
 !/.idea/.name
+!/.idea/encodings.xml
 out
 
 # Eclipse and VSCode project files
