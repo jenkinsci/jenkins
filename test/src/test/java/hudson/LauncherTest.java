@@ -58,9 +58,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -198,7 +198,7 @@ public class LauncherTest {
             ps.cmds("echo", "hello");
         }
         assertEquals(0, ps.stdout(listener).join());
-        assertThat(FileUtils.readFileToString(log, StandardCharsets.UTF_8).replace("\r\n", "\n"),
+        assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
             containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                            "[master → slave0] hello"));
     }
