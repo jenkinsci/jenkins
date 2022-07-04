@@ -92,7 +92,7 @@ public class UserPropertyTest {
     }
 
     public static Matcher<User> nestedUserSet() {
-        return new BaseMatcher<User>() {
+        return new BaseMatcher<>() {
             @Override
             public boolean matches(Object item) {
                 User user = (User) item;

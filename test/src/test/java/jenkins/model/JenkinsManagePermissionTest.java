@@ -203,7 +203,7 @@ public class JenkinsManagePermissionTest {
     }
 
     private static Matcher<WebResponse> hasResponseCode(final int httpStatus) {
-        return new BaseMatcher<WebResponse>() {
+        return new BaseMatcher<>() {
             @Override
             public boolean matches(final Object item) {
                 final WebResponse response = (WebResponse) item;
