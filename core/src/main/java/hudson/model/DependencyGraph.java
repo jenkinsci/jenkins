@@ -100,7 +100,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      *
      *
-     * See https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
+     * See <a href="https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm">Tarjan's strongly connected components algorithm</a>
      */
     private void topologicalDagSort() {
         DirectedGraph<AbstractProject> g = new DirectedGraph<>() {
