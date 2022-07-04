@@ -424,7 +424,7 @@ public class Main {
         // There is no portable way to find where the locally cached copy
         // of jenkins.war/jar is; JDK 6 is too smart. (See JENKINS-2326.)
         try {
-            URL classFile = Main.class.getClassLoader().getResource("Main.class");
+            URL classFile = Main.class.getClassLoader().getResource("executable/Main.class");
             JarFile jf = ((JarURLConnection) classFile.openConnection()).getJarFile();
             return new File(jf.getName());
         } catch (Exception x) {
