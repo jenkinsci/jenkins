@@ -58,7 +58,7 @@ THE SOFTWARE.
             <l:icon src="symbol-search"/>
           </div>
         </div>
-
+        <p>${%UpdatePageDescription}<br></br></p>
         <table id="plugins" class="jenkins-table sortable">
           <thead>
             <tr>
