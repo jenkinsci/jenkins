@@ -65,3 +65,7 @@ updates:
       interval: "daily"
     reviewers:
       - jenkinsci/sig-ux
+    ignore:
+      # Handlebars files (*.hbs) require a few tweaks in order to comply with 4.x' standards:
+      # https://issues.jenkins.io/browse/JENKINS-68926
+      - dependency-name: "handlebars"
