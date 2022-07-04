@@ -54,8 +54,8 @@ import java.util.NoSuchElementException;
  * as increase/decrease of the replicas.
  *
  * <p>
- * See http://en.wikipedia.org/wiki/Consistent_hashing for references, and
- * http://tom-e-white.com/2007/11/consistent-hashing.html is probably a reasonable depiction.
+ * See <a href="https://en.wikipedia.org/wiki/Consistent_hashing">the Wikipedia page</a> for references, and
+ * <a href="https://tom-e-white.com/2007/11/consistent-hashing.html">this blog post</a> is probably a reasonable depiction.
  * If we trust his experiments, creating 100 replicas will reduce the stddev to 10% of the mean for 10 nodes.
  *
  * @author Kohsuke Kawaguchi
@@ -145,7 +145,7 @@ public class ConsistentHash<T> {
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
-            return new DuplicateFilterIterator<>(new Iterator<T>() {
+            return new DuplicateFilterIterator<>(new Iterator<>() {
                 int pos = 0;
 
                 @Override

@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +80,6 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -717,7 +717,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         public SCMTriggerCause(File logFile) throws IOException {
             // TODO: charset of this log file?
-            this(FileUtils.readFileToString(logFile));
+            this(Files.readString(Util.fileToPath(logFile), Charset.defaultCharset()));
         }
 
         public SCMTriggerCause(String pollingLog) {
@@ -743,7 +743,7 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
-                FileUtils.writeStringToFile(a.getPollingLogFile(), pollingLog);
+                Files.writeString(Util.fileToPath(a.getPollingLogFile()), pollingLog, Charset.defaultCharset());
                 build.replaceAction(a);
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to persist the polling log", e);

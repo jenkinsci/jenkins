@@ -41,7 +41,7 @@ public interface Advapi32  extends StdCallLibrary {
      * Retrieves the name of the user associated with the current thread.
      *
      * <p>
-     * See http://msdn.microsoft.com/en-us/library/ms724432(VS.85).aspx
+     * See <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea">GetUserNameA function (winbase.h)</a>
      */
     boolean GetUserName(char[] buffer, IntByReference lpnSize);
 
