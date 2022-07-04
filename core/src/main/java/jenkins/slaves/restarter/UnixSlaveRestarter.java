@@ -67,7 +67,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
      * Gets the current executable name.
      */
     private static String getCurrentExecutable() {
-        int pid = LIBC.getpid();
+        long pid = ProcessHandle.current().pid();
         String name = "/proc/" + pid + "/exe";
         File exe = new File(name);
         if (exe.exists()) {
