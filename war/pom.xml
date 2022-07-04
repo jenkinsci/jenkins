@@ -48,6 +48,7 @@ THE SOFTWARE.
     <port>8080</port>
     <node.version>16.15.1</node.version>
     <yarn.version>1.22.19</yarn.version>
+    <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
   </properties>
 
   <dependencyManagement>
