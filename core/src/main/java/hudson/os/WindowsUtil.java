@@ -36,7 +36,7 @@ import org.apache.commons.io.IOUtils;
 /**
  * Utilities for the Windows Platform.
  * Adapted from:
- * https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+ * <a href="https://docs.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way">Everyone quotes command line arguments the wrong way</a>
  *
  * @since 2.183
  */

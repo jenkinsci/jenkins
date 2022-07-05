@@ -153,7 +153,7 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> empty() {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
@@ -178,7 +178,7 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> listsJobs(final String... expected) {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {

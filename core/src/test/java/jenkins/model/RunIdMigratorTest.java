@@ -36,6 +36,8 @@ import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -309,7 +311,9 @@ public class RunIdMigratorTest {
     // TODO test sane recovery from various error conditions
 
     private void write(String file, String text) throws Exception {
-        FileUtils.write(new File(dir, file), text, Charset.defaultCharset());
+        Path path = new File(dir, file).toPath();
+        Files.createDirectories(path.getParent());
+        Files.writeString(path, text, Charset.defaultCharset());
     }
 
     private void link(String symlink, String dest) throws Exception {
@@ -329,7 +333,7 @@ public class RunIdMigratorTest {
             if (symlink != null) {
                 notation = "→" + symlink;
             } else if (kid.isFile()) {
-                notation = "'" + FileUtils.readFileToString(kid, Charset.defaultCharset()) + "'";
+                notation = "'" + Files.readString(kid.toPath(), Charset.defaultCharset()) + "'";
             } else if (kid.isDirectory()) {
                 notation = summarize(kid);
             } else {

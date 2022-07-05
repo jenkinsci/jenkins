@@ -908,7 +908,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         /**
          * Returns true if the supplied hash looks like a bcrypt encoded hash value, based off of the
-         * implementation defined in jBCrypt and: https://en.wikipedia.org/wiki/Bcrypt.
+         * implementation defined in jBCrypt and <a href="https://en.wikipedia.org/wiki/Bcrypt">the Wikipedia page</a>.
          *
          */
         public boolean isHashValid(String hash) {

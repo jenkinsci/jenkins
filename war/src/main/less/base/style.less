@@ -62,18 +62,15 @@ dt {
   text-align: center;
 }
 
-.middle-align td,
-td.middle-align {
+.middle-align td, td.middle-align {
   vertical-align: middle;
 }
 
-.center-align td,
-td.center-align {
+.center-align td, td.center-align {
   text-align: center;
 }
 
-.no-wrap td,
- td.no-wrap {
+.no-wrap td, td.no-wrap {
   white-space: nowrap;
 }
 
@@ -95,7 +92,7 @@ td.center-align {
     margin-bottom: var(--section-padding);
     padding: 0.5em;
     -moz-border-radius: 0.5em;
-    border-radius: var(--form-input-border-radius)
+    border-radius: var(--form-input-border-radius);
 }
 
 /* #header .login {
@@ -186,8 +183,7 @@ a.tip:hover span {
   color: var(--call-to-action-text-color);
 }
 
-.call-to-action a,
-.call-to-action a:visited {
+.call-to-action a, .call-to-action a:visited {
   color: var(--call-to-action-link-color);
   font-weight: bold;
   font-size: larger;
@@ -301,9 +297,7 @@ pre.console {
   padding-top: 0;
 }
 
-.setting-name,
-.setting-main > input,
-.setting-main > textarea {
+.setting-name, .setting-main > input, .setting-main > textarea {
   vertical-align: middle;
   margin-top: 0;
 }
@@ -460,8 +454,7 @@ div.behavior-loading {
   }
 }
 
-.bottom-sticker,
-#bottom-sticker {
+.bottom-sticker, #bottom-sticker {
   position: sticky;
   // This has to be set to -1px so that IntersectionObserver can add the
   // &--stuck class when the element is stuck to the bottom of the screen
@@ -495,7 +488,7 @@ div.behavior-loading {
     top: -30px;
     left: 0;
     right: 0;
-    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
     max-width: 100%;
     height: 30px;
     opacity: 0;
@@ -528,8 +521,7 @@ div.behavior-loading {
   }
 }
 
-.top-sticker,
-#top-sticker {
+.top-sticker, #top-sticker {
     width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
 }
@@ -603,8 +595,7 @@ div.behavior-loading {
   /* this marker class is used by JavaScript to locate the area to display help text. */
 }
 
-.icon-help,
-.svg-icon.icon-help {
+.icon-help, .svg-icon.icon-help {
   height: 1.25rem;
   width: 1.25rem;
 }
@@ -721,6 +712,7 @@ table.parameters > tbody:hover {
   display: none;
   margin-left: 20px;
   padding: 0;
+
   --table-border-radius: 7px;
 
   table {
@@ -736,8 +728,7 @@ table.parameters > tbody:hover {
   }
 }
 
-.healthReport:hover div.healthReportDetails,
-.healthReport.hover div.healthReportDetails {
+.healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
   display: block;
 }
 
@@ -773,8 +764,7 @@ table.parameters > tbody:hover {
   margin-right: 0.5rem;
 }
 
-#buildHistory .build-rss-all-icon,
-#buildHistory .build-rss-failed-icon {
+#buildHistory .build-rss-all-icon, #buildHistory .build-rss-failed-icon {
   margin-right: 0.25rem;
 
   svg {
@@ -797,12 +787,12 @@ table.parameters > tbody:hover {
   }
 
   .build-search-no-results-row {
-    border: none!important;
-    width: 100%!important;
+    border: none !important;
+    width: 100% !important;
     background: transparent;
 
     td {
-      padding-top: 0!important;
+      padding-top: 0 !important;
     }
   }
 }
@@ -841,7 +831,7 @@ table.parameters > tbody:hover {
     padding: 0 8px;
     height: 30px;
     cursor: pointer;
-    transition: opacity .2s ease;
+    transition: opacity 0.2s ease;
 
     &:hover {
       opacity: 0.5;
@@ -904,14 +894,12 @@ table.parameters > tbody:hover {
   width: 100%;
 }
 
-.pane.build-name a,
-.pane.build-name a:visited {
+.pane.build-name a, .pane.build-name a:visited {
   color: var(--pane-link-color);
   text-decoration: underline;
 }
 
-.pane.build-details a,
-.pane.build-details a:visited {
+.pane.build-details a, .pane.build-details a:visited {
   color: var(--pane-link-color--visited);
   opacity: 0.6;
   text-decoration: none;
@@ -924,14 +912,12 @@ table.parameters > tbody:hover {
 
 /* ================ Element overflow calculation helper styles ================ */
 
-.force-wrap,
-.force-wrap a {
+.force-wrap, .force-wrap a {
   white-space: normal !important;
   overflow: visible !important;
 }
 
-.force-nowrap,
-.force-nowrap a {
+.force-nowrap, .force-nowrap a {
   white-space: nowrap !important;
   overflow: hidden !important;
 }
@@ -976,8 +962,7 @@ table.parameters > tbody:hover {
     }
   }
 
-  &:active,
-  &:focus {
+  &:active, &:focus {
     &::before {
       opacity: 0.2;
     }
@@ -1080,9 +1065,7 @@ table.fingerprint-in-build td {
   }
 }
 
-.optionalBlock-container > .form-container,
-.radioBlock-container > .form-container,
-.dropdownList-container {
+.optionalBlock-container > .form-container, .radioBlock-container > .form-container, .dropdownList-container {
   position: relative;
   padding-left: 32px;
   transition: var(--standard-transition);
@@ -1164,7 +1147,7 @@ td.progress-bar-done {
 }
 
 td.progress-bar-left {
-  background-color: #EBECF0;
+  background-color: #ebecf0;
 }
 
 table.progress-bar.red {
@@ -1432,9 +1415,7 @@ select.select-ajax-pending {
   color: inherit;
   text-decoration: underline;
 
-  &:hover,
-  &:focus,
-  &:active {
+  &:hover, &:focus, &:active {
     text-decoration: underline;
   }
 }
@@ -1475,9 +1456,7 @@ body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
 
-body.no-decoration #page-header,
-body.no-decoration #side-panel,
-body.no-decoration footer {
+body.no-decoration #page-header, body.no-decoration #side-panel, body.no-decoration footer {
     display: none;
 }
 
@@ -1486,8 +1465,7 @@ body.no-sticker #bottom-sticker {
 }
 
 /* see the Icon class for the definition of these CSS classes */
-.icon-sm,
-svg.icon-sm {
+.icon-sm, svg.icon-sm {
     width: 16px;
     height: 16px;
     vertical-align: middle;
@@ -1498,8 +1476,7 @@ svg.icon-sm {
   }
 }
 
-.icon-md,
-svg.icon-md {
+.icon-md, svg.icon-md {
     width: 24px;
     height: 24px;
     vertical-align: middle;
@@ -1510,8 +1487,7 @@ svg.icon-md {
   }
 }
 
-.icon-lg,
-svg.icon-lg {
+.icon-lg, svg.icon-lg {
     width: 32px;
     height: 32px;
     vertical-align: middle;
@@ -1522,8 +1498,7 @@ svg.icon-lg {
   }
 }
 
-.icon-xlg,
-svg.icon-xlg {
+.icon-xlg, svg.icon-xlg {
     width: 48px;
     height: 48px;
     vertical-align: middle;
@@ -1570,8 +1545,7 @@ svg.icon-xlg {
 
 .app-summary {
   & > td:first-of-type {
-    img,
-    svg {
+    img, svg {
       width: 48px !important;
       height: 48px !important;
       margin-right: 1rem;

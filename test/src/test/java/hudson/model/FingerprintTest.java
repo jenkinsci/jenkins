@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -67,7 +68,6 @@ import java.util.logging.Level;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -120,7 +120,6 @@ public class FingerprintTest {
         f.facets.setOwner(Saveable.NOOP);
         f.facets.add(new TestFacet(f, 123, "val"));
         f.save();
-        //System.out.println(FileUtils.readFileToString(xml));
         f2 = Fingerprint.load(SOME_MD5);
         assertEquals(f.toString(), f2.toString());
         assertEquals(1, f2.facets.size());
@@ -573,7 +572,7 @@ public class FingerprintTest {
 
         Fingerprint fp = getFingerprint(build, "test.txt");
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf7.xml");
-        FileUtils.writeStringToFile(targetFile, TEST_FINGERPRINT_CONFIG_FILE_CONTENT, StandardCharsets.UTF_8);
+        Files.writeString(targetFile.toPath(), TEST_FINGERPRINT_CONFIG_FILE_CONTENT, StandardCharsets.UTF_8);
         targetFile.deleteOnExit();
 
         String first = fp.getHashString().substring(0, 2);
