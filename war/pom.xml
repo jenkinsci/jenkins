@@ -98,6 +98,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty10</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>websocket-jetty9</artifactId>
       <version>${project.version}</version>
     </dependency>
