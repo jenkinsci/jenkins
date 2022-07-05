@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.77</version>
+    <version>1.79</version>
     <relativePath />
   </parent>
 
@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.357</revision>
+    <revision>2.358</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -100,7 +100,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.22.8</spotless.version>
+    <spotless.version>2.23.0</spotless.version>
   </properties>
 
   <dependencyManagement>
@@ -212,7 +212,6 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
-            <doclint>all,-missing,-reference</doclint>
             <splitindex>true</splitindex>
           </configuration>
         </plugin>
@@ -400,7 +399,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3</version>
+              <version>10.3.1</version>
             </dependency>
           </dependencies>
           <executions>

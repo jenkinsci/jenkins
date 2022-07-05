@@ -154,7 +154,16 @@ module.exports = (env, argv) => ({
        }
     },
     minimizer: [
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            "default",
+            {
+              svgo: {"exclude": true},
+            },
+          ],
+        },
+      }),
     ],
   },
   resolve: {

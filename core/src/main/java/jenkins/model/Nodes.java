@@ -200,7 +200,7 @@ public class Nodes implements Saveable {
     public boolean updateNode(final @NonNull Node node) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<Boolean>() {
+            exists = Queue.withLock(new Callable<>() {
                 @Override
                 public Boolean call() throws Exception {
                     if (node == nodes.get(node.getNodeName())) {

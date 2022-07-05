@@ -25,7 +25,6 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
@@ -71,7 +70,7 @@ public class PluginTest {
     public void preventTimestamp2_toBeServed() throws Exception {
         // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
         Jenkins.get().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
-        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Collections.singletonList("credentials"), true);
+        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(List.of("credentials"), true);
 
         for (Future<UpdateCenter.UpdateCenterJob> job : pluginInstalled) {
             job.get();
