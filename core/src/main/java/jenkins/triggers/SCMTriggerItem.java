@@ -38,6 +38,7 @@ import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.ParameterizedJobMixIn;
@@ -167,10 +168,10 @@ public interface SCMTriggerItem {
                     return (Collection<? extends SCM>) scm.getClass().getMethod("getConfiguredSCMs").invoke(scm);
                 } catch (Exception x) {
                     Logger.getLogger(SCMTriggerItem.class.getName()).log(Level.WARNING, null, x);
-                    return Collections.singleton(scm);
+                    return Set.of(scm);
                 }
             } else {
-                return Collections.singleton(scm);
+                return Set.of(scm);
             }
         }
 
