@@ -50,7 +50,6 @@ import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
@@ -203,7 +202,7 @@ public class AbstractBuildTest {
 
         // 4th build, unstable. culprit list should continue
         scm.addChange().withAuthor("dave");
-        p.getBuildersList().replaceBy(Collections.singleton(new UnstableBuilder()));
+        p.getBuildersList().replaceBy(Set.of(new UnstableBuilder()));
         b = j.buildAndAssertStatus(Result.UNSTABLE, p);
         assertCulprits(b, "bob", "charlie", "dave");
 

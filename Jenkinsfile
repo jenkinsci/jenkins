@@ -13,22 +13,19 @@ properties([
 ])
 
 def buildTypes = ['Linux', 'Windows']
-def jdks = [8, 11, 17]
+def jdks = [11, 17]
 
 def builds = [:]
 for (i = 0; i < buildTypes.size(); i++) {
   for (j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
-    if (buildType == 'Windows' && jdk == 8) {
-      continue // unnecessary use of hardware
-    }
     if (buildType == 'Windows' && jdk == 17) {
       continue // TODO pending jenkins-infra/helpdesk#2822
     }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-      def agentContainerLabel = jdk == 8 ? 'maven' : 'maven-' + jdk
+      def agentContainerLabel = 'maven-' + jdk
       if (buildType == 'Windows') {
         agentContainerLabel += '-windows'
       }
@@ -44,7 +41,7 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Now run the actual build.
         stage("${buildType} Build / Test") {
-          timeout(time: 5, unit: 'HOURS') {
+          timeout(time: 6, unit: 'HOURS') {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
@@ -81,7 +78,7 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the test package'
           }
-          // cli has been migrated to JUnit 5
+          // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }

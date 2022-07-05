@@ -16,7 +16,7 @@ updates:
       # Provided by Jetty and should be aligned with the version provided by the
       # version of Jetty we deliver. See:
       # https://github.com/jenkinsci/jenkins/pull/5211
-      - dependency-name: "javax.servlet:javax.servlet-api"
+      - dependency-name: "jakarta.servlet:jakarta.servlet-api"
 
       # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
       # to keep their corresponding Jetty versions aligned.
@@ -33,10 +33,6 @@ updates:
 
       # Fails test automation; needs further investigation.
       - dependency-name: "com.google.inject:guice-bom"
-
-      # Requires Java 11 starting with version 10.0.
-      - dependency-name: "com.puppycrawl.tools:checkstyle"
-        versions: [">=10.0"]
 
       # Contains incompatible API changes and needs compatibility work.
       - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
@@ -63,3 +59,13 @@ updates:
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
+  - package-ecosystem: "npm"
+    directory: "/war"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - jenkinsci/sig-ux
+    ignore:
+      # Handlebars files (*.hbs) require a few tweaks in order to comply with 4.x' standards:
+      # https://issues.jenkins.io/browse/JENKINS-68926
+      - dependency-name: "handlebars"

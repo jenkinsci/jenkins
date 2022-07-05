@@ -52,6 +52,7 @@ import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
 import java.util.Collections;
+import java.util.Set;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
@@ -114,7 +115,7 @@ public class MavenTest {
         JDK varJDK = new JDK("varJDK", javaHomeVar);
         j.jenkins.getJDKs().add(varJDK);
         j.jenkins.getNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("VAR_MAVEN", mavenVar), new EnvironmentVariablesNodeProperty.Entry("VAR_JAVA",
                                 javaVar))));
 
@@ -215,7 +216,7 @@ public class MavenTest {
         project.getBuildersList().add(new Maven("--help", null, null, properties, null,
                 false, null, null, true));
         project.addProperty(new ParametersDefinitionProperty(parameter));
-        j.jenkins.getNodeProperties().replaceBy(Collections.singleton(
+        j.jenkins.getNodeProperties().replaceBy(Set.of(
                 new EnvironmentVariablesNodeProperty(envVar)
         ));
 
