@@ -28,6 +28,7 @@ import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -43,7 +45,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -103,7 +104,7 @@ public class DoubleLaunchChecker {
         long t = timestampFile.lastModified();
         if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && !ignore) {
             try {
-                collidingId = FileUtils.readFileToString(timestampFile, Charset.defaultCharset());
+                collidingId = Files.readString(Util.fileToPath(timestampFile), Charset.defaultCharset());
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
             }
@@ -115,7 +116,7 @@ public class DoubleLaunchChecker {
         }
 
         try {
-            FileUtils.writeStringToFile(timestampFile, getId(), Charset.defaultCharset());
+            Files.writeString(Util.fileToPath(timestampFile), getId(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             // if failed to write, err on the safe side and assume things are OK.

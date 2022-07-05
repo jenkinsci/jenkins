@@ -24,8 +24,7 @@
       }
     }
 
-    &:focus,
-    &:active {
+    &:focus, &:active {
       & + label {
         &::before {
           transition: box-shadow var(--elastic-transition);
@@ -71,14 +70,11 @@
       position: absolute;
       top: 0;
       left: 0;
-
       width: 22px;
       height: 22px;
-
       border-radius: 50%;
       background: transparent;
       box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border);
-
       transition: box-shadow var(--standard-transition);
     }
   }

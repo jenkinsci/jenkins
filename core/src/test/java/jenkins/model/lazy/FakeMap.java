@@ -27,7 +27,7 @@ package jenkins.model.lazy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -44,7 +44,7 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
 
     @Override
     protected Build retrieve(File dir) throws IOException {
-        String n = FileUtils.readFileToString(new File(dir, "n"), Charset.defaultCharset()).trim();
+        String n = Files.readString(dir.toPath().resolve("n"), Charset.defaultCharset()).trim();
         //new Exception("loading #" + n).printStackTrace();
         return new Build(Integer.parseInt(n));
     }
