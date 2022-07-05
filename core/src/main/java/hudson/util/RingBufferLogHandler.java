@@ -109,7 +109,7 @@ public class RingBufferLogHandler extends Handler {
      */
     public List<LogRecord> getView() {
         // Since Jenkins.logRecords is a field used as an API, we are forced to implement a dynamic list.
-        return new AbstractList<LogRecord>() {
+        return new AbstractList<>() {
             @Override
             public LogRecord get(int index) {
                 // flip the order

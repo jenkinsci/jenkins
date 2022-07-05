@@ -14,14 +14,14 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
 import hudson.util.FormValidation;
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -47,8 +47,8 @@ public class AbstractItemTest {
         b.setDescription("This is my build");
 
         // update on disk representation
-        File f = p.getConfigFile().getFile();
-        FileUtils.writeStringToFile(f, FileUtils.readFileToString(f, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
+        Path path = p.getConfigFile().getFile().toPath();
+        Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
         // reload away
         p.doReload();
@@ -114,14 +114,14 @@ public class AbstractItemTest {
 
         WebClient w = j.createWebClient();
         WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "bar")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "bar")));
         w.login("alice", "alice");
         Page page = w.getPage(wr);
         assertThat(getPath(page.getUrl()), equalTo(p.getUrl()));
         assertThat(p.getName(), equalTo("bar"));
 
         wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "baz")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "baz")));
         w.login("bob", "bob");
 
         w.setThrowExceptionOnFailingStatusCode(false);
