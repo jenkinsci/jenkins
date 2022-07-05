@@ -24,6 +24,7 @@
 
 package hudson.util.io;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath.TarCompression;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Creates an archiver on top of the given stream.
      */
+    @NonNull
     public abstract Archiver create(OutputStream out) throws IOException;
 
     /**
@@ -79,6 +81,7 @@ public abstract class ArchiverFactory implements Serializable {
             this.method = method;
         }
 
+        @NonNull
         @Override
         public Archiver create(OutputStream out) throws IOException {
             return new TarArchiver(method.compress(out));
@@ -88,6 +91,7 @@ public abstract class ArchiverFactory implements Serializable {
     }
 
     private static final class ZipArchiverFactory extends ArchiverFactory {
+        @NonNull
         @Override
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out);
@@ -103,6 +107,7 @@ public abstract class ArchiverFactory implements Serializable {
             this.prefix = prefix;
         }
 
+        @NonNull
         @Override
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out, true, prefix);

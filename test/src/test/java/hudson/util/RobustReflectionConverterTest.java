@@ -49,8 +49,8 @@ import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -75,7 +75,7 @@ public class RobustReflectionConverterTest {
         assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
-        assertEquals(Collections.singleton(p), data.keySet());
+        assertEquals(Set.of(p), data.keySet());
         String text = data.values().iterator().next().extra;
         assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
     }

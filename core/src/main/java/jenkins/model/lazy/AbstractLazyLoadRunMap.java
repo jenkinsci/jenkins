@@ -114,7 +114,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     public Set<Integer> keySet() {
         Set<Integer> ks = keySet;
         if (ks == null) {
-            ks = new AbstractSet<Integer>() {
+            ks = new AbstractSet<>() {
                 @Override
                 public Iterator<Integer> iterator() {
                     return new Iterator() {
@@ -192,10 +192,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     public Collection<R> values() {
         Collection<R> vals = values;
         if (vals == null) {
-            vals = new AbstractCollection<R>() {
+            vals = new AbstractCollection<>() {
                 @Override
                 public Iterator<R> iterator() {
-                    return new Iterator<R>() {
+                    return new Iterator<>() {
                         private final Iterator<Entry<Integer, R>> it = entrySet().iterator();
 
                         @Override

@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <h2>Help!</h2>
+  <p>I'm just HTML!</p>
+</j:jelly>

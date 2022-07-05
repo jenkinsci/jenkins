@@ -3,8 +3,7 @@
 .icon-help {
   color: var(--primary);
 
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     color: var(--primary-hover);
     border-color: var(--primary-hover);
   }
@@ -34,9 +33,7 @@
  * Build status icons
  *****/
 
-.animated-spin,
-.icon-blue-anime,
-.icon-red-anime {
+.animated-spin, .icon-blue-anime, .icon-red-anime {
   will-change: transform;
   // animation: blink 1s infinite linear;
 }
@@ -53,35 +50,27 @@
   }
 }
 
-.icon-blue,
-.icon-blue-anime {
+.icon-blue, .icon-blue-anime {
   .status-icon-color(var(--success));
 }
 
-.icon-red,
-.icon-red-anime {
+.icon-red, .icon-red-anime {
   .status-icon-color(var(--danger));
 }
 
-.icon-yellow,
-.icon-yellow-anime {
+.icon-yellow, .icon-yellow-anime {
   .status-icon-color(var(--unstable-build-icon-color));
 }
 
-.icon-aborted,
-.icon-aborted-anime {
+.icon-aborted, .icon-aborted-anime {
   .status-icon-color(var(--black));
 }
 
-.icon-disabled,
-.icon-disabled-anime {
+.icon-disabled, .icon-disabled-anime {
   .status-icon-color(var(--black), 0.5);
 }
 
-.icon-grey,
-.icon-grey-anime,
-.icon-nobuilt,
-.icon-nobuilt-anime {
+.icon-grey, .icon-grey-anime, .icon-nobuilt, .icon-nobuilt-anime {
   .status-icon-color(var(--primary));
 }
 
@@ -110,12 +99,9 @@
   }
 }
 
-.icon-blue-anime .build-status-icon__outer,
-.icon-red-anime .build-status-icon__outer,
-.icon-yellow-anime .build-status-icon__outer,
-.icon-aborted-anime .build-status-icon__outer,
-.icon-disabled-anime .build-status-icon__outer,
-.icon-grey-anime .build-status-icon__outer,
+.icon-blue-anime .build-status-icon__outer, .icon-red-anime .build-status-icon__outer,
+.icon-yellow-anime .build-status-icon__outer, .icon-aborted-anime .build-status-icon__outer,
+.icon-disabled-anime .build-status-icon__outer, .icon-grey-anime .build-status-icon__outer,
 .icon-nobuilt-anime .build-status-icon__outer {
   .svg-icon {
     animation: spin 1.5s linear infinite;
@@ -123,14 +109,15 @@
 }
 
 @keyframes pulse-animation {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
 }
+
 .pulse-animation {
   svg {
     animation: pulse-animation 2s ease infinite;
