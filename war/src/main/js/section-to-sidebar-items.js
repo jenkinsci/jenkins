@@ -31,8 +31,8 @@ window.addEventListener("load", function() {
             </span>
         </div>
     `);
-    item.addEventListener("click", (event) => {
-      const headerToScrollTo = document.getElementById(event.target.dataset.sectionId);
+    item.addEventListener("click", () => {
+      const headerToScrollTo = document.getElementById(item.querySelector(".task-link").dataset.sectionId);
       document.documentElement.scrollTop = i === 0 ? 0 : (headerToScrollTo.getBoundingClientRect().top + window.scrollY) - 70;
     });
 
