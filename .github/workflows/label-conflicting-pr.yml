@@ -1,5 +1,6 @@
 name: "Label conflicting PRs"
 on:
+  push:
   pull_request_target:
     types: [synchronize]
 
