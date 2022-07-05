@@ -91,7 +91,7 @@ public class Kernel32Utils {
      *      If absolute, it's absolute.
      * @throws UnsatisfiedLinkError
      *      If the function is not exported by kernel32.
-     *      See http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
+     *      See <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka">CreateSymbolicLinkA function (winbase.h)</a>
      *      for compatibility info.
      * @deprecated Use {@link Util#createSymlink} instead.
      */

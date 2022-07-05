@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.78</version>
+    <version>1.79</version>
     <relativePath />
   </parent>
 
@@ -100,7 +100,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.22.8</spotless.version>
+    <spotless.version>2.23.0</spotless.version>
   </properties>
 
   <dependencyManagement>
