@@ -137,7 +137,8 @@
   }
 
   &::before {
-    backdrop-filter: brightness(1.2) blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 var(--section-padding) var(--background);
 
     @supports not (backdrop-filter: blur(20px)) {
       background: var(--background);
