@@ -86,8 +86,8 @@ THE SOFTWARE.
           jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
         -->
         <exclusion>
-          <groupId>jakarta.servlet.jsp</groupId>
-          <artifactId>jakarta.servlet.jsp-api</artifactId>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>javax.servlet.jsp-api</artifactId>
         </exclusion>
         <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
         <exclusion>
@@ -132,7 +132,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>6.0</version>
+      <version>5.25</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -172,12 +172,8 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.8</maxJdkVersion>
                   <excludes>
-                    <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
-                    <exclude>org.kohsuke.stapler:stapler</exclude>
-                    <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
-                    <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
@@ -564,7 +560,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.11</version>
+        <version>9.4.46.v20220331</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
