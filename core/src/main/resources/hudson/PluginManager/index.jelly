@@ -28,10 +28,5 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <local:table page="updates" list="${app.updateCenter.updates}" xmlns:local="/hudson/PluginManager">
-    <div style="margin-left: 0.25rem">
-      <j:if test="${!empty(app.updateCenter.jobs)}">
-        <br/> ${%UpdatePageLegend(rootURL+'/updateCenter/')}
-      </j:if>
-    </div>
   </local:table>
 </j:jelly>

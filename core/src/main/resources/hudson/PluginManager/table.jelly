@@ -59,6 +59,11 @@ THE SOFTWARE.
           </div>
         </div>
         <p>${%UpdatePageDescription}<br></br></p>
+        <div style="margin-left: 0.25rem">
+          <j:if test="${!empty(app.updateCenter.jobs)}">
+            <br/> ${%UpdatePageLegend(rootURL+'/updateCenter/')}
+          </j:if>
+        </div>
         <table id="plugins" class="jenkins-table sortable">
           <thead>
             <tr>
