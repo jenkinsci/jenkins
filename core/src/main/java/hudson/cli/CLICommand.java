@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
@@ -415,11 +414,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        try {
-            return out.toString(charset.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return out.toString(charset);
     }
 
     /**
@@ -437,11 +432,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        try {
-            return out.toString(charset.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return out.toString(charset);
     }
 
     /**
@@ -458,20 +449,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        PrintStream ps;
-        try {
-            ps = new PrintStream(out, false, charset.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        PrintStream ps = new PrintStream(out, false, charset);
 
         printUsageSummary(ps);
         ps.close();
-        try {
-            return out.toString(charset.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return out.toString(charset);
     }
 
     /**

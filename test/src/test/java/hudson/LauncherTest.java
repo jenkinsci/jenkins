@@ -58,9 +58,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -198,7 +198,7 @@ public class LauncherTest {
             ps.cmds("echo", "hello");
         }
         assertEquals(0, ps.stdout(listener).join());
-        assertThat(FileUtils.readFileToString(log, StandardCharsets.UTF_8).replace("\r\n", "\n"),
+        assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
             containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                            "[master → slave0] hello"));
     }
@@ -231,7 +231,7 @@ public class LauncherTest {
                             fos.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
                             fos.write(b, 0, len);
                         }
-                    }, true, "UTF-8");
+                    }, true, StandardCharsets.UTF_8);
                 } catch (IOException x) {
                     throw new AssertionError(x);
                 }
@@ -293,11 +293,11 @@ public class LauncherTest {
         psCustomizer.run(ps, baos1, baos2, listener);
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), is(emptyString()));
         } else {
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), is(emptyString()));
         }
     }
 

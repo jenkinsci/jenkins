@@ -43,7 +43,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import jenkins.security.ApiTokenProperty;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -74,7 +74,7 @@ public class ApiTokenStatsTest {
         final String TOKEN_NAME = "New Token Name";
 
         WebRequest request = new WebRequest(new URL(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken"), HttpMethod.POST);
-        request.setRequestParameters(Collections.singletonList(new NameValuePair("newTokenName", TOKEN_NAME)));
+        request.setRequestParameters(List.of(new NameValuePair("newTokenName", TOKEN_NAME)));
 
         Page page = wc.getPage(request);
         assertEquals(200, page.getWebResponse().getStatusCode());

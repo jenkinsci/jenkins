@@ -71,7 +71,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> c) {
         final SecurityContext callingContext = getContext();
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 SecurityContext old = getContext();

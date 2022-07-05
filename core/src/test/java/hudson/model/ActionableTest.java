@@ -148,11 +148,11 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(true));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeAction(null), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")
@@ -164,9 +164,9 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(true));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")
@@ -176,7 +176,7 @@ public class ActionableTest {
         ParametersAction a2 = new ParametersAction();
         assertEquals(Collections.<Action>emptyList(), thing.getActions());
         thing.addAction(a1);
-        assertEquals(Collections.singletonList(a1), thing.getActions());
+        assertEquals(List.of(a1), thing.getActions());
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
     }

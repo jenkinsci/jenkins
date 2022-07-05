@@ -1,5 +1,7 @@
 package jenkins.model.identity;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +13,7 @@ import org.jenkinsci.remoting.util.KeyUtils;
  * A simple root action that exposes the public key to users so that they do not need to search for the
  * {@code X-Instance-Identity} response header, also exposes the fingerprint of the public key so that people
  * can verify a fingerprint of a master before connecting to it.
- *
+ * <p>Do not use this class from plugins. Depend on {@code instance-identity} directly instead.
  * @since 2.16
  */
 @Extension
@@ -35,7 +37,9 @@ public class IdentityRootAction implements UnprotectedRootAction {
      * Returns the PEM encoded public key.
      *
      * @return the PEM encoded public key.
+     *         Null if the {@code instance-identity} plugin is not enabled.
      */
+    @CheckForNull
     public String getPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {
@@ -60,6 +64,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      *
      * @return the fingerprint of the public key.
      */
+    @NonNull
     public String getFingerprint() {
         return KeyUtils.fingerprint(InstanceIdentityProvider.RSA.getPublicKey());
     }

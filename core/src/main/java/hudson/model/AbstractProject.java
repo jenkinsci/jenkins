@@ -268,7 +268,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     }
 
     private LazyBuildMixIn<P, R> createBuildMixIn() {
-        return new LazyBuildMixIn<P, R>() {
+        return new LazyBuildMixIn<>() {
             @SuppressWarnings("unchecked") // untypable
             @Override protected P asJob() {
                 return (P) AbstractProject.this;

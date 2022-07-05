@@ -1,7 +1,8 @@
 :root, .app-theme-picker__picker[data-theme=none] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, JetBrainsMono, Consolas, monospace;
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell,
+  "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono, consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -14,14 +15,14 @@
   // Color palette
   --white: #fff;
   --very-light-grey: #f8f8f8;
-  --light-grey: #f2f2f2;
+  --light-grey: hsl(240, 0.2, 0.965);
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
-  --black: #333;
+  --black: hsl(240, 0.2, 0.1);
 
   // branding
-  --primary: #024cb6;
-  --secondary: #4d545d;
+  --primary: hsl(212, 100%, 41%);
+  --secondary: hsl(240, 0.1, 0.5);
   --success: var(--green);
   --danger: var(--red);
   --warning: var(--orange);
@@ -29,7 +30,7 @@
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
   --focus-btn-danger: fade(#cc0003, 50%);
-  --focus-input-border: #063F61;
+  --focus-input-border: #063f61;
   --focus-input-glow: fade(#0b6aa2, 25%);
 
   // State colors
@@ -127,9 +128,9 @@
   --btn-large-line-height: 1.25rem;
   // Button primary
   --button-color--primary: var(--background);
-  --btn-primary-bg: #063F61;
-  --btn-primary-bg-hover: lighten(#063F61, 7.5%);
-  --btn-primary-bg-active: lighten(#063F61, 12%);
+  --btn-primary-bg: #063f61;
+  --btn-primary-bg-hover: lighten(#063f61, 7.5%);
+  --btn-primary-bg-active: lighten(#063f61, 12%);
   // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
@@ -256,8 +257,8 @@
   // Form
   --section-padding: 1.85rem;
   --input-color: var(--white);
-  --input-border: #C3CCD1;
-  --input-border-hover: #5C7889;
+  --input-border: #c3ccd1;
+  --input-border-hover: #5c7889;
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: ~"min(65vw, 1600px)";
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
@@ -272,7 +273,7 @@
   --selection-color: rgba(2, 76, 182, 0.3);
 
   // Animations
-  --standard-transition: 0.2s ease;
+  --standard-transition: 0.3s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Pop out menus
@@ -312,6 +313,11 @@
   --call-to-action-link-color: #000;
   --call-to-action-text-color: var(--alert-info-text-color);
 
+  // Variables for sidebar items, card items
+  --item-background--hover: hsla(240, 0.15, 0.6, 0.075);
+  --item-background--active: hsla(240, 0.15, 0.6, 0.15);
+  --item-box-shadow--focus: var(--item-background--hover);
+
   // Colors
   each(@colors, {
     --light-@{key}: lighten(@value, 20%);
@@ -321,20 +327,20 @@
 
   each(@semantics, {
     --@{key}-color: @value;
-  })
-}
+  });
+ }
 
 @colors: {
   blue: #007aff;
   brown: #a2845e;
   cyan: #32ade6;
-  green: #1c9146;
+  green: #1ea64b;
   indigo: #5856d6;
   orange: #fe820a;
   pink: #fb0f45;
   purple: #af52de;
-  red: #df001c;
-  yellow: #ffcc00;
+  red: #e6001f;
+  yellow: #fc0;
 }
 
 @semantics: {
