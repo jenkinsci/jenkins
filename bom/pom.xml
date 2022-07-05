@@ -297,6 +297,11 @@ THE SOFTWARE.
         <version>2.0.8-kohsuke-1</version>
       </dependency>
       <dependency>
+        <groupId>org.kohsuke.metainf-services</groupId>
+        <artifactId>metainf-services</artifactId>
+        <version>1.9</version>
+      </dependency>
+      <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>json-lib</artifactId>
         <version>2.4-jenkins-3</version>
@@ -377,6 +382,12 @@ THE SOFTWARE.
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>1.2</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

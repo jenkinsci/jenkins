@@ -69,6 +69,11 @@ THE SOFTWARE.
       <artifactId>remoting</artifactId>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>websocket-spi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
     </dependency>
@@ -375,10 +380,8 @@ THE SOFTWARE.
       <artifactId>j-interop</artifactId>
     </dependency>
     <dependency>
-      <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -470,7 +473,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -480,6 +482,12 @@ THE SOFTWARE.
       <version>1.0</version>
       <scope>provided</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>websocket-jetty9</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
