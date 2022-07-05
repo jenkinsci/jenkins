@@ -1,0 +1,15 @@
+name: "Label conflicting PRs"
+on:
+  pull_request_target:
+    types: [synchronize]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label conflicting PRs
+        uses: eps1lon/actions-label-merge-conflict@releases/2.x
+        with:
+          dirtyLabel: "unresolved-merge-conflict"
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          commentOnDirty: "Please take a moment and address the merge conflicts of your pull request. Thanks!"
