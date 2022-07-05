@@ -33,7 +33,6 @@ import hudson.security.ACL;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.DependencyDeclarer;
@@ -62,7 +61,7 @@ public class DependencyGraphTest {
             down1 = j.createFreeStyleProject(), down2 = j.createFreeStyleProject();
         // Add one standard downstream job:
         p.getPublishersList().add(
-                new BuildTrigger(Collections.singletonList(down1), Result.SUCCESS));
+                new BuildTrigger(List.of(down1), Result.SUCCESS));
         // Add one downstream job with custom Dependency impl:
         p.getBuildersList().add(new TestDeclarer(Result.UNSTABLE, down2));
         j.jenkins.rebuildDependencyGraph();

@@ -37,7 +37,7 @@ public class Futures {
      * Creates a {@link Future} instance that already has its value pre-computed.
      */
     public static <T> Future<T> precomputed(final T value) {
-        return new Future<T>() {
+        return new Future<>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return false;

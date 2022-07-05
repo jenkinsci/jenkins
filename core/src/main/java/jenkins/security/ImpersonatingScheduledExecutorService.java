@@ -74,7 +74,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> r) {
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 try (ACLContext ctxt = ACL.as2(authentication)) {

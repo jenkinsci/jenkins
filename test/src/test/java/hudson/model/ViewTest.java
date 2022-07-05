@@ -75,9 +75,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -382,7 +382,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", Collections.singletonList("label1"))
+                new LabelAxis("label", List.of("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
@@ -888,7 +888,7 @@ public class ViewTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("createView"), HttpMethod.POST);
         req.setEncodingType(FormEncodingType.URL_ENCODED);
-        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", "UTF-8"));
+        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", StandardCharsets.UTF_8));
         wc.getPage(req);
         assertNull(j.jenkins.getView("DifferentViewName"));
         assertNotNull(j.jenkins.getView("ViewName"));

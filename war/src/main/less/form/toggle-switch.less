@@ -27,15 +27,13 @@
         right: 25px;
       }
 
-      &:active,
-      &:focus {
+      &:active, &:focus {
         &::after {
           right: 20px !important;
         }
       }
 
-      .jenkins-toggle-switch__label__enabled-title,
-      .jenkins-toggle-switch__label__disabled-title {
+      .jenkins-toggle-switch__label__enabled-title, .jenkins-toggle-switch__label__disabled-title {
         left: unset !important;
         right: calc(50px + 1rem) !important;
       }
@@ -45,7 +43,6 @@
 
 .jenkins-toggle-switch input {
   position: absolute;
-
   width: 1px;
   height: 1px;
 
@@ -53,7 +50,6 @@
   // the wrong order in VoiceOver for OSX
   margin: 0;
   padding: 0;
-
   overflow: hidden;
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -69,8 +65,7 @@
         mask-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='66px' height='66px' viewBox='0 0 66 66' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M66,0 L66,66 L0,66 L0,0 L66,0 Z M37.7154094,29.2061836 C37.3690459,28.9031155 36.8425777,28.9382134 36.5395097,29.2845769 L36.5395097,29.2845769 L31.2924962,35.2799905 L29.4225874,33.410737 L29.3440813,33.3414133 C29.0171724,33.0872262 28.5444804,33.1103341 28.2440774,33.410737 C27.9186409,33.7361736 27.9186409,34.2638104 28.2440774,34.589247 L28.2440774,34.589247 L30.7440745,37.0892441 L30.8202748,37.15679 C31.1634387,37.4256962 31.6657159,37.3856111 31.9604761,37.0487424 L31.9604761,37.0487424 L37.7938027,30.3820833 L37.8577508,30.2991398 C38.0896293,29.9560466 38.0351295,29.4859387 37.7154094,29.2061836 Z' fill='%23000000'%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
       }
 
-      &:active,
-      &:focus {
+      &:active, &:focus {
         &::after {
           left: 20px;
           width: 25px;
@@ -131,11 +126,11 @@
     background-color: var(--input-border-hover);
   }
 
-  &:active,
-  &:focus {
+  &:active, &:focus {
     &::before {
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 0 5px var(--focus-input-glow);
     }
+
     &::after {
       left: 5px;
       width: 25px;
@@ -146,8 +141,7 @@
     opacity: 0;
   }
 
-  .jenkins-toggle-switch__label__enabled-title,
-  .jenkins-toggle-switch__label__disabled-title {
+  .jenkins-toggle-switch__label__enabled-title, .jenkins-toggle-switch__label__disabled-title {
     position: absolute;
     left: calc(50px + 1rem);
     transition: 0.55s cubic-bezier(0, 0.68, 0.5, 1.25);
