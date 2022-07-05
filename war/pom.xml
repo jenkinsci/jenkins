@@ -97,6 +97,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty9</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
