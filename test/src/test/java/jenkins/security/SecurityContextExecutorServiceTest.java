@@ -111,7 +111,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableAgainstAllContexts() throws Exception {
-        Callable<SecurityContext> c = new Callable<SecurityContext>() {
+        Callable<SecurityContext> c = new Callable<>() {
             @Override
             public SecurityContext call() {
                 return SecurityContextHolder.getContext();
@@ -137,7 +137,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new ArrayList<>();
-        Callable<SecurityContext> c = new Callable<SecurityContext>() {
+        Callable<SecurityContext> c = new Callable<>() {
             @Override
             public SecurityContext call() {
                 return SecurityContextHolder.getContext();

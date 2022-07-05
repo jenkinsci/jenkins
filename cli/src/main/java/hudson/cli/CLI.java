@@ -43,11 +43,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,7 +63,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
@@ -267,7 +269,7 @@ public class CLI {
         }
 
         if (args.isEmpty())
-            args = Collections.singletonList("help"); // default to help
+            args = List.of("help"); // default to help
 
         if (mode == null) {
             mode = Mode.HTTP;
@@ -327,7 +329,13 @@ public class CLI {
 
     @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
     private static String readAuthFromFile(String auth) throws IOException {
-        return FileUtils.readFileToString(new File(auth.substring(1)), Charset.defaultCharset());
+        Path path;
+        try {
+            path = Paths.get(auth.substring(1));
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+        return Files.readString(path, Charset.defaultCharset());
     }
 
     @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
@@ -346,7 +354,7 @@ public class CLI {
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
-                    headers.put("Authorization", Collections.singletonList(factory.authorization));
+                    headers.put("Authorization", List.of(factory.authorization));
                 }
             }
         }
@@ -483,14 +491,9 @@ public class CLI {
 
     private static String computeVersion() {
         Properties props = new Properties();
-        try {
-            InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
+        try (InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties")) {
             if (is != null) {
-                try {
-                    props.load(is);
-                } finally {
-                    is.close();
-                }
+                props.load(is);
             }
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.

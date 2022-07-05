@@ -189,7 +189,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
 
     @VisibleForTesting
     void loadWhitelist(@NonNull InputStream in) throws IOException {
-        cache.loadWhitelist(IOUtils.readLines(in));
+        cache.loadWhitelist(IOUtils.readLines(in, StandardCharsets.UTF_8));
     }
 
     private static class ValidatorCache {
@@ -280,7 +280,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             Path configFile = whitelist != null ? Paths.get(whitelist) : Jenkins.get().getRootDir().toPath().resolve("stapler-views-whitelist.txt");
             if (Files.exists(configFile)) {
                 try {
-                    loadWhitelist(Files.readAllLines(configFile));
+                    loadWhitelist(Files.readAllLines(configFile, StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e, () -> "Could not load user defined whitelist from " + configFile);
                 }
