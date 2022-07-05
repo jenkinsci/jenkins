@@ -22,21 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
   ${%lastUpdated(app.updateCenter.lastUpdatedString)}
   <f:link href="checkUpdatesServer" post="true" clazz="yui-button yui-submit-button submit-button primary">
     ${%Check now}
   </f:link>
-  <j:if test="${isUpdates}">
-    <span style="margin-left: 0.5rem;">
-      <l:isAdmin>
-        ${%Select}: <a href="javascript:toggleCheckboxes(true);">${%All}</a>,
-        <a href="javascript:checkPluginsWithoutWarnings();">${%Compatible}</a>,
-        <a href="javascript:toggleCheckboxes(false);">${%None}</a><br/>
-      </l:isAdmin>
-    </span>
-  </j:if>
   <j:if test="${app.pluginManager.lastErrorCheckUpdateCenters != null}">
     <div class="error">
       ${app.pluginManager.lastErrorCheckUpdateCenters}

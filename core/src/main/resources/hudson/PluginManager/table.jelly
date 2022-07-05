@@ -326,6 +326,15 @@ THE SOFTWARE.
               </j:if>
             </l:isAdmin>
             <st:include page="check.jelly"/>
+            <j:if test="${isUpdates}">
+              <span style="margin-left: 0.5rem;">
+                <l:isAdmin>
+                  ${%Select}: <a href="javascript:toggleCheckboxes(true);">${%All}</a>,
+                  <a href="javascript:checkPluginsWithoutWarnings();">${%Compatible}</a>,
+                  <a href="javascript:toggleCheckboxes(false);">${%None}</a><br/>
+                </l:isAdmin>
+              </span>
+            </j:if>
           </div>
         </div>
         <d:invokeBody/>
