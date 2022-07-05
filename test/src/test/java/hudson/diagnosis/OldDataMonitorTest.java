@@ -117,7 +117,7 @@ public class OldDataMonitorTest {
         OldDataMonitor.report(slowSavable, (String) null);
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
-        Future<Void> discardFuture = executors.submit(new Callable<Void>() {
+        Future<Void> discardFuture = executors.submit(new Callable<>() {
             @Override
             public Void call() {
                 oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
