@@ -5,9 +5,7 @@ on:
     types: [synchronize]
     
 permissions:
-  pull-requests: read
-  checks: read
-  statuses: read
+  pull-requests: write
 
 jobs:
   main:
