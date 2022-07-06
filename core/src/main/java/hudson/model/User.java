@@ -441,7 +441,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             super(
                     username, "",
                     true, true, true, true,
-                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
+                    Set.of(SecurityRealm.AUTHENTICATED_AUTHORITY2)
             );
         }
     }

@@ -356,7 +356,7 @@ public class Executor extends Thread implements ModelObject {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
-            task = Queue.withLock(new Callable<SubTask>() {
+            task = Queue.withLock(new Callable<>() {
                 @Override
                 public SubTask call() throws Exception {
                     if (!owner.isOnline()) {
