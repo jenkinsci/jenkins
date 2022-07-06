@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Label conflicting PRs
-        uses: eps1lon/actions-label-merge-conflict@releases/2.x
+        uses: eps1lon/actions-label-merge-conflict@v2
         with:
           dirtyLabel: "unresolved-merge-conflict"
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
