@@ -32,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 import org.xml.sax.SAXException;
 
 /**
@@ -63,7 +62,6 @@ public class I18nTest {
     @Issue("JENKINS-35270")
     @Test
     public void test_baseName_plugin() throws Exception {
-        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=org.jenkinsci.plugins.matrixauth.Messages").getJSONObject();
         Assert.assertEquals(response.toString(), "ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");

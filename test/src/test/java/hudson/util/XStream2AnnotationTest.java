@@ -31,8 +31,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.ExtensionList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import jenkins.model.GlobalConfiguration;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsSessionRule;
@@ -108,7 +108,7 @@ public class XStream2AnnotationTest {
         }
 
         void writeXml(String xml) throws IOException {
-            FileUtils.write(getConfigFile().getFile(), xml, StandardCharsets.UTF_8);
+            Files.writeString(getConfigFile().getFile().toPath(), xml, StandardCharsets.UTF_8);
         }
     }
 

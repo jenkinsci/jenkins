@@ -41,7 +41,7 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Now run the actual build.
         stage("${buildType} Build / Test") {
-          timeout(time: 5, unit: 'HOURS') {
+          timeout(time: 6, unit: 'HOURS') {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
               def mavenOptions = [
                 '-Pdebug',
@@ -78,7 +78,7 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the test package'
           }
-          // cli has been migrated to JUnit 5
+          // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }

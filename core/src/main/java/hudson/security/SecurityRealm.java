@@ -37,11 +37,10 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -617,7 +616,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
     protected final List<Filter> commonFilters() {
         // like Jenkins.ANONYMOUS:
-        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", Collections.singletonList(new SimpleGrantedAuthority("anonymous")));
+        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", List.of(new SimpleGrantedAuthority("anonymous")));
         ExceptionTranslationFilter etf = new ExceptionTranslationFilter(new HudsonAuthenticationEntryPoint("/" + getLoginUrl() + "?from={0}"));
         etf.setAccessDeniedHandler(new AccessDeniedHandlerImpl());
         UnwrapSecurityExceptionFilter usef = new UnwrapSecurityExceptionFilter();
@@ -640,7 +639,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Restricted(DoNotUse.class)
     public static String getFrom() {
-        String from = null, returnValue = null;
+        String from = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
         // Try to obtain a return point from the query parameter
@@ -664,9 +663,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         from = StringUtils.defaultIfBlank(from, "/").trim();
 
         // Encode the return value
-        try {
-            returnValue = URLEncoder.encode(from, "UTF-8");
-        } catch (UnsupportedEncodingException e) { }
+        String returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);
 
         // Return encoded value or at least "/" in the case exception occurred during encode()
         // or if the encoded content is blank value

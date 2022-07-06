@@ -37,7 +37,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -194,7 +194,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             LOGGER.log(Level.FINEST, "Ignored", e);
         }
         handler.handle(socket,
-                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
+                Map.of(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
