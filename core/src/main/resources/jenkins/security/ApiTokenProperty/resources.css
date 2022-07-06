@@ -82,13 +82,6 @@
     font-size: 0.75rem;
     color: #6d7680;
 }
-.token-list .token-list-item .token-revoke{
-    margin-left: 6px;
-}
-.token-list .token-list-new-item .token-revoke{
-    float: right;
-    line-height: 32px;
-}
 .token-list .token-list-new-item .token-revoke.hidden-button{
     display: none;
 }
@@ -99,31 +92,24 @@
     vertical-align: baseline;
 }
 .token-list .token-list-new-item .token-name{
-    width: 40%; 
+    width: 40%;
     display: inline-block;
 }
 .token-list .token-list-new-item .new-token-value{
-    width: 40%; 
     display: none;
     font-family: monospace;
-    margin-right: 2px; 
+    margin-right: 2px;
     font-size: 1em;
 }
 .token-list .token-list-new-item .new-token-value.visible{
     display: inline-block;
 }
-.token-list .token-list-new-item .copy-button{
-    float: right;
-}
-.token-list .token-revoke svg {
-    width: 18px;
-    vertical-align: middle;
-}
-#jenkins .token-list .token-list-new-item .copy-button .yui-button{
-    vertical-align: middle;
-}
-#jenkins .token-list .token-list-new-item .copy-button button{
-    margin-left: 6px;
+.token-list .token-list-new-item .controls-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  float: right;
 }
 .token-list .token-list-new-item .display-after-generation{
     margin-top: 5px; 
